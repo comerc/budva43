@@ -1,0 +1,19 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+  "name": "Ubuntu",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "dockerFile": "../Dockerfile",
+  "context": "..",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go@0.46.1",
+        "wayou.vscode-todo-highlight@1.0.5",
+        "editorconfig.editorconfig@0.17.2",
+        "adrianwilczynski.toggle-hidden@1.0.2",
+        "mhutchie.git-graph@1.30.0"
+      ]
+    }
+  }
+}

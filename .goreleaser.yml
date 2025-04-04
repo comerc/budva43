@@ -1,0 +1,76 @@
+version: 2
+
+project_name: budva43
+
+before:
+  hooks:
+  - go mod tidy
+
+builds:
+- id: budva43
+  main: ./cmd/budva43/main.go
+  binary: budva43
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - darwin
+  - windows
+
+archives:
+- id: tarball
+  builds:
+  - budva43
+  format_overrides:
+  - goos: windows
+    formats:
+      - zip
+  files:
+  - none*
+
+dockers:
+- image_templates:
+  - ghcr.io/comerc/budva43:latest
+  - ghcr.io/comerc/budva43:{{ .Tag }}
+  - ghcr.io/comerc/budva43:v{{ .Major }}
+  - ghcr.io/comerc/budva43:v{{ .Major }}.{{ .Minor }}
+  goos: linux
+  goarch: amd64
+  ids:
+  - budva43
+  build_flag_templates:
+  - "--pull"
+  - "--label=org.opencontainers.image.version={{ .Version }}"
+  - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+
+nfpms:
+- vendor: comerc
+  homepage: https://github.com/comerc/budva43
+  maintainer: Andrew Kachanov <andrew.kachanov@gmail.com>
+  formats:
+    - deb
+    - rpm
+  epoch: 1
+  release: 1
+
+checksum:
+  name_template: 'checksums.txt'
+
+signs:
+- artifacts: checksum
+
+snapshot:
+  version_template: "{{ .Tag }}-development"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+
+release:
+  github:
+    owner: comerc
+    name: budva43
+  draft: true
