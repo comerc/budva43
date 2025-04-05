@@ -2,7 +2,7 @@ FROM tdlib:latest
 
 ENV GO_VERSION=1.24.2
 
-RUN apt-get update && apt-get install -y wget zsh gcc
+RUN apt-get update && apt-get install -y wget zsh
 RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" && \
     chsh -s /bin/zsh
 
