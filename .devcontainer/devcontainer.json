@@ -1,18 +1,19 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-  "name": "Ubuntu",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "name": "",
+  // Use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "dockerFile": "../Dockerfile",
   "context": "..",
+  "initializeCommand": "make tdlib",
+  // "adrianwilczynski.toggle-hidden", // Error: Failed Installing Extensions
   "customizations": {
     "vscode": {
       "extensions": [
         "golang.go@0.46.1",
-        "wayou.vscode-todo-highlight@1.0.5",
-        "editorconfig.editorconfig@0.17.2",
-        "adrianwilczynski.toggle-hidden@1.0.2",
-        "mhutchie.git-graph@1.30.0"
+        "wayou.vscode-todo-highlight",
+        "editorconfig.editorconfig",
+        "mhutchie.git-graph"
       ]
     }
   }

@@ -1,5 +1,5 @@
-submodule:
-	git submodule update --init
+tdlib:
+	./tdlib/build.sh
 
 lint:
 	golangci-lint run
@@ -16,7 +16,7 @@ run:
 clean:
 	rm -f bin/app
 
-all-build:
+all:
 	lint
 	test
 	clean
