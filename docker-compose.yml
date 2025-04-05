@@ -1,0 +1,16 @@
+services:
+  tdlib:
+    build:
+      dockerfile: Dockerfile
+      context: ./tdlib
+    image: tdlib:latest
+  dev:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: budva43/dev:latest
+    depends_on:
+      - tdlib
+    command: sleep infinity
+    volumes:
+      - .:/workspaces/budva43:cached

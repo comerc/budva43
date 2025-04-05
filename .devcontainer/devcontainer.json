@@ -3,9 +3,12 @@
 {
   "name": "",
   // Use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "dockerFile": "../Dockerfile",
-  "context": "..",
-  "initializeCommand": "./tdlib/build.sh",
+  // "dockerFile": "../Dockerfile",
+  // "context": "..",
+  // "initializeCommand": "./tdlib/build.sh",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "customizations": {
     "vscode": {
       "extensions": [
