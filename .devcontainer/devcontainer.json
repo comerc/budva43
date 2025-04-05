@@ -8,7 +8,7 @@
   // "initializeCommand": "./tdlib/build.sh",
   "dockerComposeFile": "../docker-compose.yml",
   "service": "dev",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceFolder": "/workspaces/budva43",
   "customizations": {
     "vscode": {
       "extensions": [

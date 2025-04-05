@@ -2,6 +2,13 @@
 
 Telegram-Forwarder (UNIX-way)
 
+## How to Start
+
+```bash
+docker-compose build
+```
+...then "Reopen in Container"
+
 ## .env
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
