@@ -5,8 +5,7 @@
   // Use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "dockerFile": "../Dockerfile",
   "context": "..",
-  "initializeCommand": "make tdlib",
-  // "adrianwilczynski.toggle-hidden", // Error: Failed Installing Extensions
+  "initializeCommand": "./tdlib/build.sh",
   "customizations": {
     "vscode": {
       "extensions": [

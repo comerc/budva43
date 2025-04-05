@@ -1,6 +1,3 @@
-tdlib:
-	./tdlib/build.sh
-
 lint:
 	golangci-lint run
 
