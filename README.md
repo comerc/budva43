@@ -11,22 +11,27 @@ docker-compose build
 
 ## Applied Technologies
 
-- [x] Dev Containers
-- [ ] testcontainers
-- [ ] mockery
-- [ ] easyjson
+- [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
+- [ ] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
+- [ ] [mockery](https://github.com/vektra/mockery)
+- [ ] [easyjson](https://github.com/mailru/easyjson)
 - [x] Docker Compose
-- [x] multi-stage build
-- [x] zsh + ohmyzsh
-- [x] golangci-lint + revive
+- [x] [multi-stage build](https://docs.docker.com/build/building/multi-stage/)
+- [x] zsh + [ohmyzsh](https://ohmyz.sh/)
+- [x] golangci-lint + [revive](https://revive.run/)
 - [x] Makefile
-- [x] editorconfig
-- [x] git submodule
-- [ ] goreleaser
-- [x] todo-highlight
-- [x] git-graph
+- [x] [editorconfig](https://editorconfig.org/)
+- [x] [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+- [ ] [goreleaser](https://goreleaser.com/)
+- [x] [todo-highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
+- [x] [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
 - [ ] Redis
-
+- [ ] SOLID
+- [ ] DRY
+- [ ] KISS
+- [ ] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
+- [ ] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
+- [ ] [samber/lo](https://github.com/samber/lo)
 
 ## .env
 
