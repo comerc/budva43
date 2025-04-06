@@ -9,6 +9,25 @@ docker-compose build
 ```
 ...then "Reopen in Container"
 
+## Applied Technologies
+
+- [x] Dev Containers
+- [ ] testcontainers
+- [ ] mockery
+- [ ] easyjson
+- [x] Docker Compose
+- [x] multi-stage build
+- [x] zsh + ohmyzsh
+- [x] golangci-lint + revive
+- [x] Makefile
+- [x] editorconfig
+- [x] git submodule
+- [ ] goreleaser
+- [x] todo-highlight
+- [x] git-graph
+- [ ] Redis
+
+
 ## .env
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
