@@ -2,7 +2,7 @@ services:
   tdlib:
     build:
       dockerfile: Dockerfile
-      context: ./tdlib
+      context: ./pkg/tdlib
     image: tdlib:latest
   dev:
     build:
