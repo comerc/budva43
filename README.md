@@ -2,6 +2,8 @@
 
 Telegram-Forwarder (UNIX-way)
 
+[PLAN](./docs/PLAN.md)
+
 ## How to Start 
 
 only first time:
