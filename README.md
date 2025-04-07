@@ -29,20 +29,21 @@ docker-compose build
 - [x] [todo-highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
 - [x] [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
 - [ ] Redis
-- [ ] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
-- [ ] SOLID
-- [ ] DRY
-- [ ] KISS
+- [x] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
+- [x] SOLID
+- [x] DRY
+- [x] KISS
 - [ ] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
 - [ ] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
+- [ ] Нотации start и run
+- [ ] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
 - [ ] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)
 - [ ] [gqlgen](https://gqlgen.com/)
 - [ ] Grafana + Prometheus
 - [ ] ClickHouse
 - [ ] [fiber](https://gofiber.io/)
-- [ ] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
-- [ ] Нотации start и run
+- [x] [zelenin/go-tdlib](https://github.com/zelenin/go-tdlib)
 
 ## .env
 
