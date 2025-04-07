@@ -2,8 +2,9 @@
 
 Telegram-Forwarder (UNIX-way)
 
-## How to Start
+## How to Start 
 
+only first time:
 ```bash
 docker-compose build
 ```
