@@ -248,15 +248,121 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 1. **Transport → Controller → Service → Repository**:
     - Транспортные адаптеры вызывают методы соответствующих контроллеров
     - Контроллеры оркестрируют работу сервисов, без собственной бизнес-логики
-    - Сервисы содержат всю бизнес-логику и вызывают методы репозиториев
-    - Репозитории взаимодействуют с внешними системами
+    - Сервисы содержат всю бизнес-логику и взаимодействуют с репозиториями
+    - Репозитории инкапсулируют доступ к данным
 
-2. **Передача данных**:
-    - Между транспортом и контроллерами - DTO (model)
-    - Между контроллерами и сервисами - Entity (entity)
-    - Внутри сервисов - Entity (entity)
-    - Между сервисами и репозиториями - Entity/DTO (в зависимости от контекста)
-    - DTO используются только когда формат данных должен отличаться от Entity
+2. **Преобразование данных в Entity**:
+    - Entity используются для передачи данных между всеми слоями
+    - Entity могут содержать методы для преобразования форматов (сериализация/десериализация)
+
+3. **Обработка ошибок**:
+    - Каждый слой должен обрабатывать соответствующие ему ошибки
+    - Репозитории возвращают специфичные для хранилища ошибки
+    - Сервисы оборачивают ошибки репозиториев в доменные ошибки
+    - Контроллеры преобразуют доменные ошибки в понятный формат для клиента
+    - Транспортный слой преобразует ошибки в соответствующие форматы протокола
+    
+## Модификация подхода к передаче данных
+
+В связи с отказом от отдельного слоя DTO, функциональность передачи данных перешла к Entity:
+
+1. **Entity как средство передачи данных**:
+   - Entity используются для передачи данных между всеми слоями системы
+   - Entity могут содержать дополнительные методы для преобразования форматов
+   - Entity содержат методы сериализации/десериализации для разных форматов (JSON, протоколы)
+2. **Методы преобразования форматов в Entity**:
+   - Методы для сериализации (`MarshalJSON`, `ToProto`)
+   - Методы для десериализации (`UnmarshalJSON`, `FromProto`)
+   - Методы для представления в API (`ToResponse`)
+   - Методы для валидации (`Validate`)
+3. **Пример взаимодействия слоев через Entity**:
+   ```go
+   // В контроллере
+   func (c *MessageController) GetMessage(ctx context.Context, messageID int64) (*entity.Message, error) {
+       // Получаем сообщение через сервис
+       message, err := c.messageService.GetMessage(ctx, messageID)
+       if err != nil {
+           return nil, err
+       }
+       
+       return message, nil
+   }
+   
+   // В HTTP-обработчике
+   func (h *HTTPHandler) HandleGetMessage(w http.ResponseWriter, r *http.Request) {
+       // Получаем ID из запроса
+       id := getIDFromRequest(r)
+       
+       // Получаем сообщение через контроллер
+       message, err := h.messageController.GetMessage(r.Context(), id)
+       if err != nil {
+           handleError(w, err)
+           return
+       }
+       
+       // Используем метод Entity для подготовки ответа
+       response := message.ToResponse()
+       
+       // Отправляем ответ
+       sendJSON(w, response)
+   }
+   ```
+
+## Создание и обработка ошибок
+
+1. **Типы ошибок**:
+   - Ошибки домена (`entity/errors.go`)
+   - Ошибки сервисов (`service/errors.go`)
+   - Ошибки репозиториев (`repository/errors.go`)
+   - Общие ошибки (`errors/common.go`)
+2. **Обертывание ошибок**:
+   - Использование `fmt.Errorf("context: %w", err)` для добавления контекста
+   - Использование `errors.Is` и `errors.As` для проверки типов ошибок
+   - Сохранение стек-трейса с помощью библиотеки `github.com/pkg/errors`
+3. **Обработка ошибок в разных слоях**:
+   - Репозитории: возвращают специфичные ошибки хранилища
+   - Сервисы: преобразуют ошибки репозиториев в доменные ошибки
+   - Контроллеры: определяют, как обрабатывать ошибки (повтор, отклонение и т.д.)
+   - Транспортный слой: преобразует ошибки в соответствующие HTTP-коды, сообщения и т.д.
+4. **Пример обработки ошибок**:
+   ```go
+   // В репозитории
+   func (r *MessageRepository) GetMessage(id int64) (*entity.Message, error) {
+       message, err := r.db.Get(id)
+       if err != nil {
+           if errors.Is(err, badger.ErrKeyNotFound) {
+               return nil, repository.ErrMessageNotFound
+           }
+           return nil, fmt.Errorf("getting message from database: %w", err)
+       }
+       return message, nil
+   }
+   
+   // В сервисе
+   func (s *MessageService) GetMessage(ctx context.Context, id int64) (*entity.Message, error) {
+       message, err := s.repo.GetMessage(id)
+       if err != nil {
+           if errors.Is(err, repository.ErrMessageNotFound) {
+               return nil, service.ErrMessageNotFound
+           }
+           return nil, fmt.Errorf("getting message from repository: %w", err)
+       }
+       return message, nil
+   }
+   
+   // В HTTP-обработчике
+   func handleError(w http.ResponseWriter, err error) {
+       switch {
+       case errors.Is(err, service.ErrMessageNotFound):
+           http.Error(w, "Message not found", http.StatusNotFound)
+       case errors.Is(err, service.ErrValidation):
+           http.Error(w, err.Error(), http.StatusBadRequest)
+       default:
+           log.Printf("Unexpected error: %v", err)
+           http.Error(w, "Internal server error", http.StatusInternalServerError)
+       }
+   }
+   ```
 
 ## Соглашения по интеграции с go-tdlib и созданию структур данных
 
@@ -318,14 +424,6 @@ func (s Service) ServiceMethod() {
   s.someObj.SomeMethod()
 }
 ```
-
-Особенности и преимущества этого подхода:
-1. **Минималистичные интерфейсы** - интерфейс содержит только те методы, которые реально используются в данном контексте, даже если конкретная реализация имеет больше методов
-2. **Локальная область видимости** - интерфейс объявляется там, где он нужен, что снижает глобальное загрязнение пространства имён
-3. **Легкость тестирования** - позволяет легко создавать моки только для используемых методов
-4. **Соответствие принципу ISP** - клиенты не зависят от методов, которые они не используют
-5. **Обособленность модулей** - каждый модуль использует только необходимые ему абстракции
-6. **Согласованность с идиомой "Принимай интерфейсы, возвращай структуры"** - интерфейс определяется потребителем, а не производителем
 
 Локальные интерфейсы для собственных структур (например, для сервисов) не объявляются, т.к. они не используются по этой схеме.
 

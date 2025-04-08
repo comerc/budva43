@@ -2,8 +2,16 @@ package entity
 
 import "time"
 
-// Report представляет отчет о работе системы
-type Report struct {
+// Report интерфейс для всех типов отчетов
+type Report interface {
+	GetID() string
+	GetStartTime() time.Time
+	GetEndTime() time.Time
+	GetStatus() ReportStatus
+}
+
+// BaseReport базовая структура для всех типов отчетов
+type BaseReport struct {
 	// ID уникальный идентификатор отчета
 	ID string
 	// Period период времени, за который составляется отчет
@@ -16,28 +24,60 @@ type Report struct {
 	Template string
 	// For список идентификаторов чатов, для которых генерируется отчет
 	For []int64
-	// Statistics статистика отчета
-	Statistics ReportStatistics
 	// Status статус отчета
 	Status ReportStatus
 }
 
-// ReportPeriod представляет период отчета
-type ReportPeriod string
+// GetID возвращает идентификатор отчета
+func (r *BaseReport) GetID() string {
+	return r.ID
+}
 
-const (
-	// ReportPeriodDay отчет за день
-	ReportPeriodDay ReportPeriod = "day"
-	// ReportPeriodWeek отчет за неделю
-	ReportPeriodWeek ReportPeriod = "week"
-	// ReportPeriodMonth отчет за месяц
-	ReportPeriodMonth ReportPeriod = "month"
-	// ReportPeriodCustom отчет за произвольный период
-	ReportPeriodCustom ReportPeriod = "custom"
-)
+// GetStartTime возвращает время начала периода отчета
+func (r *BaseReport) GetStartTime() time.Time {
+	return r.StartTime
+}
 
-// ReportStatistics представляет статистику в отчете
-type ReportStatistics struct {
+// GetEndTime возвращает время окончания периода отчета
+func (r *BaseReport) GetEndTime() time.Time {
+	return r.EndTime
+}
+
+// GetStatus возвращает статус отчета
+func (r *BaseReport) GetStatus() ReportStatus {
+	return r.Status
+}
+
+// ActivityReport отчет об активности системы
+type ActivityReport struct {
+	BaseReport
+	// Statistics статистика активности
+	Statistics ActivityStatistics
+}
+
+// ActivityStatistics статистика активности системы
+type ActivityStatistics struct {
+	// TotalMessages общее количество сообщений, обработанных системой
+	TotalMessages int
+	// ActiveUsers количество активных пользователей
+	ActiveUsers int
+	// ActiveChats количество активных чатов
+	ActiveChats int
+	// UserActivity статистика активности пользователей
+	UserActivity map[int64]int // пользователь -> количество сообщений
+	// ChatActivity статистика активности чатов
+	ChatActivity map[int64]int // чат -> количество сообщений
+}
+
+// ForwardingReport отчет о пересылке сообщений
+type ForwardingReport struct {
+	BaseReport
+	// Statistics статистика пересылки
+	Statistics ForwardingStatistics
+}
+
+// ForwardingStatistics статистика пересылки сообщений
+type ForwardingStatistics struct {
 	// TotalMessages общее количество сообщений, обработанных системой
 	TotalMessages int
 	// ForwardedMessages количество пересланных сообщений
@@ -66,6 +106,55 @@ type DestinationStatistics struct {
 	BySource map[int64]int
 }
 
+// ErrorReport отчет об ошибках системы
+type ErrorReport struct {
+	BaseReport
+	// Errors список ошибок
+	Errors []SystemError
+}
+
+// SystemError представляет ошибку в системе
+type SystemError struct {
+	// Timestamp время возникновения ошибки
+	Timestamp time.Time
+	// Code код ошибки
+	Code string
+	// Message сообщение об ошибке
+	Message string
+	// Component компонент, в котором произошла ошибка
+	Component string
+	// Severity серьезность ошибки
+	Severity ErrorSeverity
+}
+
+// ErrorSeverity уровень серьезности ошибки
+type ErrorSeverity string
+
+const (
+	// ErrorSeverityInfo информационное сообщение
+	ErrorSeverityInfo ErrorSeverity = "info"
+	// ErrorSeverityWarning предупреждение
+	ErrorSeverityWarning ErrorSeverity = "warning"
+	// ErrorSeverityError ошибка
+	ErrorSeverityError ErrorSeverity = "error"
+	// ErrorSeverityCritical критическая ошибка
+	ErrorSeverityCritical ErrorSeverity = "critical"
+)
+
+// ReportPeriod представляет период отчета
+type ReportPeriod string
+
+const (
+	// ReportPeriodDay отчет за день
+	ReportPeriodDay ReportPeriod = "day"
+	// ReportPeriodWeek отчет за неделю
+	ReportPeriodWeek ReportPeriod = "week"
+	// ReportPeriodMonth отчет за месяц
+	ReportPeriodMonth ReportPeriod = "month"
+	// ReportPeriodCustom отчет за произвольный период
+	ReportPeriodCustom ReportPeriod = "custom"
+)
+
 // ReportStatus представляет статус отчета
 type ReportStatus string
 
@@ -80,75 +169,24 @@ const (
 	ReportStatusFailed ReportStatus = "failed"
 )
 
-// NewReport создает новый экземпляр отчета
-func NewReport(id string, period ReportPeriod, template string, for_ []int64) *Report {
-	now := time.Now()
-	startTime, endTime := calculateReportTimeRange(period, now)
-
-	return &Report{
-		ID:        id,
-		Period:    period,
-		Template:  template,
-		For:       for_,
-		StartTime: startTime,
-		EndTime:   endTime,
-		Status:    ReportStatusPending,
-		Statistics: ReportStatistics{
-			BySource:      make(map[int64]SourceStatistics),
-			ByDestination: make(map[int64]DestinationStatistics),
-		},
-	}
-}
-
 // SetCustomTimeRange устанавливает произвольный временной диапазон для отчета
-func (r *Report) SetCustomTimeRange(startTime, endTime time.Time) {
+func (r *BaseReport) SetCustomTimeRange(startTime, endTime time.Time) {
 	r.Period = ReportPeriodCustom
 	r.StartTime = startTime
 	r.EndTime = endTime
 }
 
 // MarkGenerated помечает отчет как сгенерированный
-func (r *Report) MarkGenerated() {
+func (r *BaseReport) MarkGenerated() {
 	r.Status = ReportStatusGenerated
 }
 
 // MarkSent помечает отчет как отправленный
-func (r *Report) MarkSent() {
+func (r *BaseReport) MarkSent() {
 	r.Status = ReportStatusSent
 }
 
 // MarkFailed помечает отчет как неудачный
-func (r *Report) MarkFailed() {
+func (r *BaseReport) MarkFailed() {
 	r.Status = ReportStatusFailed
-}
-
-// calculateReportTimeRange рассчитывает временной диапазон для отчета
-func calculateReportTimeRange(period ReportPeriod, now time.Time) (time.Time, time.Time) {
-	switch period {
-	case ReportPeriodDay:
-		// Отчет за день: от начала до конца текущего дня
-		startTime := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		endTime := startTime.Add(24 * time.Hour).Add(-time.Second)
-		return startTime, endTime
-	case ReportPeriodWeek:
-		// Отчет за неделю: от начала текущей недели до конца текущей недели
-		// Считаем, что неделя начинается с понедельника (1) и заканчивается воскресеньем (7)
-		daysFromMonday := int(now.Weekday()) - 1
-		if daysFromMonday < 0 {
-			daysFromMonday = 6 // Если сегодня воскресенье (0), то это 6 дней от понедельника
-		}
-		startTime := time.Date(now.Year(), now.Month(), now.Day()-daysFromMonday, 0, 0, 0, 0, now.Location())
-		endTime := startTime.Add(7 * 24 * time.Hour).Add(-time.Second)
-		return startTime, endTime
-	case ReportPeriodMonth:
-		// Отчет за месяц: от начала до конца текущего месяца
-		startTime := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-		endTime := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location()).Add(-time.Second)
-		return startTime, endTime
-	default:
-		// По умолчанию - за день
-		startTime := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		endTime := startTime.Add(24 * time.Hour).Add(-time.Second)
-		return startTime, endTime
-	}
 }

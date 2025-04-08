@@ -26,13 +26,6 @@ type LinkSettings struct {
 	For []int64
 }
 
-// NewSource создает новый экземпляр источника сообщений
-func NewSource(id int64) *Source {
-	return &Source{
-		ID: id,
-	}
-}
-
 // WithSign добавляет настройки подписи к источнику
 func (s *Source) WithSign(title string, for_ []int64) *Source {
 	s.Sign = &SignSettings{

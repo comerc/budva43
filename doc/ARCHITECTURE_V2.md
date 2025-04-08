@@ -6,13 +6,15 @@
 
 **Назначение**:
 - Представляют основные бизнес-сущности системы
-- Содержат структуру данных и минимальный набор методов
+- Содержат структуру данных и методы для работы с данными
+- Выполняют функцию переноса данных между слоями (ранее функционал DTO)
 
 **Правила**:
-- Entity должны быть максимально простыми структурами данных
-- Содержат только необходимые поля и конструкторы
-- Могут содержать простые геттеры/сеттеры, но без сложной бизнес-логики
-- Должны отражать модель данных, но не бизнес-процессы
+- Entity содержат структуры данных и методы для работы с ними
+- Содержат поля и методы для трансформации и валидации данных
+- Могут включать методы сериализации/десериализации
+- Используются для передачи данных между слоями
+- Для простых структур данных не используются функции-конструкторы
 - Примеры: `ForwardRule`
 
 **Пример**:
@@ -21,13 +23,21 @@
 package entity
 
 type ForwardRule struct {
-    name string
+    ID     string
+    From   int64
+    To     []int64
+    Status RuleStatus
+    // Другие поля
 }
 
-func NewForwardRule(name string) *ForwardRule {
-    return &ForwardRule{
-        name: name,
-    }
+// Метод для сериализации объекта
+func (r *ForwardRule) MarshalJSON() ([]byte, error) {
+    // Реализация
+}
+
+// Метод для десериализации
+func (r *ForwardRule) UnmarshalJSON(data []byte) error {
+    // Реализация
 }
 ```
 
@@ -39,10 +49,10 @@ func NewForwardRule(name string) *ForwardRule {
 - Координирует работу между репозиториями и сущностями
 
 **Правила**:
-- Вся бизнес-логика должна быть в сервисном слое, а не в сущностях
-- Сервисы принимают Entity как параметры и работают с ними
+- Вся бизнес-логика должна быть в сервисном слое, а не в сущностях (entity)
+- Сервисы принимают и возвращают entity
 - Сервисы могут использовать репозитории для доступа к данным
-- Сервисы могут преобразовывать сущности в DTO при необходимости
+- Применяются функции-конструкторы для внедрения зависимостей (через интерфейсы)
 - Примеры: `MessageService`, `UserService`, `ForwardService`
 
 **Пример**:
@@ -98,6 +108,7 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 **Правила**:
 - Не должны содержать бизнес-логику
 - Возвращают и принимают сущности (Entity)
+- Используют функции-конструкторы для внедрения зависимостей (через интерфейсы)
 
 **Пример**:
 ```go
@@ -112,7 +123,7 @@ type TelegramMessageRepository struct {
     client client
 }
 
-func TelegramMessageRepository(client client) *TelegramMessageRepository {
+func NewTelegramMessageRepository(client client) *TelegramMessageRepository {
     return &TelegramMessageRepository{
         client: client    
     }
@@ -123,89 +134,76 @@ func (r *TelegramMessageRepository) GetMessage(id int64) (*entity.Message, error
 }
 ```
 
-### 4. DTO (Data Transfer Objects)
+## Модифицированный подход к передаче данных
 
-**Назначение**:
-- Используются только для передачи данных между слоями или системами
-- Применяются в случаях, когда формат данных должен отличаться от Entity
-- Часто используются для API, UI или интеграций
+В связи с отказом от отдельного слоя DTO, функциональность передачи данных перешла к Entity:
 
-**Правила**:
-- DTO должны быть простыми структурами без бизнес-логики
-- Используются, только когда действительно нужно преобразование форматов
-- Преобразование между Entity и DTO должно происходить в сервисном слое
+1. **Бизнес-сущности как средство передачи данных**:
+   - Entity используются для передачи данных между слоями
+   - Entity могут содержать дополнительные поля и методы для преобразования форматов
+   - Entity содержат методы для сериализации/десериализации
+   - Entity обычно инициализируются с помощью литералов структур или фабричных методов в сервисах (но не с помощью функций-конструкторов)
 
-## Когда использовать DTO
+2. **Когда можно добавлять методы к Entity**:
+   - Методы для сериализации/десериализации (MarshalJSON, UnmarshalJSON)
+   - Методы для преобразования в форматы для API (ToResponse)
+   - Методы для валидации данных (Validate)
+   - Вспомогательные методы для работы с данными (функции-получатели)
 
-DTO следует использовать в следующих случаях:
-
-1. **Публичное API**:
-   - Когда требуется предоставить API, где формат данных отличается от внутренних сущностей
-   - Для скрытия внутренней структуры данных от внешних потребителей
-
-2. **Агрегирование данных**:
-   - Когда необходимо объединить данные из нескольких сущностей в один объект
-   - Для представления сложного вида, собранного из разных источников
-
-3. **Частичное представление**:
-   - Когда требуется вернуть только часть полей сущности
-   - Для оптимизации передачи данных
-
-4. **Преобразование форматов**:
-   - Когда внешняя система требует данные в формате, отличном от внутреннего представления
-   - Для адаптации данных под требования интеграции
-
-**Пример DTO для API**:
+**Пример Entity с функциональностью передачи данных**:
 ```go
-// model/message/model.go
-package message
+// entity/message.go
+package entity
 
-type MessageResponse struct {
-    ID         int64     `json:"id"`
-    Text       string    `json:"text"`
-    Date       time.Time `json:"date"`
-    SenderName string    `json:"sender_name"`
-    ChatName   string    `json:"chat_name"`
-    MediaType  string    `json:"media_type,omitempty"`
+import (
+    "encoding/json"
+    "time"
+)
+
+type Message struct {
+    ID         int64
+    Text       string
+    Date       time.Time
+    SenderID   int64
+    ChatID     int64
+    MediaType  string
+    MediaURL   string
 }
 
-// В сервисе
-func (s *MessageService) GetMessageForAPI(messageID int64) (*model.MessageResponse, error) {
-    message, err := s.repo.GetMessage(messageID)
-    if err != nil {
-        return nil, err
+// Метод для сериализации (ранее функционал DTO)
+func (m *Message) MarshalJSON() ([]byte, error) {
+    return json.Marshal(m)
+}
+
+// Метод для десериализации (ранее функционал DTO)
+func (_ *Message) UnmarshalJSON(data []byte) (error) {
+    var message Message
+    err := json.Unmarshal(data, &message)
+    return &message, err
+}
+
+// Метод для подготовки ответа API (ранее функционал DTO)
+func (m *Message) ToResponse() map[string]interface{} {
+    return map[string]interface{}{
+        "id":         m.ID,
+        "text":       m.Text,
+        "date":       m.Date.Format(time.RFC3339),
+        "sender_id":  m.SenderID,
+        "chat_id":    m.ChatID,
+        "media_type": m.MediaType,
+        "media_url":  m.MediaURL,
     }
-    
-    // Получаем дополнительные данные
-    sender, err := s.userRepo.GetUser(message.SenderUserID)
-    if err != nil {
-        return nil, err
-    }
-    
-    chat, err := s.chatRepo.GetChat(message.ChatID)
-    if err != nil {
-        return nil, err
-    }
-    
-    // Конвертируем в DTO
-    return &model.MessageResponse{
-        ID:         message.ID,
-        Text:       s.GetText(message),
-        Date:       message.ParsedDate,
-        SenderName: sender.GetFullName(),
-        ChatName:   chat.Title,
-        MediaType:  s.GetContentType(message),
-    }, nil
 }
 ```
 
 ## Общие принципы
 
-1. **Избегайте дублирования** - не создавайте DTO, если они почти идентичны Entity
+1. **Избегайте избыточных преобразований** - используйте прямую передачу Entity между слоями
 2. **Разделяйте ответственность** - бизнес-логика только в сервисном слое
 3. **Используйте интерфейсы** для абстрагирования внешних зависимостей
 4. **Следуйте принципу DRY** - не дублируйте код и логику (без фанатизма)
-5. **Тестируемость** - организуйте код так, чтобы его можно было легко тестировать
+5. **Минимизируйте избыточные абстракции** - не создавайте конструкторы для простых структур данных
+6. **Тестируемость** - организуйте код так, чтобы его можно было легко тестировать
 
 Придерживаясь этих соглашений, мы сможем создать чистую, поддерживаемую и тестируемую архитектуру, которая будет удобна для дальнейшего развития проекта.
 
