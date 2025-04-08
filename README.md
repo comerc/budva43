@@ -31,7 +31,7 @@ docker-compose build
 - [ ] Redis
 - [x] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
 - [x] SOLID
-- [x] DRY
+- [x] DRY (без фанатизма) 
 - [x] KISS
 - [ ] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
 - [ ] [design-patterns](https://refactoring.guru/ru/design-patterns/go)

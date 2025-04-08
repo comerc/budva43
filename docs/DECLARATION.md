@@ -37,3 +37,24 @@
     - Паритет разработки/работы: максимальное сходство окружения разработки и продакшена
     - Журналирование: обработка журналов как потоков событий
     - Задачи администрирования: выполнение задач администрирования как одноразовых процессов
+
+3. **Go Proverbs**
+    - Не обменивайтесь информацией, разделяя память; вместо этого, разделяйте память, обмениваясь информацией. (Don't communicate by sharing memory, share memory by communicating.)
+    - Конкурентность — это не параллелизм. (Concurrency is not parallelism.)
+    - Каналы оркестрируют; мьютексы сериализуют. (Channels orchestrate; mutexes serialize.)
+    - Чем больше интерфейс, тем слабее абстракция. (The bigger the interface, the weaker the abstraction.)
+    - Сделайте нулевое значение полезным. (Make the zero value useful.)
+    - interface{} ничего не говорит. (interface{} says nothing.)
+    - Стиль gofmt — ничей любимый, но gofmt — любимый всех. (Gofmt's style is no one's favorite, yet gofmt is everyone's favorite.)
+    - Немного копирования лучше, чем немного зависимости. (A little copying is better than a little dependency.)
+    - Syscall всегда должен быть защищен тегами сборки. (Syscall must always be guarded with build tags.)
+    - Cgo всегда должен быть защищен тегами сборки. (Cgo must always be guarded with build tags.)
+    - Cgo — это не Go. (Cgo is not Go.)
+    - С пакетом unsafe нет гарантий. (With the unsafe package there are no guarantees.)
+    - Ясное лучше, чем умное. (Clear is better than clever.)
+    - Рефлексия никогда не бывает ясной. (Reflection is never clear.)
+    - Ошибки — это значения. (Errors are values.)
+    - Не просто проверяйте ошибки, обрабатывайте их грациозно. (Don't just check errors, handle them gracefully.)
+    - Проектируйте архитектуру, называйте компоненты, документируйте детали. (Design the architecture, name the components, document the details.)
+    - Документация — для пользователей. (Documentation is for users.)
+    - Не паникуйте. (Don't panic.)
