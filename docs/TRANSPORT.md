@@ -42,51 +42,66 @@ budva43/
 package message
 
 import (
-    "github.com/example/budva43/service"
-    "github.com/example/budva43/model"
+    filterModel "github.com/example/budva43/model/filter"
+    messageModel "github.com/example/budva43/model/message"
 )
 
-type MessageController struct {
-    messageService service.MessageService
-    forwardService service.ForwardService
+type messageService interface {
+    // Применяемые в этом модуле методы...
 }
 
-func NewMessageController(msgSvc service.MessageService, fwdSvc service.ForwardService) *MessageController {
+type forwardService interface {
+    // Применяемые в этом модуле методы...
+}
+
+type MessageController struct {
+    messageService messageService
+    forwardService forwardService
+}
+
+func NewMessageController(messageService messageService, forwardService forwardService) *MessageController {
     return &MessageController{
-        messageService: msgSvc,
-        forwardService: fwdSvc,
+        messageService: messageService,
+        forwardService: forwardService,
     }
 }
 
 // GetMessages возвращает список сообщений по фильтру
-func (c *MessageController) GetMessages(filter model.MessageFilter) ([]model.Message, error) {
+func (c *MessageController) GetMessages(filter *filterModel.Filter) ([]*messageModel.Message, error) {
     return c.messageService.GetMessages(filter)
 }
 
 // SendMessage отправляет новое сообщение
-func (c *MessageController) SendMessage(msg model.Message) (model.Message, error) {
-    return c.messageService.SendMessage(msg)
+func (c *MessageController) SendMessage(message *messageModel.Message) (*messageModel.Message, error) {
+    return c.messageService.SendMessage(message)
 }
 
 // transport/http/transport.go
-package transport
+package http
 
 import (
-    "github.com/example/budva43/controller"
-    "github.com/example/budva43/model"
+    model "github.com/example/budva43/model/message"
     "net/http"
     "encoding/json"
 )
 
-type HTTPRouter struct {
-    messageController *controller.MessageController
-    forwardController *controller.ForwardController
+type messageController interface {
+    // Применяемые в этом модуле методы...
 }
 
-func NewHTTPRouter(msgCtrl *controller.MessageController, fwdCtrl *controller.ForwardController) *HTTPRouter {
+type forwardController interface {
+    // Применяемые в этом модуле методы...    
+}
+
+type HTTPRouter struct {
+    messageController messageController
+    forwardController forwardController
+}
+
+func NewHTTPRouter(messageController messageController, forwardController forwardController) *HTTPRouter {
     return &HTTPRouter{
-        messageController: msgCtrl,
-        forwardController: fwdCtrl,
+        messageController: messageController,
+        forwardController: forwardController,
     }
 }
 

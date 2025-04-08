@@ -19,7 +19,7 @@
 **Пример**:
 ```go
 // entity/message/entity.go
-package entity
+package message
 
 type Message struct {
     // Встраиваем структуру из TDLib
@@ -58,13 +58,17 @@ func NewMessage(tdlibMessage *client.Message) *Message {
 **Пример**:
 ```go
 // service/message/service.go
-package service
+package message
 
-type MessageService struct {
-    repo repository.MessageRepository
+type messageRepository interface {
+  // Применяемые в этом модуле методы...    
 }
 
-func NewMessageService(repo repository.MessageRepository) *MessageService {
+type MessageService struct {
+    repo messageRepository
+}
+
+func NewMessageService(repo messageRepository) *MessageService {
     return &MessageService{
         repo: repo,
     }
@@ -102,23 +106,11 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 - Работают с Entity
 
 **Правила**:
-- Должны быть определены через интерфейсы
 - Не должны содержать бизнес-логику
 - Возвращают и принимают сущности (Entity)
 
 **Пример**:
 ```go
-// repository/message/repository.go
-package repository
-
-import "entity"
-
-type MessageRepository interface {
-    GetMessage(id int64) (*entity.Message, error)
-    SaveMessage(message *entity.Message) error
-    DeleteMessage(id int64) error
-}
-
 // repository/telegram/message.go
 package telegram
 
@@ -166,7 +158,7 @@ DTO следует использовать в следующих случаях
 **Пример DTO для API**:
 ```go
 // model/message/model.go
-package model
+package message
 
 type MessageResponse struct {
     ID         int64     `json:"id"`
