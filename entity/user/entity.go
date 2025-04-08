@@ -1,4 +1,4 @@
-package entity
+package user
 
 import (
 	"github.com/zelenin/go-tdlib/client"

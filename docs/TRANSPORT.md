@@ -9,14 +9,14 @@
 ```
 budva43/
 ├── controller/           # Контроллеры по бизнес-сущностям
-│   ├── message.go        # Контроллер для работы с сообщениями
-│   ├── forward.go        # Контроллер для пересылки
-│   └── report.go         # Контроллер для отчетов
+│   ├── message/          # Контроллер для работы с сообщениями
+│   ├── forward/          # Контроллер для пересылки
+│   └── report/           # Контроллер для отчетов
 │
 ├── transport/            # Транспортные адаптеры по протоколам
-│   ├── http.go           # HTTP-роутеры и middleware
-│   ├── telegram.go       # Обработка Telegram Bot API
-│   └── cli.go            # Интерфейс командной строки
+│   ├── http/             # HTTP-роутеры и middleware
+│   ├── telegram/         # Обработка Telegram Bot API
+│   └── cli/              # Интерфейс командной строки
 ```
 
 ## Взаимодействие между слоями
@@ -38,8 +38,8 @@ budva43/
 ## Пример реализации
 
 ```go
-// controller/message.go
-package controller
+// controller/message/controller.go
+package message
 
 import (
     "github.com/example/budva43/service"
@@ -68,7 +68,7 @@ func (c *MessageController) SendMessage(msg model.Message) (model.Message, error
     return c.messageService.SendMessage(msg)
 }
 
-// transport/http.go
+// transport/http/transport.go
 package transport
 
 import (

@@ -1,4 +1,4 @@
-package entity
+package chat
 
 import (
 	"github.com/zelenin/go-tdlib/client"

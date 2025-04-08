@@ -1,4 +1,4 @@
-package entity
+package forward_rule
 
 import "regexp"
 
