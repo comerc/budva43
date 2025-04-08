@@ -1,22 +1,23 @@
-package message_processing
+package message
 
 import (
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/entity"
 )
 
-// MessageProcessingService предоставляет методы для обработки и преобразования сообщений
-type MessageProcessingService struct {
+// MessageService предоставляет методы для обработки и преобразования сообщений
+type MessageService struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewMessageProcessingService создает новый экземпляр сервиса для работы с сообщениями
-func NewMessageProcessingService() *MessageProcessingService {
-	return &MessageProcessingService{}
+// NewMessageService создает новый экземпляр сервиса для работы с сообщениями
+func NewMessageService() *MessageService {
+	return &MessageService{}
 }
 
 // GetText возвращает текст сообщения, если это текстовое сообщение
-func (s *MessageProcessingService) GetText(message *entity.Message) string {
+func (s *MessageService) GetText(message *entity.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -29,7 +30,7 @@ func (s *MessageProcessingService) GetText(message *entity.Message) string {
 }
 
 // GetCaption возвращает подпись медиа сообщения
-func (s *MessageProcessingService) GetCaption(message *entity.Message) string {
+func (s *MessageService) GetCaption(message *entity.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -53,7 +54,7 @@ func (s *MessageProcessingService) GetCaption(message *entity.Message) string {
 }
 
 // IsTextMessage проверяет, является ли сообщение текстовым
-func (s *MessageProcessingService) IsTextMessage(message *entity.Message) bool {
+func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -63,7 +64,7 @@ func (s *MessageProcessingService) IsTextMessage(message *entity.Message) bool {
 }
 
 // IsMediaMessage проверяет, содержит ли сообщение медиа-контент
-func (s *MessageProcessingService) IsMediaMessage(message *entity.Message) bool {
+func (s *MessageService) IsMediaMessage(message *entity.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -78,7 +79,7 @@ func (s *MessageProcessingService) IsMediaMessage(message *entity.Message) bool 
 }
 
 // GetContentType возвращает тип содержимого сообщения
-func (s *MessageProcessingService) GetContentType(message *entity.Message) string {
+func (s *MessageService) GetContentType(message *entity.Message) string {
 	if message == nil || message.Content == nil {
 		return "unknown"
 	}
@@ -104,7 +105,7 @@ func (s *MessageProcessingService) GetContentType(message *entity.Message) strin
 }
 
 // FormatMessageContent преобразует формат сообщения (например, из markdown в HTML)
-func (s *MessageProcessingService) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
+func (s *MessageService) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
 	// Здесь будет реализация преобразования между форматами
 	// Например, конвертация Markdown в HTML или обратно
 
@@ -113,7 +114,7 @@ func (s *MessageProcessingService) FormatMessageContent(text string, fromFormat,
 }
 
 // ExtractMessageMetadata извлекает метаданные из сообщения
-func (s *MessageProcessingService) ExtractMessageMetadata(message *entity.Message) map[string]interface{} {
+func (s *MessageService) ExtractMessageMetadata(message *entity.Message) map[string]interface{} {
 	metadata := make(map[string]interface{})
 
 	if message == nil {
