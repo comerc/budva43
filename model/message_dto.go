@@ -1,10 +1,6 @@
 package model
 
-import (
-	"time"
-
-	"github.com/comerc/budva43/entity"
-)
+import "github.com/zelenin/go-tdlib/client"
 
 // MessageDTO представляет собой объект передачи данных сообщения для API
 // Используется когда формат данных должен отличаться от внутренней сущности Message
@@ -49,23 +45,16 @@ type LinkPreviewDTO struct {
 }
 
 // ConvertToMessageDTO преобразует внутреннюю сущность Message в DTO для API
-func ConvertToMessageDTO(message *entity.Message) *MessageDTO {
-	if message == nil || message.Message == nil {
-		return nil
-	}
-
-	// Форматирование даты в удобный для API формат
-	dateStr := message.ParsedDate.Format(time.RFC3339)
-
-	dto := &MessageDTO{
-		ID:          message.Id,     // Используем правильное имя поля Id
-		ChatID:      message.ChatId, // Используем правильное имя поля ChatId
-		Text:        message.GetText(),
-		Caption:     message.GetCaption(),
-		Date:        dateStr,
-		ContentType: message.GetContentType(),
-		HasMedia:    message.IsMediaMessage(),
-	}
+func ConvertToMessageDTO(message *client.Message) *MessageDTO {
+	dto := &MessageDTO{}
+	// 	ID:          message.Id,     // Используем правильное имя поля Id
+	// 	ChatID:      message.ChatId, // Используем правильное имя поля ChatId
+	// 	Text:        message.GetText(),
+	// 	Caption:     message.GetCaption(),
+	// 	Date:        dateStr,
+	// 	ContentType: message.GetContentType(),
+	// 	HasMedia:    message.IsMediaMessage(),
+	// }
 
 	// В реальном приложении здесь был бы код для получения идентификатора отправителя
 	// Поскольку мы не знаем точную структуру message.Message, это условный код
@@ -81,7 +70,7 @@ func ConvertToMessageDTO(message *entity.Message) *MessageDTO {
 }
 
 // ConvertToMessageBatchDTO преобразует массив сущностей Message в массив DTO
-func ConvertToMessageBatchDTO(messages []*entity.Message) []*MessageDTO {
+func ConvertToMessageBatchDTO(messages []*client.Message) []*MessageDTO {
 	result := make([]*MessageDTO, 0, len(messages))
 	for _, msg := range messages {
 		if dto := ConvertToMessageDTO(msg); dto != nil {
@@ -94,17 +83,17 @@ func ConvertToMessageBatchDTO(messages []*entity.Message) []*MessageDTO {
 // ConvertFromMessageDTO преобразует DTO обратно в сущность Message
 // Используется, например, когда мы получаем данные из API и нужно
 // их преобразовать во внутреннюю модель данных
-func ConvertFromMessageDTO(dto *MessageDTO) (*entity.Message, error) {
+func ConvertFromMessageDTO(dto *MessageDTO) (*client.Message, error) {
 	if dto == nil {
 		return nil, nil
 	}
 
 	// Здесь было бы преобразование из DTO в сущность
-	// Но поскольку полная реализация entity.Message нам неизвестна,
+	// Но поскольку полная реализация client.Message нам неизвестна,
 	// возвращаем заглушку
 
 	// В реальном приложении здесь был бы код для создания
-	// экземпляра entity.Message и заполнения его полей из dto
+	// экземпляра client.Message и заполнения его полей из dto
 
-	return &entity.Message{}, nil
+	return &client.Message{}, nil
 }

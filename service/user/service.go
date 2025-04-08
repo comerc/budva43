@@ -3,7 +3,6 @@ package user
 import (
 	"time"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
 )
 
@@ -18,7 +17,7 @@ func NewUserService() *UserService {
 }
 
 // GetFullName возвращает полное имя пользователя
-func (s *UserService) GetFullName(user *entity.User) string {
+func (s *UserService) GetFullName(user *client.User) string {
 	if user == nil {
 		return ""
 	}
@@ -31,7 +30,7 @@ func (s *UserService) GetFullName(user *entity.User) string {
 }
 
 // IsBot проверяет, является ли пользователь ботом
-func (s *UserService) IsBot(user *entity.User) bool {
+func (s *UserService) IsBot(user *client.User) bool {
 	if user == nil || user.Type == nil {
 		return false
 	}
@@ -41,7 +40,7 @@ func (s *UserService) IsBot(user *entity.User) bool {
 }
 
 // GetStatusText возвращает текстовое представление статуса пользователя
-func (s *UserService) GetStatusText(user *entity.User) string {
+func (s *UserService) GetStatusText(user *client.User) string {
 	if user == nil || user.Status == nil {
 		return "unknown"
 	}

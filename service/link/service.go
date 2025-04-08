@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/comerc/budva43/entity"
+	"github.com/zelenin/go-tdlib/client"
 )
 
 //go:generate mockery --name=linkProcessor --exported
@@ -180,7 +180,7 @@ func (s *LinkService) RemoveExternalLinks(text string, allowedDomains []string) 
 }
 
 // GetMessageLink получает ссылку на сообщение
-func (s *LinkService) GetMessageLink(message *entity.Message) (string, error) {
+func (s *LinkService) GetMessageLink(message *client.Message) (string, error) {
 	if message == nil {
 		return "", errors.New("empty message")
 	}

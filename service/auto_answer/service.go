@@ -5,13 +5,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/comerc/budva43/entity"
+	"github.com/zelenin/go-tdlib/client"
 )
 
 //go:generate mockery --name=messageProcessor --exported
 type messageProcessor interface {
-	GetText(message *entity.Message) string
-	GetCaption(message *entity.Message) string
+	GetText(message *client.Message) string
+	GetCaption(message *client.Message) string
 }
 
 // MessageMatcher интерфейс для сопоставления сообщений
@@ -163,7 +163,7 @@ func (s *AutoAnswerService) DisableRule(name string) bool {
 }
 
 // ProcessMessage обрабатывает сообщение и возвращает автоответ, если есть подходящее правило
-func (s *AutoAnswerService) ProcessMessage(message *entity.Message, isPrivate bool) (string, bool) {
+func (s *AutoAnswerService) ProcessMessage(message *client.Message, isPrivate bool) (string, bool) {
 	if message == nil {
 		return "", false
 	}

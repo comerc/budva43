@@ -6,7 +6,6 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
 )
 
@@ -36,7 +35,7 @@ func NewMediaService(processor mediaProcessor, storage mediaStorage) *MediaServi
 }
 
 // GetMediaContent извлекает содержимое медиа из сообщения
-func (s *MediaService) GetMediaContent(message *entity.Message) ([]byte, string, error) {
+func (s *MediaService) GetMediaContent(message *client.Message) ([]byte, string, error) {
 	if message == nil || message.Content == nil {
 		return nil, "", errors.New("empty message")
 	}
@@ -161,7 +160,7 @@ func (s *MediaService) GetMediaType(content []byte) string {
 }
 
 // CopyMedia копирует медиа-файл из одного сообщения в другое
-func (s *MediaService) CopyMedia(sourceMessage, targetMessage *entity.Message) error {
+func (s *MediaService) CopyMedia(sourceMessage, targetMessage *client.Message) error {
 	// Заглушка для функции копирования медиа
 	// В реальной реализации это может быть сложная логика
 	// по копированию медиа-файлов между сообщениями
@@ -169,7 +168,7 @@ func (s *MediaService) CopyMedia(sourceMessage, targetMessage *entity.Message) e
 }
 
 // GetMediaFileSize возвращает размер медиа-файла
-func (s *MediaService) GetMediaFileSize(message *entity.Message) (int64, error) {
+func (s *MediaService) GetMediaFileSize(message *client.Message) (int64, error) {
 	if message == nil || message.Content == nil {
 		return 0, errors.New("empty message")
 	}
@@ -207,7 +206,7 @@ func (s *MediaService) GetMediaFileSize(message *entity.Message) (int64, error) 
 }
 
 // StreamMedia потоковая передача медиа-файла
-func (s *MediaService) StreamMedia(message *entity.Message, writer io.Writer) error {
+func (s *MediaService) StreamMedia(message *client.Message, writer io.Writer) error {
 	content, _, err := s.GetMediaContent(message)
 	if err != nil {
 		return err
