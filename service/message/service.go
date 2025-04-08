@@ -2,8 +2,6 @@ package message
 
 import (
 	"github.com/zelenin/go-tdlib/client"
-
-	"github.com/comerc/budva43/entity"
 )
 
 // MessageService предоставляет методы для обработки и преобразования сообщений
@@ -17,7 +15,7 @@ func NewMessageService() *MessageService {
 }
 
 // GetText возвращает текст сообщения, если это текстовое сообщение
-func (s *MessageService) GetText(message *entity.Message) string {
+func (s *MessageService) GetText(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -30,7 +28,7 @@ func (s *MessageService) GetText(message *entity.Message) string {
 }
 
 // GetCaption возвращает подпись медиа сообщения
-func (s *MessageService) GetCaption(message *entity.Message) string {
+func (s *MessageService) GetCaption(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -54,7 +52,7 @@ func (s *MessageService) GetCaption(message *entity.Message) string {
 }
 
 // IsTextMessage проверяет, является ли сообщение текстовым
-func (s *MessageService) IsTextMessage(message *entity.Message) bool {
+func (s *MessageService) IsTextMessage(message *client.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -64,7 +62,7 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 }
 
 // IsMediaMessage проверяет, содержит ли сообщение медиа-контент
-func (s *MessageService) IsMediaMessage(message *entity.Message) bool {
+func (s *MessageService) IsMediaMessage(message *client.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -79,7 +77,7 @@ func (s *MessageService) IsMediaMessage(message *entity.Message) bool {
 }
 
 // GetContentType возвращает тип содержимого сообщения
-func (s *MessageService) GetContentType(message *entity.Message) string {
+func (s *MessageService) GetContentType(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return "unknown"
 	}
@@ -114,7 +112,7 @@ func (s *MessageService) FormatMessageContent(text string, fromFormat, toFormat 
 }
 
 // ExtractMessageMetadata извлекает метаданные из сообщения
-func (s *MessageService) ExtractMessageMetadata(message *entity.Message) map[string]interface{} {
+func (s *MessageService) ExtractMessageMetadata(message *client.Message) map[string]interface{} {
 	metadata := make(map[string]interface{})
 
 	if message == nil {
