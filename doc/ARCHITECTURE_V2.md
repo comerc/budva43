@@ -7,36 +7,26 @@
 **Назначение**:
 - Представляют основные бизнес-сущности системы
 - Содержат структуру данных и минимальный набор методов
-- Встраивают структуры из внешних библиотек (go-tdlib)
 
 **Правила**:
 - Entity должны быть максимально простыми структурами данных
 - Содержат только необходимые поля и конструкторы
 - Могут содержать простые геттеры/сеттеры, но без сложной бизнес-логики
 - Должны отражать модель данных, но не бизнес-процессы
-- Примеры: `Message`, `Chat`, `User`, `ForwardRule`
+- Примеры: `ForwardRule`
 
 **Пример**:
 ```go
-// entity/message/entity.go
-package message
+// entity/entity.go
+package entity
 
-type Message struct {
-    // Встраиваем структуру из TDLib
-    *client.Message
-    
-    // Дополнительные поля
-    ParsedDate time.Time
+type ForwardRule struct {
+    name string
 }
 
-func NewMessage(tdlibMessage *client.Message) *Message {
-    if tdlibMessage == nil {
-        return nil
-    }
-    
-    return &Message{
-        Message:    tdlibMessage,
-        ParsedDate: time.Unix(int64(tdlibMessage.Date), 0),
+func NewForwardRule(name string) *ForwardRule {
+    return &ForwardRule{
+        name: name,
     }
 }
 ```
@@ -114,12 +104,22 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 // repository/telegram/message.go
 package telegram
 
-type TelegramMessageRepository struct {
-    client *client.Client
+type client interface {
+    // Применяемые в этом модуле методы...
 }
 
+type TelegramMessageRepository struct {
+    client client
+}
+
+func TelegramMessageRepository(client client) *TelegramMessageRepository {
+    return &TelegramMessageRepository{
+        client: client    
+    }
+} 
+
 func (r *TelegramMessageRepository) GetMessage(id int64) (*entity.Message, error) {
-    // Реализация
+    // Реализация...
 }
 ```
 
