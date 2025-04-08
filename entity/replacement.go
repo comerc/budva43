@@ -1,4 +1,4 @@
-package replacement
+package entity
 
 // ReplaceMyselfLinkSettings представляет настройки для замены ссылок на текущего бота
 type ReplaceMyselfLinkSettings struct {

@@ -1,4 +1,4 @@
-package source
+package entity
 
 // Source представляет настройки источника сообщений
 type Source struct {
