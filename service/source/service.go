@@ -1,4 +1,4 @@
-package service
+package source
 
 import (
 	"github.com/comerc/budva43/entity"

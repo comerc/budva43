@@ -1,4 +1,4 @@
-package service
+package forward_rule
 
 import (
 	"regexp"

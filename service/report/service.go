@@ -1,4 +1,4 @@
-package service
+package report
 
 import (
 	"github.com/comerc/budva43/entity"

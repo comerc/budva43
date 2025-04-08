@@ -18,7 +18,7 @@
 
 **Пример**:
 ```go
-// entity/message.go
+// entity/message/entity.go
 package entity
 
 type Message struct {
@@ -57,7 +57,7 @@ func NewMessage(tdlibMessage *client.Message) *Message {
 
 **Пример**:
 ```go
-// service/message.go
+// service/message/service.go
 package service
 
 type MessageService struct {
@@ -108,7 +108,7 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 
 **Пример**:
 ```go
-// repository/message.go
+// repository/message/repository.go
 package repository
 
 import "entity"
@@ -165,7 +165,7 @@ DTO следует использовать в следующих случаях
 
 **Пример DTO для API**:
 ```go
-// model/message.go
+// model/message/model.go
 package model
 
 type MessageResponse struct {
@@ -212,7 +212,7 @@ func (s *MessageService) GetMessageForAPI(messageID int64) (*model.MessageRespon
 1. **Избегайте дублирования** - не создавайте DTO, если они почти идентичны Entity
 2. **Разделяйте ответственность** - бизнес-логика только в сервисном слое
 3. **Используйте интерфейсы** для абстрагирования внешних зависимостей
-4. **Следуйте принципу DRY** - не дублируйте код и логику
+4. **Следуйте принципу DRY** - не дублируйте код и логику (без фанатизма)
 5. **Тестируемость** - организуйте код так, чтобы его можно было легко тестировать
 
 Придерживаясь этих соглашений, мы сможем создать чистую, поддерживаемую и тестируемую архитектуру, которая будет удобна для дальнейшего развития проекта.

@@ -1,4 +1,4 @@
-package service
+package chat
 
 import (
 	"github.com/comerc/budva43/entity"
