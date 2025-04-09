@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	config "github.com/comerc/budva43/config"
 	forwardController "github.com/comerc/budva43/controller/forward"
@@ -121,7 +120,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err != nil {
 		return fmt.Errorf("ошибка загрузки конфигурации: %w", err)
 	}
-	go config.Watch()
+	// go config.Watch() // TODO: перезагрузка приложения при изменении конфигурации
 	slog.Info("Конфигурация загружена успешно")
 
 	// 2. Инициализация репозиториев
@@ -194,9 +193,9 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		httpTransport.Config{
 			Host:            cfg.Web.Host,
 			Port:            cfg.Web.Port,
-			ReadTimeout:     time.Duration(cfg.Web.ReadTimeout) * time.Second,
-			WriteTimeout:    time.Duration(cfg.Web.WriteTimeout) * time.Second,
-			ShutdownTimeout: time.Duration(cfg.Web.ShutdownTimeout) * time.Second,
+			ReadTimeout:     cfg.Web.ReadTimeout,
+			WriteTimeout:    cfg.Web.WriteTimeout,
+			ShutdownTimeout: cfg.Web.ShutdownTimeout,
 		},
 	)
 
