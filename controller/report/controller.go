@@ -26,8 +26,8 @@ type Controller struct {
 	storageRepository storageRepository
 }
 
-// NewController создает новый экземпляр контроллера отчетов
-func NewController(
+// New создает новый экземпляр контроллера отчетов
+func New(
 	reportService reportService,
 	storageRepository storageRepository,
 ) *Controller {

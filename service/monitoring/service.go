@@ -37,8 +37,8 @@ type Metric struct {
 	LastUpdate  time.Time // время последнего обновления
 }
 
-// MonitoringService предоставляет методы для мониторинга и сбора метрик
-type MonitoringService struct {
+// Service предоставляет методы для мониторинга и сбора метрик
+type Service struct {
 	metrics        map[string]*Metric
 	metricsHistory map[string][]MetricValue
 	historyLimit   int
@@ -46,13 +46,13 @@ type MonitoringService struct {
 	mutex          sync.RWMutex
 }
 
-// NewMonitoringService создает новый экземпляр сервиса мониторинга
-func NewMonitoringService(historyLimit int) *MonitoringService {
+// New создает новый экземпляр сервиса мониторинга
+func New(historyLimit int) *Service {
 	if historyLimit <= 0 {
 		historyLimit = 1000 // значение по умолчанию
 	}
 
-	return &MonitoringService{
+	return &Service{
 		metrics:        make(map[string]*Metric),
 		metricsHistory: make(map[string][]MetricValue),
 		historyLimit:   historyLimit,
@@ -61,7 +61,7 @@ func NewMonitoringService(historyLimit int) *MonitoringService {
 }
 
 // RegisterMetric регистрирует новую метрику
-func (s *MonitoringService) RegisterMetric(name string, metricType MetricType, description string) error {
+func (s *Service) RegisterMetric(name string, metricType MetricType, description string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -97,7 +97,7 @@ func (s *MonitoringService) RegisterMetric(name string, metricType MetricType, d
 }
 
 // IncrementCounter увеличивает счетчик на указанное значение
-func (s *MonitoringService) IncrementCounter(name string, value float64) error {
+func (s *Service) IncrementCounter(name string, value float64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -127,7 +127,7 @@ func (s *MonitoringService) IncrementCounter(name string, value float64) error {
 }
 
 // SetGauge устанавливает значение для метрики типа gauge
-func (s *MonitoringService) SetGauge(name string, value float64) error {
+func (s *Service) SetGauge(name string, value float64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -157,7 +157,7 @@ func (s *MonitoringService) SetGauge(name string, value float64) error {
 }
 
 // ObserveHistogram добавляет наблюдение в гистограмму
-func (s *MonitoringService) ObserveHistogram(name string, value float64) error {
+func (s *Service) ObserveHistogram(name string, value float64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -203,7 +203,7 @@ func (s *MonitoringService) ObserveHistogram(name string, value float64) error {
 }
 
 // GetMetric возвращает текущее состояние метрики
-func (s *MonitoringService) GetMetric(name string) (*Metric, error) {
+func (s *Service) GetMetric(name string) (*Metric, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -221,7 +221,7 @@ func (s *MonitoringService) GetMetric(name string) (*Metric, error) {
 }
 
 // GetAllMetrics возвращает все метрики
-func (s *MonitoringService) GetAllMetrics() map[string]*Metric {
+func (s *Service) GetAllMetrics() map[string]*Metric {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -240,7 +240,7 @@ func (s *MonitoringService) GetAllMetrics() map[string]*Metric {
 }
 
 // GetMetricHistory возвращает историю значений метрики
-func (s *MonitoringService) GetMetricHistory(name string, limit int) ([]MetricValue, error) {
+func (s *Service) GetMetricHistory(name string, limit int) ([]MetricValue, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -263,7 +263,7 @@ func (s *MonitoringService) GetMetricHistory(name string, limit int) ([]MetricVa
 }
 
 // ResetMetric сбрасывает значение метрики к начальному состоянию
-func (s *MonitoringService) ResetMetric(name string) error {
+func (s *Service) ResetMetric(name string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -294,7 +294,7 @@ func (s *MonitoringService) ResetMetric(name string) error {
 }
 
 // ResetAllMetrics сбрасывает все метрики к начальному состоянию
-func (s *MonitoringService) ResetAllMetrics() {
+func (s *Service) ResetAllMetrics() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -321,12 +321,12 @@ func (s *MonitoringService) ResetAllMetrics() {
 }
 
 // GetUptime возвращает время работы сервиса
-func (s *MonitoringService) GetUptime() time.Duration {
+func (s *Service) GetUptime() time.Duration {
 	return time.Since(s.startTime)
 }
 
 // addToHistory добавляет значение в историю метрики
-func (s *MonitoringService) addToHistory(name string, value MetricValue) {
+func (s *Service) addToHistory(name string, value MetricValue) {
 	history, exists := s.metricsHistory[name]
 	if !exists {
 		history = make([]MetricValue, 0, s.historyLimit)

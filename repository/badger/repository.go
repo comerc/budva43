@@ -13,8 +13,8 @@ type Repository struct {
 	dbPath string
 }
 
-// NewRepository создает новый экземпляр репозитория для BadgerDB
-func NewRepository(dbPath string) *Repository {
+// New создает новый экземпляр репозитория для BadgerDB
+func New(dbPath string) *Repository {
 	return &Repository{
 		dbPath: dbPath,
 	}

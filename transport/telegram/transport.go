@@ -24,14 +24,14 @@ type messageController interface {
 type forwardController interface {
 	GetForwardRule(id string) (*entity.ForwardRule, error)
 	SaveForwardRule(rule *entity.ForwardRule) error
-	ForwardMessage(rule interface{}, fromChatID, messageID int64) ([]*client.Message, error)
+	ForwardMessage(rule *entity.ForwardRule, fromChatID, messageID int64) ([]*client.Message, error)
 }
 
 // reportController определяет интерфейс контроллера отчетов, необходимый для Telegram транспорта
 type reportController interface {
-	GenerateActivityReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateForwardingReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateErrorReport(startDate, endDate time.Time) (interface{}, error)
+	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
+	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
+	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
 // telegramClient определяет интерфейс клиента Telegram, необходимый для обработчика
@@ -42,8 +42,8 @@ type telegramClient interface {
 	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
 }
 
-// Handler представляет обработчик сообщений из Telegram
-type Handler struct {
+// Transport представляет обработчик сообщений из Telegram
+type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
@@ -53,15 +53,15 @@ type Handler struct {
 	stopped           bool
 }
 
-// NewHandler создает новый экземпляр обработчика Telegram
-func NewHandler(
+// New создает новый экземпляр обработчика Telegram
+func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
 	telegramClient telegramClient,
 	adminChatID int64,
-) *Handler {
-	return &Handler{
+) *Transport {
+	return &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
@@ -73,7 +73,7 @@ func NewHandler(
 }
 
 // Start запускает обработчик сообщений
-func (h *Handler) Start(ctx context.Context) error {
+func (h *Transport) Start(ctx context.Context) error {
 	// Запускаем горутину обработки входящих обновлений
 	go func() {
 		for update := range h.updates {
@@ -87,7 +87,7 @@ func (h *Handler) Start(ctx context.Context) error {
 }
 
 // Stop останавливает обработчик сообщений
-func (h *Handler) Stop() error {
+func (h *Transport) Stop() error {
 	if h.stopped {
 		return nil
 	}
@@ -98,7 +98,7 @@ func (h *Handler) Stop() error {
 }
 
 // ReceiveUpdate получает обновление от клиента Telegram
-func (h *Handler) ReceiveUpdate(update client.Update) {
+func (h *Transport) ReceiveUpdate(update client.Update) {
 	if h.stopped {
 		return
 	}
@@ -108,7 +108,7 @@ func (h *Handler) ReceiveUpdate(update client.Update) {
 }
 
 // processUpdate обрабатывает полученное обновление
-func (h *Handler) processUpdate(update client.Update) {
+func (h *Transport) processUpdate(update client.Update) {
 	// В текущей реализации go-tdlib обычно приходят конкретные типы обновлений
 	// Поэтому для простоты используем типовое переключение для определения типа обновления
 	switch updateType := update.(type) {
@@ -120,7 +120,7 @@ func (h *Handler) processUpdate(update client.Update) {
 }
 
 // handleNewMessage обрабатывает новое сообщение
-func (h *Handler) handleNewMessage(message *client.Message) {
+func (h *Transport) handleNewMessage(message *client.Message) {
 	// Проверяем, что это сообщение от пользователя
 	// Заглушка для проверки, в реальном приложении нужно получить отправителя
 	isOutgoing := false // Заглушка
@@ -146,7 +146,7 @@ func (h *Handler) handleNewMessage(message *client.Message) {
 }
 
 // processCommand обрабатывает команду пользователя
-func (h *Handler) processCommand(message *client.Message, text string) {
+func (h *Transport) processCommand(message *client.Message, text string) {
 	// Разбиваем команду на части
 	args := strings.Fields(text)
 	if len(args) == 0 {
@@ -195,7 +195,7 @@ func (h *Handler) processCommand(message *client.Message, text string) {
 }
 
 // sendHelpMessage отправляет справочное сообщение
-func (h *Handler) sendHelpMessage(chatID int64) {
+func (h *Transport) sendHelpMessage(chatID int64) {
 	helpText := `Доступные команды:
 /help - показать это сообщение
 /status - показать статус бота
@@ -206,13 +206,13 @@ func (h *Handler) sendHelpMessage(chatID int64) {
 }
 
 // sendStatusMessage отправляет сообщение о текущем статусе бота
-func (h *Handler) sendStatusMessage(chatID int64) {
+func (h *Transport) sendStatusMessage(chatID int64) {
 	statusText := "Бот работает в штатном режиме."
 	h.sendMessage(chatID, statusText)
 }
 
 // generateReport генерирует отчет заданного типа
-func (h *Handler) generateReport(chatID int64, reportType string) {
+func (h *Transport) generateReport(chatID int64, reportType string) {
 	// Получаем даты для отчета (последняя неделя)
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -7)
@@ -257,7 +257,7 @@ func (h *Handler) generateReport(chatID int64, reportType string) {
 }
 
 // handleRuleCommand обрабатывает команды для управления правилами пересылки
-func (h *Handler) handleRuleCommand(chatID int64, args []string) {
+func (h *Transport) handleRuleCommand(chatID int64, args []string) {
 	if len(args) == 0 {
 		h.sendMessage(chatID, "Недостаточно аргументов для команды /rule")
 		return
@@ -289,7 +289,7 @@ func (h *Handler) handleRuleCommand(chatID int64, args []string) {
 }
 
 // sendMessage отправляет текстовое сообщение в чат
-func (h *Handler) sendMessage(chatID int64, text string) {
+func (h *Transport) sendMessage(chatID int64, text string) {
 	// Отправляем сообщение через контроллер
 	_, err := h.messageController.SendMessage(chatID, text)
 	if err != nil {

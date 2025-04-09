@@ -30,25 +30,25 @@ type forwardController interface {
 
 // reportController определяет интерфейс контроллера отчетов, необходимый для HTTP транспорта
 type reportController interface {
-	GenerateActivityReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateForwardingReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateErrorReport(startDate, endDate time.Time) (interface{}, error)
+	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
+	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
+	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
-// Router представляет HTTP маршрутизатор для API
-type Router struct {
+// Transport представляет HTTP маршрутизатор для API
+type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
 }
 
-// NewRouter создает новый экземпляр HTTP маршрутизатора
-func NewRouter(
+// New создает новый экземпляр HTTP маршрутизатора
+func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
-) *Router {
-	return &Router{
+) *Transport {
+	return &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
@@ -56,7 +56,7 @@ func NewRouter(
 }
 
 // SetupRoutes настраивает HTTP маршруты
-func (r *Router) SetupRoutes(mux *http.ServeMux) {
+func (r *Transport) SetupRoutes(mux *http.ServeMux) {
 	// Маршруты для сообщений
 	mux.HandleFunc("/api/messages", r.handleMessages)
 	mux.HandleFunc("/api/messages/", r.handleMessageByID)
@@ -70,7 +70,7 @@ func (r *Router) SetupRoutes(mux *http.ServeMux) {
 }
 
 // handleMessages обрабатывает запросы для работы с сообщениями
-func (r *Router) handleMessages(w http.ResponseWriter, req *http.Request) {
+func (r *Transport) handleMessages(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
 		// Получение списка сообщений - не реализовано
@@ -103,7 +103,7 @@ func (r *Router) handleMessages(w http.ResponseWriter, req *http.Request) {
 }
 
 // handleMessageByID обрабатывает запросы для работы с конкретным сообщением
-func (r *Router) handleMessageByID(w http.ResponseWriter, req *http.Request) {
+func (r *Transport) handleMessageByID(w http.ResponseWriter, req *http.Request) {
 	// Извлекаем ID сообщения из URL
 	path := req.URL.Path
 	if len(path) <= len("/api/messages/") {
@@ -179,7 +179,7 @@ func (r *Router) handleMessageByID(w http.ResponseWriter, req *http.Request) {
 }
 
 // handleForwardRules обрабатывает запросы для работы с правилами пересылки
-func (r *Router) handleForwardRules(w http.ResponseWriter, req *http.Request) {
+func (r *Transport) handleForwardRules(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodPost:
 		// Создание нового правила пересылки
@@ -203,7 +203,7 @@ func (r *Router) handleForwardRules(w http.ResponseWriter, req *http.Request) {
 }
 
 // handleForwardRuleByID обрабатывает запросы для работы с конкретным правилом пересылки
-func (r *Router) handleForwardRuleByID(w http.ResponseWriter, req *http.Request) {
+func (r *Transport) handleForwardRuleByID(w http.ResponseWriter, req *http.Request) {
 	// Извлекаем ID правила из URL
 	path := req.URL.Path
 	if len(path) <= len("/api/forward-rules/") {
@@ -250,7 +250,7 @@ func (r *Router) handleForwardRuleByID(w http.ResponseWriter, req *http.Request)
 }
 
 // handleReports обрабатывает запросы для работы с отчетами
-func (r *Router) handleReports(w http.ResponseWriter, req *http.Request) {
+func (r *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

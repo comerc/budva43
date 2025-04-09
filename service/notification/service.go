@@ -10,23 +10,23 @@ type Notifier interface {
 	SendNotification(chatID int64, message string) error
 }
 
-// NotificationService предоставляет методы для работы с уведомлениями
-type NotificationService struct {
+// Service предоставляет методы для работы с уведомлениями
+type Service struct {
 	notifier      Notifier
 	notifyHistory map[string]time.Time
 	mutex         sync.RWMutex
 }
 
-// NewNotificationService создает новый экземпляр сервиса для уведомлений
-func NewNotificationService(notifier Notifier) *NotificationService {
-	return &NotificationService{
+// New создает новый экземпляр сервиса для уведомлений
+func New(notifier Notifier) *Service {
+	return &Service{
 		notifier:      notifier,
 		notifyHistory: make(map[string]time.Time),
 	}
 }
 
 // SendNotification отправляет уведомление в чат
-func (s *NotificationService) SendNotification(chatID int64, message string) error {
+func (s *Service) SendNotification(chatID int64, message string) error {
 	if s.notifier == nil {
 		return nil // Тихое игнорирование, если нет notifier
 	}
@@ -34,7 +34,7 @@ func (s *NotificationService) SendNotification(chatID int64, message string) err
 }
 
 // SendThrottledNotification отправляет уведомление не чаще указанного интервала
-func (s *NotificationService) SendThrottledNotification(key string, chatID int64, message string, interval time.Duration) error {
+func (s *Service) SendThrottledNotification(key string, chatID int64, message string, interval time.Duration) error {
 	s.mutex.RLock()
 	lastTime, exists := s.notifyHistory[key]
 	s.mutex.RUnlock()
@@ -61,7 +61,7 @@ func (s *NotificationService) SendThrottledNotification(key string, chatID int64
 }
 
 // SendStatusNotification отправляет уведомление о статусе операции
-func (s *NotificationService) SendStatusNotification(chatID int64, operation string, success bool, details string) error {
+func (s *Service) SendStatusNotification(chatID int64, operation string, success bool, details string) error {
 	var message string
 	if success {
 		message = "✅ " + operation + " успешно выполнена"
@@ -77,7 +77,7 @@ func (s *NotificationService) SendStatusNotification(chatID int64, operation str
 }
 
 // SendErrorNotification отправляет уведомление об ошибке
-func (s *NotificationService) SendErrorNotification(chatID int64, errorType string, details string) error {
+func (s *Service) SendErrorNotification(chatID int64, errorType string, details string) error {
 	message := "❌ Ошибка: " + errorType
 	if details != "" {
 		message += "\nПодробности: " + details
@@ -87,7 +87,7 @@ func (s *NotificationService) SendErrorNotification(chatID int64, errorType stri
 }
 
 // SendBatchNotifications отправляет набор уведомлений
-func (s *NotificationService) SendBatchNotifications(notifications map[int64]string) (map[int64]error, error) {
+func (s *Service) SendBatchNotifications(notifications map[int64]string) (map[int64]error, error) {
 	results := make(map[int64]error)
 
 	for chatID, message := range notifications {
@@ -99,14 +99,14 @@ func (s *NotificationService) SendBatchNotifications(notifications map[int64]str
 }
 
 // ClearNotificationHistory очищает историю отправленных уведомлений
-func (s *NotificationService) ClearNotificationHistory() {
+func (s *Service) ClearNotificationHistory() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.notifyHistory = make(map[string]time.Time)
 }
 
 // SendProgressNotification отправляет уведомление о прогрессе операции
-func (s *NotificationService) SendProgressNotification(chatID int64, operation string, progress int, total int) error {
+func (s *Service) SendProgressNotification(chatID int64, operation string, progress int, total int) error {
 	message := "⏳ " + operation + ": " +
 		"выполнено " + string(rune(progress)) + " из " + string(rune(total))
 

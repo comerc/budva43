@@ -26,8 +26,8 @@ type AuthInfo struct {
 	UseMessageDatabase  bool
 }
 
-// NewRepository создает новый экземпляр репозитория Telegram
-func NewRepository(authInfo AuthInfo) (*Repository, error) {
+// New создает новый экземпляр репозитория Telegram
+func New(authInfo AuthInfo) (*Repository, error) {
 	return &Repository{
 		authInfo: authInfo,
 	}, nil
@@ -57,7 +57,7 @@ func (r *Repository) GetMessage(chatID, messageID int64) (*client.Message, error
 }
 
 // SendTextMessage отправляет текстовое сообщение
-func (r *Repository) SendTextMessage(chatID int64, text string) (*client.Message, error) {
+func (r *Repository) SendMessage(chatID int64, text string) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
 }

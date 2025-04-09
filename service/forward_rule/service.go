@@ -6,18 +6,18 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// ForwardRuleService предоставляет методы для работы с правилами пересылки
-type ForwardRuleService struct {
+// Service предоставляет методы для работы с правилами пересылки
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewForwardRuleService создает новый экземпляр сервиса для работы с правилами пересылки
-func NewForwardRuleService() *ForwardRuleService {
-	return &ForwardRuleService{}
+// New создает новый экземпляр сервиса для работы с правилами пересылки
+func New() *Service {
+	return &Service{}
 }
 
 // CompileRegexps компилирует все регулярные выражения в правиле
-func (s *ForwardRuleService) CompileRegexps(rule *entity.ForwardRule) error {
+func (s *Service) CompileRegexps(rule *entity.ForwardRule) error {
 	var err error
 
 	// Компилируем регулярное выражение для исключения
@@ -48,7 +48,7 @@ func (s *ForwardRuleService) CompileRegexps(rule *entity.ForwardRule) error {
 }
 
 // ShouldForward проверяет, должно ли сообщение быть переслано согласно правилу
-func (s *ForwardRuleService) ShouldForward(rule *entity.ForwardRule, text string) bool {
+func (s *Service) ShouldForward(rule *entity.ForwardRule, text string) bool {
 	// Если правило неактивно, не пересылаем сообщение
 	if rule.Status != entity.RuleStatusActive {
 		return false

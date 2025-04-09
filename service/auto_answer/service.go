@@ -59,8 +59,8 @@ func (m *KeywordMatcher) Match(message string) bool {
 	return false
 }
 
-// AutoAnswerRule правило для автоматического ответа
-type AutoAnswerRule struct {
+// Rule правило для автоматического ответа
+type Rule struct {
 	Name         string
 	Matcher      MessageMatcher
 	Response     string
@@ -70,25 +70,25 @@ type AutoAnswerRule struct {
 	Enabled      bool
 }
 
-// AutoAnswerService предоставляет методы для автоматических ответов
-type AutoAnswerService struct {
+// Service предоставляет методы для автоматических ответов
+type Service struct {
 	messageProcessor messageProcessor
-	rules            []*AutoAnswerRule
-	rulesByName      map[string]*AutoAnswerRule
+	rules            []*Rule
+	rulesByName      map[string]*Rule
 	mutex            sync.RWMutex
 }
 
-// NewAutoAnswerService создает новый экземпляр сервиса для автоматических ответов
-func NewAutoAnswerService(messageProcessor messageProcessor) *AutoAnswerService {
-	return &AutoAnswerService{
+// New создает новый экземпляр сервиса для автоматических ответов
+func New(messageProcessor messageProcessor) *Service {
+	return &Service{
 		messageProcessor: messageProcessor,
-		rules:            make([]*AutoAnswerRule, 0),
-		rulesByName:      make(map[string]*AutoAnswerRule),
+		rules:            make([]*Rule, 0),
+		rulesByName:      make(map[string]*Rule),
 	}
 }
 
 // AddRule добавляет правило автоответа
-func (s *AutoAnswerService) AddRule(rule *AutoAnswerRule) {
+func (s *Service) AddRule(rule *Rule) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -112,7 +112,7 @@ func (s *AutoAnswerService) AddRule(rule *AutoAnswerRule) {
 }
 
 // RemoveRule удаляет правило автоответа
-func (s *AutoAnswerService) RemoveRule(name string) bool {
+func (s *Service) RemoveRule(name string) bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -135,7 +135,7 @@ func (s *AutoAnswerService) RemoveRule(name string) bool {
 }
 
 // EnableRule включает правило автоответа
-func (s *AutoAnswerService) EnableRule(name string) bool {
+func (s *Service) EnableRule(name string) bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -149,7 +149,7 @@ func (s *AutoAnswerService) EnableRule(name string) bool {
 }
 
 // DisableRule выключает правило автоответа
-func (s *AutoAnswerService) DisableRule(name string) bool {
+func (s *Service) DisableRule(name string) bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -163,7 +163,7 @@ func (s *AutoAnswerService) DisableRule(name string) bool {
 }
 
 // ProcessMessage обрабатывает сообщение и возвращает автоответ, если есть подходящее правило
-func (s *AutoAnswerService) ProcessMessage(message *client.Message, isPrivate bool) (string, bool) {
+func (s *Service) ProcessMessage(message *client.Message, isPrivate bool) (string, bool) {
 	if message == nil {
 		return "", false
 	}
@@ -202,19 +202,19 @@ func (s *AutoAnswerService) ProcessMessage(message *client.Message, isPrivate bo
 }
 
 // GetAllRules возвращает все правила автоответов
-func (s *AutoAnswerService) GetAllRules() []*AutoAnswerRule {
+func (s *Service) GetAllRules() []*Rule {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
 	// Создаем копию, чтобы избежать параллельного доступа
-	result := make([]*AutoAnswerRule, len(s.rules))
+	result := make([]*Rule, len(s.rules))
 	copy(result, s.rules)
 
 	return result
 }
 
 // GetRule возвращает правило по имени
-func (s *AutoAnswerService) GetRule(name string) (*AutoAnswerRule, bool) {
+func (s *Service) GetRule(name string) (*Rule, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -223,7 +223,7 @@ func (s *AutoAnswerService) GetRule(name string) (*AutoAnswerRule, bool) {
 }
 
 // sortRules сортирует правила по приоритету
-func (s *AutoAnswerService) sortRules() {
+func (s *Service) sortRules() {
 	// Сортировка пузырьком для простоты (для небольшого количества правил)
 	for i := 0; i < len(s.rules)-1; i++ {
 		for j := 0; j < len(s.rules)-i-1; j++ {

@@ -37,8 +37,8 @@ type reportController interface {
 	GenerateErrorReport(startDate, endDate time.Time) (interface{}, error)
 }
 
-// CLI представляет интерфейс командной строки
-type CLI struct {
+// Transport представляет интерфейс командной строки
+type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
@@ -52,13 +52,13 @@ type command struct {
 	handler     func(args []string) error
 }
 
-// NewCLI создает новый экземпляр CLI
-func NewCLI(
+// New создает новый экземпляр CLI
+func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
-) *CLI {
-	cli := &CLI{
+) *Transport {
+	cli := &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
@@ -73,7 +73,7 @@ func NewCLI(
 }
 
 // registerCommands регистрирует доступные команды
-func (c *CLI) registerCommands() {
+func (c *Transport) registerCommands() {
 	c.commands = map[string]command{
 		"help": {
 			description: "Показать список доступных команд",
@@ -99,7 +99,7 @@ func (c *CLI) registerCommands() {
 }
 
 // Start запускает CLI интерфейс
-func (c *CLI) Start(ctx context.Context) error {
+func (c *Transport) Start(ctx context.Context) error {
 	fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
 
 	// Канал для сигнала завершения
@@ -143,7 +143,7 @@ func (c *CLI) Start(ctx context.Context) error {
 }
 
 // processCommand обрабатывает введенную команду
-func (c *CLI) processCommand(input string) error {
+func (c *Transport) processCommand(input string) error {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return nil
@@ -164,7 +164,7 @@ func (c *CLI) processCommand(input string) error {
 }
 
 // handleHelp обрабатывает команду help
-func (c *CLI) handleHelp(args []string) error {
+func (c *Transport) handleHelp(args []string) error {
 	fmt.Println("Доступные команды:")
 	for name, cmd := range c.commands {
 		fmt.Printf("  %-15s - %s\n", name, cmd.description)
@@ -173,13 +173,13 @@ func (c *CLI) handleHelp(args []string) error {
 }
 
 // handleExit обрабатывает команду exit
-func (c *CLI) handleExit(args []string) error {
+func (c *Transport) handleExit(args []string) error {
 	fmt.Println("Выход из программы...")
 	return fmt.Errorf("exit")
 }
 
 // handleMessages обрабатывает команду messages
-func (c *CLI) handleMessages(args []string) error {
+func (c *Transport) handleMessages(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: messages [list|get|send] ...")
 		return nil
@@ -207,7 +207,7 @@ func (c *CLI) handleMessages(args []string) error {
 }
 
 // handleMessageList обрабатывает команду messages list
-func (c *CLI) handleMessageList() error {
+func (c *Transport) handleMessageList() error {
 	messages, err := c.messageController.ListMessages(10, 0)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении списка сообщений: %w", err)
@@ -228,7 +228,7 @@ func (c *CLI) handleMessageList() error {
 }
 
 // handleMessageGet обрабатывает команду messages get
-func (c *CLI) handleMessageGet(chatIDStr, messageIDStr string) error {
+func (c *Transport) handleMessageGet(chatIDStr, messageIDStr string) error {
 	var chatID, messageID int64
 	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
 		return fmt.Errorf("неверный формат chat_id: %w", err)
@@ -249,7 +249,7 @@ func (c *CLI) handleMessageGet(chatIDStr, messageIDStr string) error {
 }
 
 // handleMessageSend обрабатывает команду messages send
-func (c *CLI) handleMessageSend(chatIDStr, text string) error {
+func (c *Transport) handleMessageSend(chatIDStr, text string) error {
 	var chatID int64
 	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
 		return fmt.Errorf("неверный формат chat_id: %w", err)
@@ -266,7 +266,7 @@ func (c *CLI) handleMessageSend(chatIDStr, text string) error {
 }
 
 // handleRules обрабатывает команду rules
-func (c *CLI) handleRules(args []string) error {
+func (c *Transport) handleRules(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: rules [list|get|add|delete] ...")
 		return nil
@@ -300,7 +300,7 @@ func (c *CLI) handleRules(args []string) error {
 }
 
 // handleRulesList обрабатывает команду rules list
-func (c *CLI) handleRulesList() error {
+func (c *Transport) handleRulesList() error {
 	rules, err := c.forwardController.ListForwardRules()
 	if err != nil {
 		return fmt.Errorf("ошибка при получении списка правил: %w", err)
@@ -321,7 +321,7 @@ func (c *CLI) handleRulesList() error {
 }
 
 // handleRuleGet обрабатывает команду rules get
-func (c *CLI) handleRuleGet(id string) error {
+func (c *Transport) handleRuleGet(id string) error {
 	rule, err := c.forwardController.GetForwardRule(id)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении правила: %w", err)
@@ -333,7 +333,7 @@ func (c *CLI) handleRuleGet(id string) error {
 }
 
 // handleRuleAdd обрабатывает команду rules add
-func (c *CLI) handleRuleAdd(fromStr, toStr, activeStr string) error {
+func (c *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
 	var from int64
 	if _, err := fmt.Sscanf(fromStr, "%d", &from); err != nil {
 		return fmt.Errorf("неверный формат from_chat_id: %w", err)
@@ -365,7 +365,7 @@ func (c *CLI) handleRuleAdd(fromStr, toStr, activeStr string) error {
 }
 
 // handleRuleDelete обрабатывает команду rules delete
-func (c *CLI) handleRuleDelete(id string) error {
+func (c *Transport) handleRuleDelete(id string) error {
 	if err := c.forwardController.DeleteForwardRule(id); err != nil {
 		return fmt.Errorf("ошибка при удалении правила: %w", err)
 	}
@@ -375,7 +375,7 @@ func (c *CLI) handleRuleDelete(id string) error {
 }
 
 // handleReport обрабатывает команду report
-func (c *CLI) handleReport(args []string) error {
+func (c *Transport) handleReport(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
 		return nil

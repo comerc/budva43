@@ -1,13 +1,13 @@
 package chat
 
-// ChatService предоставляет методы для работы с чатами
-type ChatService struct {
+// Service предоставляет методы для работы с чатами
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewChatService создает новый экземпляр сервиса для работы с чатами
-func NewChatService() *ChatService {
-	return &ChatService{}
+// New создает новый экземпляр сервиса для работы с чатами
+func New() *Service {
+	return &Service{}
 }
 
 // // IsPrivate проверяет, является ли чат личным чатом

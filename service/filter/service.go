@@ -15,20 +15,20 @@ type messageService interface {
 	GetContentType(message *client.Message) string
 }
 
-// FilterService предоставляет методы для фильтрации сообщений
-type FilterService struct {
+// Service предоставляет методы для фильтрации сообщений
+type Service struct {
 	message messageService
 }
 
-// NewFilterService создает новый экземпляр сервиса для фильтрации сообщений
-func NewFilterService(messageService messageService) *FilterService {
-	return &FilterService{
+// New создает новый экземпляр сервиса для фильтрации сообщений
+func New(messageService messageService) *Service {
+	return &Service{
 		message: messageService,
 	}
 }
 
 // MatchesRegexp проверяет, соответствует ли сообщение регулярному выражению
-func (s *FilterService) MatchesRegexp(message *client.Message, pattern string) (bool, error) {
+func (s *Service) MatchesRegexp(message *client.Message, pattern string) (bool, error) {
 	// Если паттерн пустой, любое сообщение соответствует
 	if pattern == "" {
 		return true, nil
@@ -51,7 +51,7 @@ func (s *FilterService) MatchesRegexp(message *client.Message, pattern string) (
 }
 
 // MatchesKeywords проверяет, содержит ли сообщение все ключевые слова
-func (s *FilterService) MatchesKeywords(message *client.Message, keywords []string) bool {
+func (s *Service) MatchesKeywords(message *client.Message, keywords []string) bool {
 	if len(keywords) == 0 {
 		return true
 	}
@@ -76,7 +76,7 @@ func (s *FilterService) MatchesKeywords(message *client.Message, keywords []stri
 }
 
 // MatchesAnyKeyword проверяет, содержит ли сообщение хотя бы одно из ключевых слов
-func (s *FilterService) MatchesAnyKeyword(message *client.Message, keywords []string) bool {
+func (s *Service) MatchesAnyKeyword(message *client.Message, keywords []string) bool {
 	if len(keywords) == 0 {
 		return true
 	}
@@ -101,7 +101,7 @@ func (s *FilterService) MatchesAnyKeyword(message *client.Message, keywords []st
 }
 
 // MatchesHashtags проверяет, содержит ли сообщение указанные хэштеги
-func (s *FilterService) MatchesHashtags(message *client.Message, hashtags []string) bool {
+func (s *Service) MatchesHashtags(message *client.Message, hashtags []string) bool {
 	if len(hashtags) == 0 {
 		return true
 	}
@@ -140,7 +140,7 @@ func (s *FilterService) MatchesHashtags(message *client.Message, hashtags []stri
 }
 
 // FilterByContentType фильтрует сообщения по типу содержимого
-func (s *FilterService) FilterByContentType(message *client.Message, allowedTypes []string) bool {
+func (s *Service) FilterByContentType(message *client.Message, allowedTypes []string) bool {
 	if len(allowedTypes) == 0 {
 		return true
 	}
@@ -157,7 +157,7 @@ func (s *FilterService) FilterByContentType(message *client.Message, allowedType
 }
 
 // ShouldForward проверяет, должно ли сообщение быть переслано согласно правилам
-func (s *FilterService) ShouldForward(message *client.Message, rule *entity.ForwardRule) (bool, error) {
+func (s *Service) ShouldForward(message *client.Message, rule *entity.ForwardRule) (bool, error) {
 	// Проверка по исключающему регулярному выражению
 	if rule.ExcludeRegexp != nil {
 		text := s.message.GetText(message)

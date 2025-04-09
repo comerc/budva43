@@ -4,18 +4,18 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// SourceService предоставляет методы для работы с источниками сообщений
-type SourceService struct {
+// Service предоставляет методы для работы с источниками сообщений
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewSourceService создает новый экземпляр сервиса для работы с источниками сообщений
-func NewSourceService() *SourceService {
-	return &SourceService{}
+// New создает новый экземпляр сервиса для работы с источниками сообщений
+func New() *Service {
+	return &Service{}
 }
 
 // ShouldAddSign проверяет, нужно ли добавлять подпись к сообщению для указанного чата
-func (s *SourceService) ShouldAddSign(source *entity.Source, chatID int64) bool {
+func (s *Service) ShouldAddSign(source *entity.Source, chatID int64) bool {
 	if source.Sign == nil {
 		return false
 	}
@@ -30,7 +30,7 @@ func (s *SourceService) ShouldAddSign(source *entity.Source, chatID int64) bool 
 }
 
 // ShouldAddLink проверяет, нужно ли добавлять ссылку к сообщению для указанного чата
-func (s *SourceService) ShouldAddLink(source *entity.Source, chatID int64) bool {
+func (s *Service) ShouldAddLink(source *entity.Source, chatID int64) bool {
 	if source.Link == nil {
 		return false
 	}

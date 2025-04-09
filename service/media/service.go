@@ -20,22 +20,22 @@ type mediaStorage interface {
 	GetMedia(key string) ([]byte, bool, error)
 }
 
-// MediaService предоставляет методы для работы с медиа-файлами
-type MediaService struct {
+// Service предоставляет методы для работы с медиа-файлами
+type Service struct {
 	processor mediaProcessor
 	storage   mediaStorage
 }
 
-// NewMediaService создает новый экземпляр сервиса для работы с медиа-файлами
-func NewMediaService(processor mediaProcessor, storage mediaStorage) *MediaService {
-	return &MediaService{
+// New создает новый экземпляр сервиса для работы с медиа-файлами
+func New(processor mediaProcessor, storage mediaStorage) *Service {
+	return &Service{
 		processor: processor,
 		storage:   storage,
 	}
 }
 
 // GetMediaContent извлекает содержимое медиа из сообщения
-func (s *MediaService) GetMediaContent(message *client.Message) ([]byte, string, error) {
+func (s *Service) GetMediaContent(message *client.Message) ([]byte, string, error) {
 	if message == nil || message.Content == nil {
 		return nil, "", errors.New("empty message")
 	}
@@ -82,7 +82,7 @@ func (s *MediaService) GetMediaContent(message *client.Message) ([]byte, string,
 }
 
 // ProcessAndCacheMedia обрабатывает и кэширует медиа-файл
-func (s *MediaService) ProcessAndCacheMedia(content []byte, mediaType, cacheKey string) ([]byte, error) {
+func (s *Service) ProcessAndCacheMedia(content []byte, mediaType, cacheKey string) ([]byte, error) {
 	// Сначала пытаемся получить из кэша
 	if s.storage != nil {
 		cachedContent, exists, err := s.storage.GetMedia(cacheKey)
@@ -117,7 +117,7 @@ func (s *MediaService) ProcessAndCacheMedia(content []byte, mediaType, cacheKey 
 }
 
 // OptimizeImage оптимизирует изображение
-func (s *MediaService) OptimizeImage(content []byte, format string, quality int) ([]byte, error) {
+func (s *Service) OptimizeImage(content []byte, format string, quality int) ([]byte, error) {
 	// Здесь должна быть реализация оптимизации изображения
 	// Например, с использованием библиотек для обработки изображений
 
@@ -126,7 +126,7 @@ func (s *MediaService) OptimizeImage(content []byte, format string, quality int)
 }
 
 // GetMediaType определяет тип медиа-файла по его содержимому
-func (s *MediaService) GetMediaType(content []byte) string {
+func (s *Service) GetMediaType(content []byte) string {
 	if len(content) < 4 {
 		return "unknown"
 	}
@@ -160,7 +160,7 @@ func (s *MediaService) GetMediaType(content []byte) string {
 }
 
 // CopyMedia копирует медиа-файл из одного сообщения в другое
-func (s *MediaService) CopyMedia(sourceMessage, targetMessage *client.Message) error {
+func (s *Service) CopyMedia(sourceMessage, targetMessage *client.Message) error {
 	// Заглушка для функции копирования медиа
 	// В реальной реализации это может быть сложная логика
 	// по копированию медиа-файлов между сообщениями
@@ -168,7 +168,7 @@ func (s *MediaService) CopyMedia(sourceMessage, targetMessage *client.Message) e
 }
 
 // GetMediaFileSize возвращает размер медиа-файла
-func (s *MediaService) GetMediaFileSize(message *client.Message) (int64, error) {
+func (s *Service) GetMediaFileSize(message *client.Message) (int64, error) {
 	if message == nil || message.Content == nil {
 		return 0, errors.New("empty message")
 	}
@@ -206,7 +206,7 @@ func (s *MediaService) GetMediaFileSize(message *client.Message) (int64, error) 
 }
 
 // StreamMedia потоковая передача медиа-файла
-func (s *MediaService) StreamMedia(message *client.Message, writer io.Writer) error {
+func (s *Service) StreamMedia(message *client.Message, writer io.Writer) error {
 	content, _, err := s.GetMediaContent(message)
 	if err != nil {
 		return err

@@ -6,14 +6,14 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// ReportService предоставляет методы для работы с отчетами
-type ReportService struct {
+// Service предоставляет методы для работы с отчетами
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewReportService создает новый экземпляр сервиса для работы с отчетами
-func NewReportService() *ReportService {
-	return &ReportService{}
+// New создает новый экземпляр сервиса для работы с отчетами
+func New() *Service {
+	return &Service{}
 }
 
 // calculateReportTimeRange рассчитывает временной диапазон для отчета
@@ -48,7 +48,7 @@ func calculateReportTimeRange(period entity.ReportPeriod, now time.Time) (time.T
 }
 
 // GenerateActivityReport генерирует отчет об активности за указанный период
-func (s *ReportService) GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error) {
+func (s *Service) GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error) {
 	// Пока просто заглушка
 	id := time.Now().Format("activity_20060102_150405")
 
@@ -78,7 +78,7 @@ func (s *ReportService) GenerateActivityReport(startDate, endDate time.Time) (*e
 }
 
 // GenerateForwardingReport генерирует отчет о пересылке сообщений за указанный период
-func (s *ReportService) GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error) {
+func (s *Service) GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error) {
 	// Пока просто заглушка
 	id := time.Now().Format("forwarding_20060102_150405")
 
@@ -108,7 +108,7 @@ func (s *ReportService) GenerateForwardingReport(startDate, endDate time.Time) (
 }
 
 // GenerateErrorReport генерирует отчет об ошибках за указанный период
-func (s *ReportService) GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error) {
+func (s *Service) GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error) {
 	// Пока просто заглушка
 	id := time.Now().Format("error_20060102_150405")
 
@@ -135,7 +135,7 @@ func (s *ReportService) GenerateErrorReport(startDate, endDate time.Time) (*enti
 }
 
 // AddSourceStatistics добавляет статистику по источнику сообщений в отчет о пересылке
-func (s *ReportService) AddSourceStatistics(report *entity.ForwardingReport, sourceID int64, total, forwarded int) {
+func (s *Service) AddSourceStatistics(report *entity.ForwardingReport, sourceID int64, total, forwarded int) {
 	report.Statistics.BySource[sourceID] = entity.SourceStatistics{
 		TotalMessages:     total,
 		ForwardedMessages: forwarded,
@@ -145,7 +145,7 @@ func (s *ReportService) AddSourceStatistics(report *entity.ForwardingReport, sou
 }
 
 // AddDestinationStatistics добавляет статистику по назначению сообщений в отчет о пересылке
-func (s *ReportService) AddDestinationStatistics(report *entity.ForwardingReport, destinationID int64, received int) {
+func (s *Service) AddDestinationStatistics(report *entity.ForwardingReport, destinationID int64, received int) {
 	// Получаем текущую статистику или создаем новую
 	stats, exists := report.Statistics.ByDestination[destinationID]
 	if !exists {
@@ -162,7 +162,7 @@ func (s *ReportService) AddDestinationStatistics(report *entity.ForwardingReport
 }
 
 // AddDestinationSourceStatistics добавляет статистику по источнику для назначения в отчет о пересылке
-func (s *ReportService) AddDestinationSourceStatistics(report *entity.ForwardingReport, destinationID, sourceID int64, count int) {
+func (s *Service) AddDestinationSourceStatistics(report *entity.ForwardingReport, destinationID, sourceID int64, count int) {
 	// Получаем текущую статистику или создаем новую
 	stats, exists := report.Statistics.ByDestination[destinationID]
 	if !exists {
@@ -180,7 +180,7 @@ func (s *ReportService) AddDestinationSourceStatistics(report *entity.Forwarding
 }
 
 // AddUserActivity добавляет статистику активности пользователя в отчет об активности
-func (s *ReportService) AddUserActivity(report *entity.ActivityReport, userID int64, messageCount int) {
+func (s *Service) AddUserActivity(report *entity.ActivityReport, userID int64, messageCount int) {
 	currentCount, exists := report.Statistics.UserActivity[userID]
 	if exists {
 		report.Statistics.UserActivity[userID] = currentCount + messageCount
@@ -193,7 +193,7 @@ func (s *ReportService) AddUserActivity(report *entity.ActivityReport, userID in
 }
 
 // AddChatActivity добавляет статистику активности чата в отчет об активности
-func (s *ReportService) AddChatActivity(report *entity.ActivityReport, chatID int64, messageCount int) {
+func (s *Service) AddChatActivity(report *entity.ActivityReport, chatID int64, messageCount int) {
 	currentCount, exists := report.Statistics.ChatActivity[chatID]
 	if exists {
 		report.Statistics.ChatActivity[chatID] = currentCount + messageCount
@@ -205,7 +205,7 @@ func (s *ReportService) AddChatActivity(report *entity.ActivityReport, chatID in
 }
 
 // AddErrorRecord добавляет запись об ошибке в отчет об ошибках
-func (s *ReportService) AddErrorRecord(report *entity.ErrorReport, timestamp time.Time, code, message, component string, severity entity.ErrorSeverity) {
+func (s *Service) AddErrorRecord(report *entity.ErrorReport, timestamp time.Time, code, message, component string, severity entity.ErrorSeverity) {
 	errorRecord := entity.SystemError{
 		Timestamp: timestamp,
 		Code:      code,

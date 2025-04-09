@@ -7,18 +7,18 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// TransformService предоставляет методы для преобразования и замены текста
-type TransformService struct {
+// Service предоставляет методы для преобразования и замены текста
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewTransformService создает новый экземпляр сервиса для работы с текстовыми трансформациями
-func NewTransformService() *TransformService {
-	return &TransformService{}
+// New создает новый экземпляр сервиса для работы с текстовыми трансформациями
+func New() *Service {
+	return &Service{}
 }
 
 // GetReplacement возвращает текст для замены или пустую строку, если замена не найдена
-func (s *TransformService) GetReplacement(settings *entity.ReplaceFragmentSettings, text string) string {
+func (s *Service) GetReplacement(settings *entity.ReplaceFragmentSettings, text string) string {
 	if settings.Replacements == nil {
 		return ""
 	}
@@ -30,7 +30,7 @@ func (s *TransformService) GetReplacement(settings *entity.ReplaceFragmentSettin
 }
 
 // ReplaceText заменяет все фрагменты текста согласно настройкам
-func (s *TransformService) ReplaceText(settings *entity.ReplaceFragmentSettings, text string) string {
+func (s *Service) ReplaceText(settings *entity.ReplaceFragmentSettings, text string) string {
 	if settings.Replacements == nil {
 		return text
 	}
@@ -50,12 +50,12 @@ func (s *TransformService) ReplaceText(settings *entity.ReplaceFragmentSettings,
 // replaceAll заменяет все вхождения подстроки в строке
 // Используется вместо strings.ReplaceAll для возможности
 // реализации более сложной логики замены в будущем
-func (s *TransformService) replaceAll(text, from, to string) string {
+func (s *Service) replaceAll(text, from, to string) string {
 	return strings.ReplaceAll(text, from, to)
 }
 
 // ReplaceLinks заменяет ссылки в тексте согласно настройкам
-func (s *TransformService) ReplaceLinks(text string, linkReplacements map[string]string) string {
+func (s *Service) ReplaceLinks(text string, linkReplacements map[string]string) string {
 	if linkReplacements == nil || len(linkReplacements) == 0 {
 		return text
 	}
@@ -69,7 +69,7 @@ func (s *TransformService) ReplaceLinks(text string, linkReplacements map[string
 }
 
 // RemoveUnwantedContent удаляет нежелательный контент из текста
-func (s *TransformService) RemoveUnwantedContent(text string, patterns []string) string {
+func (s *Service) RemoveUnwantedContent(text string, patterns []string) string {
 	if len(patterns) == 0 {
 		return text
 	}
@@ -87,7 +87,7 @@ func (s *TransformService) RemoveUnwantedContent(text string, patterns []string)
 }
 
 // FormatText форматирует текст согласно заданным правилам
-func (s *TransformService) FormatText(text string, rules map[string]string) string {
+func (s *Service) FormatText(text string, rules map[string]string) string {
 	if rules == nil || len(rules) == 0 {
 		return text
 	}
@@ -110,7 +110,7 @@ func (s *TransformService) FormatText(text string, rules map[string]string) stri
 }
 
 // EscapeMarkdown экранирует специальные символы Markdown в тексте
-func (s *TransformService) EscapeMarkdown(text string) string {
+func (s *Service) EscapeMarkdown(text string) string {
 	// Экранирование специальных символов Markdown
 	specialChars := []string{`\`, `*`, `_`, "`", "[", "]", "(", ")", "{", "}", "#", "+", "-", ".", "!"}
 	result := text

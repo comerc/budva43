@@ -18,7 +18,7 @@ type messageService interface {
 // telegramRepository определяет интерфейс репозитория Telegram, необходимый контроллеру
 type telegramRepository interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
-	SendTextMessage(chatID int64, text string) (*client.Message, error)
+	SendMessage(chatID int64, text string) (*client.Message, error)
 	DeleteMessage(chatID, messageID int64) error
 	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
 }
@@ -29,8 +29,8 @@ type Controller struct {
 	telegramRepository telegramRepository
 }
 
-// NewController создает новый экземпляр контроллера сообщений
-func NewController(messageService messageService, telegramRepository telegramRepository) *Controller {
+// New создает новый экземпляр контроллера сообщений
+func New(messageService messageService, telegramRepository telegramRepository) *Controller {
 	return &Controller{
 		messageService:     messageService,
 		telegramRepository: telegramRepository,
@@ -46,7 +46,7 @@ func (c *Controller) GetMessage(chatID, messageID int64) (*client.Message, error
 // SendMessage отправляет новое сообщение
 func (c *Controller) SendMessage(chatID int64, text string) (*client.Message, error) {
 	// Отправляем сообщение через репозиторий
-	return c.telegramRepository.SendTextMessage(chatID, text)
+	return c.telegramRepository.SendMessage(chatID, text)
 }
 
 // DeleteMessage удаляет сообщение

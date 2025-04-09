@@ -15,18 +15,18 @@ type linkProcessor interface {
 	ProcessLinks(text string) string
 }
 
-// LinkService предоставляет методы для работы с ссылками
-type LinkService struct {
+// Service предоставляет методы для работы с ссылками
+type Service struct {
 	processor linkProcessor
 }
 
-// NewLinkService создает новый экземпляр сервиса для работы с ссылками
-func NewLinkService(processor linkProcessor) *LinkService {
-	return &LinkService{processor: processor}
+// New создает новый экземпляр сервиса для работы с ссылками
+func New(processor linkProcessor) *Service {
+	return &Service{processor: processor}
 }
 
 // ExtractLinks извлекает все ссылки из текста
-func (s *LinkService) ExtractLinks(text string) []string {
+func (s *Service) ExtractLinks(text string) []string {
 	if text == "" {
 		return nil
 	}
@@ -37,7 +37,7 @@ func (s *LinkService) ExtractLinks(text string) []string {
 }
 
 // ProcessLinks обрабатывает ссылки в тексте
-func (s *LinkService) ProcessLinks(text string) string {
+func (s *Service) ProcessLinks(text string) string {
 	if text == "" {
 		return ""
 	}
@@ -50,7 +50,7 @@ func (s *LinkService) ProcessLinks(text string) string {
 }
 
 // ReplaceLinks заменяет ссылки в тексте по правилам
-func (s *LinkService) ReplaceLinks(text string, replacements map[string]string) string {
+func (s *Service) ReplaceLinks(text string, replacements map[string]string) string {
 	if text == "" || len(replacements) == 0 {
 		return text
 	}
@@ -64,7 +64,7 @@ func (s *LinkService) ReplaceLinks(text string, replacements map[string]string) 
 }
 
 // NormalizeURL нормализует URL-адрес
-func (s *LinkService) NormalizeURL(urlStr string) (string, error) {
+func (s *Service) NormalizeURL(urlStr string) (string, error) {
 	if urlStr == "" {
 		return "", errors.New("empty URL")
 	}
@@ -86,7 +86,7 @@ func (s *LinkService) NormalizeURL(urlStr string) (string, error) {
 }
 
 // ReplaceTelegramLinks заменяет ссылки в тексте на Telegram-ссылки
-func (s *LinkService) ReplaceTelegramLinks(text string, chatMapping map[int64]int64) string {
+func (s *Service) ReplaceTelegramLinks(text string, chatMapping map[int64]int64) string {
 	if text == "" || len(chatMapping) == 0 {
 		return text
 	}
@@ -119,7 +119,7 @@ func (s *LinkService) ReplaceTelegramLinks(text string, chatMapping map[int64]in
 }
 
 // AddTrackingParameters добавляет параметры отслеживания к ссылкам
-func (s *LinkService) AddTrackingParameters(text string, params map[string]string) string {
+func (s *Service) AddTrackingParameters(text string, params map[string]string) string {
 	if text == "" || len(params) == 0 {
 		return text
 	}
@@ -151,7 +151,7 @@ func (s *LinkService) AddTrackingParameters(text string, params map[string]strin
 }
 
 // RemoveExternalLinks удаляет внешние ссылки из текста
-func (s *LinkService) RemoveExternalLinks(text string, allowedDomains []string) string {
+func (s *Service) RemoveExternalLinks(text string, allowedDomains []string) string {
 	if text == "" {
 		return ""
 	}
@@ -180,7 +180,7 @@ func (s *LinkService) RemoveExternalLinks(text string, allowedDomains []string) 
 }
 
 // GetMessageLink получает ссылку на сообщение
-func (s *LinkService) GetMessageLink(message *client.Message) (string, error) {
+func (s *Service) GetMessageLink(message *client.Message) (string, error) {
 	if message == nil {
 		return "", errors.New("empty message")
 	}

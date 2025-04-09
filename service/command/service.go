@@ -11,17 +11,17 @@ type commandHandler interface {
 	HandleCommand(command string, args []string) (string, error)
 }
 
-// CommandService предоставляет методы для обработки команд
-type CommandService struct {
+// Service предоставляет методы для обработки команд
+type Service struct {
 	handlers     map[string]commandHandler
 	aliases      map[string]string
 	helpMessages map[string]string
 	mutex        sync.RWMutex
 }
 
-// NewCommandService создает новый экземпляр сервиса для обработки команд
-func NewCommandService() *CommandService {
-	return &CommandService{
+// New создает новый экземпляр сервиса для обработки команд
+func New() *Service {
+	return &Service{
 		handlers:     make(map[string]commandHandler),
 		aliases:      make(map[string]string),
 		helpMessages: make(map[string]string),
@@ -29,7 +29,7 @@ func NewCommandService() *CommandService {
 }
 
 // RegisterHandler регистрирует обработчик для команды
-func (s *CommandService) RegisterHandler(command string, handler commandHandler, help string) {
+func (s *Service) RegisterHandler(command string, handler commandHandler, help string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -40,7 +40,7 @@ func (s *CommandService) RegisterHandler(command string, handler commandHandler,
 }
 
 // RegisterAlias регистрирует псевдоним для команды
-func (s *CommandService) RegisterAlias(alias, command string) error {
+func (s *Service) RegisterAlias(alias, command string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -53,7 +53,7 @@ func (s *CommandService) RegisterAlias(alias, command string) error {
 }
 
 // ExecuteCommand выполняет команду
-func (s *CommandService) ExecuteCommand(input string) (string, error) {
+func (s *Service) ExecuteCommand(input string) (string, error) {
 	// Разбираем ввод на команду и аргументы
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -85,7 +85,7 @@ func (s *CommandService) ExecuteCommand(input string) (string, error) {
 }
 
 // GetCommandList возвращает список доступных команд
-func (s *CommandService) GetCommandList() []string {
+func (s *Service) GetCommandList() []string {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -98,7 +98,7 @@ func (s *CommandService) GetCommandList() []string {
 }
 
 // GetCommandHelp возвращает справку по команде
-func (s *CommandService) GetCommandHelp(command string) string {
+func (s *Service) GetCommandHelp(command string) string {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -116,7 +116,7 @@ func (s *CommandService) GetCommandHelp(command string) string {
 }
 
 // GetAllHelpMessages возвращает справку по всем командам
-func (s *CommandService) GetAllHelpMessages() map[string]string {
+func (s *Service) GetAllHelpMessages() map[string]string {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -130,7 +130,7 @@ func (s *CommandService) GetAllHelpMessages() map[string]string {
 }
 
 // HasCommand проверяет наличие команды
-func (s *CommandService) HasCommand(command string) bool {
+func (s *Service) HasCommand(command string) bool {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
@@ -144,7 +144,7 @@ func (s *CommandService) HasCommand(command string) bool {
 }
 
 // UnregisterHandler удаляет обработчик команды
-func (s *CommandService) UnregisterHandler(command string) {
+func (s *Service) UnregisterHandler(command string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -160,7 +160,7 @@ func (s *CommandService) UnregisterHandler(command string) {
 }
 
 // ParseCommand разбирает строку команды на команду и аргументы
-func (s *CommandService) ParseCommand(input string) (string, []string) {
+func (s *Service) ParseCommand(input string) (string, []string) {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return "", nil

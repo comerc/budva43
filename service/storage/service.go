@@ -15,20 +15,20 @@ type storageRepository interface {
 	Close() error
 }
 
-// StorageService предоставляет методы для работы с хранилищем
-type StorageService struct {
+// Service предоставляет методы для работы с хранилищем
+type Service struct {
 	repository storageRepository
 }
 
-// NewStorageService создает новый экземпляр сервиса для работы с хранилищем
-func NewStorageService(repository storageRepository) *StorageService {
-	return &StorageService{
+// New создает новый экземпляр сервиса для работы с хранилищем
+func New(repository storageRepository) *Service {
+	return &Service{
 		repository: repository,
 	}
 }
 
 // Get получает значение по ключу
-func (s *StorageService) Get(key string) ([]byte, error) {
+func (s *Service) Get(key string) ([]byte, error) {
 	if s.repository == nil {
 		return nil, errors.New("storage repository is nil")
 	}
@@ -36,7 +36,7 @@ func (s *StorageService) Get(key string) ([]byte, error) {
 }
 
 // Set устанавливает значение по ключу
-func (s *StorageService) Set(key string, value []byte) error {
+func (s *Service) Set(key string, value []byte) error {
 	if s.repository == nil {
 		return errors.New("storage repository is nil")
 	}
@@ -44,7 +44,7 @@ func (s *StorageService) Set(key string, value []byte) error {
 }
 
 // SetWithTTL устанавливает значение по ключу с временем жизни
-func (s *StorageService) SetWithTTL(key string, value []byte, ttl time.Duration) error {
+func (s *Service) SetWithTTL(key string, value []byte, ttl time.Duration) error {
 	if s.repository == nil {
 		return errors.New("storage repository is nil")
 	}
@@ -52,7 +52,7 @@ func (s *StorageService) SetWithTTL(key string, value []byte, ttl time.Duration)
 }
 
 // Delete удаляет значение по ключу
-func (s *StorageService) Delete(key string) error {
+func (s *Service) Delete(key string) error {
 	if s.repository == nil {
 		return errors.New("storage repository is nil")
 	}
@@ -60,12 +60,12 @@ func (s *StorageService) Delete(key string) error {
 }
 
 // SaveMedia сохраняет медиа-файл в хранилище
-func (s *StorageService) SaveMedia(key string, content []byte) error {
+func (s *Service) SaveMedia(key string, content []byte) error {
 	return s.Set("media:"+key, content)
 }
 
 // GetMedia получает медиа-файл из хранилища
-func (s *StorageService) GetMedia(key string) ([]byte, bool, error) {
+func (s *Service) GetMedia(key string) ([]byte, bool, error) {
 	content, err := s.Get("media:" + key)
 	if err != nil {
 		if errors.Is(err, errors.New("key not found")) {
@@ -77,17 +77,17 @@ func (s *StorageService) GetMedia(key string) ([]byte, bool, error) {
 }
 
 // SaveConfig сохраняет конфигурацию в хранилище
-func (s *StorageService) SaveConfig(key string, content []byte) error {
+func (s *Service) SaveConfig(key string, content []byte) error {
 	return s.Set("config:"+key, content)
 }
 
 // GetConfig получает конфигурацию из хранилища
-func (s *StorageService) GetConfig(key string) ([]byte, error) {
+func (s *Service) GetConfig(key string) ([]byte, error) {
 	return s.Get("config:" + key)
 }
 
 // Close закрывает соединение с хранилищем
-func (s *StorageService) Close() error {
+func (s *Service) Close() error {
 	if s.repository == nil {
 		return nil
 	}
@@ -95,7 +95,7 @@ func (s *StorageService) Close() error {
 }
 
 // Shutdown корректно завершает работу с хранилищем
-func (s *StorageService) Shutdown(ctx context.Context) error {
+func (s *Service) Shutdown(ctx context.Context) error {
 	// Можно добавить дополнительную логику завершения работы
 	// Например, ожидание завершения всех операций
 

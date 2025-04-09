@@ -21,7 +21,7 @@ type messageService interface {
 type telegramRepository interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
 	ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error)
-	SendTextMessage(chatID int64, text string) (*client.Message, error)
+	SendMessage(chatID int64, text string) (*client.Message, error)
 }
 
 // storageRepository определяет интерфейс репозитория хранилища, необходимый контроллеру
@@ -38,8 +38,8 @@ type Controller struct {
 	storageRepository  storageRepository
 }
 
-// NewController создает новый экземпляр контроллера пересылки
-func NewController(
+// New создает новый экземпляр контроллера пересылки
+func New(
 	forwardRuleService forwardRuleService,
 	messageService messageService,
 	telegramRepository telegramRepository,
@@ -83,7 +83,7 @@ func (c *Controller) ForwardMessage(
 
 		if rule.SendCopy {
 			// Отправляем копию текста
-			forwardedMessage, err = c.telegramRepository.SendTextMessage(toChatID, text)
+			forwardedMessage, err = c.telegramRepository.SendMessage(toChatID, text)
 		} else {
 			// Пересылаем сообщение
 			forwardedMessage, err = c.telegramRepository.ForwardMessage(fromChatID, messageID, toChatID)

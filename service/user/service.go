@@ -6,18 +6,18 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// UserService предоставляет методы для работы с пользователями
-type UserService struct {
+// Service предоставляет методы для работы с пользователями
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewUserService создает новый экземпляр сервиса для работы с пользователями
-func NewUserService() *UserService {
-	return &UserService{}
+// New создает новый экземпляр сервиса для работы с пользователями
+func New() *Service {
+	return &Service{}
 }
 
 // GetFullName возвращает полное имя пользователя
-func (s *UserService) GetFullName(user *client.User) string {
+func (s *Service) GetFullName(user *client.User) string {
 	if user == nil {
 		return ""
 	}
@@ -30,7 +30,7 @@ func (s *UserService) GetFullName(user *client.User) string {
 }
 
 // IsBot проверяет, является ли пользователь ботом
-func (s *UserService) IsBot(user *client.User) bool {
+func (s *Service) IsBot(user *client.User) bool {
 	if user == nil || user.Type == nil {
 		return false
 	}
@@ -40,7 +40,7 @@ func (s *UserService) IsBot(user *client.User) bool {
 }
 
 // GetStatusText возвращает текстовое представление статуса пользователя
-func (s *UserService) GetStatusText(user *client.User) string {
+func (s *Service) GetStatusText(user *client.User) string {
 	if user == nil || user.Status == nil {
 		return "unknown"
 	}

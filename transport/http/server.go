@@ -19,7 +19,7 @@ type Config struct {
 // Server представляет HTTP-сервер для API
 type Server struct {
 	server   *http.Server
-	router   *Router
+	router   *Transport
 	config   Config
 	mux      *http.ServeMux
 	isClosed bool
@@ -27,7 +27,7 @@ type Server struct {
 
 // NewServer создает новый экземпляр HTTP-сервера
 func NewServer(
-	router *Router,
+	router *Transport,
 	config Config,
 ) *Server {
 	mux := http.NewServeMux()
