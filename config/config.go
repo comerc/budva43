@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type (
 	// Config представляет настройки приложения
 	Config struct {
@@ -74,14 +76,14 @@ type (
 		Enabled         bool
 		Host            string
 		Port            int
-		ReadTimeout     int
-		WriteTimeout    int
-		ShutdownTimeout int
+		ReadTimeout     time.Duration
+		WriteTimeout    time.Duration
+		ShutdownTimeout time.Duration
 		EnableTLS       bool
 		CertFile        string
 		KeyFile         string
 		RequireAuth     bool
-		SessionTimeout  int
+		SessionTimeout  time.Duration
 		AdminUsername   string
 	}
 )

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
@@ -49,12 +50,12 @@ func setDefaultConfig(config *Config) {
 	config.Web.Enabled = true
 	config.Web.Port = 8080
 	config.Web.Host = "localhost"
-	config.Web.ReadTimeout = 15    // 15 секунд по умолчанию
-	config.Web.WriteTimeout = 15   // 15 секунд по умолчанию
-	config.Web.ShutdownTimeout = 5 // 5 секунд по умолчанию
+	config.Web.ReadTimeout = 15 * time.Second    // 15 секунд по умолчанию
+	config.Web.WriteTimeout = 15 * time.Second   // 15 секунд по умолчанию
+	config.Web.ShutdownTimeout = 5 * time.Second // 5 секунд по умолчанию
 	config.Web.EnableTLS = false
 	config.Web.RequireAuth = true
-	config.Web.SessionTimeout = 60 // 60 минут
+	config.Web.SessionTimeout = 60 * time.Minute // 60 минут
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
