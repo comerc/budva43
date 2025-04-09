@@ -24,8 +24,6 @@ go.work.sum
 # env file
 .env
 
-# bin file
 bin/
-
 data/
 config.yml
