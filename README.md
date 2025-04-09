@@ -44,6 +44,13 @@ docker-compose build
 - [ ] ClickHouse
 - [ ] [fiber](https://gofiber.io/)
 - [x] [zelenin/go-tdlib](https://github.com/zelenin/go-tdlib)
+- [ ] [Code Style](https://github.com/quickwit-oss/quickwit/blob/206ebf791af78f11c562835a449df449b3a17e81/CODE_STYLE.md
+)
+- [ ] samber/mo
+- [ ] samber/lo
+- [ ] samber/do
+- [ ] samber/oops
+- [ ] samber/slog-*
 
 ## .env
 
