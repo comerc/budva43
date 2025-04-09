@@ -9,13 +9,16 @@ lint:
 	$(COMMON_ENV) golangci-lint run
 
 test:
-	go test -v ./...
+	$(COMMON_ENV) go test -v ./...
 
 clean:
 	rm -f bin/app
 
 build:
 	$(COMMON_ENV) go build -o bin/app main.go
+
+run:
+	$(COMMON_ENV) go run main.go
 
 all:
 	lint
