@@ -10,7 +10,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
-func TestRedis(m *testing.M) {
+func TestRunRedis(m *testing.M) {
 	ctx := context.Background()
 
 	redisContainer, err := redis.Run(ctx,

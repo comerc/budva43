@@ -20,17 +20,17 @@ type authenticator interface {
 	RefreshToken() (string, error)
 }
 
-// AuthService предоставляет методы для аутентификации и авторизации
-type AuthService struct {
+// Service предоставляет методы для аутентификации и авторизации
+type Service struct {
 	authenticator authenticator
 	storage       storageService
 	sessions      map[string]time.Time
 	sessionsLock  sync.RWMutex
 }
 
-// NewAuthService создает новый экземпляр сервиса для аутентификации
-func NewAuthService(authenticator authenticator, storage storageService) *AuthService {
-	return &AuthService{
+// New создает новый экземпляр сервиса для аутентификации
+func New(authenticator authenticator, storage storageService) *Service {
+	return &Service{
 		authenticator: authenticator,
 		storage:       storage,
 		sessions:      make(map[string]time.Time),
@@ -38,7 +38,7 @@ func NewAuthService(authenticator authenticator, storage storageService) *AuthSe
 }
 
 // Authenticate выполняет аутентификацию с заданными учетными данными
-func (s *AuthService) Authenticate(credentials string) (string, error) {
+func (s *Service) Authenticate(credentials string) (string, error) {
 	if s.authenticator == nil {
 		return "", errors.New("authenticator is nil")
 	}
@@ -77,7 +77,7 @@ func (s *AuthService) Authenticate(credentials string) (string, error) {
 }
 
 // ValidateToken проверяет валидность токена
-func (s *AuthService) ValidateToken(token string) (bool, error) {
+func (s *Service) ValidateToken(token string) (bool, error) {
 	if token == "" {
 		return false, errors.New("empty token")
 	}
@@ -107,7 +107,7 @@ func (s *AuthService) ValidateToken(token string) (bool, error) {
 }
 
 // RefreshToken обновляет токен аутентификации
-func (s *AuthService) RefreshToken(oldToken string) (string, error) {
+func (s *Service) RefreshToken(oldToken string) (string, error) {
 	if s.authenticator == nil {
 		return "", errors.New("authenticator is nil")
 	}
@@ -147,7 +147,7 @@ func (s *AuthService) RefreshToken(oldToken string) (string, error) {
 }
 
 // InvalidateToken аннулирует токен
-func (s *AuthService) InvalidateToken(token string) error {
+func (s *Service) InvalidateToken(token string) error {
 	if token == "" {
 		return errors.New("empty token")
 	}
@@ -173,7 +173,7 @@ func (s *AuthService) InvalidateToken(token string) error {
 }
 
 // CleanupExpiredSessions очищает истекшие сессии
-func (s *AuthService) CleanupExpiredSessions() {
+func (s *Service) CleanupExpiredSessions() {
 	s.sessionsLock.Lock()
 	defer s.sessionsLock.Unlock()
 

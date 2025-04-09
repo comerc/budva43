@@ -4,18 +4,18 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// MessageService предоставляет методы для обработки и преобразования сообщений
-type MessageService struct {
+// Service предоставляет методы для обработки и преобразования сообщений
+type Service struct {
 	// Здесь могут быть зависимости, например, репозитории
 }
 
-// NewMessageService создает новый экземпляр сервиса для работы с сообщениями
-func NewMessageService() *MessageService {
-	return &MessageService{}
+// New создает новый экземпляр сервиса для работы с сообщениями
+func New() *Service {
+	return &Service{}
 }
 
 // GetText возвращает текст сообщения, если это текстовое сообщение
-func (s *MessageService) GetText(message *client.Message) string {
+func (s *Service) GetText(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -28,7 +28,7 @@ func (s *MessageService) GetText(message *client.Message) string {
 }
 
 // GetCaption возвращает подпись медиа сообщения
-func (s *MessageService) GetCaption(message *client.Message) string {
+func (s *Service) GetCaption(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return ""
 	}
@@ -52,7 +52,7 @@ func (s *MessageService) GetCaption(message *client.Message) string {
 }
 
 // IsTextMessage проверяет, является ли сообщение текстовым
-func (s *MessageService) IsTextMessage(message *client.Message) bool {
+func (s *Service) IsTextMessage(message *client.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -62,7 +62,7 @@ func (s *MessageService) IsTextMessage(message *client.Message) bool {
 }
 
 // IsMediaMessage проверяет, содержит ли сообщение медиа-контент
-func (s *MessageService) IsMediaMessage(message *client.Message) bool {
+func (s *Service) IsMediaMessage(message *client.Message) bool {
 	if message == nil || message.Content == nil {
 		return false
 	}
@@ -77,7 +77,7 @@ func (s *MessageService) IsMediaMessage(message *client.Message) bool {
 }
 
 // GetContentType возвращает тип содержимого сообщения
-func (s *MessageService) GetContentType(message *client.Message) string {
+func (s *Service) GetContentType(message *client.Message) string {
 	if message == nil || message.Content == nil {
 		return "unknown"
 	}
@@ -103,7 +103,7 @@ func (s *MessageService) GetContentType(message *client.Message) string {
 }
 
 // FormatMessageContent преобразует формат сообщения (например, из markdown в HTML)
-func (s *MessageService) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
+func (s *Service) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
 	// Здесь будет реализация преобразования между форматами
 	// Например, конвертация Markdown в HTML или обратно
 
@@ -112,7 +112,7 @@ func (s *MessageService) FormatMessageContent(text string, fromFormat, toFormat 
 }
 
 // ExtractMessageMetadata извлекает метаданные из сообщения
-func (s *MessageService) ExtractMessageMetadata(message *client.Message) map[string]interface{} {
+func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]interface{} {
 	metadata := make(map[string]interface{})
 
 	if message == nil {
