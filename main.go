@@ -17,8 +17,8 @@ import (
 	forwardRuleService "github.com/comerc/budva43/service/forward_rule"
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
-	httpTransport "github.com/comerc/budva43/transport/http"
-	telegramTransport "github.com/comerc/budva43/transport/telegram"
+	botTransport "github.com/comerc/budva43/transport/bot"
+	webTransport "github.com/comerc/budva43/transport/web"
 )
 
 // TODO: отказаться от devcontainer
@@ -167,15 +167,14 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	// - Инициализация транспортных адаптеров
 
-	// HTTP транспорт
-	// TODO: переименовать на website/site & конфиг тоже
+	// Web транспорт
 	// TODO: почему тут httpRouter & httpServer - это детали реализации транспорта, которые должны быть скрыты
-	httpRouter := httpTransport.New(
+	httpRouter := webTransport.New(
 		messageController,
 		forwardController,
 		reportController,
 	)
-	httpServer := httpTransport.NewServer(
+	httpServer := webTransport.NewServer(
 		httpRouter,
 	)
 
@@ -186,19 +185,18 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	defer gracefulShutdown("HTTP Server", errSet, httpServer.Stop)
 	slog.Info("HTTP сервер запущен")
 
-	// Telegram транспорт
-	// TODO: почему транспорт назвается handler?
-	telegramHandler := telegramTransport.New(
+	// Telegram Bot транспорт
+	botTransport := botTransport.New(
 		messageController,
 		forwardController,
 		reportController,
 		telegramRepo,
 	)
 
-	if err := telegramHandler.Start(ctx); err != nil {
+	if err := botTransport.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска Telegram обработчика: %w", err)
 	}
-	defer gracefulShutdown("Telegram Handler", errSet, telegramHandler.Stop)
+	defer gracefulShutdown("Telegram Handler", errSet, botTransport.Stop)
 	slog.Info("Telegram обработчик запущен")
 
 	// TODO:CLI транспорт временно отключен до полной реализации

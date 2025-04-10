@@ -21,7 +21,7 @@ type (
 		Forwarding forwarding
 		Reports    reports
 		Storage    storage
-		Web        web // TODO: Site || WebSite || Http
+		Web        web
 		Bot        bot
 	}
 

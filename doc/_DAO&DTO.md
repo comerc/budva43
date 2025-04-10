@@ -26,14 +26,14 @@ deprecated - отказались от классического DAO&DTO для
 ## Примеры взаимодействия
 
 1. Получение сообщения из Telegram:
-    - `TelegramRepository` получает сырые данные от TDLib
+    - `TelegramRepo` получает сырые данные от TDLib
     - Преобразует их в `MessageDTO`
     - Передает в `MessageService`
     - `MessageService` преобразует `MessageDTO` в `Message` (Entity)
     - Выполняет бизнес-логику с использованием сущности `Message`
 
 2. Применение правил пересылки:
-    - `ConfigRepository` загружает конфигурацию
+    - `ConfigRepo` загружает конфигурацию
     - Преобразует данные конфигурации в `ForwardRuleDTO`
     - `ForwardService` преобразует `ForwardRuleDTO` в `ForwardRule` (Entity)
     - Применяет правила пересылки к сообщениям

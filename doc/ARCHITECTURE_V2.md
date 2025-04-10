@@ -60,15 +60,15 @@ func (r *ForwardRule) UnmarshalJSON(data []byte) error {
 // service/message/service.go
 package message
 
-type messageRepository interface {
+type messageRepo interface {
   // Применяемые в этом модуле методы...    
 }
 
 type MessageService struct {
-    repo messageRepository
+    repo messageRepo
 }
 
-func NewMessageService(repo messageRepository) *MessageService {
+func NewMessageService(repo messageRepo) *MessageService {
     return &MessageService{
         repo: repo,
     }
@@ -98,7 +98,7 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 }
 ```
 
-### 3. Repository (Репозитории)
+### 3. Repo (Репозитории)
 
 **Назначение**:
 - Предоставляют доступ к внешним системам и хранилищам данных
@@ -112,24 +112,24 @@ func (s *MessageService) IsTextMessage(message *entity.Message) bool {
 
 **Пример**:
 ```go
-// repository/telegram/message.go
+// repo/telegram/repo.go
 package telegram
 
 type client interface {
     // Применяемые в этом модуле методы...
 }
 
-type TelegramMessageRepository struct {
+type Repo struct {
     client client
 }
 
-func NewTelegramMessageRepository(client client) *TelegramMessageRepository {
-    return &TelegramMessageRepository{
+func New(client client) *Repo {
+    return &Repo{
         client: client    
     }
 } 
 
-func (r *TelegramMessageRepository) GetMessage(id int64) (*entity.Message, error) {
+func (r *Repo) GetMessage(id int64) (*entity.Message, error) {
     // Реализация...
 }
 ```

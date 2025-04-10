@@ -14,26 +14,26 @@ type reportService interface {
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
-// storageRepository определяет интерфейс репозитория хранилища, необходимый контроллеру
-type storageRepository interface {
+// storageRepo определяет интерфейс репозитория хранилища, необходимый контроллеру
+type storageRepo interface {
 	Get(key []byte) ([]byte, error)
 	Set(key, value []byte) error
 }
 
 // Controller представляет контроллер для работы с отчетами
 type Controller struct {
-	reportService     reportService
-	storageRepository storageRepository
+	reportService reportService
+	storageRepo   storageRepo
 }
 
 // New создает новый экземпляр контроллера отчетов
 func New(
 	reportService reportService,
-	storageRepository storageRepository,
+	storageRepo storageRepo,
 ) *Controller {
 	return &Controller{
-		reportService:     reportService,
-		storageRepository: storageRepository,
+		reportService: reportService,
+		storageRepo:   storageRepo,
 	}
 }
 

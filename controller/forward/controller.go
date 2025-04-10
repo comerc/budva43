@@ -17,15 +17,15 @@ type messageService interface {
 	GetCaption(message *client.Message) string
 }
 
-// telegramRepository определяет интерфейс репозитория Telegram, необходимый контроллеру
-type telegramRepository interface {
+// telegramRepo определяет интерфейс репозитория Telegram, необходимый контроллеру
+type telegramRepo interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
 	ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error)
 	SendMessage(chatID int64, text string) (*client.Message, error)
 }
 
-// storageRepository определяет интерфейс репозитория хранилища, необходимый контроллеру
-type storageRepository interface {
+// storageRepo определяет интерфейс репозитория хранилища, необходимый контроллеру
+type storageRepo interface {
 	Get(key []byte) ([]byte, error)
 	Set(key, value []byte) error
 }
@@ -34,22 +34,22 @@ type storageRepository interface {
 type Controller struct {
 	forwardRuleService forwardRuleService
 	messageService     messageService
-	telegramRepository telegramRepository
-	storageRepository  storageRepository
+	telegramRepo       telegramRepo
+	storageRepo        storageRepo
 }
 
 // New создает новый экземпляр контроллера пересылки
 func New(
 	forwardRuleService forwardRuleService,
 	messageService messageService,
-	telegramRepository telegramRepository,
-	storageRepository storageRepository,
+	telegramRepo telegramRepo,
+	storageRepo storageRepo,
 ) *Controller {
 	return &Controller{
 		forwardRuleService: forwardRuleService,
 		messageService:     messageService,
-		telegramRepository: telegramRepository,
-		storageRepository:  storageRepository,
+		telegramRepo:       telegramRepo,
+		storageRepo:        storageRepo,
 	}
 }
 
@@ -59,7 +59,7 @@ func (c *Controller) ForwardMessage(
 	fromChatID, messageID int64,
 ) ([]*client.Message, error) {
 	// Получаем исходное сообщение
-	message, err := c.telegramRepository.GetMessage(fromChatID, messageID)
+	message, err := c.telegramRepo.GetMessage(fromChatID, messageID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +83,10 @@ func (c *Controller) ForwardMessage(
 
 		if rule.SendCopy {
 			// Отправляем копию текста
-			forwardedMessage, err = c.telegramRepository.SendMessage(toChatID, text)
+			forwardedMessage, err = c.telegramRepo.SendMessage(toChatID, text)
 		} else {
 			// Пересылаем сообщение
-			forwardedMessage, err = c.telegramRepository.ForwardMessage(fromChatID, messageID, toChatID)
+			forwardedMessage, err = c.telegramRepo.ForwardMessage(fromChatID, messageID, toChatID)
 		}
 
 		if err != nil {

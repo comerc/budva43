@@ -15,8 +15,8 @@ type messageService interface {
 	ExtractMessageMetadata(message *client.Message) map[string]interface{}
 }
 
-// telegramRepository определяет интерфейс репозитория Telegram, необходимый контроллеру
-type telegramRepository interface {
+// telegramRepo определяет интерфейс репозитория Telegram, необходимый контроллеру
+type telegramRepo interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
 	SendMessage(chatID int64, text string) (*client.Message, error)
 	DeleteMessage(chatID, messageID int64) error
@@ -25,39 +25,39 @@ type telegramRepository interface {
 
 // Controller представляет контроллер для работы с сообщениями
 type Controller struct {
-	messageService     messageService
-	telegramRepository telegramRepository
+	messageService messageService
+	telegramRepo   telegramRepo
 }
 
 // New создает новый экземпляр контроллера сообщений
-func New(messageService messageService, telegramRepository telegramRepository) *Controller {
+func New(messageService messageService, telegramRepo telegramRepo) *Controller {
 	return &Controller{
-		messageService:     messageService,
-		telegramRepository: telegramRepository,
+		messageService: messageService,
+		telegramRepo:   telegramRepo,
 	}
 }
 
 // GetMessage получает сообщение по идентификатору
 func (c *Controller) GetMessage(chatID, messageID int64) (*client.Message, error) {
 	// Получаем сообщение из репозитория и возвращаем его напрямую
-	return c.telegramRepository.GetMessage(chatID, messageID)
+	return c.telegramRepo.GetMessage(chatID, messageID)
 }
 
 // SendMessage отправляет новое сообщение
 func (c *Controller) SendMessage(chatID int64, text string) (*client.Message, error) {
 	// Отправляем сообщение через репозиторий
-	return c.telegramRepository.SendMessage(chatID, text)
+	return c.telegramRepo.SendMessage(chatID, text)
 }
 
 // DeleteMessage удаляет сообщение
 func (c *Controller) DeleteMessage(chatID, messageID int64) error {
-	return c.telegramRepository.DeleteMessage(chatID, messageID)
+	return c.telegramRepo.DeleteMessage(chatID, messageID)
 }
 
 // EditMessage редактирует сообщение
 func (c *Controller) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
 	// Редактируем сообщение через репозиторий
-	return c.telegramRepository.EditMessage(chatID, messageID, text)
+	return c.telegramRepo.EditMessage(chatID, messageID, text)
 }
 
 // FormatMessage форматирует текст сообщения
