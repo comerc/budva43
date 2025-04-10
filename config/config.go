@@ -4,6 +4,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -113,14 +114,17 @@ type (
 	}
 )
 
-var cfg *config
-var General = cfg.General
-var Telegram = cfg.Telegram
-var Forwarding = cfg.Forwarding
-var Reports = cfg.Reports
-var Storage = cfg.Storage
-var Web = cfg.Web
-var Bot = cfg.Bot
+var (
+	once       sync.Once
+	cfg        = &config{}
+	General    = &cfg.General
+	Telegram   = &cfg.Telegram
+	Forwarding = &cfg.Forwarding
+	Reports    = &cfg.Reports
+	Storage    = &cfg.Storage
+	Web        = &cfg.Web
+	Bot        = &cfg.Bot
+)
 
 func new() *config {
 	result, err := load()
@@ -133,26 +137,32 @@ func new() *config {
 // TODO: куда бы пенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
 func makeDirs() {
 	var dirs = []string{
-		cfg.Storage.DatabaseDirectory,
-		cfg.Storage.BackupDirectory,
-		cfg.Telegram.DatabaseDirectory,
-		cfg.Telegram.FilesDirectory,
+		Storage.DatabaseDirectory,
+		Storage.BackupDirectory,
+		Telegram.DatabaseDirectory,
+		Telegram.FilesDirectory,
 	}
 	for _, dir := range dirs {
 		_, err := os.Stat(dir)
 		if os.IsNotExist(err) {
-			if err := os.Mkdir(dir, os.ModePerm); err != nil {
-				log.Fatalf("ошибка создания директории: %s", err)
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				log.Fatalf("ошибка создания директории %s: %v", dir, err)
 			}
-		} else {
-			log.Fatalf("ошибка проверки директории: %s", err)
+		} else if err != nil {
+			log.Fatalf("ошибка проверки директории %s: %v", dir, err)
 		}
+		// Если директория существует, то ничего не делаем
 	}
 }
 
-func Init() {
-	cfg = new()
-	makeDirs()
+// init - это зло https://habr.com/ru/articles/771858/
+// но подходит для реализации синглтона
+func init() {
+	once.Do(func() {
+		loadedCfg := new()
+		*cfg = *loadedCfg
+		makeDirs()
+	})
 }
 
 func Watch(cb func(e fsnotify.Event)) {

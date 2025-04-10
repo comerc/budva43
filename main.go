@@ -27,9 +27,6 @@ import (
 
 // Основная функция приложения
 func main() {
-	// Инициализация конфигурации
-	config.Init()
-
 	// Настройка логгера
 	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     config.General.LogOptions.Level,
