@@ -355,11 +355,11 @@ func (t *Transport) Start(ctx context.Context) error {
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
 		if err := t.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("HTTP сервер завершился с ошибкой", "err", err)
+			slog.Error("HTTP server terminated with error", "err", err)
 		}
 	}()
 
-	slog.Info("HTTP сервер запущен", "addr", t.server.Addr)
+	slog.Info("HTTP server started", "addr", t.server.Addr)
 
 	return nil
 }
@@ -370,17 +370,16 @@ func (t *Transport) Stop() error {
 		return nil
 	}
 
-	slog.Info("Остановка HTTP сервера")
+	slog.Info("Stopping HTTP server")
 
 	// Создаем контекст с таймаутом для graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
 	defer cancel()
 
 	if err := t.server.Shutdown(ctx); err != nil {
-		slog.Error("Ошибка при остановке HTTP сервера", "err", err)
 		return fmt.Errorf("error shutting down HTTP server: %w", err)
 	}
 
-	slog.Info("HTTP сервер остановлен")
+	slog.Info("HTTP server stopped")
 	return nil
 }
