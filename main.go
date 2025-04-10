@@ -18,6 +18,7 @@ import (
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
 	botTransport "github.com/comerc/budva43/transport/bot"
+	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
@@ -122,25 +123,19 @@ func setupSignalHandler(cancel context.CancelFunc) {
 func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация репозиториев
 
-	// Инициализируем BadgerDB репозиторий
 	badgerRepo := badgerRepo.New()
-	if err := badgerRepo.Connect(ctx); err != nil {
-		return fmt.Errorf("ошибка подключения к BadgerDB: %w", err)
+	if err := badgerRepo.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска badgerRepo: %w", err)
 	}
-	defer gracefulShutdown("BadgerDB", errSet, badgerRepo.Close)
-	slog.Info("Подключение к BadgerDB установлено")
+	defer gracefulShutdown("badgerRepo", errSet, badgerRepo.Stop)
+	slog.Info("badgerRepo запущен")
 
-	// Инициализируем Telegram репозиторий
-	telegramRepo, err := telegramRepo.New()
-	if err != nil {
-		return fmt.Errorf("ошибка создания Telegram репозитория: %w", err)
-	}
-
+	telegramRepo := telegramRepo.New()
 	if err := telegramRepo.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка подключения к Telegram API: %w", err)
+		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
-	defer gracefulShutdown("Telegram API", errSet, telegramRepo.Stop)
-	slog.Info("Подключение к Telegram API установлено")
+	defer gracefulShutdown("telegramRepo", errSet, telegramRepo.Stop)
+	slog.Info("telegramRepo запущен")
 
 	// - Инициализация сервисов
 	messageService := messsageService.New()
@@ -167,40 +162,39 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	// - Инициализация транспортных адаптеров
 
-	// Web транспорт
-	// TODO: почему тут httpRouter & httpServer - это детали реализации транспорта, которые должны быть скрыты
-	httpRouter := webTransport.New(
+	webTransport := webTransport.New(
 		messageController,
 		forwardController,
 		reportController,
 	)
-	httpServer := webTransport.NewServer(
-		httpRouter,
-	)
-
-	// Запускаем HTTP сервер
-	if err := httpServer.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска HTTP сервера: %w", err)
+	if err := webTransport.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска webTransport: %w", err)
 	}
-	defer gracefulShutdown("HTTP Server", errSet, httpServer.Stop)
-	slog.Info("HTTP сервер запущен")
+	defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
+	slog.Info("webTransport запущен")
 
-	// Telegram Bot транспорт
 	botTransport := botTransport.New(
 		messageController,
 		forwardController,
 		reportController,
 		telegramRepo,
 	)
-
 	if err := botTransport.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска Telegram обработчика: %w", err)
+		return fmt.Errorf("ошибка запуска botTransport: %w", err)
 	}
-	defer gracefulShutdown("Telegram Handler", errSet, botTransport.Stop)
-	slog.Info("Telegram обработчик запущен")
+	defer gracefulShutdown("botTransport", errSet, botTransport.Stop)
+	slog.Info("botTransport запущен")
 
-	// TODO:CLI транспорт временно отключен до полной реализации
-	slog.Info("CLI транспорт временно отключен")
+	cliTransport := cliTransport.New(
+		messageController,
+		forwardController,
+		reportController,
+	)
+	if err := cliTransport.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
+	}
+	defer gracefulShutdown("cliTransport", errSet, cliTransport.Stop)
+	slog.Info("cliTransport запущен")
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()

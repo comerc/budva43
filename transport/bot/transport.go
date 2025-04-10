@@ -3,12 +3,14 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"github.com/zelenin/go-tdlib/client"
+
 	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
-	"github.com/zelenin/go-tdlib/client"
 )
 
 // messageController определяет интерфейс контроллера сообщений, необходимый для Telegram транспорта
@@ -140,7 +142,7 @@ func (h *Transport) handleNewMessage(message *client.Message) {
 	}
 
 	// Если сообщение не является командой, просто логируем его
-	fmt.Printf("Received message from chat %d: %s\n", message.ChatId, text)
+	slog.Info("Получено сообщение", "chat_id", message.ChatId, "text", text)
 }
 
 // processCommand обрабатывает команду пользователя
@@ -250,8 +252,10 @@ func (h *Transport) generateReport(chatID int64, reportType string) {
 	}
 
 	// Логируем успешную генерацию отчета
-	fmt.Printf("Generated %s report for period %s - %s\n",
-		reportType, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
+	slog.Info("Сгенерирован отчет",
+		"тип", reportType,
+		"период_с", startDate.Format("2006-01-02"),
+		"период_по", endDate.Format("2006-01-02"))
 }
 
 // handleRuleCommand обрабатывает команды для управления правилами пересылки
@@ -291,6 +295,6 @@ func (h *Transport) sendMessage(chatID int64, text string) {
 	// Отправляем сообщение через контроллер
 	_, err := h.messageController.SendMessage(chatID, text)
 	if err != nil {
-		fmt.Printf("Error sending message to chat %d: %v\n", chatID, err)
+		slog.Error("Ошибка отправки сообщения", "chat_id", chatID, "err", err)
 	}
 }

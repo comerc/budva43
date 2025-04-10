@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/entity"
 )
 
 // messageController определяет интерфейс контроллера сообщений для CLI
@@ -25,16 +27,16 @@ type messageController interface {
 // forwardController определяет интерфейс контроллера пересылок для CLI
 type forwardController interface {
 	GetForwardRule(id string) (*entity.ForwardRule, error)
-	ListForwardRules() ([]*entity.ForwardRule, error)
 	SaveForwardRule(rule *entity.ForwardRule) error
-	DeleteForwardRule(id string) error
+	// ListForwardRules() ([]*entity.ForwardRule, error)
+	// DeleteForwardRule(id string) error
 }
 
 // reportController определяет интерфейс контроллера отчетов для CLI
 type reportController interface {
-	GenerateActivityReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateForwardingReport(startDate, endDate time.Time) (interface{}, error)
-	GenerateErrorReport(startDate, endDate time.Time) (interface{}, error)
+	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
+	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
+	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
 // Transport представляет интерфейс командной строки
@@ -100,6 +102,7 @@ func (c *Transport) registerCommands() {
 
 // Start запускает CLI интерфейс
 func (c *Transport) Start(ctx context.Context) error {
+	slog.Info("Запуск CLI интерфейса")
 	fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
 
 	// Канал для сигнала завершения
@@ -127,6 +130,7 @@ func (c *Transport) Start(ctx context.Context) error {
 					if err.Error() == "exit" {
 						return
 					}
+					slog.Error("Ошибка выполнения команды", "err", err)
 					fmt.Printf("Ошибка: %v\n", err)
 				}
 			}
@@ -140,6 +144,10 @@ func (c *Transport) Start(ctx context.Context) error {
 	case <-done:
 		return nil
 	}
+}
+
+func (h *Transport) Stop() error {
+	return nil
 }
 
 // processCommand обрабатывает введенную команду
@@ -156,9 +164,11 @@ func (c *Transport) processCommand(input string) error {
 	}
 
 	if command, ok := c.commands[cmd]; ok {
+		slog.Info("Выполнение команды", "команда", cmd, "аргументы", args)
 		return command.handler(args)
 	}
 
+	slog.Info("Неизвестная команда", "команда", cmd)
 	fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 	return nil
 }
@@ -174,6 +184,7 @@ func (c *Transport) handleHelp(args []string) error {
 
 // handleExit обрабатывает команду exit
 func (c *Transport) handleExit(args []string) error {
+	slog.Info("Выход из программы")
 	fmt.Println("Выход из программы...")
 	return fmt.Errorf("exit")
 }
@@ -301,21 +312,21 @@ func (c *Transport) handleRules(args []string) error {
 
 // handleRulesList обрабатывает команду rules list
 func (c *Transport) handleRulesList() error {
-	rules, err := c.forwardController.ListForwardRules()
-	if err != nil {
-		return fmt.Errorf("ошибка при получении списка правил: %w", err)
-	}
+	// rules, err := c.forwardController.ListForwardRules()
+	// if err != nil {
+	// 	return fmt.Errorf("ошибка при получении списка правил: %w", err)
+	// }
 
-	if len(rules) == 0 {
-		fmt.Println("Список правил пересылки пуст")
-		return nil
-	}
+	// if len(rules) == 0 {
+	// 	fmt.Println("Список правил пересылки пуст")
+	// 	return nil
+	// }
 
-	fmt.Println("Список правил пересылки:")
-	for i, rule := range rules {
-		fmt.Printf("%d. ID: %s, От: %d, К: %v, Активно: %t\n",
-			i+1, rule.ID, rule.From, rule.To, rule.Status == entity.RuleStatusActive)
-	}
+	// fmt.Println("Список правил пересылки:")
+	// for i, rule := range rules {
+	// 	fmt.Printf("%d. ID: %s, От: %d, К: %v, Активно: %t\n",
+	// 		i+1, rule.ID, rule.From, rule.To, rule.Status == entity.RuleStatusActive)
+	// }
 
 	return nil
 }
@@ -366,11 +377,11 @@ func (c *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
 
 // handleRuleDelete обрабатывает команду rules delete
 func (c *Transport) handleRuleDelete(id string) error {
-	if err := c.forwardController.DeleteForwardRule(id); err != nil {
-		return fmt.Errorf("ошибка при удалении правила: %w", err)
-	}
+	// if err := c.forwardController.DeleteForwardRule(id); err != nil {
+	// 	return fmt.Errorf("ошибка при удалении правила: %w", err)
+	// }
 
-	fmt.Println("Правило пересылки успешно удалено")
+	// fmt.Println("Правило пересылки успешно удалено")
 	return nil
 }
 
@@ -385,6 +396,7 @@ func (c *Transport) handleReport(args []string) error {
 	days := 7
 	if len(args) > 1 {
 		if _, err := fmt.Sscanf(args[1], "%d", &days); err != nil {
+			slog.Warn("Используется период по умолчанию", "дней", days)
 			fmt.Println("Используется период по умолчанию (7 дней)")
 		}
 	}
@@ -393,6 +405,10 @@ func (c *Transport) handleReport(args []string) error {
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -days)
 
+	slog.Info("Генерация отчета",
+		"тип", reportType,
+		"период_с", startDate.Format("2006-01-02"),
+		"период_по", endDate.Format("2006-01-02"))
 	fmt.Printf("Генерация отчета '%s' за период %s - %s...\n",
 		reportType, startDate.Format("02.01.2006"), endDate.Format("02.01.2006"))
 
@@ -409,9 +425,11 @@ func (c *Transport) handleReport(args []string) error {
 	}
 
 	if err != nil {
+		slog.Error("Ошибка генерации отчета", "тип", reportType, "err", err)
 		return fmt.Errorf("ошибка при генерации отчета: %w", err)
 	}
 
+	slog.Info("Отчет успешно сгенерирован", "тип", reportType)
 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
 	return nil
 }
