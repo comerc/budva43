@@ -12,7 +12,7 @@ RUN wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" &
 
 # RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
 #     sh ./get-docker.sh --dry-run
-# TODO: panic: rootless Docker not found
+# TODO: panic: rootless Docker not found (testcontainers in devcontainer)
 
 ENV GOPATH=/root/go
 ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
