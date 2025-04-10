@@ -18,8 +18,8 @@ func New() *Repo {
 	return &Repo{}
 }
 
-// Connect устанавливает соединение с базой данных
-func (r *Repo) Connect(ctx context.Context) error {
+// Start устанавливает соединение с базой данных
+func (r *Repo) Start(ctx context.Context) error {
 	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
 	db, err := badger.Open(opts)
 	if err != nil {
@@ -29,8 +29,8 @@ func (r *Repo) Connect(ctx context.Context) error {
 	return nil
 }
 
-// Close закрывает соединение с базой данных
-func (r *Repo) Close() error {
+// Stop закрывает соединение с базой данных
+func (r *Repo) Stop() error {
 	if r.db != nil {
 		return r.db.Close()
 	}
