@@ -19,8 +19,8 @@ type Repo struct {
 }
 
 // New создает новый экземпляр репозитория Telegram
-func New() (*Repo, error) {
-	return &Repo{}, nil
+func New() *Repo {
+	return &Repo{}
 }
 
 // Start устанавливает соединение с Telegram API
