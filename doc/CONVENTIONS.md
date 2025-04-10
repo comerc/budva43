@@ -55,7 +55,7 @@
 2. **Утилиты для работы с BadgerDB**
     - Применение: выделение общих операций с BadgerDB в отдельные функции
     - Цель: централизация логики работы с базой данных
-    - Пример: утилиты для чтения/записи в `repository/badger`
+    - Пример: утилиты для чтения/записи в `repo/badger`
 
 3. **Обработка ошибок**
     - Применение: стандартизация создания и обработки ошибок
@@ -77,7 +77,7 @@
 3. **Модульная структура**
     - Применение: разделение монолита на небольшие модули с единой ответственностью
     - Цель: упрощение понимания и сопровождения кода
-    - Пример: четкое разделение на слои controller, service, repository
+    - Пример: четкое разделение на слои controller, service, repo
 
 4. **Низкая цикломатическая сложность**
     - Применение: стремление к простым функциям с минимальным количеством условных ветвлений
@@ -133,7 +133,7 @@
 3. **Принцип подстановки Барбары Лисков (LSP)**
     - Применение: корректное использование интерфейсов и их реализаций
     - Цель: обеспечение взаимозаменяемости объектов одного типа
-    - Пример: все реализации `TelegramRepository` должны корректно работать в контексте `MessageService`
+    - Пример: все реализации `repo/telegram` должны корректно работать в контексте `service/message`
 
 4. **Принцип разделения интерфейса (ISP)**
     - Применение: минимальные и специализированные интерфейсы
@@ -153,7 +153,7 @@
     - Создает экземпляр компонента
     - Инициализирует зависимости и внутреннее состояние
     - Не запускает никаких фоновых задач или горутин
-    - Пример: `NewMessageService(repo Repository) *MessageService`
+    - Пример: `NewMessageService(repo Repo) *MessageService`
 
 2. **Метод `Start`**
     - Подготавливает компонент к работе
@@ -206,32 +206,26 @@ func main() {
 }
 
 func runApp(ctx context.Context, errSet *errors.ErrSet) error {
-    // Инициализация конфига
-    cfg, err := config.Load()
-    if err != nil {
-        return fmt.Errorf("failed to load config: %w", err)
-    }
-
     // Инициализация BadgerDB
-    badgerRepo := badger.NewRepository(cfg.BadgerPath)
+    badgerRepo := badger.New()
     if err := badgerRepo.Connect(ctx); err != nil {
         return fmt.Errorf("failed to connect to BadgerDB: %w", err)
     }
     defer util.Shutdown("badgerRepo", errSet, badgerRepo.Close)
 
     // Инициализация TDLib
-    telegramRepo, err := telegram.NewRepository(cfg.TelegramConfig)
+    telegramRepo, err := telegramRepo.New()
     if err != nil {
-        return fmt.Errorf("failed to create Telegram repository: %w", err)
+        return fmt.Errorf("failed to create Telegram repo: %w", err)
     }
     defer util.Shutdown("telegramRepo", errSet, telegramRepo.Close)
 
     // Инициализация сервисов
-    messageService := service.NewMessageService(telegramRepo, badgerRepo)
-    forwardService := service.NewForwardService(messageService, cfg.Forwards)
+    messageService := messageService.New(telegramRepo, badgerRepo)
+    forwardService := forwardService.New(messageService)
     
     // Запуск HTTP-сервера
-    httpServer := transport.NewHTTPServer(cfg.HTTPConfig, messageService)
+    httpServer := httpTransport.NewHTTPServer(messageService)
     if ctx, err = util.Serve(ctx, "httpServer", errSet, httpServer.Serve); err != nil {
         return fmt.Errorf("failed to serve HTTP: %w", err)
     }
@@ -245,7 +239,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 
 ## Взаимодействие между слоями
 
-1. **Transport → Controller → Service → Repository**:
+1. **Transport → Controller → Service → Repo**:
     - Транспортные адаптеры вызывают методы соответствующих контроллеров
     - Контроллеры оркестрируют работу сервисов, без собственной бизнес-логики
     - Сервисы содержат всю бизнес-логику и взаимодействуют с репозиториями
@@ -313,8 +307,8 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 1. **Типы ошибок**:
    - Ошибки домена (`entity/errors.go`)
    - Ошибки сервисов (`service/errors.go`)
-   - Ошибки репозиториев (`repository/errors.go`)
-   - Общие ошибки (`errors/common.go`)
+   - Ошибки репозиториев (`repo/errors.go`)
+   - Общие ошибки (`errors/common.go`) - deprecated
 2. **Обертывание ошибок**:
    - Использование `fmt.Errorf("context: %w", err)` для добавления контекста
    - Использование `errors.Is` и `errors.As` для проверки типов ошибок
@@ -327,11 +321,11 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 4. **Пример обработки ошибок**:
    ```go
    // В репозитории
-   func (r *MessageRepository) GetMessage(id int64) (*entity.Message, error) {
+   func (r *MessageRepo) GetMessage(id int64) (*entity.Message, error) {
        message, err := r.db.Get(id)
        if err != nil {
            if errors.Is(err, badger.ErrKeyNotFound) {
-               return nil, repository.ErrMessageNotFound
+               return nil, repo.ErrMessageNotFound
            }
            return nil, fmt.Errorf("getting message from database: %w", err)
        }
@@ -342,10 +336,10 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
    func (s *MessageService) GetMessage(ctx context.Context, id int64) (*entity.Message, error) {
        message, err := s.repo.GetMessage(id)
        if err != nil {
-           if errors.Is(err, repository.ErrMessageNotFound) {
+           if errors.Is(err, repo.ErrMessageNotFound) {
                return nil, service.ErrMessageNotFound
            }
-           return nil, fmt.Errorf("getting message from repository: %w", err)
+           return nil, fmt.Errorf("getting message from repo: %w", err)
        }
        return message, nil
    }
@@ -395,7 +389,7 @@ type MessageService interface {
 }
 
 // Пример интерфейса репозитория
-type TelegramRepository interface {
+type TelegramRepo interface {
     SendMessage(chatID int64, text string) (*entity.Message, error)
     GetMessage(chatID, messageID int64) (*entity.Message, error)
     DeleteMessage(chatID, messageID int64) error
@@ -439,12 +433,12 @@ func (s Service) ServiceMethod() {
 
 ```go
 // Правильно - принимаем интерфейс, возвращаем структуру
-func NewMessageService(repo TelegramRepository) *MessageService {
+func NewMessageService(repo TelegramRepo) *MessageService {
     return &MessageService{repo: repo}
 }
 
 // Неправильно - возвращаем интерфейс вместо структуры
-func NewMessageService(repo TelegramRepository) MessageServiceInterface {
+func NewMessageService(repo TelegramRepo) MessageServiceInterface {
     return &MessageService{repo: repo}
 }
 ```

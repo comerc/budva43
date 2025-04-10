@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-//go:generate mockery --name=storageRepository --exported
-type storageRepository interface {
+//go:generate mockery --name=storageRepo --exported
+type storageRepo interface {
 	Get(key []byte) ([]byte, error)
 	Set(key, value []byte) error
 	SetWithTTL(key, value []byte, ttl time.Duration) error
@@ -17,46 +17,46 @@ type storageRepository interface {
 
 // Service предоставляет методы для работы с хранилищем
 type Service struct {
-	repository storageRepository
+	repo storageRepo
 }
 
 // New создает новый экземпляр сервиса для работы с хранилищем
-func New(repository storageRepository) *Service {
+func New(repo storageRepo) *Service {
 	return &Service{
-		repository: repository,
+		repo: repo,
 	}
 }
 
 // Get получает значение по ключу
 func (s *Service) Get(key string) ([]byte, error) {
-	if s.repository == nil {
-		return nil, errors.New("storage repository is nil")
+	if s.repo == nil {
+		return nil, errors.New("storage repo is nil")
 	}
-	return s.repository.Get([]byte(key))
+	return s.repo.Get([]byte(key))
 }
 
 // Set устанавливает значение по ключу
 func (s *Service) Set(key string, value []byte) error {
-	if s.repository == nil {
-		return errors.New("storage repository is nil")
+	if s.repo == nil {
+		return errors.New("storage repo is nil")
 	}
-	return s.repository.Set([]byte(key), value)
+	return s.repo.Set([]byte(key), value)
 }
 
 // SetWithTTL устанавливает значение по ключу с временем жизни
 func (s *Service) SetWithTTL(key string, value []byte, ttl time.Duration) error {
-	if s.repository == nil {
-		return errors.New("storage repository is nil")
+	if s.repo == nil {
+		return errors.New("storage repo is nil")
 	}
-	return s.repository.SetWithTTL([]byte(key), value, ttl)
+	return s.repo.SetWithTTL([]byte(key), value, ttl)
 }
 
 // Delete удаляет значение по ключу
 func (s *Service) Delete(key string) error {
-	if s.repository == nil {
-		return errors.New("storage repository is nil")
+	if s.repo == nil {
+		return errors.New("storage repo is nil")
 	}
-	return s.repository.Delete([]byte(key))
+	return s.repo.Delete([]byte(key))
 }
 
 // SaveMedia сохраняет медиа-файл в хранилище
@@ -88,10 +88,10 @@ func (s *Service) GetConfig(key string) ([]byte, error) {
 
 // Close закрывает соединение с хранилищем
 func (s *Service) Close() error {
-	if s.repository == nil {
+	if s.repo == nil {
 		return nil
 	}
-	return s.repository.Close()
+	return s.repo.Close()
 }
 
 // Shutdown корректно завершает работу с хранилищем
