@@ -147,7 +147,7 @@ func getMessageLink(srcChatId, srcMessageId int) {
 		MessageId: int64(srcMessageId),
 	})
 	if err != nil {
-		fmt.Print("GetMessage src ", err)
+		slog.Error("GetMessage src", "err", err)
 	} else {
 		messageLink, err := tdlibClient.GetMessageLink(&client.GetMessageLinkRequest{
 			ChatId:     src.ChatId,
@@ -156,9 +156,9 @@ func getMessageLink(srcChatId, srcMessageId int) {
 			ForComment: false,
 		})
 		if err != nil {
-			fmt.Print("GetMessageLink ", err)
+			slog.Error("GetMessageLink", "err", err)
 		} else {
-			fmt.Print(messageLink.Link)
+			slog.Info("GetMessageLink", "link", messageLink.Link)
 		}
 	}
 }

@@ -142,7 +142,7 @@ func (h *Transport) handleNewMessage(message *client.Message) {
 	}
 
 	// Если сообщение не является командой, просто логируем его
-	slog.Info("Получено сообщение", "chat_id", message.ChatId, "text", text)
+	slog.Info("Message received", "chat_id", message.ChatId, "text", text)
 }
 
 // processCommand обрабатывает команду пользователя
@@ -252,10 +252,10 @@ func (h *Transport) generateReport(chatID int64, reportType string) {
 	}
 
 	// Логируем успешную генерацию отчета
-	slog.Info("Сгенерирован отчет",
-		"тип", reportType,
-		"период_с", startDate.Format("2006-01-02"),
-		"период_по", endDate.Format("2006-01-02"))
+	slog.Info("Report generated",
+		"type", reportType,
+		"start_date", startDate.Format("2006-01-02"),
+		"end_date", endDate.Format("2006-01-02"))
 }
 
 // handleRuleCommand обрабатывает команды для управления правилами пересылки
@@ -295,6 +295,6 @@ func (h *Transport) sendMessage(chatID int64, text string) {
 	// Отправляем сообщение через контроллер
 	_, err := h.messageController.SendMessage(chatID, text)
 	if err != nil {
-		slog.Error("Ошибка отправки сообщения", "chat_id", chatID, "err", err)
+		slog.Error("Failed to send message", "chat_id", chatID, "err", err)
 	}
 }
