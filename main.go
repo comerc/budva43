@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -22,7 +21,52 @@ import (
 	telegramTransport "github.com/comerc/budva43/transport/telegram"
 )
 
-var configPath = flag.String("config", ".", "config path")
+// TODO: отказаться от devcontainer
+// TODO: прикрутить готовый образ tdlib в докере для make build
+// TODO: установить локальный tdlib для разработки & COMMON_ENV
+
+// Основная функция приложения
+func main() {
+	// Инициализация конфигурации
+	config.Init()
+
+	// Настройка логгера
+	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     config.General.LogOptions.Level,
+		AddSource: config.General.LogOptions.AddSource,
+	})
+	logger := slog.New(logHandler)
+	slog.SetDefault(logger)
+
+	slog.Info("Запуск приложения Budva43")
+
+	// go config.Watch(func(e fsnotify.Event) {
+	// 	slog.Info("Config file changed", "file", e.Name)
+	// }) // TODO: перезагрузка приложения при изменении конфигурации
+
+	// Создаем контекст, который будет отменен при сигнале остановки
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Набор ошибок для graceful shutdown
+	errSet := &errSet{}
+
+	// Настраиваем обработку сигналов остановки
+	setupSignalHandler(cancel)
+
+	// Запускаем приложение и обрабатываем ошибки
+	if err := runApp(ctx, errSet); err != nil {
+		slog.Error("Ошибка при запуске приложения", "err", err)
+		os.Exit(1)
+	}
+
+	// Выводим накопленные ошибки при завершении
+	if errMsg := errSet.Error(); errMsg != "" {
+		slog.Warn(errMsg)
+	}
+
+	slog.Info("Приложение успешно завершило работу")
+}
 
 // errSet представляет собой коллекцию ошибок, которые могут возникнуть при shutdown
 type errSet struct {
@@ -65,42 +109,6 @@ func gracefulShutdown(componentName string, errSet *errSet, callback shutdownCal
 	}
 }
 
-// Основная функция приложения
-func main() {
-	// Настройка логгера
-	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelInfo,
-		AddSource: true, // Добавляем информацию об источнике лога
-	})
-	logger := slog.New(logHandler)
-	slog.SetDefault(logger)
-
-	slog.Info("Запуск приложения Budva43")
-
-	// Создаем контекст, который будет отменен при сигнале остановки
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Набор ошибок для graceful shutdown
-	errSet := &errSet{}
-
-	// Настраиваем обработку сигналов остановки
-	setupSignalHandler(cancel)
-
-	// Запускаем приложение и обрабатываем ошибки
-	if err := runApp(ctx, errSet); err != nil {
-		slog.Error("Ошибка при запуске приложения", "ошибка", err)
-		os.Exit(1)
-	}
-
-	// Выводим накопленные ошибки при завершении
-	if errMsg := errSet.Error(); errMsg != "" {
-		slog.Warn(errMsg)
-	}
-
-	slog.Info("Приложение успешно завершило работу")
-}
-
 // setupSignalHandler настраивает обработку сигналов остановки
 func setupSignalHandler(cancel context.CancelFunc) {
 	sigs := make(chan os.Signal, 1)
@@ -115,18 +123,10 @@ func setupSignalHandler(cancel context.CancelFunc) {
 
 // runApp запускает основные компоненты приложения
 func runApp(ctx context.Context, errSet *errSet) error {
-	// 1. Загрузка и инициализация конфигурации
-	cfg, err := config.Load()
-	if err != nil {
-		return fmt.Errorf("ошибка загрузки конфигурации: %w", err)
-	}
-	// go config.Watch() // TODO: перезагрузка приложения при изменении конфигурации
-	slog.Info("Конфигурация загружена успешно")
-
-	// 2. Инициализация репозиториев
+	// - Инициализация репозиториев
 
 	// Инициализируем BadgerDB репозиторий
-	badgerRepo := badgerRepo.New(cfg.Storage.DatabasePath)
+	badgerRepo := badgerRepo.New()
 	if err := badgerRepo.Connect(ctx); err != nil {
 		return fmt.Errorf("ошибка подключения к BadgerDB: %w", err)
 	}
@@ -134,40 +134,28 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("Подключение к BadgerDB установлено")
 
 	// Инициализируем Telegram репозиторий
-	telegramRepo, err := telegramRepo.New(telegramRepo.AuthInfo{
-		ApiID:               cfg.Telegram.ApiID,
-		ApiHash:             cfg.Telegram.ApiHash,
-		PhoneNumber:         cfg.Telegram.PhoneNumber,
-		BotToken:            cfg.Telegram.BotToken,
-		UseTestDC:           cfg.Telegram.UseTestDC,
-		DatabaseDirectory:   cfg.Telegram.DatabaseDirectory,
-		FilesDirectory:      cfg.Telegram.FilesDirectory,
-		UseFileDatabase:     cfg.Telegram.UseFileDatabase,
-		UseChatInfoDatabase: cfg.Telegram.UseChatInfoDatabase,
-		UseMessageDatabase:  cfg.Telegram.UseMessageDatabase,
-	})
+	telegramRepo, err := telegramRepo.New()
 	if err != nil {
 		return fmt.Errorf("ошибка создания Telegram репозитория: %w", err)
 	}
 
-	if err := telegramRepo.Connect(ctx); err != nil {
+	if err := telegramRepo.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка подключения к Telegram API: %w", err)
 	}
-	defer gracefulShutdown("Telegram API", errSet, telegramRepo.Close)
+	defer gracefulShutdown("Telegram API", errSet, telegramRepo.Stop)
 	slog.Info("Подключение к Telegram API установлено")
 
-	// 3. Инициализация сервисов
+	// - Инициализация сервисов
 	messageService := messsageService.New()
 	forwardRuleService := forwardRuleService.New()
 	reportService := reportService.New()
 
-	// 4. Инициализация контроллеров
+	// - Инициализация контроллеров
 	messageController := messageController.New(
 		messageService,
 		telegramRepo,
 	)
 
-	// Создаем контроллеры с нужными зависимостями
 	forwardController := forwardController.New(
 		forwardRuleService,
 		messageService,
@@ -180,9 +168,11 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		badgerRepo,
 	)
 
-	// 5. Инициализация транспортных адаптеров
+	// - Инициализация транспортных адаптеров
 
 	// HTTP транспорт
+	// TODO: переименовать на website/site & конфиг тоже
+	// TODO: почему тут httpRouter & httpServer - это детали реализации транспорта, которые должны быть скрыты
 	httpRouter := httpTransport.New(
 		messageController,
 		forwardController,
@@ -190,13 +180,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	)
 	httpServer := httpTransport.NewServer(
 		httpRouter,
-		httpTransport.Config{
-			Host:            cfg.Web.Host,
-			Port:            cfg.Web.Port,
-			ReadTimeout:     cfg.Web.ReadTimeout,
-			WriteTimeout:    cfg.Web.WriteTimeout,
-			ShutdownTimeout: cfg.Web.ShutdownTimeout,
-		},
 	)
 
 	// Запускаем HTTP сервер
@@ -207,13 +190,12 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("HTTP сервер запущен")
 
 	// Telegram транспорт
-	// В данном случае telegramRepo может выполнять роль telegramClient, поскольку он содержит нужные методы
+	// TODO: почему транспорт назвается handler?
 	telegramHandler := telegramTransport.New(
 		messageController,
 		forwardController,
 		reportController,
 		telegramRepo,
-		cfg.Telegram.AdminChatID,
 	)
 
 	if err := telegramHandler.Start(ctx); err != nil {
@@ -222,8 +204,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	defer gracefulShutdown("Telegram Handler", errSet, telegramHandler.Stop)
 	slog.Info("Telegram обработчик запущен")
 
-	// CLI транспорт временно отключен до полной реализации
-	// В реальном проекте здесь нужно создать и запустить CLI транспорт
+	// TODO:CLI транспорт временно отключен до полной реализации
 	slog.Info("CLI транспорт временно отключен")
 
 	// Ожидаем завершения контекста

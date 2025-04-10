@@ -8,25 +8,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
 
-func setDefaultConfig(config *Config) {
+func setDefaultConfig(config *config) {
 	config.General.AutoStart = true
 	config.General.NotifyOnStart = true
 	config.General.Language = "en"
 	config.General.Theme = "light"
 	config.General.LogLevel = "info"
 
-	config.Telegram.UseTestDC = false
-	config.Telegram.UseChatInfoDatabase = true
+	config.General.LogOptions.Level = slog.LevelInfo
+	config.General.LogOptions.AddSource = false
+
+	config.Telegram.UseTestDc = false
 	config.Telegram.UseFileDatabase = true
+	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
-	config.Telegram.DisableIntegrityProtection = false
-	config.Telegram.IgnoreFileNames = false
+	config.Telegram.UseSecretChats = false
+	config.Telegram.SystemLanguageCode = "en"
+	config.Telegram.DeviceModel = "Server"
+	config.Telegram.SystemVersion = "1.0.0"
+	config.Telegram.ApplicationVersion = "1.0.0"
 
 	config.Forwarding.DefaultDelay = 3
 	config.Forwarding.MaxMessagesPerMinute = 20
@@ -50,12 +55,12 @@ func setDefaultConfig(config *Config) {
 	config.Web.Enabled = true
 	config.Web.Port = 8080
 	config.Web.Host = "localhost"
-	config.Web.ReadTimeout = 15 * time.Second    // 15 секунд по умолчанию
-	config.Web.WriteTimeout = 15 * time.Second   // 15 секунд по умолчанию
-	config.Web.ShutdownTimeout = 5 * time.Second // 5 секунд по умолчанию
+	config.Web.ReadTimeout = 15 * time.Second
+	config.Web.WriteTimeout = 15 * time.Second
+	config.Web.ShutdownTimeout = 5 * time.Second
 	config.Web.EnableTLS = false
 	config.Web.RequireAuth = true
-	config.Web.SessionTimeout = 60 * time.Minute // 60 минут
+	config.Web.SessionTimeout = 60 * time.Minute
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
@@ -80,7 +85,7 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
-func Load() (*Config, error) {
+func load() (*config, error) {
 	var configPath = flag.String("config", ".", "config path")
 
 	flag.Parse()
@@ -112,7 +117,7 @@ func Load() (*Config, error) {
 	)
 
 	// Создаем конфигурацию со значениями по умолчанию
-	config := &Config{}
+	config := &config{}
 	setDefaultConfig(config)
 
 	// Переопределяем значения из конфигурационного файла и переменных окружения
@@ -121,11 +126,4 @@ func Load() (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func Watch() {
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		slog.Info("Config file changed", "file", e.Name)
-	})
-	viper.WatchConfig()
 }

@@ -4,25 +4,23 @@ import (
 	"context"
 	"time"
 
+	"github.com/comerc/budva43/config"
 	badger "github.com/dgraph-io/badger/v4"
 )
 
 // Repository определяет интерфейс для работы с хранилищем BadgerDB
 type Repository struct {
-	db     *badger.DB
-	dbPath string
+	db *badger.DB
 }
 
 // New создает новый экземпляр репозитория для BadgerDB
-func New(dbPath string) *Repository {
-	return &Repository{
-		dbPath: dbPath,
-	}
+func New() *Repository {
+	return &Repository{}
 }
 
 // Connect устанавливает соединение с базой данных
 func (r *Repository) Connect(ctx context.Context) error {
-	opts := badger.DefaultOptions(r.dbPath)
+	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
 	db, err := badger.Open(opts)
 	if err != nil {
 		return err

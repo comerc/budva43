@@ -4,23 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
-)
 
-// Config представляет конфигурацию HTTP-сервера
-type Config struct {
-	Host            string
-	Port            int
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	ShutdownTimeout time.Duration
-}
+	config "github.com/comerc/budva43/config"
+)
 
 // Server представляет HTTP-сервер для API
 type Server struct {
 	server   *http.Server
 	router   *Transport
-	config   Config
 	mux      *http.ServeMux
 	isClosed bool
 }
@@ -28,22 +19,20 @@ type Server struct {
 // NewServer создает новый экземпляр HTTP-сервера
 func NewServer(
 	router *Transport,
-	config Config,
 ) *Server {
 	mux := http.NewServeMux()
 
 	// Настраиваем HTTP-сервер
 	server := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", config.Host, config.Port),
+		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
 		Handler:      mux,
-		ReadTimeout:  config.ReadTimeout,
-		WriteTimeout: config.WriteTimeout,
+		ReadTimeout:  config.Web.ReadTimeout,
+		WriteTimeout: config.Web.WriteTimeout,
 	}
 
 	return &Server{
 		server:   server,
 		router:   router,
-		config:   config,
 		mux:      mux,
 		isClosed: false,
 	}
@@ -89,7 +78,7 @@ func (s *Server) Stop() error {
 	fmt.Println("Shutting down HTTP server...")
 
 	// Создаем контекст с таймаутом для graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), s.config.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
 	defer cancel()
 
 	if err := s.server.Shutdown(ctx); err != nil {

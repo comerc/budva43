@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
 )
@@ -48,7 +49,6 @@ type Transport struct {
 	forwardController forwardController
 	reportController  reportController
 	telegramClient    telegramClient
-	adminChatID       int64
 	updates           chan client.Update
 	stopped           bool
 }
@@ -59,14 +59,12 @@ func New(
 	forwardController forwardController,
 	reportController reportController,
 	telegramClient telegramClient,
-	adminChatID int64,
 ) *Transport {
 	return &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
 		telegramClient:    telegramClient,
-		adminChatID:       adminChatID,
 		updates:           make(chan client.Update, 100),
 		stopped:           false,
 	}
@@ -157,7 +155,7 @@ func (h *Transport) processCommand(message *client.Message, text string) {
 	chatID := message.ChatId
 
 	// Проверяем, что команда от администратора, если требуется
-	isAdmin := chatID == h.adminChatID
+	isAdmin := chatID == config.Bot.AdminChatId
 
 	// Обрабатываем различные команды
 	switch command {
