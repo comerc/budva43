@@ -4,11 +4,15 @@ go 1.24.2
 
 require (
 	github.com/dgraph-io/badger/v4 v4.7.0
+	github.com/fsnotify/fsnotify v1.8.0
+	github.com/joho/godotenv v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/samber/lo v1.49.1
 	github.com/spf13/viper v1.20.1
 	github.com/testcontainers/testcontainers-go v0.36.0
 	github.com/testcontainers/testcontainers-go/modules/redis v0.36.0
 	github.com/zelenin/go-tdlib v0.7.6
+	golang.org/x/term v0.30.0
 )
 
 require (
@@ -29,7 +33,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -54,7 +57,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
-	github.com/samber/lo v1.49.1 // indirect
 	github.com/shirou/gopsutil/v4 v4.25.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
