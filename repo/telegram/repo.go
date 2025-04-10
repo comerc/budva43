@@ -13,35 +13,18 @@ import (
 	"golang.org/x/term"
 )
 
-// Repository предоставляет методы для взаимодействия с Telegram API через TDLib
-type Repository struct {
+// Repo предоставляет методы для взаимодействия с Telegram API через TDLib
+type Repo struct {
 	client *client.Client
 }
 
-// // Config содержит информацию для авторизации в Telegram
-// type Config struct {
-// 	ApiID               string
-// 	ApiHash             string
-// 	PhoneNumber         string
-// 	BotToken            string // Опционально, для бот-аккаунта
-// 	UseTestDC           bool
-// 	DatabaseDirectory   string
-// 	FilesDirectory      string
-// 	UseFileDatabase     bool
-// 	UseChatInfoDatabase bool
-// 	UseMessageDatabase  bool
-// }
-
 // New создает новый экземпляр репозитория Telegram
-func New() (*Repository, error) {
-	return &Repository{}, nil
+func New() (*Repo, error) {
+	return &Repo{}, nil
 }
 
 // Start устанавливает соединение с Telegram API
-func (r *Repository) Start(ctx context.Context) error {
-	// Разбираться с настройкой TDLib клиента позже
-	// При необходимости добавим полноценную имплементацию
-
+func (r *Repo) Start(ctx context.Context) error {
 	tdlibParameters := &client.SetTdlibParametersRequest{
 		UseTestDc:           config.Telegram.UseTestDc,
 		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
@@ -171,7 +154,7 @@ func (r *Repository) Start(ctx context.Context) error {
 }
 
 // Stop закрывает соединение с Telegram API
-func (r *Repository) Stop() error {
+func (r *Repo) Stop() error {
 	if r.client != nil {
 		_, err := r.client.Close() // TODO: ok - зачем?
 		if err != nil {
@@ -183,37 +166,37 @@ func (r *Repository) Stop() error {
 }
 
 // GetMessage получает сообщение по идентификатору
-func (r *Repository) GetMessage(chatID, messageID int64) (*client.Message, error) {
+func (r *Repo) GetMessage(chatID, messageID int64) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
 }
 
 // SendTextMessage отправляет текстовое сообщение
-func (r *Repository) SendMessage(chatID int64, text string) (*client.Message, error) {
+func (r *Repo) SendMessage(chatID int64, text string) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
 }
 
 // ForwardMessage пересылает сообщение
-func (r *Repository) ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error) {
+func (r *Repo) ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
 }
 
 // DeleteMessage удаляет сообщение
-func (r *Repository) DeleteMessage(chatID, messageID int64) error {
+func (r *Repo) DeleteMessage(chatID, messageID int64) error {
 	// Реализация будет добавлена позже
 	return nil
 }
 
 // EditMessage редактирует сообщение
-func (r *Repository) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
+func (r *Repo) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
 }
 
 // GetChats получает список чатов
-func (r *Repository) GetChats(limit int) ([]*client.Chat, error) {
+func (r *Repo) GetChats(limit int) ([]*client.Chat, error) {
 	// Реализация будет добавлена позже
 	return []*client.Chat{}, nil
 }
