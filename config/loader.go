@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/mitchellh/mapstructure"
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
@@ -86,6 +87,10 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func load() (*config, error) {
+	if err := godotenv.Load(); err != nil {
+		return nil, fmt.Errorf("ошибка загрузки переменных окружения: %w", err)
+	}
+
 	var configPath = flag.String("config", ".", "config path")
 
 	flag.Parse()
