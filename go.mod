@@ -12,6 +12,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.36.0
 	github.com/testcontainers/testcontainers-go/modules/redis v0.36.0
 	github.com/zelenin/go-tdlib v0.7.6
+	go.uber.org/atomic v1.11.0
 	golang.org/x/term v0.30.0
 )
 
@@ -75,7 +76,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect

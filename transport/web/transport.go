@@ -1,14 +1,19 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
+	"go.uber.org/atomic"
+
+	"github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/entity"
 )
 
 // messageController определяет интерфейс контроллера сообщений, необходимый для HTTP транспорта
@@ -40,6 +45,9 @@ type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
+	server            *http.Server
+	mux               *http.ServeMux
+	isClosed          *atomic.Bool
 }
 
 // New создает новый экземпляр HTTP маршрутизатора
@@ -52,6 +60,7 @@ func New(
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
+		isClosed:          atomic.NewBool(false),
 	}
 }
 
@@ -67,6 +76,19 @@ func (r *Transport) SetupRoutes(mux *http.ServeMux) {
 
 	// Маршруты для отчетов
 	mux.HandleFunc("/api/reports", r.handleReports)
+
+	// Маршрут для основной страницы
+	mux.HandleFunc("/", r.handleRoot)
+}
+
+// handleRoot обрабатывает запросы к корневому маршруту
+func (r *Transport) handleRoot(w http.ResponseWriter, req *http.Request) {
+	if req.URL.Path != "/" {
+		http.NotFound(w, req)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("Budva43 API Server"))
 }
 
 // handleMessages обрабатывает запросы для работы с сообщениями
@@ -312,4 +334,53 @@ func (r *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(report)
+}
+
+// Start запускает HTTP-сервер
+func (t *Transport) Start(ctx context.Context) error {
+	// Создаем новый мультиплексор
+	t.mux = http.NewServeMux()
+
+	// Настраиваем маршруты
+	t.SetupRoutes(t.mux)
+
+	// Настраиваем HTTP-сервер
+	t.server = &http.Server{
+		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
+		Handler:      t.mux,
+		ReadTimeout:  config.Web.ReadTimeout,
+		WriteTimeout: config.Web.WriteTimeout,
+	}
+
+	// Запускаем HTTP-сервер в отдельной горутине
+	go func() {
+		if err := t.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("HTTP сервер завершился с ошибкой", "err", err)
+		}
+	}()
+
+	slog.Info("HTTP сервер запущен", "addr", t.server.Addr)
+
+	return nil
+}
+
+// Stop останавливает HTTP-сервер
+func (t *Transport) Stop() error {
+	if t.isClosed.Swap(true) || t.server == nil {
+		return nil
+	}
+
+	slog.Info("Остановка HTTP сервера")
+
+	// Создаем контекст с таймаутом для graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
+	defer cancel()
+
+	if err := t.server.Shutdown(ctx); err != nil {
+		slog.Error("Ошибка при остановке HTTP сервера", "err", err)
+		return fmt.Errorf("error shutting down HTTP server: %w", err)
+	}
+
+	slog.Info("HTTP сервер остановлен")
+	return nil
 }
