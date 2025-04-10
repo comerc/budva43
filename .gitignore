@@ -27,3 +27,4 @@ go.work.sum
 bin/
 data/
 config.yml
+try/
