@@ -17,13 +17,6 @@ type messageService interface {
 	GetCaption(message *client.Message) string
 }
 
-// telegramRepo определяет интерфейс репозитория Telegram, необходимый контроллеру
-type telegramRepo interface {
-	GetMessage(chatID, messageID int64) (*client.Message, error)
-	ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error)
-	SendMessage(chatID int64, text string) (*client.Message, error)
-}
-
 // storageRepo определяет интерфейс репозитория хранилища, необходимый контроллеру
 type storageRepo interface {
 	Get(key []byte) ([]byte, error)
@@ -34,22 +27,16 @@ type storageRepo interface {
 type Controller struct {
 	forwardRuleService forwardRuleService
 	messageService     messageService
-	telegramRepo       telegramRepo
-	storageRepo        storageRepo
 }
 
 // New создает новый экземпляр контроллера пересылки
 func New(
 	forwardRuleService forwardRuleService,
 	messageService messageService,
-	telegramRepo telegramRepo,
-	storageRepo storageRepo,
 ) *Controller {
 	return &Controller{
 		forwardRuleService: forwardRuleService,
 		messageService:     messageService,
-		telegramRepo:       telegramRepo,
-		storageRepo:        storageRepo,
 	}
 }
 
@@ -58,46 +45,47 @@ func (c *Controller) ForwardMessage(
 	rule *entity.ForwardRule,
 	fromChatID, messageID int64,
 ) ([]*client.Message, error) {
-	// Получаем исходное сообщение
-	message, err := c.telegramRepo.GetMessage(fromChatID, messageID)
-	if err != nil {
-		return nil, err
-	}
+	// // Получаем исходное сообщение
+	// message, err := c.messageService.GetMessage(fromChatID, messageID)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// Получаем текст сообщения (или подпись для медиа)
-	text := c.messageService.GetText(message)
-	if text == "" {
-		text = c.messageService.GetCaption(message)
-	}
+	// // Получаем текст сообщения (или подпись для медиа)
+	// text := c.messageService.GetText(message)
+	// if text == "" {
+	// 	text = c.messageService.GetCaption(message)
+	// }
 
-	// Проверяем, нужно ли пересылать сообщение по правилу
-	if !c.forwardRuleService.ShouldForward(rule, text) {
-		return nil, nil
-	}
+	// // Проверяем, нужно ли пересылать сообщение по правилу
+	// if !c.forwardRuleService.ShouldForward(rule, text) {
+	// 	return nil, nil
+	// }
 
-	// Пересылаем сообщение во все чаты-получатели
-	result := make([]*client.Message, 0, len(rule.To))
-	for _, toChatID := range rule.To {
-		var forwardedMessage *client.Message
-		var err error
+	// // Пересылаем сообщение во все чаты-получатели
+	// result := make([]*client.Message, 0, len(rule.To))
+	// for _, toChatID := range rule.To {
+	// 	var forwardedMessage *client.Message
+	// 	var err error
 
-		if rule.SendCopy {
-			// Отправляем копию текста
-			forwardedMessage, err = c.telegramRepo.SendMessage(toChatID, text)
-		} else {
-			// Пересылаем сообщение
-			forwardedMessage, err = c.telegramRepo.ForwardMessage(fromChatID, messageID, toChatID)
-		}
+	// 	if rule.SendCopy {
+	// 		// Отправляем копию текста
+	// 		forwardedMessage, err = c.messageService.SendMessage(toChatID, text)
+	// 	} else {
+	// 		// Пересылаем сообщение
+	// 		forwardedMessage, err = c.messageService.ForwardMessage(fromChatID, messageID, toChatID)
+	// 	}
 
-		if err != nil {
-			continue
-		}
+	// 	if err != nil {
+	// 		continue
+	// 	}
 
-		// Добавляем успешно пересланное сообщение в результат
-		result = append(result, forwardedMessage)
-	}
+	// 	// Добавляем успешно пересланное сообщение в результат
+	// 	result = append(result, forwardedMessage)
+	// }
 
-	return result, nil
+	// return result, nil
+	return nil, nil
 }
 
 // GetForwardRule получает правило пересылки по идентификатору

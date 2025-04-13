@@ -152,17 +152,13 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация контроллеров
 	messageController := messageController.New(
 		messageService,
-		telegramRepo,
 	)
 	forwardController := forwardController.New(
 		forwardRuleService,
 		messageService,
-		telegramRepo,
-		badgerRepo,
 	)
 	reportController := reportController.New(
 		reportService,
-		badgerRepo,
 	)
 
 	// Инициализация контроллера авторизации Telegram

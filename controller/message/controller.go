@@ -15,49 +15,43 @@ type messageService interface {
 	ExtractMessageMetadata(message *client.Message) map[string]interface{}
 }
 
-// telegramRepo определяет интерфейс репозитория Telegram, необходимый контроллеру
-type telegramRepo interface {
-	GetMessage(chatID, messageID int64) (*client.Message, error)
-	SendMessage(chatID int64, text string) (*client.Message, error)
-	DeleteMessage(chatID, messageID int64) error
-	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
-}
-
 // Controller представляет контроллер для работы с сообщениями
 type Controller struct {
 	messageService messageService
-	telegramRepo   telegramRepo
 }
 
 // New создает новый экземпляр контроллера сообщений
-func New(messageService messageService, telegramRepo telegramRepo) *Controller {
+func New(messageService messageService) *Controller {
 	return &Controller{
 		messageService: messageService,
-		telegramRepo:   telegramRepo,
 	}
 }
 
 // GetMessage получает сообщение по идентификатору
 func (c *Controller) GetMessage(chatID, messageID int64) (*client.Message, error) {
 	// Получаем сообщение из репозитория и возвращаем его напрямую
-	return c.telegramRepo.GetMessage(chatID, messageID)
+	// return c.messageService.GetMessage(chatID, messageID)
+	return nil, nil
 }
 
 // SendMessage отправляет новое сообщение
 func (c *Controller) SendMessage(chatID int64, text string) (*client.Message, error) {
 	// Отправляем сообщение через репозиторий
-	return c.telegramRepo.SendMessage(chatID, text)
+	// return c.messageService.SendMessage(chatID, text)
+	return nil, nil
 }
 
 // DeleteMessage удаляет сообщение
 func (c *Controller) DeleteMessage(chatID, messageID int64) error {
-	return c.telegramRepo.DeleteMessage(chatID, messageID)
+	// return c.messageService.DeleteMessage(chatID, messageID)
+	return nil
 }
 
 // EditMessage редактирует сообщение
 func (c *Controller) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
 	// Редактируем сообщение через репозиторий
-	return c.telegramRepo.EditMessage(chatID, messageID, text)
+	// return c.messageService.EditMessage(chatID, messageID, text)
+	return nil, nil
 }
 
 // FormatMessage форматирует текст сообщения

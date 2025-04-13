@@ -92,11 +92,8 @@ func (r *Repo) CreateClient(
 	slog.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
 }
 
-func (r *Repo) GetAuthorizationState() (client.AuthorizationState, error) {
-	if r.client == nil {
-		return nil, fmt.Errorf("клиент TDLib не инициализирован")
-	}
-	return r.client.GetAuthorizationState()
+func (r *Repo) GetClient() *client.Client {
+	return r.client
 }
 
 func (r *Repo) setClient(client *client.Client) {
@@ -132,32 +129,32 @@ func (r *Repo) InitClientDone() chan any {
 	return r.initClientDone
 }
 
-// GetMessage получает сообщение по идентификатору
-func (r *Repo) GetMessage(chatID, messageID int64) (*client.Message, error) {
-	// Реализация будет добавлена позже
-	return &client.Message{}, nil
-}
+// // GetMessage получает сообщение по идентификатору
+// func (r *Repo) GetMessage(chatID, messageID int64) (*client.Message, error) {
+// 	// Реализация будет добавлена позже
+// 	return &client.Message{}, nil
+// }
 
-// SendTextMessage отправляет текстовое сообщение
-func (r *Repo) SendMessage(chatID int64, text string) (*client.Message, error) {
-	// Реализация будет добавлена позже
-	return &client.Message{}, nil
-}
+// // SendTextMessage отправляет текстовое сообщение
+// func (r *Repo) SendMessage(chatID int64, text string) (*client.Message, error) {
+// 	// Реализация будет добавлена позже
+// 	return &client.Message{}, nil
+// }
 
-// ForwardMessage пересылает сообщение
-func (r *Repo) ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error) {
-	// Реализация будет добавлена позже
-	return &client.Message{}, nil
-}
+// // ForwardMessage пересылает сообщение
+// func (r *Repo) ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error) {
+// 	// Реализация будет добавлена позже
+// 	return &client.Message{}, nil
+// }
 
-// DeleteMessage удаляет сообщение
-func (r *Repo) DeleteMessage(chatID, messageID int64) error {
-	// Реализация будет добавлена позже
-	return nil
-}
+// // DeleteMessage удаляет сообщение
+// func (r *Repo) DeleteMessage(chatID, messageID int64) error {
+// 	// Реализация будет добавлена позже
+// 	return nil
+// }
 
-// EditMessage редактирует сообщение
-func (r *Repo) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
-	// Реализация будет добавлена позже
-	return &client.Message{}, nil
-}
+// // EditMessage редактирует сообщение
+// func (r *Repo) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
+// 	// Реализация будет добавлена позже
+// 	return &client.Message{}, nil
+// }

@@ -9,7 +9,7 @@ import (
 
 // telegramRepo определяет интерфейс репозитория Telegram
 type telegramRepo interface {
-	GetAuthorizationState() (client.AuthorizationState, error)
+	GetClient() *client.Client
 	InitClientDone() chan any
 	CreateClient(func(func(*client.Client)) client.AuthorizationStateHandler)
 }
@@ -43,7 +43,7 @@ func (s *Service) GetStateChan() <-chan client.AuthorizationState {
 
 // GetAuthorizationState возвращает текущее состояние авторизации
 func (s *Service) GetAuthorizationState() client.AuthorizationState {
-	state, err := s.telegramRepo.GetAuthorizationState()
+	state, err := s.telegramRepo.GetClient().GetAuthorizationState()
 	if err != nil {
 		slog.Error("Ошибка при получении состояния авторизации", "error", err)
 		return nil
