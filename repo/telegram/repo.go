@@ -92,9 +92,11 @@ func (r *Repo) CreateClient(
 	slog.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
 }
 
-// GetClient возвращает клиент TDLib
-func (r *Repo) GetClient() *client.Client {
-	return r.client
+func (r *Repo) GetAuthorizationState() (client.AuthorizationState, error) {
+	if r.client == nil {
+		return nil, fmt.Errorf("клиент TDLib не инициализирован")
+	}
+	return r.client.GetAuthorizationState()
 }
 
 func (r *Repo) setClient(client *client.Client) {

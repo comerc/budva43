@@ -19,9 +19,9 @@ type Controller struct {
 }
 
 // New создает новый экземпляр контроллера авторизации Telegram
-func New(authService authTelegramService) *Controller {
+func New(authTelegramService authTelegramService) *Controller {
 	return &Controller{
-		authTelegramService: authService,
+		authTelegramService: authTelegramService,
 	}
 }
 

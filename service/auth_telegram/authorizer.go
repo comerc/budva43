@@ -11,11 +11,11 @@ import (
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
 	setClient       func(client *client.Client)
-	TdlibParameters *client.SetTdlibParametersRequest
-	PhoneNumber     chan string
-	Code            chan string
-	State           chan client.AuthorizationState
-	Password        chan string
+	tdlibParameters *client.SetTdlibParametersRequest
+	phoneNumber     chan string
+	code            chan string
+	state           chan client.AuthorizationState
+	password        chan string
 }
 
 func NewAuthorizer(setClient func(*client.Client)) *Authorizer {
@@ -37,35 +37,35 @@ func NewAuthorizer(setClient func(*client.Client)) *Authorizer {
 
 	return &Authorizer{
 		setClient:       setClient,
-		TdlibParameters: tdlibParameters,
-		PhoneNumber:     make(chan string, 1),
-		Code:            make(chan string, 1),
-		State:           make(chan client.AuthorizationState, 10),
-		Password:        make(chan string, 1),
+		tdlibParameters: tdlibParameters,
+		phoneNumber:     make(chan string, 1),
+		code:            make(chan string, 1),
+		state:           make(chan client.AuthorizationState, 10),
+		password:        make(chan string, 1),
 	}
 }
 
 func (a *Authorizer) Handle(tdlibClient *client.Client, state client.AuthorizationState) error {
-	slog.Info("Authorizer.Handle", "state", state.AuthorizationStateType())
-
 	a.setClient(tdlibClient) // dirty hack - чтобы получить клиент до завершения client.NewClient()
 
-	slog.Info("State send")
+	stateType := state.AuthorizationStateType()
+
+	slog.Info("State send", "stateType", stateType)
 	select {
-	case a.State <- state:
+	case a.state <- state:
 		slog.Debug("State sent to channel")
 	default:
 		slog.Warn("State channel full, unable to send state")
 	}
 
-	switch state.AuthorizationStateType() {
+	switch stateType {
 	case client.TypeAuthorizationStateWaitTdlibParameters:
-		_, err := tdlibClient.SetTdlibParameters(a.TdlibParameters)
+		_, err := tdlibClient.SetTdlibParameters(a.tdlibParameters)
 		return err
 
 	case client.TypeAuthorizationStateWaitPhoneNumber:
 		_, err := tdlibClient.SetAuthenticationPhoneNumber(&client.SetAuthenticationPhoneNumberRequest{
-			PhoneNumber: <-a.PhoneNumber,
+			PhoneNumber: <-a.phoneNumber,
 			Settings: &client.PhoneNumberAuthenticationSettings{
 				AllowFlashCall:       false,
 				IsCurrentPhoneNumber: false,
@@ -82,7 +82,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 
 	case client.TypeAuthorizationStateWaitCode:
 		_, err := tdlibClient.CheckAuthenticationCode(&client.CheckAuthenticationCodeRequest{
-			Code: <-a.Code,
+			Code: <-a.code,
 		})
 		return err
 
@@ -94,7 +94,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 
 	case client.TypeAuthorizationStateWaitPassword:
 		_, err := tdlibClient.CheckAuthenticationPassword(&client.CheckAuthenticationPasswordRequest{
-			Password: <-a.Password,
+			Password: <-a.password,
 		})
 		return err
 
@@ -105,7 +105,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 		return client.NotSupportedAuthorizationState(state)
 
 	case client.TypeAuthorizationStateClosing:
-		<-a.State // не допускает переполнение (и блокировки чтения) канала
+		<-a.state // не допускает переполнение (и блокировки чтения) канала
 		return nil
 
 	case client.TypeAuthorizationStateClosed:
@@ -116,9 +116,9 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 }
 
 func (a *Authorizer) Close() {
-	slog.Debug("Closing stateHandler")
-	close(a.PhoneNumber)
-	close(a.Code)
-	close(a.State)
-	close(a.Password)
+	slog.Debug("Closing Authorizer")
+	close(a.phoneNumber)
+	close(a.code)
+	close(a.state)
+	close(a.password)
 }

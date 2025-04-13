@@ -34,9 +34,13 @@ func TestRepo_Start(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 
-	c := repo.GetClient()
+	state, err := repo.GetAuthorizationState()
+	// if err != nil {
+	// 	t.Fatalf("failed to get authorization state: %v", err)
+	// }
 
-	assert.Nil(t, c)
+	assert.Nil(t, state)
+	assert.NotNil(t, err)
 
 	repo.Stop()
 }
