@@ -26,18 +26,18 @@ func New(telegramRepo telegramRepo) *Service {
 		telegramRepo: telegramRepo,
 	}
 
-	go s.telegramRepo.CreateClient(s.CreateAuthorizer)
+	сreateAuthorizer := func(setClient func(*client.Client)) client.AuthorizationStateHandler {
+		s.authorizer = NewAuthorizer(setClient)
+		return s.authorizer
+	}
+
+	go telegramRepo.CreateClient(сreateAuthorizer)
 
 	return s
 }
 
-func (s *Service) CreateAuthorizer(setClient func(*client.Client)) client.AuthorizationStateHandler {
-	s.authorizer = NewAuthorizer(setClient)
-	return s.authorizer
-}
-
 // GetStateChan возвращает канал состояния авторизации
-func (s *Service) GetStateChan() chan client.AuthorizationState {
+func (s *Service) GetStateChan() <-chan client.AuthorizationState {
 	return s.authorizer.State
 }
 
