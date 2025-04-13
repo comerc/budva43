@@ -4,6 +4,9 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,19 +14,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-// TODO: log.Fatalf в этом файле используются много раз, нужно переделать на return error?
-
 type (
 	// Настройки приложения
 	config struct {
-		General    general
-		LogOptions logOptions
-		Telegram   telegram
-		Forwarding forwarding
-		Reports    reports
-		Storage    storage
-		Web        web
-		Bot        bot
+		general     general
+		logOptions  logOptions
+		telegram    telegram
+		forwarding  forwarding
+		reports     reports
+		storage     storage
+		web         web
+		bot         bot
+		projectRoot string
 	}
 
 	// Общие настройки
@@ -115,27 +117,45 @@ type (
 )
 
 var (
-	once       sync.Once
-	cfg        = &config{}
-	General    = &cfg.General
-	LogOptions = &cfg.LogOptions
-	Telegram   = &cfg.Telegram
-	Forwarding = &cfg.Forwarding
-	Reports    = &cfg.Reports
-	Storage    = &cfg.Storage
-	Web        = &cfg.Web
-	Bot        = &cfg.Bot
+	once        sync.Once
+	cfg         = &config{}
+	projectRoot string
+	General     = &cfg.general
+	LogOptions  = &cfg.logOptions
+	Telegram    = &cfg.telegram
+	Forwarding  = &cfg.forwarding
+	Reports     = &cfg.reports
+	Storage     = &cfg.storage
+	Web         = &cfg.web
+	Bot         = &cfg.bot
 )
 
-func new() *config {
-	result, err := load()
+// не используем slog, т.к. он инициализируется в main.go
+
+// findProjectRoot находит корень проекта на основе файла go.mod
+func findProjectRoot() string {
+	// Запускаем команду "go env GOMOD" чтобы найти путь к go.mod
+	cmd := exec.Command("go", "env", "GOMOD")
+	output, err := cmd.Output()
 	if err != nil {
-		log.Fatalf("ошибка загрузки конфигурации: %s", err)
+		// log.Print("Не удалось определить путь к go.mod: %w", err)
+		// Если не удалось, пробуем взять текущую директорию
+		currentDir, err := os.Getwd()
+		if err != nil {
+			// log.Print("Не удалось получить текущую директорию: %w", err)
+			return "."
+		}
+		return currentDir
 	}
-	return result
+
+	// Удаляем символ новой строки из вывода
+	goModPath := strings.TrimSpace(string(output))
+	// Получаем директорию go.mod - это и есть корень проекта
+	projectRoot := filepath.Dir(goModPath)
+
+	return projectRoot
 }
 
-// TODO: тесты создают папки относительно директории запуска теста, а не относительно корня проекта
 // TODO: куда бы пенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
 func makeDirs() {
 	var dirs = []string{
@@ -145,6 +165,10 @@ func makeDirs() {
 		Telegram.FilesDirectory,
 	}
 	for _, dir := range dirs {
+		// Устанавливаем директории относительно корня проекта, если они не абсолютные
+		if !filepath.IsAbs(dir) {
+			dir = filepath.Join(projectRoot, dir)
+		}
 		_, err := os.Stat(dir)
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -161,7 +185,11 @@ func makeDirs() {
 // но подходит для реализации синглтона
 func init() {
 	once.Do(func() {
-		loadedCfg := new()
+		projectRoot = findProjectRoot()
+		loadedCfg, err := load()
+		if err != nil {
+			log.Fatalf("ошибка загрузки конфигурации: %s", err)
+		}
 		*cfg = *loadedCfg
 		makeDirs()
 	})

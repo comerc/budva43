@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -14,53 +15,59 @@ import (
 )
 
 func setDefaultConfig(config *config) {
-	config.General.AutoStart = true
-	config.General.NotifyOnStart = true
-	config.General.Language = "en"
-	config.General.Theme = "light"
+	config.general.AutoStart = true
+	config.general.NotifyOnStart = true
+	config.general.Language = "en"
+	config.general.Theme = "light"
 
-	config.LogOptions.Level = slog.LevelDebug
-	config.LogOptions.AddSource = false
+	config.logOptions.Level = slog.LevelDebug
+	config.logOptions.AddSource = false
 
-	config.Telegram.UseTestDc = false
-	config.Telegram.UseFileDatabase = true
-	config.Telegram.UseChatInfoDatabase = true
-	config.Telegram.UseMessageDatabase = true
-	config.Telegram.UseSecretChats = false
-	config.Telegram.SystemLanguageCode = "en"
-	config.Telegram.DeviceModel = "Server"
-	config.Telegram.SystemVersion = "1.0.0"
-	config.Telegram.ApplicationVersion = "1.0.0"
-	config.Telegram.LogVerbosityLevel = 0
+	config.telegram.UseTestDc = false
+	config.telegram.UseFileDatabase = true
+	config.telegram.UseChatInfoDatabase = true
+	config.telegram.UseMessageDatabase = true
+	config.telegram.UseSecretChats = false
+	config.telegram.SystemLanguageCode = "en"
+	config.telegram.DeviceModel = "Server"
+	config.telegram.SystemVersion = "1.0.0"
+	config.telegram.ApplicationVersion = "1.0.0"
+	config.telegram.LogVerbosityLevel = 0
 
-	config.Forwarding.DefaultDelay = 3
-	config.Forwarding.MaxMessagesPerMinute = 20
-	config.Forwarding.PreserveFormatting = true
-	config.Forwarding.KeepMediaOriginal = true
-	config.Forwarding.AutoSign = false
-	config.Forwarding.AddSourceLink = true
-	config.Forwarding.AddForwardedTag = true
+	config.telegram.DatabaseDirectory = filepath.Join(projectRoot, "data", "tdlib")
+	config.telegram.FilesDirectory = filepath.Join(projectRoot, "data", "tdlib_files")
 
-	config.Reports.DefaultPeriod = "daily"
-	config.Reports.AutoGenerate = false
-	config.Reports.SendToAdmin = false
-	config.Reports.IncludeStatistics = true
-	config.Reports.StatFormat = "text"
+	config.storage.DatabaseDirectory = filepath.Join(projectRoot, "data", "storage")
+	config.storage.BackupDirectory = filepath.Join(projectRoot, "data", "backups")
 
-	config.Storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
-	config.Storage.DataRetentionDays = 30
-	config.Storage.AutoCleanup = true
-	config.Storage.BackupEnabled = false
+	config.forwarding.DefaultDelay = 3
+	config.forwarding.MaxMessagesPerMinute = 20
+	config.forwarding.PreserveFormatting = true
+	config.forwarding.KeepMediaOriginal = true
+	config.forwarding.AutoSign = false
+	config.forwarding.AddSourceLink = true
+	config.forwarding.AddForwardedTag = true
 
-	config.Web.Enabled = true
-	config.Web.Port = 8080
-	config.Web.Host = "localhost"
-	config.Web.ReadTimeout = 15 * time.Second
-	config.Web.WriteTimeout = 15 * time.Second
-	config.Web.ShutdownTimeout = 5 * time.Second
-	config.Web.EnableTLS = false
-	config.Web.RequireAuth = true
-	config.Web.SessionTimeout = 60 * time.Minute
+	config.reports.DefaultPeriod = "daily"
+	config.reports.AutoGenerate = false
+	config.reports.SendToAdmin = false
+	config.reports.IncludeStatistics = true
+	config.reports.StatFormat = "text"
+
+	config.storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
+	config.storage.DataRetentionDays = 30
+	config.storage.AutoCleanup = true
+	config.storage.BackupEnabled = false
+
+	config.web.Enabled = true
+	config.web.Port = 8080
+	config.web.Host = "localhost"
+	config.web.ReadTimeout = 15 * time.Second
+	config.web.WriteTimeout = 15 * time.Second
+	config.web.ShutdownTimeout = 5 * time.Second
+	config.web.EnableTLS = false
+	config.web.RequireAuth = true
+	config.web.SessionTimeout = 60 * time.Minute
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
@@ -86,27 +93,25 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func load() (*config, error) {
-	// var configPath = flag.String("config", "/workspaces/budva43", "config path")
+	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами
 
-	const projectRoot = "/workspaces/budva43" // TODO: переделать на флаги
-
-	// if err := godotenv.Load(*configPath + "/.env"); err != nil {
-	if err := godotenv.Load(projectRoot + "/.env"); err != nil {
-		return nil, fmt.Errorf("ошибка загрузки переменных окружения: %w", err)
+	envPath := filepath.Join(projectRoot, ".env")
+	if err := godotenv.Load(envPath); err != nil {
+		// log.Print("Не удалось загрузить .env файл %w", err)
+		// Продолжаем выполнение
 	}
-
-	// flag.Parse()
 
 	// Настройка Viper для чтения конфигурации из файла
 	viper.SetConfigName("config") // имя конфигурационного файла без расширения
 	viper.SetConfigType("yml")    // расширение файла конфигурации
-	// viper.AddConfigPath(*configPath)
 	viper.AddConfigPath(projectRoot)
 
 	// Настраиваем Viper для правильной обработки имен полей и секций
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))
 	viper.SetEnvPrefix("BUDVA43_") // Префикс для переменных окружения
-	// BUDVA43__GENERAL__TELEGRAM__API_ID == viper.GetString("general.telegram.api-id")
+	// одинаково работает:
+	// - BUDVA43__GENERAL__TELEGRAM__API_ID - из переменной окружения
+	// - viper.GetString("general.telegram.api-id") - из конфигурационного файла
 
 	// Автоматическое чтение из переменных окружения
 	viper.AutomaticEnv()
