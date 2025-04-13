@@ -28,8 +28,6 @@ import (
 // TODO: отказаться от devcontainer
 // TODO: прикрутить готовый образ tdlib в докере для make build
 // TODO: установить локальный tdlib для разработки & COMMON_ENV
-// TODO: расскажи про реализацию конечного автомата авторизации
-// TODO: сервисы и контроллеры не реализуют нотацию Start&Stop ?
 
 // Основная функция приложения
 func main() {
@@ -137,6 +135,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	defer gracefulShutdown("badgerRepo", errSet, badgerRepo.Stop)
 	slog.Info("badgerRepo запущен")
 
+	// Создаем и запускаем репозиторий Telegram
 	telegramRepo := telegramRepo.New()
 	if err := telegramRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)

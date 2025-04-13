@@ -48,7 +48,6 @@ type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
 	SubmitPassword(password string)
-	GetStateChan() chan client.AuthorizationState
 	InitClientDone() chan any
 	GetAuthorizationState() client.AuthorizationState
 }

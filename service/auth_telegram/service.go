@@ -9,18 +9,15 @@ import (
 
 // telegramRepo определяет интерфейс репозитория Telegram
 type telegramRepo interface {
-	// CreateClient() error // TODO: где запустить?
 	GetClient() *client.Client
-	GetPhoneNumber() chan string
-	GetCode() chan string
-	GetStateChan() chan client.AuthorizationState
-	GetPassword() chan string
 	InitClientDone() chan any
+	CreateClient(func(func(*client.Client)) client.AuthorizationStateHandler)
 }
 
 // Service управляет процессом авторизации в Telegram
 type Service struct {
 	telegramRepo telegramRepo
+	authorizer   *Authorizer
 }
 
 // New создает новый экземпляр сервиса авторизации Telegram
@@ -29,20 +26,24 @@ func New(telegramRepo telegramRepo) *Service {
 		telegramRepo: telegramRepo,
 	}
 
+	go s.telegramRepo.CreateClient(s.CreateAuthorizer)
+
 	return s
 }
 
-func (s *Service) GetStateChan() chan client.AuthorizationState {
-	return s.telegramRepo.GetStateChan()
+func (s *Service) CreateAuthorizer(setClient func(*client.Client)) client.AuthorizationStateHandler {
+	s.authorizer = NewAuthorizer(setClient)
+	return s.authorizer
 }
 
+// GetStateChan возвращает канал состояния авторизации
+func (s *Service) GetStateChan() chan client.AuthorizationState {
+	return s.authorizer.State
+}
+
+// GetAuthorizationState возвращает текущее состояние авторизации
 func (s *Service) GetAuthorizationState() client.AuthorizationState {
-	tdlibClient := s.telegramRepo.GetClient()
-	if tdlibClient == nil {
-		slog.Error("Клиент TDLib не инициализирован")
-		return nil
-	}
-	state, err := tdlibClient.GetAuthorizationState()
+	state, err := s.telegramRepo.GetClient().GetAuthorizationState()
 	if err != nil {
 		slog.Error("Ошибка при получении состояния авторизации", "error", err)
 		return nil
@@ -50,22 +51,19 @@ func (s *Service) GetAuthorizationState() client.AuthorizationState {
 	return state
 }
 
-// SetPhoneNumber устанавливает номер телефона для авторизации
-func (s *Service) SetPhoneNumber(phoneNumber string) {
-	// slog.Info("Попытка установить номер телефона", "phoneNumber", phoneNumber)
-	s.telegramRepo.GetPhoneNumber() <- phoneNumber
+// SubmitPhoneNumber устанавливает номер телефона для авторизации
+func (s *Service) SubmitPhoneNumber(phoneNumber string) {
+	s.authorizer.PhoneNumber <- phoneNumber
 }
 
-// SetCode устанавливает код подтверждения для авторизации
-func (s *Service) SetCode(code string) {
-	// slog.Info("Попытка установить код подтверждения", "code", code)
-	s.telegramRepo.GetCode() <- code
+// SubmitCode устанавливает код подтверждения для авторизации
+func (s *Service) SubmitCode(code string) {
+	s.authorizer.Code <- code
 }
 
-// SetPassword устанавливает пароль двухфакторной аутентификации
-func (s *Service) SetPassword(password string) {
-	//slog.Info("Попытка установить пароль", "passwordLength", len(password))
-	s.telegramRepo.GetPassword() <- password
+// SubmitPassword устанавливает пароль двухфакторной аутентификации
+func (s *Service) SubmitPassword(password string) {
+	s.authorizer.Password <- password
 }
 
 // InitClientDone возвращает канал, который будет закрыт после инициализации клиента
