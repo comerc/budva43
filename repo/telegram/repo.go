@@ -45,10 +45,11 @@ func (r *Repo) CreateClient(
 		}),
 	}
 
+	// Если неудачная авторизации, то клиент закрывается, потому перезапуск цикла
 	for {
 		authorizationStateHandler := createAuthorizer(r.setClient)
 		tdlibClient, err := client.NewClient(authorizationStateHandler, options...)
-		slog.Info("TDLib client created?")
+		slog.Info("TDLib client created")
 		if err != nil {
 			slog.Error("ошибка при создании клиента TDLib", "error", err)
 			// return fmt.Errorf("ошибка при создании клиента TDLib: %w", err)
