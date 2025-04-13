@@ -46,7 +46,7 @@ type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
 	SubmitPassword(password string)
-	GetStateChan() client.AuthorizationState
+	GetAuthorizationState() client.AuthorizationState
 }
 
 // Transport представляет HTTP маршрутизатор для API
@@ -368,7 +368,7 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	state := t.authController.GetStateChan()
+	state := t.authController.GetAuthorizationState()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -466,7 +466,7 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	t.authClients[clientID] = events
 
 	// Отправляем текущее состояние сразу при подключении
-	state := t.authController.GetStateChan()
+	state := t.authController.GetAuthorizationState()
 	if state != nil {
 		events <- state
 	}
