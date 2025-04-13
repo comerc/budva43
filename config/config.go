@@ -17,6 +17,7 @@ type (
 	// Настройки приложения
 	config struct {
 		General    general
+		LogOptions logOptions
 		Telegram   telegram
 		Forwarding forwarding
 		Reports    reports
@@ -27,12 +28,10 @@ type (
 
 	// Общие настройки
 	general struct {
-		LogOptions    logOptions
 		AutoStart     bool
 		NotifyOnStart bool
 		Language      string
 		Theme         string
-		LogLevel      string
 	}
 
 	// Настройки логгера
@@ -57,6 +56,7 @@ type (
 		UseFileDatabase     bool
 		UseMessageDatabase  bool
 		UseSecretChats      bool
+		LogVerbosityLevel   int32
 	}
 
 	// Настройки для бота
@@ -118,6 +118,7 @@ var (
 	once       sync.Once
 	cfg        = &config{}
 	General    = &cfg.General
+	LogOptions = &cfg.LogOptions
 	Telegram   = &cfg.Telegram
 	Forwarding = &cfg.Forwarding
 	Reports    = &cfg.Reports

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"fmt"
 	"log/slog"
 	"reflect"
@@ -19,10 +18,9 @@ func setDefaultConfig(config *config) {
 	config.General.NotifyOnStart = true
 	config.General.Language = "en"
 	config.General.Theme = "light"
-	config.General.LogLevel = "info"
 
-	config.General.LogOptions.Level = slog.LevelInfo
-	config.General.LogOptions.AddSource = false
+	config.LogOptions.Level = slog.LevelDebug
+	config.LogOptions.AddSource = false
 
 	config.Telegram.UseTestDc = false
 	config.Telegram.UseFileDatabase = true
@@ -33,6 +31,7 @@ func setDefaultConfig(config *config) {
 	config.Telegram.DeviceModel = "Server"
 	config.Telegram.SystemVersion = "1.0.0"
 	config.Telegram.ApplicationVersion = "1.0.0"
+	config.Telegram.LogVerbosityLevel = 0
 
 	config.Forwarding.DefaultDelay = 3
 	config.Forwarding.MaxMessagesPerMinute = 20
@@ -87,18 +86,22 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func load() (*config, error) {
-	if err := godotenv.Load(); err != nil {
+	// var configPath = flag.String("config", "/workspaces/budva43", "config path")
+
+	const projectRoot = "/workspaces/budva43" // TODO: переделать на флаги
+
+	// if err := godotenv.Load(*configPath + "/.env"); err != nil {
+	if err := godotenv.Load(projectRoot + "/.env"); err != nil {
 		return nil, fmt.Errorf("ошибка загрузки переменных окружения: %w", err)
 	}
 
-	var configPath = flag.String("config", ".", "config path")
-
-	flag.Parse()
+	// flag.Parse()
 
 	// Настройка Viper для чтения конфигурации из файла
 	viper.SetConfigName("config") // имя конфигурационного файла без расширения
 	viper.SetConfigType("yml")    // расширение файла конфигурации
-	viper.AddConfigPath(*configPath)
+	// viper.AddConfigPath(*configPath)
+	viper.AddConfigPath(projectRoot)
 
 	// Настраиваем Viper для правильной обработки имен полей и секций
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))

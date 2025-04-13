@@ -9,29 +9,34 @@ import (
 	"syscall"
 
 	config "github.com/comerc/budva43/config"
+	authTelegramController "github.com/comerc/budva43/controller/auth_telegram"
 	forwardController "github.com/comerc/budva43/controller/forward"
 	messageController "github.com/comerc/budva43/controller/message"
 	reportController "github.com/comerc/budva43/controller/report"
 	badgerRepo "github.com/comerc/budva43/repo/badger"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
+	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
 	forwardRuleService "github.com/comerc/budva43/service/forward_rule"
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
-	botTransport "github.com/comerc/budva43/transport/bot"
+
+	// botTransport "github.com/comerc/budva43/transport/bot"
 	cliTransport "github.com/comerc/budva43/transport/cli"
-	webTransport "github.com/comerc/budva43/transport/web"
+	// webTransport "github.com/comerc/budva43/transport/web"
 )
 
 // TODO: отказаться от devcontainer
 // TODO: прикрутить готовый образ tdlib в докере для make build
 // TODO: установить локальный tdlib для разработки & COMMON_ENV
+// TODO: расскажи про реализацию конечного автомата авторизации
+// TODO: сервисы и контроллеры не реализуют нотацию Start&Stop ?
 
 // Основная функция приложения
 func main() {
 	// Настройка логгера
 	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     config.General.LogOptions.Level,
-		AddSource: config.General.LogOptions.AddSource,
+		Level:     config.LogOptions.Level,
+		AddSource: config.LogOptions.AddSource,
 	})
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
@@ -123,15 +128,17 @@ func setupSignalHandler(cancel context.CancelFunc) {
 func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация репозиториев
 
+	ctx, cancel := context.WithCancel(ctx)
+
 	badgerRepo := badgerRepo.New()
-	if err := badgerRepo.Start(ctx); err != nil {
+	if err := badgerRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска badgerRepo: %w", err)
 	}
 	defer gracefulShutdown("badgerRepo", errSet, badgerRepo.Stop)
 	slog.Info("badgerRepo запущен")
 
 	telegramRepo := telegramRepo.New()
-	if err := telegramRepo.Start(ctx); err != nil {
+	if err := telegramRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
 	defer gracefulShutdown("telegramRepo", errSet, telegramRepo.Stop)
@@ -141,56 +148,60 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	messageService := messsageService.New()
 	forwardRuleService := forwardRuleService.New()
 	reportService := reportService.New()
+	authTelegramService := authTelegramService.New(telegramRepo)
 
 	// - Инициализация контроллеров
 	messageController := messageController.New(
 		messageService,
 		telegramRepo,
 	)
-
 	forwardController := forwardController.New(
 		forwardRuleService,
 		messageService,
 		telegramRepo,
 		badgerRepo,
 	)
-
 	reportController := reportController.New(
 		reportService,
 		badgerRepo,
 	)
 
+	// Инициализация контроллера авторизации Telegram
+	authTelegramController := authTelegramController.New(authTelegramService)
+
 	// - Инициализация транспортных адаптеров
 
-	webTransport := webTransport.New(
-		messageController,
-		forwardController,
-		reportController,
-	)
-	if err := webTransport.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска webTransport: %w", err)
-	}
-	defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
-	slog.Info("webTransport запущен")
+	// webTransport := webTransport.New(
+	// 	messageController,
+	// 	forwardController,
+	// 	reportController,
+	// 	authTelegramController,
+	// )
+	// if err := webTransport.Start(ctx, cancel); err != nil {
+	// 	return fmt.Errorf("ошибка запуска webTransport: %w", err)
+	// }
+	// defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
+	// slog.Info("webTransport запущен")
 
-	botTransport := botTransport.New(
-		messageController,
-		forwardController,
-		reportController,
-		telegramRepo,
-	)
-	if err := botTransport.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска botTransport: %w", err)
-	}
-	defer gracefulShutdown("botTransport", errSet, botTransport.Stop)
-	slog.Info("botTransport запущен")
+	// botTransport := botTransport.New(
+	// 	messageController,
+	// 	forwardController,
+	// 	reportController,
+	// 	telegramRepo,
+	// )
+	// if err := botTransport.Start(ctx, cancel); err != nil {
+	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
+	// }
+	// defer gracefulShutdown("botTransport", errSet, botTransport.Stop)
+	// slog.Info("botTransport запущен")
 
 	cliTransport := cliTransport.New(
 		messageController,
 		forwardController,
 		reportController,
+		authTelegramController,
 	)
-	if err := cliTransport.Start(ctx); err != nil {
+	if err := cliTransport.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
 	}
 	defer gracefulShutdown("cliTransport", errSet, cliTransport.Stop)

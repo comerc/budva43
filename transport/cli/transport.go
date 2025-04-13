@@ -10,9 +10,13 @@ import (
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
+	"golang.org/x/term"
 
 	"github.com/comerc/budva43/entity"
+	// "golang.org/x/term"
 )
+
+// TODO: не нравится, что нужно вводить auth для каждого последующего шага
 
 // messageController определяет интерфейс контроллера сообщений для CLI
 type messageController interface {
@@ -39,17 +43,31 @@ type reportController interface {
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
+// authTelegramController определяет интерфейс контроллера авторизации Telegram для CLI
+type authTelegramController interface {
+	SubmitPhoneNumber(phone string)
+	SubmitCode(code string)
+	SubmitPassword(password string)
+	GetStateChan() chan client.AuthorizationState
+	InitClientDone() chan any
+	GetAuthorizationState() client.AuthorizationState
+}
+
 // Transport представляет интерфейс командной строки
 type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
+	authController    authTelegramController
 	scanner           *bufio.Scanner
-	commands          map[string]command
+	commands          []command
+	commandMap        map[string]*command
+	cancel            context.CancelFunc // Функция отмены
 }
 
 // command представляет команду CLI
 type command struct {
+	name        string
 	description string
 	handler     func(args []string) error
 }
@@ -59,13 +77,15 @@ func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
+	authController authTelegramController,
 ) *Transport {
 	cli := &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
+		authController:    authController,
 		scanner:           bufio.NewScanner(os.Stdin),
-		commands:          make(map[string]command),
+		commands:          []command{},
 	}
 
 	// Регистрация команд
@@ -76,40 +96,63 @@ func New(
 
 // registerCommands регистрирует доступные команды
 func (c *Transport) registerCommands() {
-	c.commands = map[string]command{
-		"help": {
+	c.commands = []command{
+		{
+			name:        "help",
 			description: "Показать список доступных команд",
 			handler:     c.handleHelp,
 		},
-		"exit": {
+		{
+			name:        "exit",
 			description: "Выйти из программы",
 			handler:     c.handleExit,
 		},
-		"messages": {
+		{
+			name:        "messages",
 			description: "Управление сообщениями: list, get, send",
 			handler:     c.handleMessages,
 		},
-		"rules": {
+		{
+			name:        "rules",
 			description: "Управление правилами пересылки: list, get, add, delete",
 			handler:     c.handleRules,
 		},
-		"report": {
+		{
+			name:        "report",
 			description: "Генерация отчетов: activity, forwarding, error",
 			handler:     c.handleReport,
 		},
+		{
+			name:        "auth",
+			description: "Запустить процесс авторизации в Telegram",
+			handler:     c.handleAuth,
+		},
+	}
+
+	c.commandMap = make(map[string]*command)
+	for _, cmd := range c.commands {
+		c.commandMap[cmd.name] = &cmd
 	}
 }
 
 // Start запускает CLI интерфейс
-func (c *Transport) Start(ctx context.Context) error {
-	fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
-
-	// Канал для сигнала завершения
-	done := make(chan struct{})
+func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error {
+	c.cancel = cancel
 
 	// Запускаем обработку ввода в отдельной горутине
 	go func() {
-		defer close(done)
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-c.authController.InitClientDone():
+			// Если пришло какое-либо состояние, то TDLib клиент готов
+			slog.Info("TDLib клиент готов")
+		}
+
+		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
+
+		// defer close(done)
 		for {
 			select {
 			case <-ctx.Done():
@@ -121,12 +164,10 @@ func (c *Transport) Start(ctx context.Context) error {
 				}
 
 				input := c.scanner.Text()
-				if input == "" {
-					continue
-				}
 
 				if err := c.processCommand(input); err != nil {
 					if err.Error() == "exit" {
+						cancel()
 						slog.Info("Exit command processed")
 						return
 					}
@@ -137,16 +178,11 @@ func (c *Transport) Start(ctx context.Context) error {
 		}
 	}()
 
-	// Ожидаем либо завершения контекста, либо выход из приложения
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-done:
-		return nil
-	}
+	return nil
 }
 
-func (h *Transport) Stop() error {
+func (c *Transport) Stop() error {
+	c.cancel()
 	return nil
 }
 
@@ -163,7 +199,7 @@ func (c *Transport) processCommand(input string) error {
 		args = parts[1:]
 	}
 
-	if command, ok := c.commands[cmd]; ok {
+	if command, ok := c.commandMap[cmd]; ok {
 		return command.handler(args)
 	}
 
@@ -175,8 +211,8 @@ func (c *Transport) processCommand(input string) error {
 // handleHelp обрабатывает команду help
 func (c *Transport) handleHelp(args []string) error {
 	fmt.Println("Доступные команды:")
-	for name, cmd := range c.commands {
-		fmt.Printf("  %-15s - %s\n", name, cmd.description)
+	for _, cmd := range c.commands {
+		fmt.Printf("  %-15s - %s\n", cmd.name, cmd.description)
 	}
 	return nil
 }
@@ -422,5 +458,65 @@ func (c *Transport) handleReport(args []string) error {
 	}
 
 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
+	return nil
+}
+
+// handleAuth обрабатывает команду auth
+func (t *Transport) handleAuth(args []string) error {
+	state := t.authController.GetAuthorizationState()
+
+	slog.Debug("GetAuthorizationState()", "state", state.AuthorizationStateType())
+
+	switch state.AuthorizationStateType() {
+	case client.TypeAuthorizationStateWaitPhoneNumber:
+
+		// TODO: заменить на ввод номера телефона из конфигурации
+		// if config.Telegram.PhoneNumber != "" {
+		// 	fmt.Println("Используется номер телефона из конфигурации")
+		// 	time.Sleep(2 * time.Second)
+		// 	clientAuthorizer.PhoneNumber <- config.Telegram.PhoneNumber
+		// 	maskedPhone := maskPhoneNumber(config.Telegram.PhoneNumber)
+		// 	fmt.Println("Номер телефона:", maskedPhone)
+		// } else {
+		// 	fmt.Print("Введите номер телефона: ")
+		// 	var phoneNumber string
+		// 	fmt.Scanln(&phoneNumber)
+		// 	clientAuthorizer.PhoneNumber <- phoneNumber
+		// 	maskedPhone := maskPhoneNumber(phoneNumber)
+		// 	fmt.Println("Используется номер:", maskedPhone)
+		// }
+
+		fmt.Print("Введите номер телефона: ")
+		// var phoneNumber string
+		// fmt.Scanln(&phoneNumber)
+		phoneNumber, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return fmt.Errorf("ошибка при чтении телефона: %w", err)
+		}
+		fmt.Println()
+		t.authController.SubmitPhoneNumber(string(phoneNumber))
+
+	case client.TypeAuthorizationStateWaitCode:
+		fmt.Print("Введите код подтверждения: ")
+		code, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return fmt.Errorf("ошибка при чтении кода: %w", err)
+		}
+		fmt.Println()
+		t.authController.SubmitCode(string(code))
+
+	case client.TypeAuthorizationStateWaitPassword:
+		fmt.Print("Введите пароль: ")
+		password, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return fmt.Errorf("ошибка при чтении пароля: %w", err)
+		}
+		fmt.Println()
+		t.authController.SubmitPassword(string(password))
+
+	case client.TypeAuthorizationStateReady:
+		fmt.Println("Авторизация в Telegram успешно завершена!")
+	}
+
 	return nil
 }

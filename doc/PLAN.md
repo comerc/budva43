@@ -213,6 +213,7 @@ budva43/
 - [Соглашения](./CONVENTIONS.md)
 - [Архитектура v2](./ARCHITECTURE_V2.md)
 - [Шаблоны проектирования](./DESIGN_PATTERNS.md)
+- [Конечный автомат](./FSM.md)
 - [Архитектурные приёмы для обеспечения высокой нагрузки](./HIGHLOAD.md)
 - [Разграничение бизнес-правил (deprecated)](./_BUSINESS_RULES.md)
 - [Сопоставление DAO и DTO (deprecated)](./_DAO&DTO.md)
