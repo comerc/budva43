@@ -48,7 +48,7 @@ func NewAuthorizer(setClient func(*client.Client)) *Authorizer {
 func (a *Authorizer) Handle(tdlibClient *client.Client, state client.AuthorizationState) error {
 	slog.Info("Authorizer.Handle", "state", state.AuthorizationStateType())
 
-	a.setClient(tdlibClient) // dirty hack
+	a.setClient(tdlibClient) // dirty hack - чтобы получить клиент до завершения client.NewClient()
 
 	slog.Info("State send")
 	select {
