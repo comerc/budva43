@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -23,7 +24,7 @@ func setDefaultConfig(config *config) {
 	config.logOptions.Level = slog.LevelDebug
 	config.logOptions.AddSource = false
 
-	config.telegram.UseTestDc = false
+	config.telegram.UseTestDc = testing.Testing()
 	config.telegram.UseFileDatabase = true
 	config.telegram.UseChatInfoDatabase = true
 	config.telegram.UseMessageDatabase = true
