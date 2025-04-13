@@ -9,12 +9,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zelenin/go-tdlib/client"
-	"go.uber.org/atomic"
-
 	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
+	"github.com/zelenin/go-tdlib/client"
+	"go.uber.org/atomic"
 )
+
+// TODO: реализовать авторизацию telegram-клиента для web-транспорта
 
 // messageController определяет интерфейс контроллера сообщений, необходимый для HTTP транспорта
 type messageController interface {
@@ -40,11 +41,21 @@ type reportController interface {
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
+// authTelegramController определяет интерфейс контроллера авторизации Telegram
+type authTelegramController interface {
+	SubmitPhoneNumber(phone string)
+	SubmitCode(code string)
+	SubmitPassword(password string)
+	GetStateChan() client.AuthorizationState
+}
+
 // Transport представляет HTTP маршрутизатор для API
 type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
+	authController    authTelegramController
+	authClients       map[string]chan client.AuthorizationState
 	server            *http.Server
 	mux               *http.ServeMux
 	isClosed          *atomic.Bool
@@ -55,13 +66,18 @@ func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
+	authController authTelegramController,
 ) *Transport {
-	return &Transport{
+	t := &Transport{
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
+		authController:    authController,
+		authClients:       make(map[string]chan client.AuthorizationState),
 		isClosed:          atomic.NewBool(false),
 	}
+
+	return t
 }
 
 // SetupRoutes настраивает HTTP маршруты
@@ -76,6 +92,15 @@ func (r *Transport) SetupRoutes(mux *http.ServeMux) {
 
 	// Маршруты для отчетов
 	mux.HandleFunc("/api/reports", r.handleReports)
+
+	// Маршруты для авторизации Telegram
+	if r.authController != nil {
+		mux.HandleFunc("/api/auth/telegram/state", r.handleAuthState)
+		mux.HandleFunc("/api/auth/telegram/phone", r.handleSubmitPhone)
+		mux.HandleFunc("/api/auth/telegram/code", r.handleSubmitCode)
+		mux.HandleFunc("/api/auth/telegram/password", r.handleSubmitPassword)
+		mux.HandleFunc("/api/auth/telegram/events", r.handleAuthEvents)
+	}
 
 	// Маршрут для основной страницы
 	mux.HandleFunc("/", r.handleRoot)
@@ -336,6 +361,154 @@ func (r *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(report)
 }
 
+// handleAuthState обработчик для получения текущего состояния авторизации
+func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	state := t.authController.GetStateChan()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"state_type": state.AuthorizationStateType(),
+	})
+}
+
+// handleSubmitPhone обработчик для отправки номера телефона
+func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var data struct {
+		Phone string `json:"phone"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	t.authController.SubmitPhoneNumber(data.Phone)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "accepted",
+	})
+}
+
+// handleSubmitCode обработчик для отправки кода подтверждения
+func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var data struct {
+		Code string `json:"code"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	t.authController.SubmitCode(data.Code)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "accepted",
+	})
+}
+
+// handleSubmitPassword обработчик для отправки пароля
+func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var data struct {
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	t.authController.SubmitPassword(data.Password)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "accepted",
+	})
+}
+
+// handleAuthEvents устанавливает SSE соединение для получения обновлений состояния авторизации
+func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
+	// Настройка SSE
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	// Создаем канал для событий авторизации
+	clientID := generateClientID()
+	events := make(chan client.AuthorizationState, 10)
+
+	// Регистрируем клиента
+	t.authClients[clientID] = events
+
+	// Отправляем текущее состояние сразу при подключении
+	state := t.authController.GetStateChan()
+	if state != nil {
+		events <- state
+	}
+
+	// Отправляем события клиенту
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
+		return
+	}
+
+	// Закрываем канал и удаляем клиента при завершении запроса
+	defer func() {
+		delete(t.authClients, clientID)
+		close(events)
+	}()
+
+	// Обрабатываем закрытие соединения
+	disconnect := r.Context().Done()
+
+	for {
+		select {
+		case <-disconnect:
+			// Клиент отключился
+			return
+		case state, ok := <-events:
+			if !ok {
+				// Канал закрыт
+				return
+			}
+			// Отправляем событие клиенту
+			fmt.Fprintf(w, "data: {\"state_type\": \"%s\"}\n\n", state.AuthorizationStateType())
+			flusher.Flush()
+		}
+	}
+}
+
+// generateClientID генерирует уникальный идентификатор клиента
+func generateClientID() string {
+	return fmt.Sprintf("client-%d", time.Now().UnixNano())
+}
+
 // Start запускает HTTP-сервер
 func (t *Transport) Start(ctx context.Context) error {
 	// Создаем новый мультиплексор
@@ -383,3 +556,19 @@ func (t *Transport) Stop() error {
 	slog.Info("HTTP server stopped")
 	return nil
 }
+
+// // OnAuthStateChanged обработчик изменения состояния авторизации
+// func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
+// 	slog.Debug("Web транспорт получил обновление состояния авторизации",
+// 		"state", fmt.Sprintf("%T", state))
+
+// 	// Отправляем обновление всем подключенным клиентам
+// 	for clientID, clientChan := range t.authClients {
+// 		select {
+// 		case clientChan <- state:
+// 			slog.Debug("Отправлено обновление состояния клиенту", "clientID", clientID)
+// 		default:
+// 			slog.Debug("Канал клиента заполнен, пропускаем обновление", "clientID", clientID)
+// 		}
+// 	}
+// }
