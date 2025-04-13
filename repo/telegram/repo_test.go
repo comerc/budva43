@@ -2,13 +2,26 @@ package telegram
 
 import (
 	"context"
-	"log/slog"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/comerc/budva43/config"
 )
 
 func TestRepo_Start(t *testing.T) {
-	slog.Info("repo started and stopped")
+
+	config.Telegram.UseTestDc = true
+
+	// Выведем информацию о путях для отладки
+	fmt.Println("Telegram Database Directory:", config.Telegram.DatabaseDirectory)
+	fmt.Println("Telegram Files Directory:", config.Telegram.FilesDirectory)
+
+	fmt.Println("UseTestDc:", config.Telegram.UseTestDc)
+
+	fmt.Println("repo started and stopped")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -22,8 +35,8 @@ func TestRepo_Start(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	c := repo.GetClient()
-	slog.Info("client", "client", c)
+
+	assert.Nil(t, c)
 
 	repo.Stop()
-
 }
