@@ -11,15 +11,11 @@ import (
 
 // TODO: logout
 // TODO: login - это CreateClient?
-// TODO: выпилить devcontainer
-// TODO: заменить сборку tdlib на готовый image
-// TODO: повторить авторизацию для web-транспорта
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
-	client                    *client.Client
-	authorizationStateHandler *clientAuthorizer
-	initClientDone            chan any
+	client         *client.Client
+	initClientDone chan any
 }
 
 // New создает новый экземпляр репозитория Telegram
@@ -31,97 +27,68 @@ func New() *Repo {
 
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(ctx context.Context, cancel context.CancelFunc) error {
-	// Создаем авторизатор только для инициализации
-	tdlibParameters := &client.SetTdlibParametersRequest{
-		UseTestDc:           config.Telegram.UseTestDc,
-		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
-		FilesDirectory:      config.Telegram.FilesDirectory,
-		UseFileDatabase:     config.Telegram.UseFileDatabase,
-		UseChatInfoDatabase: config.Telegram.UseChatInfoDatabase,
-		UseMessageDatabase:  config.Telegram.UseMessageDatabase,
-		UseSecretChats:      config.Telegram.UseSecretChats,
-		ApiId:               config.Telegram.ApiId,
-		ApiHash:             config.Telegram.ApiHash,
-		SystemLanguageCode:  config.Telegram.SystemLanguageCode,
-		DeviceModel:         config.Telegram.DeviceModel,
-		SystemVersion:       config.Telegram.SystemVersion,
-		ApplicationVersion:  config.Telegram.ApplicationVersion,
-	}
-
-	go func() {
-		slog.Info("Creating TDLib client")
-
-		options := []client.Option{
-			client.WithLogVerbosity(&client.SetLogVerbosityLevelRequest{
-				NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
-			}),
-		}
-
-		for {
-			r.authorizationStateHandler = NewClientAuthorizer(tdlibParameters, r.SetClient)
-			tdlibClient, err := client.NewClient(r.authorizationStateHandler, options...)
-			slog.Info("TDLib client created?")
-			if err != nil {
-				slog.Error("ошибка при создании клиента TDLib", "error", err)
-				// return fmt.Errorf("ошибка при создании клиента TDLib: %w", err)
-			}
-			if tdlibClient != nil {
-				r.SetClient(tdlibClient)
-				break
-			}
-		}
-
-		// Получаем информацию о версии TDLib
-		versionOption, err := r.client.GetOption(&client.GetOptionRequest{
-			Name: "version",
-		})
-		if err != nil {
-			slog.Error("GetOption error", "error", err)
-			// return fmt.Errorf("GetOption error: %w", err)
-		}
-
-		commitOption, err := r.client.GetOption(&client.GetOptionRequest{
-			Name: "commit_hash",
-		})
-		if err != nil {
-			slog.Error("GetOption error", "error", err)
-			// return fmt.Errorf("GetOption error: %w", err)
-		}
-
-		slog.Info("TDLib",
-			"version", versionOption.(*client.OptionValueString).Value,
-			"commit", commitOption.(*client.OptionValueString).Value,
-		)
-
-		// Получаем информацию о пользователе
-		me, err := r.client.GetMe()
-		if err != nil {
-			slog.Error("GetMe error", "error", err)
-			// return fmt.Errorf("GetMe error: %w", err)
-		}
-
-		slog.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
-
-		// return nil
-	}()
-
+	// Инициализируем базовые настройки репозитория
+	// Клиент будет создан позже, после установки авторизатора
+	slog.Info("Telegram repository initialization started")
 	return nil
 }
 
-func (r *Repo) GetPhoneNumber() chan string {
-	return r.authorizationStateHandler.PhoneNumber
-}
+// CreateClient создает клиент TDLib после установки авторизатора
+func (r *Repo) CreateClient(
+	createAuthorizer func(func(*client.Client)) client.AuthorizationStateHandler,
+) {
+	slog.Info("Creating TDLib client")
 
-func (r *Repo) GetCode() chan string {
-	return r.authorizationStateHandler.Code
-}
+	options := []client.Option{
+		client.WithLogVerbosity(&client.SetLogVerbosityLevelRequest{
+			NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
+		}),
+	}
 
-func (r *Repo) GetStateChan() chan client.AuthorizationState {
-	return r.authorizationStateHandler.State
-}
+	for {
+		authorizationStateHandler := createAuthorizer(r.setClient)
+		tdlibClient, err := client.NewClient(authorizationStateHandler, options...)
+		slog.Info("TDLib client created?")
+		if err != nil {
+			slog.Error("ошибка при создании клиента TDLib", "error", err)
+			// return fmt.Errorf("ошибка при создании клиента TDLib: %w", err)
+		}
+		if tdlibClient != nil {
+			r.setClient(tdlibClient)
+			break
+		}
+	}
 
-func (r *Repo) GetPassword() chan string {
-	return r.authorizationStateHandler.Password
+	// Получаем информацию о версии TDLib
+	versionOption, err := r.client.GetOption(&client.GetOptionRequest{
+		Name: "version",
+	})
+	if err != nil {
+		slog.Error("GetOption error", "error", err)
+		return
+	}
+
+	commitOption, err := r.client.GetOption(&client.GetOptionRequest{
+		Name: "commit_hash",
+	})
+	if err != nil {
+		slog.Error("GetOption error", "error", err)
+		return
+	}
+
+	slog.Info("TDLib",
+		"version", versionOption.(*client.OptionValueString).Value,
+		"commit", commitOption.(*client.OptionValueString).Value,
+	)
+
+	// Получаем информацию о пользователе
+	me, err := r.client.GetMe()
+	if err != nil {
+		slog.Error("GetMe error", "error", err)
+		return
+	}
+
+	slog.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
 }
 
 // GetClient возвращает клиент TDLib
@@ -129,8 +96,8 @@ func (r *Repo) GetClient() *client.Client {
 	return r.client
 }
 
-func (r *Repo) SetClient(client *client.Client) {
-	slog.Info("SetClient")
+func (r *Repo) setClient(client *client.Client) {
+	slog.Info("setClient")
 	r.client = client
 	select {
 	case _, ok := <-r.initClientDone:
@@ -190,102 +157,4 @@ func (r *Repo) DeleteMessage(chatID, messageID int64) error {
 func (r *Repo) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
 	// Реализация будет добавлена позже
 	return &client.Message{}, nil
-}
-
-// TODO: реализация ClientAuthorizer - это сервисный слой?
-
-type setClient func(*client.Client)
-
-type clientAuthorizer struct {
-	SetClient       func(*client.Client)
-	TdlibParameters *client.SetTdlibParametersRequest
-	PhoneNumber     chan string
-	Code            chan string
-	State           chan client.AuthorizationState
-	Password        chan string
-}
-
-func NewClientAuthorizer(tdlibParameters *client.SetTdlibParametersRequest, setClient func(*client.Client)) *clientAuthorizer {
-	return &clientAuthorizer{
-		SetClient:       setClient,
-		TdlibParameters: tdlibParameters,
-		PhoneNumber:     make(chan string, 1),
-		Code:            make(chan string, 1),
-		State:           make(chan client.AuthorizationState, 10),
-		Password:        make(chan string, 1),
-	}
-}
-
-func (stateHandler *clientAuthorizer) Handle(tdlibClient *client.Client, state client.AuthorizationState) error {
-	slog.Info("Handle", "state", state.AuthorizationStateType())
-
-	stateHandler.SetClient(tdlibClient) // dirty hack
-
-	slog.Info("State send")
-	stateHandler.State <- state
-	slog.Info("State sent")
-
-	switch state.AuthorizationStateType() {
-	case client.TypeAuthorizationStateWaitTdlibParameters:
-		_, err := tdlibClient.SetTdlibParameters(stateHandler.TdlibParameters)
-		return err
-
-	case client.TypeAuthorizationStateWaitPhoneNumber:
-		_, err := tdlibClient.SetAuthenticationPhoneNumber(&client.SetAuthenticationPhoneNumberRequest{
-			PhoneNumber: <-stateHandler.PhoneNumber,
-			Settings: &client.PhoneNumberAuthenticationSettings{
-				AllowFlashCall:       false,
-				IsCurrentPhoneNumber: false,
-				AllowSmsRetrieverApi: false,
-			},
-		})
-		return err
-
-	case client.TypeAuthorizationStateWaitEmailAddress:
-		return client.NotSupportedAuthorizationState(state)
-
-	case client.TypeAuthorizationStateWaitEmailCode:
-		return client.NotSupportedAuthorizationState(state)
-
-	case client.TypeAuthorizationStateWaitCode:
-		_, err := tdlibClient.CheckAuthenticationCode(&client.CheckAuthenticationCodeRequest{
-			Code: <-stateHandler.Code,
-		})
-		return err
-
-	case client.TypeAuthorizationStateWaitOtherDeviceConfirmation:
-		return client.NotSupportedAuthorizationState(state)
-
-	case client.TypeAuthorizationStateWaitRegistration:
-		return client.NotSupportedAuthorizationState(state)
-
-	case client.TypeAuthorizationStateWaitPassword:
-		_, err := tdlibClient.CheckAuthenticationPassword(&client.CheckAuthenticationPasswordRequest{
-			Password: <-stateHandler.Password,
-		})
-		return err
-
-	case client.TypeAuthorizationStateReady:
-		return nil
-
-	case client.TypeAuthorizationStateLoggingOut:
-		return client.NotSupportedAuthorizationState(state)
-
-	case client.TypeAuthorizationStateClosing:
-		<-stateHandler.State // не допускаем переполнение (и блокировки чтения) канала
-		return nil
-
-	case client.TypeAuthorizationStateClosed:
-		return nil
-	}
-
-	return client.NotSupportedAuthorizationState(state)
-}
-
-func (stateHandler *clientAuthorizer) Close() {
-	slog.Info("Closing stateHandler")
-	close(stateHandler.PhoneNumber)
-	close(stateHandler.Code)
-	close(stateHandler.State)
-	close(stateHandler.Password)
 }
