@@ -14,3 +14,6 @@ services:
     command: sleep infinity
     volumes:
       - .:/workspaces/budva43:cached
+    environment:
+      CGO_CFLAGS: "-I/td/tdlib/include"
+      CGO_LDFLAGS: "-Wl,-rpath,/td/tdlib/lib -L/td/tdlib/lib -ltdjson"
