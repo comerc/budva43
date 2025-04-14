@@ -16,7 +16,7 @@ docker-compose build
 
 - [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
 - [ ] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
-- [ ] [mockery](https://github.com/vektra/mockery)
+- [x] [mockery](https://github.com/vektra/mockery)
 - [ ] [easyjson](https://github.com/mailru/easyjson)
 - [x] Docker Compose
 - [x] [multi-stage build](https://docs.docker.com/build/building/multi-stage/)
@@ -33,10 +33,11 @@ docker-compose build
 - [x] SOLID
 - [x] DRY (без фанатизма) 
 - [x] KISS
-- [ ] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
-- [ ] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
-- [ ] Нотации start и run
-- [ ] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
+- [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
+- [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
+- [x] Нотации start и run
+- [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
+- [ ] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
 - [ ] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)
 - [ ] [gqlgen](https://gqlgen.com/)
