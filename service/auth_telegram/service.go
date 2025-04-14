@@ -2,6 +2,7 @@
 package auth_telegram
 
 import (
+	"context"
 	"errors"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -10,7 +11,7 @@ import (
 type telegramRepo interface {
 	GetClient() *client.Client
 	InitClientDone() chan any
-	CreateClient(func(func(*client.Client)) client.AuthorizationStateHandler)
+	CreateClient(func(func(*client.Client), context.CancelFunc) client.AuthorizationStateHandler)
 }
 
 // Service управляет процессом авторизации в Telegram
@@ -25,8 +26,8 @@ func New(telegramRepo telegramRepo) *Service {
 		telegramRepo: telegramRepo,
 	}
 
-	сreateAuthorizer := func(setClient func(*client.Client)) client.AuthorizationStateHandler {
-		s.authorizer = NewAuthorizer(setClient)
+	сreateAuthorizer := func(setClient func(*client.Client), cancel context.CancelFunc) client.AuthorizationStateHandler {
+		s.authorizer = NewAuthorizer(setClient, cancel)
 		return s.authorizer
 	}
 

@@ -1,16 +1,20 @@
 package auth_telegram
 
 import (
+	"context"
 	"log/slog"
+	"time"
+
+	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
-	"github.com/zelenin/go-tdlib/client"
 )
 
 // Authorizer реализует интерфейс client.AuthorizationStateHandler
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
 	setClient       func(client *client.Client)
+	cancel          context.CancelFunc
 	tdlibParameters *client.SetTdlibParametersRequest
 	phoneNumber     chan string
 	code            chan string
@@ -18,7 +22,7 @@ type Authorizer struct {
 	password        chan string
 }
 
-func NewAuthorizer(setClient func(*client.Client)) *Authorizer {
+func NewAuthorizer(setClient func(*client.Client), cancel context.CancelFunc) *Authorizer {
 	tdlibParameters := &client.SetTdlibParametersRequest{
 		UseTestDc:           config.Telegram.UseTestDc,
 		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
@@ -37,6 +41,7 @@ func NewAuthorizer(setClient func(*client.Client)) *Authorizer {
 
 	return &Authorizer{
 		setClient:       setClient,
+		cancel:          cancel,
 		tdlibParameters: tdlibParameters,
 		phoneNumber:     make(chan string, 1),
 		code:            make(chan string, 1),
@@ -61,7 +66,13 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 	switch stateType {
 	case client.TypeAuthorizationStateWaitTdlibParameters:
 		_, err := tdlibClient.SetTdlibParameters(a.tdlibParameters)
-		return err
+		if err != nil {
+			slog.Error("ошибка при установке параметров TDLib", "error", err)
+			a.cancel()
+			time.Sleep(1 * time.Second) // dirty hack
+			return err
+		}
+		return nil
 
 	case client.TypeAuthorizationStateWaitPhoneNumber:
 		_, err := tdlibClient.SetAuthenticationPhoneNumber(&client.SetAuthenticationPhoneNumberRequest{
