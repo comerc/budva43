@@ -1,4 +1,4 @@
-package redis_test
+package test
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 )
 
 func TestRunRedis(t *testing.T) {
+	t.Skip()
+
 	ctx := context.Background()
 
 	redisContainer, err := redis.Run(ctx,

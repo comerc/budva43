@@ -25,6 +25,6 @@ go.work.sum
 .env
 
 bin/
-data/
 config.yml
-try/
+.data/
+.try/

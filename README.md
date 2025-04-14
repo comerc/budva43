@@ -53,6 +53,7 @@ docker-compose build
 - [ ] samber/do
 - [ ] samber/oops
 - [ ] samber/slog-*
+- [ ] тестирование Time & Concurrency
 
 ## .env
 
