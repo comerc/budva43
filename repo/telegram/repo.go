@@ -16,6 +16,8 @@ import (
 type Repo struct {
 	client         *client.Client
 	initClientDone chan any
+	ctx            context.Context
+	cancel         context.CancelFunc
 }
 
 // New создает новый экземпляр репозитория Telegram
@@ -30,12 +32,15 @@ func (r *Repo) Start(ctx context.Context, cancel context.CancelFunc) error {
 	// Инициализируем базовые настройки репозитория
 	// Клиент будет создан позже, после установки авторизатора
 	slog.Info("Telegram repository initialization started")
+
+	r.ctx = ctx // TODO: некрасиво!
+	r.cancel = cancel
 	return nil
 }
 
 // CreateClient создает клиент TDLib после установки авторизатора
 func (r *Repo) CreateClient(
-	createAuthorizer func(func(*client.Client)) client.AuthorizationStateHandler,
+	createAuthorizer func(func(*client.Client), context.CancelFunc) client.AuthorizationStateHandler,
 ) {
 	slog.Info("Creating TDLib client")
 
@@ -47,17 +52,21 @@ func (r *Repo) CreateClient(
 
 	// Если неудачная авторизации, то клиент закрывается, потому перезапуск цикла
 	for {
-		authorizationStateHandler := createAuthorizer(r.setClient)
+		authorizationStateHandler := createAuthorizer(r.setClient, r.cancel)
 		tdlibClient, err := client.NewClient(authorizationStateHandler, options...)
-		slog.Info("TDLib client created")
 		if err != nil {
 			slog.Error("ошибка при создании клиента TDLib", "error", err)
-			// return fmt.Errorf("ошибка при создании клиента TDLib: %w", err)
+			select {
+			case <-r.ctx.Done():
+				slog.Info("ctx.Done()")
+				return
+			default:
+				continue
+			}
 		}
-		if tdlibClient != nil {
-			r.setClient(tdlibClient)
-			break
-		}
+		slog.Info("TDLib client created")
+		r.setClient(tdlibClient)
+		break
 	}
 
 	// Получаем информацию о версии TDLib
@@ -121,6 +130,7 @@ func (r *Repo) Stop() error {
 	if err != nil {
 		return err
 	}
+	r.client = nil
 	return nil
 }
 
