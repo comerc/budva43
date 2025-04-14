@@ -2,12 +2,11 @@
 package auth_telegram
 
 import (
-	"log/slog"
+	"errors"
 
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// telegramRepo определяет интерфейс репозитория Telegram
 type telegramRepo interface {
 	GetClient() *client.Client
 	InitClientDone() chan any
@@ -42,13 +41,12 @@ func (s *Service) GetStateChan() <-chan client.AuthorizationState {
 }
 
 // GetAuthorizationState возвращает текущее состояние авторизации
-func (s *Service) GetAuthorizationState() client.AuthorizationState {
-	state, err := s.telegramRepo.GetClient().GetAuthorizationState()
-	if err != nil {
-		slog.Error("Ошибка при получении состояния авторизации", "error", err)
-		return nil
+func (s *Service) GetAuthorizationState() (client.AuthorizationState, error) {
+	tdlibClient := s.telegramRepo.GetClient()
+	if tdlibClient == nil {
+		return nil, errors.New("клиент не инициализирован")
 	}
-	return state
+	return tdlibClient.GetAuthorizationState()
 }
 
 // SubmitPhoneNumber устанавливает номер телефона для авторизации

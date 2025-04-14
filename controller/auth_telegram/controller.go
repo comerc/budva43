@@ -9,7 +9,7 @@ type authTelegramService interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
 	SubmitPassword(password string)
-	GetAuthorizationState() client.AuthorizationState
+	GetAuthorizationState() (client.AuthorizationState, error)
 	InitClientDone() chan any
 }
 
@@ -41,7 +41,7 @@ func (c *Controller) SubmitPassword(password string) {
 }
 
 // GetAuthorizationState возвращает текущее состояние авторизации
-func (c *Controller) GetAuthorizationState() client.AuthorizationState {
+func (c *Controller) GetAuthorizationState() (client.AuthorizationState, error) {
 	return c.authTelegramService.GetAuthorizationState()
 }
 

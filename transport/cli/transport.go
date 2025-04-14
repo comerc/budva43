@@ -49,7 +49,7 @@ type authTelegramController interface {
 	SubmitCode(code string)
 	SubmitPassword(password string)
 	InitClientDone() chan any
-	GetAuthorizationState() client.AuthorizationState
+	GetAuthorizationState() (client.AuthorizationState, error)
 }
 
 // Transport представляет интерфейс командной строки
@@ -462,7 +462,10 @@ func (c *Transport) handleReport(args []string) error {
 
 // handleAuth обрабатывает команду auth
 func (t *Transport) handleAuth(args []string) error {
-	state := t.authController.GetAuthorizationState()
+	state, err := t.authController.GetAuthorizationState()
+	if err != nil {
+		return fmt.Errorf("ошибка при получении состояния авторизации: %w", err)
+	}
 
 	slog.Debug("GetAuthorizationState()", "state", state.AuthorizationStateType())
 
