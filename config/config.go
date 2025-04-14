@@ -156,12 +156,37 @@ func findProjectRoot() string {
 }
 
 // TODO: куда бы пенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
-func MakeDirs() {
-	var dirs = []string{
-		Storage.DatabaseDirectory,
-		Storage.BackupDirectory,
-		Telegram.DatabaseDirectory,
-		Telegram.FilesDirectory,
+func RemoveDirs(dirs ...string) {
+	if len(dirs) == 0 {
+		dirs = []string{
+			Storage.DatabaseDirectory,
+			Storage.BackupDirectory,
+			Telegram.DatabaseDirectory,
+			Telegram.FilesDirectory,
+		}
+	}
+	for _, dir := range dirs {
+		if !filepath.IsAbs(dir) {
+			dir = filepath.Join(projectRoot, dir)
+		}
+		err := os.RemoveAll(dir)
+		if os.IsNotExist(err) {
+			log.Fatalf("ошибка удаления директории %s: %v", dir, err)
+		} else if err != nil {
+			log.Fatalf("ошибка проверки директории %s: %v", dir, err)
+		}
+	}
+}
+
+// TODO: куда бы пенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
+func MakeDirs(dirs ...string) {
+	if len(dirs) == 0 {
+		dirs = []string{
+			Storage.DatabaseDirectory,
+			Storage.BackupDirectory,
+			Telegram.DatabaseDirectory,
+			Telegram.FilesDirectory,
+		}
 	}
 	for _, dir := range dirs {
 		// Устанавливаем директории относительно корня проекта, если они не абсолютные

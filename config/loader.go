@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -96,16 +95,13 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func load() (*config, error) {
-	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами
+	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами - cobra?
 
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
 		log.Print("Не удалось загрузить .env файл %w", err)
 		// Продолжаем выполнение
 	}
-	println("*****************************")
-	println(os.Getenv("BUDVA43__TELEGRAM__BOT_TOKEN"))
-	println("*****************************")
 
 	// Настройка Viper для чтения конфигурации из файла
 	viper.SetConfigName("config") // имя конфигурационного файла без расширения
@@ -143,10 +139,6 @@ func load() (*config, error) {
 	if err := viper.Unmarshal(config, options); err != nil {
 		return nil, fmt.Errorf("ошибка разбора конфигурации: %w", err)
 	}
-
-	println("*****************************")
-	println(config.Bot.BotToken)
-	println("*****************************")
 
 	return config, nil
 }
