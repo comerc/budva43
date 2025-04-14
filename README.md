@@ -38,6 +38,7 @@ docker-compose build
 - [x] Нотации start и run
 - [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
 - [ ] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
+- [ ] CQRS
 - [ ] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)
 - [ ] [gqlgen](https://gqlgen.com/)
