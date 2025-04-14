@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -61,7 +62,7 @@ type Transport struct {
 	scanner           *bufio.Scanner
 	commands          []command
 	commandMap        map[string]*command
-	cancel            context.CancelFunc // Функция отмены
+	cancel            context.CancelFunc
 }
 
 // command представляет команду CLI
@@ -157,7 +158,7 @@ func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error 
 			case <-ctx.Done():
 				return
 			default:
-				fmt.Print("> ")
+				// fmt.Println("> ")
 				if !c.scanner.Scan() {
 					return
 				}
@@ -488,10 +489,10 @@ func (t *Transport) handleAuth(args []string) error {
 		// 	fmt.Println("Используется номер:", maskedPhone)
 		// }
 
-		fmt.Print("Введите номер телефона: ")
+		fmt.Println("Введите номер телефона: ")
 		// var phoneNumber string
 		// fmt.Scanln(&phoneNumber)
-		phoneNumber, err := term.ReadPassword(int(os.Stdin.Fd()))
+		phoneNumber, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении телефона: %w", err)
 		}
@@ -499,8 +500,8 @@ func (t *Transport) handleAuth(args []string) error {
 		t.authController.SubmitPhoneNumber(string(phoneNumber))
 
 	case client.TypeAuthorizationStateWaitCode:
-		fmt.Print("Введите код подтверждения: ")
-		code, err := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Println("Введите код подтверждения: ")
+		code, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении кода: %w", err)
 		}
@@ -508,8 +509,8 @@ func (t *Transport) handleAuth(args []string) error {
 		t.authController.SubmitCode(string(code))
 
 	case client.TypeAuthorizationStateWaitPassword:
-		fmt.Print("Введите пароль: ")
-		password, err := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Println("Введите пароль: ")
+		password, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении пароля: %w", err)
 		}
@@ -521,4 +522,16 @@ func (t *Transport) handleAuth(args []string) error {
 	}
 
 	return nil
+}
+
+func (c *Transport) hiddenReadLine() (string, error) {
+	if testing.Testing() {
+		if !c.scanner.Scan() {
+			return "", fmt.Errorf("ошибка при чтении строки")
+		}
+		input := c.scanner.Text()
+		return input, nil
+	}
+	password, err := term.ReadPassword(int(os.Stdin.Fd()))
+	return string(password), err
 }

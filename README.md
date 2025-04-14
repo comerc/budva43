@@ -54,6 +54,7 @@ docker-compose build
 - [ ] samber/oops
 - [ ] samber/slog-*
 - [ ] тестирование Time & Concurrency
+- [ ] spf13/cobra
 
 ## .env
 
