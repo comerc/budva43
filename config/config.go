@@ -17,15 +17,14 @@ import (
 type (
 	// Настройки приложения
 	config struct {
-		general     general
-		logOptions  logOptions
-		telegram    telegram
-		forwarding  forwarding
-		reports     reports
-		storage     storage
-		web         web
-		bot         bot
-		projectRoot string
+		General    general
+		LogOptions logOptions
+		Telegram   telegram
+		Forwarding forwarding
+		Reports    reports
+		Storage    storage
+		Web        web
+		Bot        bot
 	}
 
 	// Общие настройки
@@ -120,14 +119,14 @@ var (
 	once        sync.Once
 	cfg         = &config{}
 	projectRoot string
-	General     = &cfg.general
-	LogOptions  = &cfg.logOptions
-	Telegram    = &cfg.telegram
-	Forwarding  = &cfg.forwarding
-	Reports     = &cfg.reports
-	Storage     = &cfg.storage
-	Web         = &cfg.web
-	Bot         = &cfg.bot
+	General     = &cfg.General
+	LogOptions  = &cfg.LogOptions
+	Telegram    = &cfg.Telegram
+	Forwarding  = &cfg.Forwarding
+	Reports     = &cfg.Reports
+	Storage     = &cfg.Storage
+	Web         = &cfg.Web
+	Bot         = &cfg.Bot
 )
 
 // не используем slog, т.к. он инициализируется в main.go
@@ -157,7 +156,7 @@ func findProjectRoot() string {
 }
 
 // TODO: куда бы пенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
-func makeDirs() {
+func MakeDirs() {
 	var dirs = []string{
 		Storage.DatabaseDirectory,
 		Storage.BackupDirectory,
@@ -191,7 +190,7 @@ func init() {
 			log.Fatalf("ошибка загрузки конфигурации: %s", err)
 		}
 		*cfg = *loadedCfg
-		makeDirs()
+		MakeDirs()
 	})
 }
 
