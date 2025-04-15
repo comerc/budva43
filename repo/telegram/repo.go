@@ -10,7 +10,6 @@ import (
 )
 
 // TODO: logout
-// TODO: login - это CreateClient?
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
@@ -35,12 +34,16 @@ func (r *Repo) Start(ctx context.Context, cancel context.CancelFunc) error {
 
 	r.ctx = ctx // TODO: некрасиво!
 	r.cancel = cancel
+
 	return nil
 }
 
 // CreateClient создает клиент TDLib после установки авторизатора
 func (r *Repo) CreateClient(
-	createAuthorizer func(func(*client.Client), context.CancelFunc) client.AuthorizationStateHandler,
+	createAuthorizer func(
+		setClient func(client *client.Client),
+		cancel context.CancelFunc,
+	) client.AuthorizationStateHandler,
 ) {
 	slog.Info("Creating TDLib client")
 
