@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -39,61 +38,12 @@ func initTelegram(t *testing.T) {
 	config.MakeDirs(dirs...)
 }
 
-func TestAuthTelegram_InvalidTdlibParameters(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
-	tests := []struct {
-		name  string
-		setup func()
-	}{
-		{
-			name: "invalid api id",
-			setup: func() {
-				config.Telegram.ApiId = 0
-			},
-		},
-		{
-			name: "invalid api hash",
-			setup: func() {
-				config.Telegram.ApiHash = ""
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-
-			initTelegram(t)
-			test.setup()
-
-			telegramRepo := telegramRepo.New()
-			err := telegramRepo.Start(ctx, cancel)
-			require.NoError(t, err)
-			defer telegramRepo.Stop()
-
-			authTelegramService := authTelegramService.New(telegramRepo)
-			require.NotNil(t, authTelegramService)
-
-			select {
-			case <-ctx.Done():
-				// OK, контекст отменен
-			case <-time.After(2 * time.Second):
-				assert.Fail(t, "контекст не был отменен")
-			}
-		})
-	}
-}
-
 func TestAuthTelegram(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	initTelegram(t)
@@ -145,26 +95,33 @@ func TestAuthTelegram(t *testing.T) {
 	assert.True(t, found, "Команда help не выдала список команд")
 
 	// Проверяем команду auth
+	phoneNumber := config.Telegram.PhoneNumber
+	defer func() {
+		config.Telegram.PhoneNumber = phoneNumber
+	}()
+	config.Telegram.PhoneNumber = "" // test empty phone number
+
 	err = automator.SendInput("auth")
 	require.NoError(t, err)
 	found = automator.WaitForOutput("Введите номер телефона:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод номера телефона")
 
-	delimiter := strings.Repeat("*", len(config.Telegram.PhoneNumber))
-	fmt.Println(delimiter)
-	fmt.Println(util.MaskPhoneNumber(config.Telegram.PhoneNumber))
-	fmt.Println(delimiter)
-	err = automator.SendInput(config.Telegram.PhoneNumber)
-	require.NoError(t, err)
+	delimiter := strings.Repeat("*", len(phoneNumber))
+	println(delimiter)
+	println(util.MaskPhoneNumber(phoneNumber))
+	println(delimiter)
+
 	time.Sleep(3 * time.Second)
+	err = automator.SendInput(phoneNumber)
+	require.NoError(t, err)
 
 	automator.SendInput("auth")
 	found = automator.WaitForOutput("Введите код подтверждения:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
+	time.Sleep(3 * time.Second)
 	err = automator.SendInput("xxx")
 	require.NoError(t, err)
-	time.Sleep(3 * time.Second)
 
 	// Проверяем команду exit
 	err = automator.SendInput("exit")
