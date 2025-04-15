@@ -16,7 +16,7 @@ type Repo struct {
 	client         *client.Client
 	initClientDone chan any
 	ctx            context.Context
-	cancel         context.CancelFunc
+	shutdown       func()
 }
 
 // New создает новый экземпляр репозитория Telegram
@@ -27,13 +27,13 @@ func New() *Repo {
 }
 
 // Start устанавливает соединение с Telegram API
-func (r *Repo) Start(ctx context.Context, cancel context.CancelFunc) error {
+func (r *Repo) Start(ctx context.Context, shutdown context.CancelFunc) error {
 	// Инициализируем базовые настройки репозитория
 	// Клиент будет создан позже, после установки авторизатора
 	slog.Info("Telegram repository initialization started")
 
-	r.ctx = ctx // TODO: некрасиво!
-	r.cancel = cancel
+	r.ctx = ctx
+	r.shutdown = shutdown
 
 	return nil
 }
@@ -42,7 +42,7 @@ func (r *Repo) Start(ctx context.Context, cancel context.CancelFunc) error {
 func (r *Repo) CreateClient(
 	createAuthorizer func(
 		setClient func(client *client.Client),
-		cancel context.CancelFunc,
+		shutdown func(),
 	) client.AuthorizationStateHandler,
 ) {
 	slog.Info("Creating TDLib client")
@@ -55,8 +55,8 @@ func (r *Repo) CreateClient(
 
 	// Если неудачная авторизации, то клиент закрывается, потому перезапуск цикла
 	for {
-		authorizationStateHandler := createAuthorizer(r.setClient, r.cancel)
-		tdlibClient, err := client.NewClient(authorizationStateHandler, options...)
+		authorizationStateHandler := createAuthorizer(r.setClient, r.shutdown)
+		_, err := client.NewClient(authorizationStateHandler, options...)
 		if err != nil {
 			slog.Error("ошибка при создании клиента TDLib", "error", err)
 			select {
@@ -68,7 +68,7 @@ func (r *Repo) CreateClient(
 			}
 		}
 		slog.Info("TDLib client created")
-		r.setClient(tdlibClient)
+		// r.setClient(tdlibClient)
 		break
 	}
 
@@ -109,17 +109,17 @@ func (r *Repo) GetClient() *client.Client {
 }
 
 func (r *Repo) setClient(client *client.Client) {
-	slog.Info("setClient")
+	// slog.Info("setClient")
 	r.client = client
 	select {
 	case _, ok := <-r.initClientDone:
-		slog.Info("<-r.initClientDone", "ok", ok)
+		// slog.Info("<-r.initClientDone", "ok", ok)
 		if !ok {
-			slog.Info("initClientDone closed")
+			// slog.Info("initClientDone closed")
 			return
 		}
 	default:
-		slog.Info("Closing initClientDone")
+		// slog.Info("Closing initClientDone")
 		close(r.initClientDone)
 	}
 }
