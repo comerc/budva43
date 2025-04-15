@@ -11,7 +11,12 @@ import (
 type telegramRepo interface {
 	GetClient() *client.Client
 	InitClientDone() chan any
-	CreateClient(func(func(*client.Client), context.CancelFunc) client.AuthorizationStateHandler)
+	CreateClient(
+		createAuthorizer func(
+			setClient func(client *client.Client),
+			cancel context.CancelFunc,
+		) client.AuthorizationStateHandler,
+	)
 }
 
 // Service управляет процессом авторизации в Telegram

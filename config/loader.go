@@ -36,11 +36,11 @@ func setDefaultConfig(config *config) {
 	config.Telegram.ApplicationVersion = "1.0.0"
 	config.Telegram.LogVerbosityLevel = 0
 
-	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, "data", "tdlib")
-	config.Telegram.FilesDirectory = filepath.Join(projectRoot, "data", "tdlib_files")
+	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
+	config.Telegram.FilesDirectory = filepath.Join(projectRoot, ".data", "telegram", "files")
 
-	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, "data", "storage")
-	config.Storage.BackupDirectory = filepath.Join(projectRoot, "data", "backups")
+	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "storage")
+	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "backups")
 
 	config.Forwarding.DefaultDelay = 3
 	config.Forwarding.MaxMessagesPerMinute = 20

@@ -4,7 +4,7 @@ import "strings"
 
 // maskPhoneNumber маскирует номер телефона, заменяя 5 цифр перед последними двумя
 // Например, +7 926 111 22 33 становится +7926*****33
-func maskPhoneNumber(phone string) string {
+func MaskPhoneNumber(phone string) string {
 	// Удаляем возможные пробелы и другие разделители
 	cleanPhone := strings.ReplaceAll(strings.ReplaceAll(phone, " ", ""), "-", "")
 

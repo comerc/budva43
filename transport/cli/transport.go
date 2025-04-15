@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -152,13 +151,12 @@ func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error 
 
 		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
 
-		// defer close(done)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				// fmt.Println("> ")
+				fmt.Println("> ")
 				if !c.scanner.Scan() {
 					return
 				}
@@ -182,7 +180,7 @@ func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error 
 }
 
 func (c *Transport) Stop() error {
-	c.cancel()
+	c.cancel() // TODO: может лучше вызывать interrupt, чтобы не тащить cancel?
 	return nil
 }
 
@@ -490,13 +488,10 @@ func (t *Transport) handleAuth(args []string) error {
 		// }
 
 		fmt.Println("Введите номер телефона: ")
-		// var phoneNumber string
-		// fmt.Scanln(&phoneNumber)
 		phoneNumber, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении телефона: %w", err)
 		}
-		fmt.Println()
 		t.authController.SubmitPhoneNumber(string(phoneNumber))
 
 	case client.TypeAuthorizationStateWaitCode:
@@ -505,7 +500,6 @@ func (t *Transport) handleAuth(args []string) error {
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении кода: %w", err)
 		}
-		fmt.Println()
 		t.authController.SubmitCode(string(code))
 
 	case client.TypeAuthorizationStateWaitPassword:
@@ -514,7 +508,6 @@ func (t *Transport) handleAuth(args []string) error {
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении пароля: %w", err)
 		}
-		fmt.Println()
 		t.authController.SubmitPassword(string(password))
 
 	case client.TypeAuthorizationStateReady:
@@ -525,13 +518,7 @@ func (t *Transport) handleAuth(args []string) error {
 }
 
 func (c *Transport) hiddenReadLine() (string, error) {
-	if testing.Testing() {
-		if !c.scanner.Scan() {
-			return "", fmt.Errorf("ошибка при чтении строки")
-		}
-		input := c.scanner.Text()
-		return input, nil
-	}
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println()
 	return string(password), err
 }

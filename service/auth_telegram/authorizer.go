@@ -68,7 +68,9 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 		_, err := tdlibClient.SetTdlibParameters(a.tdlibParameters)
 		if err != nil {
 			slog.Error("ошибка при установке параметров TDLib", "error", err)
-			a.cancel()
+
+			a.cancel() // TODO: может лучше вызывать interrupt, чтобы не тащить cancel?
+
 			time.Sleep(1 * time.Second) // dirty hack
 			return err
 		}
