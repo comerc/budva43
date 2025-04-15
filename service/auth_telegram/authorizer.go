@@ -1,7 +1,6 @@
 package auth_telegram
 
 import (
-	"context"
 	"log/slog"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
 	setClient       func(client *client.Client)
-	cancel          context.CancelFunc
+	shutdown        func()
 	tdlibParameters *client.SetTdlibParametersRequest
 	phoneNumber     chan string
 	code            chan string
@@ -22,7 +21,8 @@ type Authorizer struct {
 	password        chan string
 }
 
-func NewAuthorizer(setClient func(*client.Client), cancel context.CancelFunc) *Authorizer {
+func NewAuthorizer(setClient func(*client.Client), shutdown func()) *Authorizer {
+
 	tdlibParameters := &client.SetTdlibParametersRequest{
 		UseTestDc:           config.Telegram.UseTestDc,
 		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
@@ -41,7 +41,7 @@ func NewAuthorizer(setClient func(*client.Client), cancel context.CancelFunc) *A
 
 	return &Authorizer{
 		setClient:       setClient,
-		cancel:          cancel,
+		shutdown:        shutdown,
 		tdlibParameters: tdlibParameters,
 		phoneNumber:     make(chan string, 1),
 		code:            make(chan string, 1),
@@ -69,7 +69,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 		if err != nil {
 			slog.Error("ошибка при установке параметров TDLib", "error", err)
 
-			a.cancel() // TODO: может лучше вызывать interrupt, чтобы не тащить cancel?
+			a.shutdown()
 
 			time.Sleep(1 * time.Second) // dirty hack
 			return err

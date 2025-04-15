@@ -12,7 +12,9 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 	"golang.org/x/term"
 
+	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
+	"github.com/comerc/budva43/util"
 	// "golang.org/x/term"
 )
 
@@ -61,7 +63,6 @@ type Transport struct {
 	scanner           *bufio.Scanner
 	commands          []command
 	commandMap        map[string]*command
-	cancel            context.CancelFunc
 }
 
 // command представляет команду CLI
@@ -135,9 +136,7 @@ func (c *Transport) registerCommands() {
 }
 
 // Start запускает CLI интерфейс
-func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error {
-	c.cancel = cancel
-
+func (c *Transport) Start(ctx context.Context, shutdown func()) error {
 	// Запускаем обработку ввода в отдельной горутине
 	go func() {
 
@@ -165,7 +164,7 @@ func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error 
 
 				if err := c.processCommand(input); err != nil {
 					if err.Error() == "exit" {
-						cancel()
+						shutdown()
 						slog.Info("Exit command processed")
 						return
 					}
@@ -180,7 +179,6 @@ func (c *Transport) Start(ctx context.Context, cancel context.CancelFunc) error 
 }
 
 func (c *Transport) Stop() error {
-	c.cancel() // TODO: может лучше вызывать interrupt, чтобы не тащить cancel?
 	return nil
 }
 
@@ -461,6 +459,8 @@ func (c *Transport) handleReport(args []string) error {
 
 // handleAuth обрабатывает команду auth
 func (t *Transport) handleAuth(args []string) error {
+	var err error
+
 	state, err := t.authController.GetAuthorizationState()
 	if err != nil {
 		return fmt.Errorf("ошибка при получении состояния авторизации: %w", err)
@@ -471,26 +471,17 @@ func (t *Transport) handleAuth(args []string) error {
 	switch state.AuthorizationStateType() {
 	case client.TypeAuthorizationStateWaitPhoneNumber:
 
-		// TODO: заменить на ввод номера телефона из конфигурации
-		// if config.Telegram.PhoneNumber != "" {
-		// 	fmt.Println("Используется номер телефона из конфигурации")
-		// 	time.Sleep(2 * time.Second)
-		// 	clientAuthorizer.PhoneNumber <- config.Telegram.PhoneNumber
-		// 	maskedPhone := maskPhoneNumber(config.Telegram.PhoneNumber)
-		// 	fmt.Println("Номер телефона:", maskedPhone)
-		// } else {
-		// 	fmt.Print("Введите номер телефона: ")
-		// 	var phoneNumber string
-		// 	fmt.Scanln(&phoneNumber)
-		// 	clientAuthorizer.PhoneNumber <- phoneNumber
-		// 	maskedPhone := maskPhoneNumber(phoneNumber)
-		// 	fmt.Println("Используется номер:", maskedPhone)
-		// }
-
-		fmt.Println("Введите номер телефона: ")
-		phoneNumber, err := t.hiddenReadLine()
-		if err != nil {
-			return fmt.Errorf("ошибка при чтении телефона: %w", err)
+		var phoneNumber string
+		if config.Telegram.PhoneNumber != "" {
+			phoneNumber = config.Telegram.PhoneNumber
+			fmt.Println("Используется номер телефона из конфигурации:", util.MaskPhoneNumber(phoneNumber))
+			time.Sleep(3 * time.Second)
+		} else {
+			fmt.Println("Введите номер телефона: ")
+			phoneNumber, err = t.hiddenReadLine()
+			if err != nil {
+				return fmt.Errorf("ошибка при чтении телефона: %w", err)
+			}
 		}
 		t.authController.SubmitPhoneNumber(string(phoneNumber))
 

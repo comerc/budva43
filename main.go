@@ -111,14 +111,14 @@ func gracefulShutdown(componentName string, errSet *errSet, callback shutdownCal
 }
 
 // setupSignalHandler настраивает обработку сигналов остановки
-func setupSignalHandler(cancel context.CancelFunc) {
+func setupSignalHandler(shutdown func()) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		sig := <-sigs
 		slog.Info("Получен сигнал остановки", "сигнал", sig)
-		cancel()
+		shutdown()
 	}()
 }
 
