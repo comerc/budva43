@@ -58,7 +58,7 @@ func (r *Repo) CreateClient(
 		authorizationStateHandler := createAuthorizer(r.setClient, r.shutdown)
 		_, err := client.NewClient(authorizationStateHandler, options...)
 		if err != nil {
-			slog.Error("ошибка при создании клиента TDLib", "error", err)
+			slog.Error("ошибка при создании клиента TDLib", "err", err)
 			select {
 			case <-r.ctx.Done():
 				slog.Info("ctx.Done()")
@@ -77,7 +77,7 @@ func (r *Repo) CreateClient(
 		Name: "version",
 	})
 	if err != nil {
-		slog.Error("GetOption error", "error", err)
+		slog.Error("GetOption error", "err", err)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (r *Repo) CreateClient(
 		Name: "commit_hash",
 	})
 	if err != nil {
-		slog.Error("GetOption error", "error", err)
+		slog.Error("GetOption error", "err", err)
 		return
 	}
 
@@ -97,7 +97,7 @@ func (r *Repo) CreateClient(
 	// Получаем информацию о пользователе
 	me, err := r.client.GetMe()
 	if err != nil {
-		slog.Error("GetMe error", "error", err)
+		slog.Error("GetMe error", "err", err)
 		return
 	}
 

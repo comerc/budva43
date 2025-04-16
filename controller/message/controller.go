@@ -12,7 +12,7 @@ type messageService interface {
 	IsMediaMessage(message *client.Message) bool
 	GetContentType(message *client.Message) string
 	FormatMessageContent(text string, fromFormat, toFormat string) (string, error)
-	ExtractMessageMetadata(message *client.Message) map[string]interface{}
+	ExtractMessageMetadata(message *client.Message) map[string]any
 }
 
 // Controller представляет контроллер для работы с сообщениями

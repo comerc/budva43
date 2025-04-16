@@ -112,8 +112,8 @@ func (s *Service) FormatMessageContent(text string, fromFormat, toFormat string)
 }
 
 // ExtractMessageMetadata извлекает метаданные из сообщения
-func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]interface{} {
-	metadata := make(map[string]interface{})
+func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]any {
+	metadata := make(map[string]any)
 
 	if message == nil {
 		return metadata

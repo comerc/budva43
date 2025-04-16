@@ -73,18 +73,18 @@ func setDefaultConfig(config *config) {
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+	return func(from reflect.Type, to reflect.Type, data any) (any, error) {
 		if from.Kind() != reflect.Map {
 			return data, nil
 		}
 
-		m, ok := data.(map[string]interface{})
+		m, ok := data.(map[string]any)
 		if !ok {
 			return data, nil
 		}
 
 		// Создаем новую карту с преобразованными ключами
-		out := make(map[string]interface{})
+		out := make(map[string]any)
 		for k, v := range m {
 			// Преобразуем ключ из kebab-case в PascalCase
 			pascalKey := lo.PascalCase(k)

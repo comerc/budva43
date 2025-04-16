@@ -67,7 +67,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 	case client.TypeAuthorizationStateWaitTdlibParameters:
 		_, err := tdlibClient.SetTdlibParameters(a.tdlibParameters)
 		if err != nil {
-			slog.Error("ошибка при установке параметров TDLib", "error", err)
+			slog.Error("ошибка при установке параметров TDLib", "err", err)
 
 			a.shutdown()
 

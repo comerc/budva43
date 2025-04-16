@@ -17,6 +17,7 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
 	cliTransport "github.com/comerc/budva43/transport/cli"
+	webTransport "github.com/comerc/budva43/transport/web"
 	util "github.com/comerc/budva43/util"
 )
 
@@ -82,6 +83,16 @@ func TestAuthTelegram(t *testing.T) {
 	require.NoError(t, err)
 	defer cliTransport.Stop()
 
+	webTransport := webTransport.New(
+		nil, // messageController,
+		nil, // forwardController,
+		nil, // reportController,
+		authTelegramController,
+	)
+	err = webTransport.Start(ctx, cancel)
+	require.NoError(t, err)
+	defer webTransport.Stop()
+
 	var found bool
 
 	found = automator.WaitForOutput("Запуск CLI интерфейса", 3*time.Second)
@@ -111,17 +122,38 @@ func TestAuthTelegram(t *testing.T) {
 	println(util.MaskPhoneNumber(phoneNumber))
 	println(delimiter)
 
-	time.Sleep(3 * time.Second)
 	err = automator.SendInput(phoneNumber)
 	require.NoError(t, err)
+	time.Sleep(3 * time.Second)
 
 	automator.SendInput("auth")
 	found = automator.WaitForOutput("Введите код подтверждения:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
-	time.Sleep(3 * time.Second)
 	err = automator.SendInput("xxx")
 	require.NoError(t, err)
+	time.Sleep(3 * time.Second)
+
+	// TODO: табличный тест для проверки webTransport
+	// target := "http://localhost:7070/api/auth/telegram/state"
+
+	// // Отправляем реальный HTTP-запрос к запущенному серверу
+	// client := &http.Client{
+	// 	Timeout: 5 * time.Second,
+	// }
+	// resp, err := client.Get(target)
+	// require.NoError(t, err, "Ошибка при выполнении HTTP-запроса к %s", target)
+	// defer resp.Body.Close()
+
+	// // Проверяем статус ответа
+	// assert.Equal(t, http.StatusOK, resp.StatusCode, "Статус ответа должен быть 200 OK")
+
+	// // Читаем и проверяем тело ответа
+	// body, err := io.ReadAll(resp.Body)
+	// require.NoError(t, err, "Ошибка при чтении тела ответа")
+
+	// responseBody := string(body)
+	// assert.Contains(t, responseBody, "state_type", "Ответ должен содержать информацию о состоянии авторизации")
 
 	// Проверяем команду exit
 	err = automator.SendInput("exit")

@@ -95,55 +95,55 @@ func New(
 }
 
 // registerCommands регистрирует доступные команды
-func (c *Transport) registerCommands() {
-	c.commands = []command{
+func (t *Transport) registerCommands() {
+	t.commands = []command{
 		{
 			name:        "help",
 			description: "Показать список доступных команд",
-			handler:     c.handleHelp,
+			handler:     t.handleHelp,
 		},
 		{
 			name:        "exit",
 			description: "Выйти из программы",
-			handler:     c.handleExit,
+			handler:     t.handleExit,
 		},
 		{
 			name:        "messages",
 			description: "Управление сообщениями: list, get, send",
-			handler:     c.handleMessages,
+			handler:     t.handleMessages,
 		},
 		{
 			name:        "rules",
 			description: "Управление правилами пересылки: list, get, add, delete",
-			handler:     c.handleRules,
+			handler:     t.handleRules,
 		},
 		{
 			name:        "report",
 			description: "Генерация отчетов: activity, forwarding, error",
-			handler:     c.handleReport,
+			handler:     t.handleReport,
 		},
 		{
 			name:        "auth",
 			description: "Запустить процесс авторизации в Telegram",
-			handler:     c.handleAuth,
+			handler:     t.handleAuth,
 		},
 	}
 
-	c.commandMap = make(map[string]*command)
-	for _, cmd := range c.commands {
-		c.commandMap[cmd.name] = &cmd
+	t.commandMap = make(map[string]*command)
+	for _, cmd := range t.commands {
+		t.commandMap[cmd.name] = &cmd
 	}
 }
 
 // Start запускает CLI интерфейс
-func (c *Transport) Start(ctx context.Context, shutdown func()) error {
+func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	// Запускаем обработку ввода в отдельной горутине
 	go func() {
 
 		select {
 		case <-ctx.Done():
 			return
-		case <-c.authController.InitClientDone():
+		case <-t.authController.InitClientDone():
 			// Если пришло какое-либо состояние, то TDLib клиент готов
 			slog.Info("TDLib клиент готов")
 		}
@@ -156,13 +156,13 @@ func (c *Transport) Start(ctx context.Context, shutdown func()) error {
 				return
 			default:
 				fmt.Println("> ")
-				if !c.scanner.Scan() {
+				if !t.scanner.Scan() {
 					return
 				}
 
-				input := c.scanner.Text()
+				input := t.scanner.Text()
 
-				if err := c.processCommand(input); err != nil {
+				if err := t.processCommand(input); err != nil {
 					if err.Error() == "exit" {
 						shutdown()
 						slog.Info("Exit command processed")
@@ -178,12 +178,12 @@ func (c *Transport) Start(ctx context.Context, shutdown func()) error {
 	return nil
 }
 
-func (c *Transport) Stop() error {
+func (t *Transport) Stop() error {
 	return nil
 }
 
 // processCommand обрабатывает введенную команду
-func (c *Transport) processCommand(input string) error {
+func (t *Transport) processCommand(input string) error {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return nil
@@ -195,7 +195,7 @@ func (c *Transport) processCommand(input string) error {
 		args = parts[1:]
 	}
 
-	if command, ok := c.commandMap[cmd]; ok {
+	if command, ok := t.commandMap[cmd]; ok {
 		return command.handler(args)
 	}
 
@@ -205,22 +205,22 @@ func (c *Transport) processCommand(input string) error {
 }
 
 // handleHelp обрабатывает команду help
-func (c *Transport) handleHelp(args []string) error {
+func (t *Transport) handleHelp(args []string) error {
 	fmt.Println("Доступные команды:")
-	for _, cmd := range c.commands {
+	for _, cmd := range t.commands {
 		fmt.Printf("  %-15s - %s\n", cmd.name, cmd.description)
 	}
 	return nil
 }
 
 // handleExit обрабатывает команду exit
-func (c *Transport) handleExit(args []string) error {
+func (t *Transport) handleExit(args []string) error {
 	fmt.Println("Выход из программы...")
 	return fmt.Errorf("exit")
 }
 
 // handleMessages обрабатывает команду messages
-func (c *Transport) handleMessages(args []string) error {
+func (t *Transport) handleMessages(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: messages [list|get|send] ...")
 		return nil
@@ -228,19 +228,19 @@ func (c *Transport) handleMessages(args []string) error {
 
 	switch args[0] {
 	case "list":
-		return c.handleMessageList()
+		return t.handleMessageList()
 	case "get":
 		if len(args) < 3 {
 			fmt.Println("Использование: messages get [chat_id] [message_id]")
 			return nil
 		}
-		return c.handleMessageGet(args[1], args[2])
+		return t.handleMessageGet(args[1], args[2])
 	case "send":
 		if len(args) < 3 {
 			fmt.Println("Использование: messages send [chat_id] [текст сообщения]")
 			return nil
 		}
-		return c.handleMessageSend(args[1], strings.Join(args[2:], " "))
+		return t.handleMessageSend(args[1], strings.Join(args[2:], " "))
 	default:
 		fmt.Printf("Неизвестная подкоманда: %s. Доступные: list, get, send\n", args[0])
 		return nil
@@ -248,8 +248,8 @@ func (c *Transport) handleMessages(args []string) error {
 }
 
 // handleMessageList обрабатывает команду messages list
-func (c *Transport) handleMessageList() error {
-	messages, err := c.messageController.ListMessages(10, 0)
+func (t *Transport) handleMessageList() error {
+	messages, err := t.messageController.ListMessages(10, 0)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении списка сообщений: %w", err)
 	}
@@ -261,7 +261,7 @@ func (c *Transport) handleMessageList() error {
 
 	fmt.Println("Список последних сообщений:")
 	for i, msg := range messages {
-		text := c.messageController.GetMessageText(msg)
+		text := t.messageController.GetMessageText(msg)
 		fmt.Printf("%d. Чат: %d, ID: %d, Текст: %s\n", i+1, msg.ChatId, msg.Id, text)
 	}
 
@@ -269,7 +269,7 @@ func (c *Transport) handleMessageList() error {
 }
 
 // handleMessageGet обрабатывает команду messages get
-func (c *Transport) handleMessageGet(chatIDStr, messageIDStr string) error {
+func (t *Transport) handleMessageGet(chatIDStr, messageIDStr string) error {
 	var chatID, messageID int64
 	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
 		return fmt.Errorf("неверный формат chat_id: %w", err)
@@ -278,36 +278,36 @@ func (c *Transport) handleMessageGet(chatIDStr, messageIDStr string) error {
 		return fmt.Errorf("неверный формат message_id: %w", err)
 	}
 
-	message, err := c.messageController.GetMessage(chatID, messageID)
+	message, err := t.messageController.GetMessage(chatID, messageID)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении сообщения: %w", err)
 	}
 
-	text := c.messageController.GetMessageText(message)
+	text := t.messageController.GetMessageText(message)
 	fmt.Printf("Сообщение:\nID: %d\nЧат: %d\nТекст: %s\n",
 		message.Id, message.ChatId, text)
 	return nil
 }
 
 // handleMessageSend обрабатывает команду messages send
-func (c *Transport) handleMessageSend(chatIDStr, text string) error {
+func (t *Transport) handleMessageSend(chatIDStr, text string) error {
 	var chatID int64
 	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
 		return fmt.Errorf("неверный формат chat_id: %w", err)
 	}
 
-	message, err := c.messageController.SendMessage(chatID, text)
+	message, err := t.messageController.SendMessage(chatID, text)
 	if err != nil {
 		return fmt.Errorf("ошибка при отправке сообщения: %w", err)
 	}
 
 	fmt.Printf("Сообщение отправлено:\nID: %d\nЧат: %d\nТекст: %s\n",
-		message.Id, message.ChatId, c.messageController.GetMessageText(message))
+		message.Id, message.ChatId, t.messageController.GetMessageText(message))
 	return nil
 }
 
 // handleRules обрабатывает команду rules
-func (c *Transport) handleRules(args []string) error {
+func (t *Transport) handleRules(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: rules [list|get|add|delete] ...")
 		return nil
@@ -315,25 +315,25 @@ func (c *Transport) handleRules(args []string) error {
 
 	switch args[0] {
 	case "list":
-		return c.handleRulesList()
+		return t.handleRulesList()
 	case "get":
 		if len(args) < 2 {
 			fmt.Println("Использование: rules get [id]")
 			return nil
 		}
-		return c.handleRuleGet(args[1])
+		return t.handleRuleGet(args[1])
 	case "add":
 		if len(args) < 4 {
 			fmt.Println("Использование: rules add [from_chat_id] [to_chat_id] [active=true|false]")
 			return nil
 		}
-		return c.handleRuleAdd(args[1], args[2], args[3])
+		return t.handleRuleAdd(args[1], args[2], args[3])
 	case "delete":
 		if len(args) < 2 {
 			fmt.Println("Использование: rules delete [id]")
 			return nil
 		}
-		return c.handleRuleDelete(args[1])
+		return t.handleRuleDelete(args[1])
 	default:
 		fmt.Printf("Неизвестная подкоманда: %s. Доступные: list, get, add, delete\n", args[0])
 		return nil
@@ -341,8 +341,8 @@ func (c *Transport) handleRules(args []string) error {
 }
 
 // handleRulesList обрабатывает команду rules list
-func (c *Transport) handleRulesList() error {
-	// rules, err := c.forwardController.ListForwardRules()
+func (t *Transport) handleRulesList() error {
+	// rules, err := t.forwardController.ListForwardRules()
 	// if err != nil {
 	// 	return fmt.Errorf("ошибка при получении списка правил: %w", err)
 	// }
@@ -362,8 +362,8 @@ func (c *Transport) handleRulesList() error {
 }
 
 // handleRuleGet обрабатывает команду rules get
-func (c *Transport) handleRuleGet(id string) error {
-	rule, err := c.forwardController.GetForwardRule(id)
+func (t *Transport) handleRuleGet(id string) error {
+	rule, err := t.forwardController.GetForwardRule(id)
 	if err != nil {
 		return fmt.Errorf("ошибка при получении правила: %w", err)
 	}
@@ -374,7 +374,7 @@ func (c *Transport) handleRuleGet(id string) error {
 }
 
 // handleRuleAdd обрабатывает команду rules add
-func (c *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
+func (t *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
 	var from int64
 	if _, err := fmt.Sscanf(fromStr, "%d", &from); err != nil {
 		return fmt.Errorf("неверный формат from_chat_id: %w", err)
@@ -397,7 +397,7 @@ func (c *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
 		Status: status,
 	}
 
-	if err := c.forwardController.SaveForwardRule(rule); err != nil {
+	if err := t.forwardController.SaveForwardRule(rule); err != nil {
 		return fmt.Errorf("ошибка при добавлении правила: %w", err)
 	}
 
@@ -406,8 +406,8 @@ func (c *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
 }
 
 // handleRuleDelete обрабатывает команду rules delete
-func (c *Transport) handleRuleDelete(id string) error {
-	// if err := c.forwardController.DeleteForwardRule(id); err != nil {
+func (t *Transport) handleRuleDelete(id string) error {
+	// if err := t.forwardController.DeleteForwardRule(id); err != nil {
 	// 	return fmt.Errorf("ошибка при удалении правила: %w", err)
 	// }
 
@@ -416,7 +416,7 @@ func (c *Transport) handleRuleDelete(id string) error {
 }
 
 // handleReport обрабатывает команду report
-func (c *Transport) handleReport(args []string) error {
+func (t *Transport) handleReport(args []string) error {
 	if len(args) == 0 {
 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
 		return nil
@@ -440,11 +440,11 @@ func (c *Transport) handleReport(args []string) error {
 	var err error
 	switch reportType {
 	case "activity":
-		_, err = c.reportController.GenerateActivityReport(startDate, endDate)
+		_, err = t.reportController.GenerateActivityReport(startDate, endDate)
 	case "forwarding":
-		_, err = c.reportController.GenerateForwardingReport(startDate, endDate)
+		_, err = t.reportController.GenerateForwardingReport(startDate, endDate)
 	case "error":
-		_, err = c.reportController.GenerateErrorReport(startDate, endDate)
+		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
 	default:
 		return fmt.Errorf("неизвестный тип отчета: %s. Доступные: activity, forwarding, error", reportType)
 	}
@@ -473,6 +473,7 @@ func (t *Transport) handleAuth(args []string) error {
 
 		var phoneNumber string
 		if config.Telegram.PhoneNumber != "" {
+			// TODO: перенести в authController
 			phoneNumber = config.Telegram.PhoneNumber
 			fmt.Println("Используется номер телефона из конфигурации:", util.MaskPhoneNumber(phoneNumber))
 			time.Sleep(3 * time.Second)
@@ -508,7 +509,7 @@ func (t *Transport) handleAuth(args []string) error {
 	return nil
 }
 
-func (c *Transport) hiddenReadLine() (string, error) {
+func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
 	return string(password), err

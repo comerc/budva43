@@ -22,12 +22,13 @@ import (
 
 	// botTransport "github.com/comerc/budva43/transport/bot"
 	cliTransport "github.com/comerc/budva43/transport/cli"
-	// webTransport "github.com/comerc/budva43/transport/web"
+	webTransport "github.com/comerc/budva43/transport/web"
 )
 
 // TODO: отказаться от devcontainer
 // TODO: прикрутить готовый образ tdlib в докере для make build
 // TODO: установить локальный tdlib для разработки & COMMON_ENV
+// TODO: применить во всех компонентах log *slog.Logger
 
 // Основная функция приложения
 func main() {
@@ -166,18 +167,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	// - Инициализация транспортных адаптеров
 
-	// webTransport := webTransport.New(
-	// 	messageController,
-	// 	forwardController,
-	// 	reportController,
-	// 	authTelegramController,
-	// )
-	// if err := webTransport.Start(ctx, cancel); err != nil {
-	// 	return fmt.Errorf("ошибка запуска webTransport: %w", err)
-	// }
-	// defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
-	// slog.Info("webTransport запущен")
-
 	// botTransport := botTransport.New(
 	// 	messageController,
 	// 	forwardController,
@@ -201,6 +190,18 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	}
 	defer gracefulShutdown("cliTransport", errSet, cliTransport.Stop)
 	slog.Info("cliTransport запущен")
+
+	webTransport := webTransport.New(
+		messageController,
+		forwardController,
+		reportController,
+		authTelegramController,
+	)
+	if err := webTransport.Start(ctx, cancel); err != nil {
+		return fmt.Errorf("ошибка запуска webTransport: %w", err)
+	}
+	defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
+	slog.Info("webTransport запущен")
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()

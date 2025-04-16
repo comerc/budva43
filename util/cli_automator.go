@@ -89,7 +89,7 @@ func (c *CLIAutomator) Run() {
 
 	if err := scanner.Err(); err != nil {
 		if err != io.EOF && !errors.Is(err, os.ErrClosed) {
-			c.log.Error("Ошибка чтения stdout", "error", err)
+			c.log.Error("Ошибка чтения stdout", "err", err)
 		}
 	}
 
