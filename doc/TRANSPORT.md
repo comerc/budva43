@@ -106,7 +106,7 @@ func NewHTTPRouter(messageController messageController, forwardController forwar
 }
 
 // SetupRoutes настраивает HTTP-маршруты
-func (r *HTTPRouter) SetupRoutes(mux *http.ServeMux) {
+func (r *HTTPRouter) setupRoutes(mux *http.ServeMux) {
     mux.HandleFunc("/api/messages", r.handleMessages)
     // Другие маршруты...
 }
