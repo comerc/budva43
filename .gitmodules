@@ -1,1 +1,4 @@
 
+[submodule "pkg/tdlib"]
+	path = pkg/tdlib
+	url = https://github.com/comerc/tdlib.git
