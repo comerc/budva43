@@ -110,18 +110,16 @@ func (t *Transport) handleRoot(w http.ResponseWriter, req *http.Request) {
 
 func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
 	err := *errPointer
-
-	var level slog.Level
 	if err == nil {
-		level = slog.LevelInfo
+		t.log.Info(name,
+			"took", time.Since(now),
+		)
 	} else {
-		level = slog.LevelError
+		t.log.Error(name,
+			"took", time.Since(now),
+			"err", err,
+		)
 	}
-
-	t.log.Log(context.Background(), level, name,
-		"took", time.Since(now),
-		"err", err,
-	)
 }
 
 // handleMessages обрабатывает запросы для работы с сообщениями
