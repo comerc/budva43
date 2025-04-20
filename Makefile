@@ -1,8 +1,8 @@
 lint:
 	golangci-lint run
 
-test:
-	go test -v ./...
+test_v:
+	go test -short -failfast -v -race -count=1 ./...
 
 build:
 	rm -f bin/app && go build -o bin/app main.go
@@ -36,6 +36,6 @@ test-auth-telegram-submit-password:
 
 all:
 	lint
-	test
+	tests
 	build
 
