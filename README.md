@@ -26,7 +26,10 @@ docker-compose build
 
 ### With direct TDLib 
 
-Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md)
+Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this option:
+
+> Install built TDLib to /usr/local instead of placing the files to td/tdlib.
+
 
 ## Applied Technologies
 
