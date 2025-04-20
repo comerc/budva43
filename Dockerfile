@@ -22,4 +22,5 @@ RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
 RUN go install github.com/mailru/easyjson/...@latest
 # RUN go install github.com/goreleaser/goreleaser/v2@v2.8.2
 
-
+ENV CGO_CFLAGS=-I/usr/local/include
+ENV CGO_LDFLAGS="-Wl,-rpath,/usr/local/lib -L/usr/local/lib -ltdjson -lc++"
