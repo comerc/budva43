@@ -71,6 +71,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [ ] samber/slog-*
 - [ ] тестирование Time & Concurrency
 - [ ] spf13/cobra
+- [x] go.mod replace
 
 ## .env
 
