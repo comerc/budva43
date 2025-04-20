@@ -1,6 +1,7 @@
 package text_transform
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -9,12 +10,17 @@ import (
 
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с текстовыми трансформациями
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.transform"),
+		//
+	}
 }
 
 // GetReplacement возвращает текст для замены или пустую строку, если замена не найдена

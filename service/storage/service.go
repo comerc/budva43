@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 )
 
@@ -17,12 +18,16 @@ type storageRepo interface {
 
 // Service предоставляет методы для работы с хранилищем
 type Service struct {
+	log *slog.Logger
+	//
 	repo storageRepo
 }
 
 // New создает новый экземпляр сервиса для работы с хранилищем
 func New(repo storageRepo) *Service {
 	return &Service{
+		log: slog.With("module", "service.storage"),
+		//
 		repo: repo,
 	}
 }

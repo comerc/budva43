@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -22,6 +23,8 @@ type mediaStorage interface {
 
 // Service предоставляет методы для работы с медиа-файлами
 type Service struct {
+	log *slog.Logger
+	//
 	processor mediaProcessor
 	storage   mediaStorage
 }
@@ -29,6 +32,8 @@ type Service struct {
 // New создает новый экземпляр сервиса для работы с медиа-файлами
 func New(processor mediaProcessor, storage mediaStorage) *Service {
 	return &Service{
+		log: slog.With("module", "service.media"),
+		//
 		processor: processor,
 		storage:   storage,
 	}

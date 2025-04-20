@@ -1,6 +1,7 @@
 package report
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/comerc/budva43/entity"
@@ -8,12 +9,17 @@ import (
 
 // Service предоставляет методы для работы с отчетами
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с отчетами
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.report"),
+		//
+	}
 }
 
 // calculateReportTimeRange рассчитывает временной диапазон для отчета

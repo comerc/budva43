@@ -1,13 +1,20 @@
 package chat
 
+import "log/slog"
+
 // Service предоставляет методы для работы с чатами
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с чатами
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.chat"),
+		//
+	}
 }
 
 // // IsPrivate проверяет, является ли чат личным чатом

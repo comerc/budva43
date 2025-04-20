@@ -16,7 +16,8 @@ import (
 
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
-	log            *slog.Logger
+	log *slog.Logger
+	//
 	originalStdin  *os.File
 	originalStdout *os.File
 	stdinReader    *os.File
@@ -45,7 +46,8 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	}
 
 	automator := &CLIAutomator{
-		log:            slog.With("module", "util.cli_automator"),
+		log: slog.With("module", "util.cli_automator"),
+		//
 		originalStdin:  originalStdin,
 		originalStdout: originalStdout,
 		stdinReader:    stdinReader, // Подчиненная часть PTY (pseudo-terminal slave)

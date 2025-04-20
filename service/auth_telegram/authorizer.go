@@ -12,6 +12,8 @@ import (
 // Authorizer реализует интерфейс client.AuthorizationStateHandler
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
+	log *slog.Logger
+	//
 	setClient       func(client *client.Client)
 	shutdown        func()
 	tdlibParameters *client.SetTdlibParametersRequest
@@ -40,6 +42,8 @@ func NewAuthorizer(setClient func(*client.Client), shutdown func()) *Authorizer 
 	}
 
 	return &Authorizer{
+		log: slog.With("module", "service.auth_telegram.authorizer"),
+		//
 		setClient:       setClient,
 		shutdown:        shutdown,
 		tdlibParameters: tdlibParameters,
@@ -55,19 +59,19 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 
 	stateType := state.AuthorizationStateType()
 
-	slog.Info("State send", "stateType", stateType)
+	a.log.Info("State send", "stateType", stateType)
 	select {
 	case a.state <- state:
-		slog.Debug("State sent to channel")
+		a.log.Debug("State sent to channel")
 	default:
-		slog.Warn("State channel full, unable to send state")
+		a.log.Warn("State channel full, unable to send state")
 	}
 
 	switch stateType {
 	case client.TypeAuthorizationStateWaitTdlibParameters:
 		_, err := tdlibClient.SetTdlibParameters(a.tdlibParameters)
 		if err != nil {
-			slog.Error("ошибка при установке параметров TDLib", "err", err)
+			a.log.Error("ошибка при установке параметров TDLib", "err", err)
 
 			a.shutdown()
 
@@ -129,7 +133,7 @@ func (a *Authorizer) Handle(tdlibClient *client.Client, state client.Authorizati
 }
 
 func (a *Authorizer) Close() {
-	slog.Debug("Closing Authorizer")
+	a.log.Debug("Closing Authorizer")
 	close(a.phoneNumber)
 	close(a.code)
 	close(a.state)

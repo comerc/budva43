@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -17,12 +18,16 @@ type messageService interface {
 
 // Service предоставляет методы для фильтрации сообщений
 type Service struct {
+	log *slog.Logger
+	//
 	message messageService
 }
 
 // New создает новый экземпляр сервиса для фильтрации сообщений
 func New(messageService messageService) *Service {
 	return &Service{
+		log: slog.With("module", "service.filter"),
+		//
 		message: messageService,
 	}
 }

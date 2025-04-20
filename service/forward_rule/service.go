@@ -1,6 +1,7 @@
 package forward_rule
 
 import (
+	"log/slog"
 	"regexp"
 
 	"github.com/comerc/budva43/entity"
@@ -8,12 +9,17 @@ import (
 
 // Service предоставляет методы для работы с правилами пересылки
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с правилами пересылки
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.forward_rule"),
+		//
+	}
 }
 
 // CompileRegexps компилирует все регулярные выражения в правиле

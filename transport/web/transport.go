@@ -51,7 +51,8 @@ type authTelegramController interface {
 
 // Transport представляет HTTP маршрутизатор для API
 type Transport struct {
-	log               *slog.Logger
+	log *slog.Logger
+	//
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
@@ -69,7 +70,7 @@ func New(
 ) *Transport {
 	return &Transport{
 		log: slog.With("module", "transport.web"),
-
+		//
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,

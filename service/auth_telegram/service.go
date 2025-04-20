@@ -3,6 +3,7 @@ package auth_telegram
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/zelenin/go-tdlib/client"
 )
@@ -20,6 +21,8 @@ type telegramRepo interface {
 
 // Service управляет процессом авторизации в Telegram
 type Service struct {
+	log *slog.Logger
+	//
 	telegramRepo telegramRepo
 	authorizer   *Authorizer
 }
@@ -27,6 +30,8 @@ type Service struct {
 // New создает новый экземпляр сервиса авторизации Telegram
 func New(telegramRepo telegramRepo) *Service {
 	s := &Service{
+		log: slog.With("module", "service.auth_telegram"),
+		//
 		telegramRepo: telegramRepo,
 	}
 

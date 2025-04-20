@@ -1,6 +1,8 @@
 package auth_telegram
 
 import (
+	"log/slog"
+
 	"github.com/zelenin/go-tdlib/client"
 )
 
@@ -15,12 +17,16 @@ type authTelegramService interface {
 
 // Controller представляет контроллер для авторизации в Telegram
 type Controller struct {
+	log *slog.Logger
+	//
 	authTelegramService authTelegramService
 }
 
 // New создает новый экземпляр контроллера авторизации Telegram
 func New(authTelegramService authTelegramService) *Controller {
 	return &Controller{
+		log: slog.With("module", "controller.auth_telegram"),
+		//
 		authTelegramService: authTelegramService,
 	}
 }

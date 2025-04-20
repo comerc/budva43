@@ -1,6 +1,8 @@
 package forward
 
 import (
+	"log/slog"
+
 	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
 )
@@ -25,6 +27,8 @@ type storageRepo interface {
 
 // Controller представляет контроллер для работы с пересылкой сообщений
 type Controller struct {
+	log *slog.Logger
+	//
 	forwardRuleService forwardRuleService
 	messageService     messageService
 }
@@ -35,6 +39,8 @@ func New(
 	messageService messageService,
 ) *Controller {
 	return &Controller{
+		log: slog.With("module", "controller.forward"),
+		//
 		forwardRuleService: forwardRuleService,
 		messageService:     messageService,
 	}

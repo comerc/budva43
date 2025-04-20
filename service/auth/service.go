@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -22,6 +23,8 @@ type authenticator interface {
 
 // Service предоставляет методы для аутентификации и авторизации
 type Service struct {
+	log *slog.Logger
+	//
 	authenticator authenticator
 	storage       storageService
 	sessions      map[string]time.Time
@@ -31,6 +34,8 @@ type Service struct {
 // New создает новый экземпляр сервиса для аутентификации
 func New(authenticator authenticator, storage storageService) *Service {
 	return &Service{
+		log: slog.With("module", "service.auth"),
+		//
 		authenticator: authenticator,
 		storage:       storage,
 		sessions:      make(map[string]time.Time),

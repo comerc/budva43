@@ -1,17 +1,24 @@
 package source
 
 import (
+	"log/slog"
+
 	"github.com/comerc/budva43/entity"
 )
 
 // Service предоставляет методы для работы с источниками сообщений
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с источниками сообщений
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.source"),
+		//
+	}
 }
 
 // ShouldAddSign проверяет, нужно ли добавлять подпись к сообщению для указанного чата

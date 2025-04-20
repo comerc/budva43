@@ -56,6 +56,8 @@ type authTelegramController interface {
 
 // Transport представляет интерфейс командной строки
 type Transport struct {
+	log *slog.Logger
+	//
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
@@ -80,6 +82,8 @@ func New(
 	authController authTelegramController,
 ) *Transport {
 	cli := &Transport{
+		log: slog.With("module", "transport.cli"),
+		//
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
@@ -145,7 +149,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 			return
 		case <-t.authController.InitClientDone():
 			// Если пришло какое-либо состояние, то TDLib клиент готов
-			slog.Info("TDLib клиент готов")
+			t.log.Info("TDLib клиент готов")
 		}
 
 		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
@@ -165,10 +169,10 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 				if err := t.processCommand(input); err != nil {
 					if err.Error() == "exit" {
 						shutdown()
-						slog.Info("Exit command processed")
+						t.log.Info("Exit command processed")
 						return
 					}
-					slog.Error("Command execution failed", "err", err)
+					t.log.Error("Command execution failed", "err", err)
 					fmt.Printf("Ошибка: %v\n", err)
 				}
 			}
@@ -199,7 +203,7 @@ func (t *Transport) processCommand(input string) error {
 		return command.handler(args)
 	}
 
-	slog.Info("Unknown command", "command", cmd)
+	t.log.Info("Unknown command", "command", cmd)
 	fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 	return nil
 }
@@ -466,7 +470,7 @@ func (t *Transport) handleAuth(args []string) error {
 		return fmt.Errorf("ошибка при получении состояния авторизации: %w", err)
 	}
 
-	slog.Debug("GetAuthorizationState()", "state", state.AuthorizationStateType())
+	t.log.Debug("GetAuthorizationState()", "state", state.AuthorizationStateType())
 
 	switch state.AuthorizationStateType() {
 	case client.TypeAuthorizationStateWaitPhoneNumber:

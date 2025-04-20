@@ -3,6 +3,7 @@ package link
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"regexp"
 	"strings"
@@ -17,12 +18,18 @@ type linkProcessor interface {
 
 // Service предоставляет методы для работы с ссылками
 type Service struct {
+	log *slog.Logger
+	//
 	processor linkProcessor
 }
 
 // New создает новый экземпляр сервиса для работы с ссылками
 func New(processor linkProcessor) *Service {
-	return &Service{processor: processor}
+	return &Service{
+		log: slog.With("module", "service.link"),
+		//
+		processor: processor,
+	}
 }
 
 // ExtractLinks извлекает все ссылки из текста

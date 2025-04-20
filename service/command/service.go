@@ -2,6 +2,7 @@ package command
 
 import (
 	"errors"
+	"log/slog"
 	"strings"
 	"sync"
 )
@@ -13,6 +14,8 @@ type commandHandler interface {
 
 // Service предоставляет методы для обработки команд
 type Service struct {
+	log *slog.Logger
+	//
 	handlers     map[string]commandHandler
 	aliases      map[string]string
 	helpMessages map[string]string
@@ -22,6 +25,8 @@ type Service struct {
 // New создает новый экземпляр сервиса для обработки команд
 func New() *Service {
 	return &Service{
+		log: slog.With("module", "service.command"),
+		//
 		handlers:     make(map[string]commandHandler),
 		aliases:      make(map[string]string),
 		helpMessages: make(map[string]string),

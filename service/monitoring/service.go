@@ -2,6 +2,7 @@ package monitoring
 
 import (
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -39,6 +40,8 @@ type Metric struct {
 
 // Service предоставляет методы для мониторинга и сбора метрик
 type Service struct {
+	log *slog.Logger
+	//
 	metrics        map[string]*Metric
 	metricsHistory map[string][]MetricValue
 	historyLimit   int
@@ -53,6 +56,8 @@ func New(historyLimit int) *Service {
 	}
 
 	return &Service{
+		log: slog.With("module", "service.monitoring"),
+		//
 		metrics:        make(map[string]*Metric),
 		metricsHistory: make(map[string][]MetricValue),
 		historyLimit:   historyLimit,

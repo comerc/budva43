@@ -1,6 +1,7 @@
 package auto_answer
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
@@ -72,6 +73,8 @@ type Rule struct {
 
 // Service предоставляет методы для автоматических ответов
 type Service struct {
+	log *slog.Logger
+	//
 	messageProcessor messageProcessor
 	rules            []*Rule
 	rulesByName      map[string]*Rule
@@ -81,6 +84,8 @@ type Service struct {
 // New создает новый экземпляр сервиса для автоматических ответов
 func New(messageProcessor messageProcessor) *Service {
 	return &Service{
+		log: slog.With("module", "service.auto_answer"),
+		//
 		messageProcessor: messageProcessor,
 		rules:            make([]*Rule, 0),
 		rulesByName:      make(map[string]*Rule),

@@ -27,7 +27,6 @@ import (
 
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
-// TODO: применить во всех компонентах log *slog.Logger
 
 // Основная функция приложения
 func main() {

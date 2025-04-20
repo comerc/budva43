@@ -2,6 +2,7 @@ package report
 
 import (
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/comerc/budva43/entity"
@@ -16,6 +17,8 @@ type reportService interface {
 
 // Controller представляет контроллер для работы с отчетами
 type Controller struct {
+	log *slog.Logger
+	//
 	reportService reportService
 }
 
@@ -24,6 +27,8 @@ func New(
 	reportService reportService,
 ) *Controller {
 	return &Controller{
+		log: slog.With("module", "controller.report"),
+		//
 		reportService: reportService,
 	}
 }

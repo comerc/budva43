@@ -13,6 +13,8 @@ import (
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
+	log *slog.Logger
+	//
 	client         *client.Client
 	initClientDone chan any
 	ctx            context.Context
@@ -22,6 +24,9 @@ type Repo struct {
 // New создает новый экземпляр репозитория Telegram
 func New() *Repo {
 	return &Repo{
+		log: slog.With("module", "repo.telegram"),
+		//
+		client:         nil,
 		initClientDone: make(chan any),
 	}
 }
@@ -30,9 +35,9 @@ func New() *Repo {
 func (r *Repo) Start(ctx context.Context, shutdown context.CancelFunc) error {
 	// Инициализируем базовые настройки репозитория
 	// Клиент будет создан позже, после установки авторизатора
-	slog.Info("Telegram repository initialization started")
+	r.log.Info("Telegram repository initialization started")
 
-	r.ctx = ctx
+	r.ctx = ctx // TODO: некрасиво!
 	r.shutdown = shutdown
 
 	return nil
@@ -45,7 +50,7 @@ func (r *Repo) CreateClient(
 		shutdown func(),
 	) client.AuthorizationStateHandler,
 ) {
-	slog.Info("Creating TDLib client")
+	r.log.Info("Creating TDLib client")
 
 	options := []client.Option{
 		client.WithLogVerbosity(&client.SetLogVerbosityLevelRequest{
@@ -58,16 +63,16 @@ func (r *Repo) CreateClient(
 		authorizationStateHandler := createAuthorizer(r.setClient, r.shutdown)
 		_, err := client.NewClient(authorizationStateHandler, options...)
 		if err != nil {
-			slog.Error("ошибка при создании клиента TDLib", "err", err)
+			r.log.Error("ошибка при создании клиента TDLib", "err", err)
 			select {
 			case <-r.ctx.Done():
-				slog.Info("ctx.Done()")
+				r.log.Info("ctx.Done()")
 				return
 			default:
 				continue
 			}
 		}
-		slog.Info("TDLib client created")
+		r.log.Info("TDLib client created")
 		// r.setClient(tdlibClient)
 		break
 	}
@@ -77,7 +82,7 @@ func (r *Repo) CreateClient(
 		Name: "version",
 	})
 	if err != nil {
-		slog.Error("GetOption error", "err", err)
+		r.log.Error("GetOption error", "err", err)
 		return
 	}
 
@@ -85,11 +90,11 @@ func (r *Repo) CreateClient(
 		Name: "commit_hash",
 	})
 	if err != nil {
-		slog.Error("GetOption error", "err", err)
+		r.log.Error("GetOption error", "err", err)
 		return
 	}
 
-	slog.Info("TDLib",
+	r.log.Info("TDLib",
 		"version", versionOption.(*client.OptionValueString).Value,
 		"commit", commitOption.(*client.OptionValueString).Value,
 	)
@@ -97,11 +102,11 @@ func (r *Repo) CreateClient(
 	// Получаем информацию о пользователе
 	me, err := r.client.GetMe()
 	if err != nil {
-		slog.Error("GetMe error", "err", err)
+		r.log.Error("GetMe error", "err", err)
 		return
 	}
 
-	slog.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
+	r.log.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
 }
 
 func (r *Repo) GetClient() *client.Client {
@@ -109,17 +114,17 @@ func (r *Repo) GetClient() *client.Client {
 }
 
 func (r *Repo) setClient(client *client.Client) {
-	// slog.Info("setClient")
+	// r.log.Info("setClient")
 	r.client = client
 	select {
 	case _, ok := <-r.initClientDone:
-		// slog.Info("<-r.initClientDone", "ok", ok)
+		// r.log.Info("<-r.initClientDone", "ok", ok)
 		if !ok {
-			// slog.Info("initClientDone closed")
+			// r.log.Info("initClientDone closed")
 			return
 		}
 	default:
-		// slog.Info("Closing initClientDone")
+		// r.log.Info("Closing initClientDone")
 		close(r.initClientDone)
 	}
 }

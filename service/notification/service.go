@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -12,6 +13,8 @@ type Notifier interface {
 
 // Service предоставляет методы для работы с уведомлениями
 type Service struct {
+	log *slog.Logger
+	//
 	notifier      Notifier
 	notifyHistory map[string]time.Time
 	mutex         sync.RWMutex
@@ -20,6 +23,8 @@ type Service struct {
 // New создает новый экземпляр сервиса для уведомлений
 func New(notifier Notifier) *Service {
 	return &Service{
+		log: slog.With("module", "service.notification"),
+		//
 		notifier:      notifier,
 		notifyHistory: make(map[string]time.Time),
 	}

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -8,12 +9,17 @@ import (
 
 // Service предоставляет методы для работы с пользователями
 type Service struct {
+	log *slog.Logger
+	//
 	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с пользователями
 func New() *Service {
-	return &Service{}
+	return &Service{
+		log: slog.With("module", "service.user"),
+		//
+	}
 }
 
 // GetFullName возвращает полное имя пользователя

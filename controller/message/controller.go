@@ -1,6 +1,8 @@
 package message
 
 import (
+	"log/slog"
+
 	"github.com/zelenin/go-tdlib/client"
 )
 
@@ -17,12 +19,16 @@ type messageService interface {
 
 // Controller представляет контроллер для работы с сообщениями
 type Controller struct {
+	log *slog.Logger
+	//
 	messageService messageService
 }
 
 // New создает новый экземпляр контроллера сообщений
 func New(messageService messageService) *Controller {
 	return &Controller{
+		log: slog.With("module", "controller.message"),
+		//
 		messageService: messageService,
 	}
 }

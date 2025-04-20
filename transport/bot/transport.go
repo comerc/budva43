@@ -47,6 +47,8 @@ type telegramClient interface {
 
 // Transport представляет обработчик сообщений из Telegram
 type Transport struct {
+	log *slog.Logger
+	//
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
@@ -63,6 +65,8 @@ func New(
 	telegramClient telegramClient,
 ) *Transport {
 	return &Transport{
+		log: slog.With("module", "transport.telegram"),
+		//
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
@@ -73,54 +77,54 @@ func New(
 }
 
 // Start запускает обработчик сообщений
-func (h *Transport) Start(ctx context.Context) error {
+func (t *Transport) Start(ctx context.Context) error {
 	// Запускаем горутину обработки входящих обновлений
 	go func() {
-		for update := range h.updates {
-			h.processUpdate(update)
+		for update := range t.updates {
+			t.processUpdate(update)
 		}
 	}()
 
 	// Ожидаем сигнал остановки через контекст
 	<-ctx.Done()
-	return h.Stop()
+	return t.Stop()
 }
 
 // Stop останавливает обработчик сообщений
-func (h *Transport) Stop() error {
-	if h.stopped {
+func (t *Transport) Stop() error {
+	if t.stopped {
 		return nil
 	}
 
-	h.stopped = true
-	close(h.updates)
+	t.stopped = true
+	close(t.updates)
 	return nil
 }
 
 // ReceiveUpdate получает обновление от клиента Telegram
-func (h *Transport) ReceiveUpdate(update client.Update) {
-	if h.stopped {
+func (t *Transport) ReceiveUpdate(update client.Update) {
+	if t.stopped {
 		return
 	}
 
 	// Отправляем обновление в канал для асинхронной обработки
-	h.updates <- update
+	t.updates <- update
 }
 
 // processUpdate обрабатывает полученное обновление
-func (h *Transport) processUpdate(update client.Update) {
+func (t *Transport) processUpdate(update client.Update) {
 	// В текущей реализации go-tdlib обычно приходят конкретные типы обновлений
 	// Поэтому для простоты используем типовое переключение для определения типа обновления
 	switch updateType := update.(type) {
 	case *client.UpdateNewMessage:
-		h.handleNewMessage(updateType.Message)
+		t.handleNewMessage(updateType.Message)
 	default:
 		// Другие типы обновлений не обрабатываем
 	}
 }
 
 // handleNewMessage обрабатывает новое сообщение
-func (h *Transport) handleNewMessage(message *client.Message) {
+func (t *Transport) handleNewMessage(message *client.Message) {
 	// Проверяем, что это сообщение от пользователя
 	// Заглушка для проверки, в реальном приложении нужно получить отправителя
 	isOutgoing := false // Заглушка
@@ -137,16 +141,16 @@ func (h *Transport) handleNewMessage(message *client.Message) {
 
 	// Если текст начинается с "/", обрабатываем как команду
 	if strings.HasPrefix(text, "/") {
-		h.processCommand(message, text)
+		t.processCommand(message, text)
 		return
 	}
 
 	// Если сообщение не является командой, просто логируем его
-	slog.Info("Message received", "chat_id", message.ChatId, "text", text)
+	t.log.Info("Message received", "chat_id", message.ChatId, "text", text)
 }
 
 // processCommand обрабатывает команду пользователя
-func (h *Transport) processCommand(message *client.Message, text string) {
+func (t *Transport) processCommand(message *client.Message, text string) {
 	// Разбиваем команду на части
 	args := strings.Fields(text)
 	if len(args) == 0 {
@@ -162,57 +166,57 @@ func (h *Transport) processCommand(message *client.Message, text string) {
 	// Обрабатываем различные команды
 	switch command {
 	case "/start", "/help":
-		h.sendHelpMessage(chatID)
+		t.sendHelpMessage(chatID)
 
 	case "/status":
-		h.sendStatusMessage(chatID)
+		t.sendStatusMessage(chatID)
 
 	case "/report":
 		if !isAdmin {
-			h.sendMessage(chatID, "Эта команда доступна только администратору.")
+			t.sendMessage(chatID, "Эта команда доступна только администратору.")
 			return
 		}
 		if len(args) < 2 {
-			h.sendMessage(chatID, "Использование: /report [activity|forwarding|error]")
+			t.sendMessage(chatID, "Использование: /report [activity|forwarding|error]")
 			return
 		}
-		h.generateReport(chatID, args[1])
+		t.generateReport(chatID, args[1])
 
 	case "/rule":
 		if !isAdmin {
-			h.sendMessage(chatID, "Эта команда доступна только администратору.")
+			t.sendMessage(chatID, "Эта команда доступна только администратору.")
 			return
 		}
 		if len(args) < 2 {
-			h.sendMessage(chatID, "Использование: /rule [list|show|add|delete] ...")
+			t.sendMessage(chatID, "Использование: /rule [list|show|add|delete] ...")
 			return
 		}
-		h.handleRuleCommand(chatID, args[1:])
+		t.handleRuleCommand(chatID, args[1:])
 
 	default:
-		h.sendMessage(chatID, "Неизвестная команда. Отправьте /help для получения списка доступных команд.")
+		t.sendMessage(chatID, "Неизвестная команда. Отправьте /help для получения списка доступных команд.")
 	}
 }
 
 // sendHelpMessage отправляет справочное сообщение
-func (h *Transport) sendHelpMessage(chatID int64) {
+func (t *Transport) sendHelpMessage(chatID int64) {
 	helpText := `Доступные команды:
 /help - показать это сообщение
 /status - показать статус бота
 /report [тип] - сгенерировать отчет (только для администратора)
 /rule ... - управление правилами пересылки (только для администратора)`
 
-	h.sendMessage(chatID, helpText)
+	t.sendMessage(chatID, helpText)
 }
 
 // sendStatusMessage отправляет сообщение о текущем статусе бота
-func (h *Transport) sendStatusMessage(chatID int64) {
+func (t *Transport) sendStatusMessage(chatID int64) {
 	statusText := "Бот работает в штатном режиме."
-	h.sendMessage(chatID, statusText)
+	t.sendMessage(chatID, statusText)
 }
 
 // generateReport генерирует отчет заданного типа
-func (h *Transport) generateReport(chatID int64, reportType string) {
+func (t *Transport) generateReport(chatID int64, reportType string) {
 	// Получаем даты для отчета (последняя неделя)
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -7)
@@ -220,81 +224,81 @@ func (h *Transport) generateReport(chatID int64, reportType string) {
 	// Генерируем отчет в зависимости от типа
 	switch reportType {
 	case "activity":
-		_, err := h.reportController.GenerateActivityReport(startDate, endDate)
+		_, err := t.reportController.GenerateActivityReport(startDate, endDate)
 		if err != nil {
-			h.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета об активности: %v", err))
+			t.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета об активности: %v", err))
 			return
 		}
-		h.sendMessage(chatID, fmt.Sprintf("Отчет об активности сгенерирован. Период: %s - %s",
+		t.sendMessage(chatID, fmt.Sprintf("Отчет об активности сгенерирован. Период: %s - %s",
 			startDate.Format("02.01.2006"), endDate.Format("02.01.2006")))
 
 	case "forwarding":
-		_, err := h.reportController.GenerateForwardingReport(startDate, endDate)
+		_, err := t.reportController.GenerateForwardingReport(startDate, endDate)
 		if err != nil {
-			h.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета о пересылке: %v", err))
+			t.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета о пересылке: %v", err))
 			return
 		}
-		h.sendMessage(chatID, fmt.Sprintf("Отчет о пересылке сгенерирован. Период: %s - %s",
+		t.sendMessage(chatID, fmt.Sprintf("Отчет о пересылке сгенерирован. Период: %s - %s",
 			startDate.Format("02.01.2006"), endDate.Format("02.01.2006")))
 
 	case "error":
-		_, err := h.reportController.GenerateErrorReport(startDate, endDate)
+		_, err := t.reportController.GenerateErrorReport(startDate, endDate)
 		if err != nil {
-			h.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета об ошибках: %v", err))
+			t.sendMessage(chatID, fmt.Sprintf("Ошибка при генерации отчета об ошибках: %v", err))
 			return
 		}
-		h.sendMessage(chatID, fmt.Sprintf("Отчет об ошибках сгенерирован. Период: %s - %s",
+		t.sendMessage(chatID, fmt.Sprintf("Отчет об ошибках сгенерирован. Период: %s - %s",
 			startDate.Format("02.01.2006"), endDate.Format("02.01.2006")))
 
 	default:
-		h.sendMessage(chatID, fmt.Sprintf("Неизвестный тип отчета: %s. Доступные типы: activity, forwarding, error", reportType))
+		t.sendMessage(chatID, fmt.Sprintf("Неизвестный тип отчета: %s. Доступные типы: activity, forwarding, error", reportType))
 		return
 	}
 
 	// Логируем успешную генерацию отчета
-	slog.Info("Report generated",
+	t.log.Info("Report generated",
 		"type", reportType,
 		"start_date", startDate.Format("2006-01-02"),
 		"end_date", endDate.Format("2006-01-02"))
 }
 
 // handleRuleCommand обрабатывает команды для управления правилами пересылки
-func (h *Transport) handleRuleCommand(chatID int64, args []string) {
+func (t *Transport) handleRuleCommand(chatID int64, args []string) {
 	if len(args) == 0 {
-		h.sendMessage(chatID, "Недостаточно аргументов для команды /rule")
+		t.sendMessage(chatID, "Недостаточно аргументов для команды /rule")
 		return
 	}
 
 	switch args[0] {
 	case "list":
-		h.sendMessage(chatID, "Список правил пересылки (не реализовано)")
+		t.sendMessage(chatID, "Список правил пересылки (не реализовано)")
 
 	case "show":
 		if len(args) < 2 {
-			h.sendMessage(chatID, "Использование: /rule show [id правила]")
+			t.sendMessage(chatID, "Использование: /rule show [id правила]")
 			return
 		}
 		ruleID := args[1]
-		rule, err := h.forwardController.GetForwardRule(ruleID)
+		rule, err := t.forwardController.GetForwardRule(ruleID)
 		if err != nil {
-			h.sendMessage(chatID, fmt.Sprintf("Ошибка при получении правила: %v", err))
+			t.sendMessage(chatID, fmt.Sprintf("Ошибка при получении правила: %v", err))
 			return
 		}
 
 		ruleInfo := fmt.Sprintf("Правило #%s:\nОт: %d\nК: %v\nАктивно: %t",
 			rule.ID, rule.From, rule.To, rule.Status == entity.RuleStatusActive)
-		h.sendMessage(chatID, ruleInfo)
+		t.sendMessage(chatID, ruleInfo)
 
 	default:
-		h.sendMessage(chatID, "Неизвестная подкоманда для /rule. Доступные: list, show")
+		t.sendMessage(chatID, "Неизвестная подкоманда для /rule. Доступные: list, show")
 	}
 }
 
 // sendMessage отправляет текстовое сообщение в чат
-func (h *Transport) sendMessage(chatID int64, text string) {
+func (t *Transport) sendMessage(chatID int64, text string) {
 	// Отправляем сообщение через контроллер
-	_, err := h.messageController.SendMessage(chatID, text)
+	_, err := t.messageController.SendMessage(chatID, text)
 	if err != nil {
-		slog.Error("Failed to send message", "chat_id", chatID, "err", err)
+		t.log.Error("Failed to send message", "chat_id", chatID, "err", err)
 	}
 }

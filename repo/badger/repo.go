@@ -2,6 +2,7 @@ package badger
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/comerc/budva43/config"
@@ -10,12 +11,18 @@ import (
 
 // Repo определяет интерфейс для работы с хранилищем BadgerDB
 type Repo struct {
+	log *slog.Logger
+	//
 	db *badger.DB
 }
 
 // New создает новый экземпляр репозитория для BadgerDB
 func New() *Repo {
-	return &Repo{}
+	return &Repo{
+		log: slog.With("module", "repo.badger"),
+		//
+		db: nil,
+	}
 }
 
 // Start устанавливает соединение с базой данных
