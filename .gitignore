@@ -28,3 +28,4 @@ bin/
 config.yml
 .data/
 .try/
+vendor/

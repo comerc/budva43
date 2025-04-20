@@ -4,11 +4,8 @@ lint:
 test:
 	go test -v ./...
 
-clean:
-	rm -f bin/app
-
 build:
-	go build -o bin/app main.go
+	rm -f bin/app && go build -o bin/app main.go
 
 run:
 	go run main.go
@@ -40,6 +37,5 @@ test-auth-telegram-submit-password:
 all:
 	lint
 	test
-	clean
 	build
 

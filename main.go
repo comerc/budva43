@@ -25,9 +25,8 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
-// TODO: отказаться от devcontainer
+// TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
-// TODO: установить локальный tdlib для разработки & COMMON_ENV
 // TODO: применить во всех компонентах log *slog.Logger
 
 // Основная функция приложения

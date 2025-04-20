@@ -4,13 +4,29 @@ Telegram-Forwarder (UNIX-way)
 
 [PLAN](./docs/PLAN.md)
 
-## How to Start 
+## How to clone project with submodules
+
+```bash
+git clone https://github.com/comerc/budva43.git
+git submodule init
+git submodule update
+```
+
+## How to Dev Start 
+
+Use DevContainer (some restrictions) for build on Ubuntu or direct install TDLib on host machine for best dev experience.
+
+### With DevContainer
 
 only first time:
 ```bash
 docker-compose build
 ```
 ...then "Reopen in Container"
+
+### With direct TDLib 
+
+Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md)
 
 ## Applied Technologies
 

@@ -1,19 +1,16 @@
 services:
-  tdlib:
+  tdlib-ubuntu:
     build:
       dockerfile: Dockerfile
-      context: ./pkg/tdlib
-    image: tdlib:latest
+      context: ./pkg/tdlib-ubuntu
+    image: tdlib-ubuntu:latest
   dev:
     build:
       dockerfile: Dockerfile
       context: .
     image: budva43/dev:latest
     depends_on:
-      - tdlib
+      - tdlib-ubuntu
     command: sleep infinity
     volumes:
       - .:/workspaces/budva43:cached
-    environment:
-      CGO_CFLAGS: "-I/td/tdlib/include"
-      CGO_LDFLAGS: "-Wl,-rpath,/td/tdlib/lib -L/td/tdlib/lib -ltdjson"

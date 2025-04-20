@@ -1,4 +1,4 @@
-FROM tdlib:latest
+FROM tdlib-ubuntu:latest
 
 ENV GO_VERSION=1.24.2
 
