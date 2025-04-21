@@ -73,8 +73,8 @@ func (s *Service) Authenticate(credentials string) (string, error) {
 	if s.storage != nil {
 		err = s.storage.Set("auth:token", []byte(token))
 		if err != nil {
-			// Нелитричная ошибка, можем продолжить
-			// Логировать ошибку
+			// Некритичная ошибка, можем продолжить
+			s.log.Error("Failed to save token in storage", "err", err)
 		}
 	}
 
@@ -143,8 +143,8 @@ func (s *Service) RefreshToken(oldToken string) (string, error) {
 	if s.storage != nil {
 		err = s.storage.Set("auth:token", []byte(newToken))
 		if err != nil {
-			// Нелитричная ошибка, можем продолжить
-			// Логировать ошибку
+			// Некритричная ошибка, можем продолжить
+			s.log.Error("Failed to update token in storage", "err", err)
 		}
 	}
 
@@ -168,8 +168,8 @@ func (s *Service) InvalidateToken(token string) error {
 		if err == nil && string(storedToken) == token {
 			err = s.storage.Delete("auth:token")
 			if err != nil {
-				// Нелитричная ошибка, можем продолжить
-				// Логировать ошибку
+				// Некритичная ошибка, можем продолжить
+				s.log.Error("Failed to delete token from storage", "err", err)
 			}
 		}
 	}

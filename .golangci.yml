@@ -26,8 +26,8 @@ linters:
           disabled: false
         - name: context-keys-type # basic types should not be used as a key in `context.WithValue`
           disabled: false
-        - name: cyclomatic # cyclomatic complexity is a measure of code complexity          
-          disabled: false
+        # - name: cyclomatic # cyclomatic complexity is a measure of code complexity          
+        #   disabled: false
         - name: datarace # potential dataraces caused
           disabled: false
         - name: defer # some common mistakes when using defer statement
@@ -64,8 +64,8 @@ linters:
           disabled: false
         - name: redefines-builtin-id # redefining these built in names can lead to bugs very difficult to detect
           disabled: false
-        - name: redundant-import-alias # alias used on the import statement matches the imported package name
-          disabled: false
+        # - name: redundant-import-alias # alias used on the import statement matches the imported package name
+        #   disabled: false
         - name: string-of-int # `string(42)` is not `"42"`
           disabled: false
         - name: time-equal # using `==` and `!=` for equality `check time.Time` is not correct, use `time.Equal()` instead
@@ -80,10 +80,10 @@ linters:
           disabled: false
         - name: unreachable-code # unreachable code
           disabled: false
-        - name: unused-parameter # unused parameter in function parameters
-          disabled: false
-        - name: unused-receiver # unused-receiver
-          disabled: false
+        # - name: unused-parameter # unused parameter in function parameters
+        #   disabled: false
+        # - name: unused-receiver # unused-receiver
+        #   disabled: false
         - name: use-any # proposes to replace instances of `interface{}` with `any`
           disabled: false
         - name: useless-break # a `break` statement is unnecessary in a switch-case statement

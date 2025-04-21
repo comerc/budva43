@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/comerc/budva43/config"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/config"
 )
 
 // TODO: logout
@@ -106,7 +107,7 @@ func (r *Repo) CreateClient(
 		return
 	}
 
-	r.log.Info("Me", "FirstName", me.FirstName) //, "LastName", me.LastName)
+	r.log.Info("Me", "FirstName", me.FirstName) // , "LastName", me.LastName)
 }
 
 func (r *Repo) GetClient() *client.Client {

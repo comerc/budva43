@@ -23,11 +23,11 @@ func TestRunRedis(t *testing.T) {
 		redis.WithLogLevel(redis.LogLevelVerbose),
 		redis.WithConfigFile(filepath.Join("testdata", "redis7.conf")),
 	)
-	defer func() {
+	t.Cleanup(func() {
 		if err := testcontainers.TerminateContainer(redisContainer); err != nil {
 			log.Printf("failed to terminate container: %s", err)
 		}
-	}()
+	})
 	if err != nil {
 		log.Printf("failed to start container: %s", err)
 		return

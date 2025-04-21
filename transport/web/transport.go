@@ -102,9 +102,12 @@ func (t *Transport) setupRoutes(mux *http.ServeMux) {
 }
 
 // handleRoot обрабатывает запросы к корневому маршруту
-func (t *Transport) handleRoot(w http.ResponseWriter, req *http.Request) {
+func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("Budva43 API Server"))
+	_, err := w.Write([]byte("Budva43 API Server"))
+	if err != nil {
+		t.log.Error("Failed to write response", "err", err)
+	}
 }
 
 func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
@@ -153,7 +156,10 @@ func (t *Transport) handleMessages(w http.ResponseWriter, req *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(message)
+		err = json.NewEncoder(w).Encode(message)
+		if err != nil {
+			t.log.Error("Failed to encode message", "err", err)
+		}
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -196,7 +202,10 @@ func (t *Transport) handleMessageByID(w http.ResponseWriter, req *http.Request) 
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(message)
+		err = json.NewEncoder(w).Encode(message)
+		if err != nil {
+			t.log.Error("Failed to encode message", "err", err)
+		}
 
 	case http.MethodPut:
 		// Редактирование сообщения
@@ -218,7 +227,10 @@ func (t *Transport) handleMessageByID(w http.ResponseWriter, req *http.Request) 
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(result)
+		err = json.NewEncoder(w).Encode(result)
+		if err != nil {
+			t.log.Error("Failed to encode result", "err", err)
+		}
 
 	case http.MethodDelete:
 		// Удаление сообщения
@@ -288,7 +300,10 @@ func (t *Transport) handleForwardRuleByID(w http.ResponseWriter, req *http.Reque
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(rule)
+		err = json.NewEncoder(w).Encode(rule)
+		if err != nil {
+			t.log.Error("Failed to encode rule", "err", err)
+		}
 
 	case http.MethodPut:
 		// Обновление правила пересылки
@@ -381,13 +396,16 @@ func (t *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(report)
+	err = json.NewEncoder(w).Encode(report)
+	if err != nil {
+		t.log.Error("Failed to encode report", "err", err)
+	}
 }
 
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+	defer t.logHandler(&err, time.Now(), "handleAuthState")
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -400,10 +418,16 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error getting authorization state: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	stateType := state.AuthorizationStateType()
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
-		"state_type": state.AuthorizationStateType(),
+	err = json.NewEncoder(w).Encode(map[string]any{
+		"state_type": stateType,
 	})
+	if err != nil {
+		t.log.Error("Failed to encode auth state", "err", err)
+	}
 }
 
 // handleSubmitPhone обработчик для отправки номера телефона
@@ -430,9 +454,12 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]any{
+	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
+	if err != nil {
+		t.log.Error("Failed to encode auth state", "err", err)
+	}
 }
 
 // handleSubmitCode обработчик для отправки кода подтверждения
@@ -459,9 +486,12 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]any{
+	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
+	if err != nil {
+		t.log.Error("Failed to encode auth state", "err", err)
+	}
 }
 
 // handleSubmitPassword обработчик для отправки пароля
@@ -488,9 +518,12 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]any{
+	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
+	if err != nil {
+		t.log.Error("Failed to encode auth state", "err", err)
+	}
 }
 
 // TODO: under construction
