@@ -17,7 +17,7 @@ require (
 	golang.org/x/term v0.30.0
 )
 
-replace github.com/zelenin/go-tdlib => github.com/comerc/go-tdlib v0.7.7
+replace github.com/zelenin/go-tdlib => github.com/comerc/go-tdlib v0.7.6-fix1
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
