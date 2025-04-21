@@ -15,8 +15,6 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// TODO: реализовать авторизацию telegram-клиента для web-транспорта
-
 // messageController определяет интерфейс контроллера сообщений, необходимый для HTTP транспорта
 type messageController interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
@@ -310,7 +308,7 @@ func (t *Transport) handleForwardRuleByID(w http.ResponseWriter, req *http.Reque
 			return
 		}
 
-		w.WriteHeader(http.StatusOK) // TODO: и так устанавливается по умолчанию?
+		w.WriteHeader(http.StatusOK)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
