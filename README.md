@@ -26,10 +26,10 @@ docker-compose build
 
 ### With direct TDLib 
 
-Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this option:
+Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this options:
 
-> Install built TDLib to /usr/local instead of placing the files to td/tdlib.
-
+- Install built TDLib to /usr/local instead of placing the files to td/tdlib.
+- Choose which compiler you want to use to build TDLib: clang (recommended)
 
 ## Applied Technologies
 
@@ -76,7 +76,8 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [ ] spf13/cobra
 - [x] go.mod replace
 - [ ] comerc/slog-module
-- [x] go test -race
+- [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
+- [x] voidint/g
 
 ## .env
 
