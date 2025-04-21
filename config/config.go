@@ -164,7 +164,6 @@ var (
 	}
 )
 
-// TODO: куда бы перенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
 func RemoveDirs(dirs ...string) {
 	if len(dirs) == 0 {
 		dirs = allDirs
@@ -180,7 +179,6 @@ func RemoveDirs(dirs ...string) {
 	}
 }
 
-// TODO: куда бы перенести этот код? или тут ему место, т.к. тут же мы определили директории в конфиге
 func MakeDirs(dirs ...string) {
 	if len(dirs) == 0 {
 		dirs = allDirs

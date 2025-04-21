@@ -66,7 +66,7 @@ func TestAuthTelegram(t *testing.T) {
 	authTelegramService := authTelegramService.New(telegramRepo)
 	require.NotNil(t, authTelegramService)
 
-	time.Sleep(1 * time.Second) // TODO: dirty hack
+	time.Sleep(1 * time.Second)
 
 	authTelegramController := authTelegramController.New(authTelegramService)
 	require.NotNil(t, authTelegramController)

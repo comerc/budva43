@@ -134,7 +134,7 @@ func (r *Repo) Stop() error {
 	if r.client == nil {
 		return fmt.Errorf("клиент TDLib не инициализирован")
 	}
-	_, err := r.client.Close() // TODO: первый возвращаемый параметр client.Ok - зочем?
+	_, err := r.client.Close()
 	if err != nil {
 		return err
 	}
