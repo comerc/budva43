@@ -15,7 +15,6 @@ import (
 	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
 	"github.com/comerc/budva43/util"
-	// "golang.org/x/term"
 )
 
 // TODO: не нравится, что нужно вводить auth для каждого последующего шага
@@ -488,7 +487,7 @@ func (t *Transport) handleAuth(args []string) error {
 				return fmt.Errorf("ошибка при чтении телефона: %w", err)
 			}
 		}
-		t.authController.SubmitPhoneNumber(string(phoneNumber))
+		t.authController.SubmitPhoneNumber(phoneNumber)
 
 	case client.TypeAuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
@@ -496,7 +495,7 @@ func (t *Transport) handleAuth(args []string) error {
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении кода: %w", err)
 		}
-		t.authController.SubmitCode(string(code))
+		t.authController.SubmitCode(code)
 
 	case client.TypeAuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
@@ -504,7 +503,7 @@ func (t *Transport) handleAuth(args []string) error {
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении пароля: %w", err)
 		}
-		t.authController.SubmitPassword(string(password))
+		t.authController.SubmitPassword(password)
 
 	case client.TypeAuthorizationStateReady:
 		fmt.Println("Авторизация в Telegram успешно завершена!")

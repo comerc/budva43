@@ -3,8 +3,9 @@ package forward
 import (
 	"log/slog"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/entity"
 )
 
 // forwardRuleService определяет интерфейс сервиса правил пересылки, необходимый контроллеру
@@ -17,12 +18,6 @@ type forwardRuleService interface {
 type messageService interface {
 	GetText(message *client.Message) string
 	GetCaption(message *client.Message) string
-}
-
-// storageRepo определяет интерфейс репозитория хранилища, необходимый контроллеру
-type storageRepo interface {
-	Get(key []byte) ([]byte, error)
-	Set(key, value []byte) error
 }
 
 // Controller представляет контроллер для работы с пересылкой сообщений
@@ -95,7 +90,7 @@ func (c *Controller) ForwardMessage(
 }
 
 // GetForwardRule получает правило пересылки по идентификатору
-func (c *Controller) GetForwardRule(id string) (*entity.ForwardRule, error) {
+func (*Controller) GetForwardRule(id string) (*entity.ForwardRule, error) {
 	// Получаем правило из хранилища (реализация десериализации должна быть добавлена)
 	// Здесь просто заглушка для примера
 	return &entity.ForwardRule{

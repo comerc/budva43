@@ -62,7 +62,7 @@ func (s *Service) replaceAll(text, from, to string) string {
 
 // ReplaceLinks заменяет ссылки в тексте согласно настройкам
 func (s *Service) ReplaceLinks(text string, linkReplacements map[string]string) string {
-	if linkReplacements == nil || len(linkReplacements) == 0 {
+	if len(linkReplacements) == 0 {
 		return text
 	}
 
@@ -94,7 +94,7 @@ func (s *Service) RemoveUnwantedContent(text string, patterns []string) string {
 
 // FormatText форматирует текст согласно заданным правилам
 func (s *Service) FormatText(text string, rules map[string]string) string {
-	if rules == nil || len(rules) == 0 {
+	if len(rules) == 0 {
 		return text
 	}
 

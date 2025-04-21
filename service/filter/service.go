@@ -5,8 +5,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/entity"
 )
 
 //go:generate mockery --name=messageService --exported

@@ -19,8 +19,6 @@ import (
 	forwardRuleService "github.com/comerc/budva43/service/forward_rule"
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
-
-	// botTransport "github.com/comerc/budva43/transport/bot"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
 )

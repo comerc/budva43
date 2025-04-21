@@ -47,7 +47,9 @@ func TestAuthTelegram(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	initTelegram(t)
 
@@ -55,13 +57,18 @@ func TestAuthTelegram(t *testing.T) {
 
 	automator, err := util.NewCLIAutomator()
 	require.NoError(t, err)
-	defer automator.Stop()
+	t.Cleanup(func() {
+		automator.Stop()
+	})
 	go automator.Run()
 
 	telegramRepo := telegramRepo.New()
 	err = telegramRepo.Start(ctx, cancel)
 	require.NoError(t, err)
-	defer telegramRepo.Stop()
+	t.Cleanup(func() {
+		err := telegramRepo.Stop()
+		require.NoError(t, err)
+	})
 
 	authTelegramService := authTelegramService.New(telegramRepo)
 	require.NotNil(t, authTelegramService)
@@ -83,7 +90,10 @@ func TestAuthTelegram(t *testing.T) {
 	)
 	err = cliTransport.Start(ctx, cancel)
 	require.NoError(t, err)
-	defer cliTransport.Stop()
+	t.Cleanup(func() {
+		err := cliTransport.Stop()
+		require.NoError(t, err)
+	})
 
 	webTransport := webTransport.New(
 		nil, // messageController,
@@ -93,7 +103,10 @@ func TestAuthTelegram(t *testing.T) {
 	)
 	err = webTransport.Start(ctx, cancel)
 	require.NoError(t, err)
-	defer webTransport.Stop()
+	t.Cleanup(func() {
+		err := webTransport.Stop()
+		require.NoError(t, err)
+	})
 
 	var found bool
 
@@ -103,15 +116,16 @@ func TestAuthTelegram(t *testing.T) {
 	require.True(t, result, "CLI транспорт не выдал запрос на ввод команды")
 
 	// Проверяем команду help
-	automator.SendInput("help")
+	err = automator.SendInput("help")
+	require.NoError(t, err)
 	found = automator.WaitForOutput("Доступные команды:", 2*time.Second)
 	assert.True(t, found, "Команда help не выдала список команд")
 
 	// Проверяем команду auth
 	phoneNumber := config.Telegram.PhoneNumber
-	defer func() {
+	t.Cleanup(func() {
 		config.Telegram.PhoneNumber = phoneNumber
-	}()
+	})
 	config.Telegram.PhoneNumber = "" // test empty phone number
 
 	err = automator.SendInput("auth")
@@ -128,7 +142,8 @@ func TestAuthTelegram(t *testing.T) {
 	require.NoError(t, err)
 	time.Sleep(3 * time.Second)
 
-	automator.SendInput("auth")
+	err = automator.SendInput("auth")
+	require.NoError(t, err)
 	found = automator.WaitForOutput("Введите код подтверждения:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
@@ -144,7 +159,9 @@ func TestAuthTelegram(t *testing.T) {
 	}
 	resp, err := client.Get(target)
 	require.NoError(t, err, "Ошибка при выполнении HTTP-запроса к %s", target)
-	defer resp.Body.Close()
+	t.Cleanup(func() {
+		resp.Body.Close()
+	})
 
 	// Проверяем статус ответа
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "Статус ответа должен быть 200 OK")

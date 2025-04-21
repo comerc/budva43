@@ -73,7 +73,7 @@ func setDefaultConfig(config *config) {
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, to reflect.Type, data any) (any, error) {
+	return func(from reflect.Type, _ reflect.Type, data any) (any, error) {
 		if from.Kind() != reflect.Map {
 			return data, nil
 		}

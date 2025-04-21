@@ -5,8 +5,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/comerc/budva43/config"
 	badger "github.com/dgraph-io/badger/v4"
+
+	"github.com/comerc/budva43/config"
 )
 
 // Repo определяет интерфейс для работы с хранилищем BadgerDB

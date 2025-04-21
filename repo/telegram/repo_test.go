@@ -12,6 +12,10 @@ import (
 )
 
 func TestRepo_Start(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	config.Telegram.UseTestDc = true
 
 	// Выведем информацию о путях для отладки
@@ -23,7 +27,10 @@ func TestRepo_Start(t *testing.T) {
 	fmt.Println("repo started and stopped")
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	repo := New()
 	err := repo.Start(ctx, cancel)
@@ -37,5 +44,6 @@ func TestRepo_Start(t *testing.T) {
 
 	assert.Nil(t, client)
 
-	repo.Stop()
+	err = repo.Stop()
+	assert.Nil(t, err)
 }

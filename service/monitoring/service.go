@@ -332,10 +332,9 @@ func (s *Service) GetUptime() time.Duration {
 
 // addToHistory добавляет значение в историю метрики
 func (s *Service) addToHistory(name string, value MetricValue) {
-	history, exists := s.metricsHistory[name]
+	_, exists := s.metricsHistory[name]
 	if !exists {
-		history = make([]MetricValue, 0, s.historyLimit)
-		s.metricsHistory[name] = history
+		s.metricsHistory[name] = make([]MetricValue, 0, s.historyLimit)
 	}
 
 	// Добавляем новое значение

@@ -178,7 +178,7 @@ func (s *Service) AddDestinationSourceStatistics(report *entity.ForwardingReport
 	}
 
 	// Обновляем количество сообщений от источника
-	currentCount, _ := stats.BySource[sourceID]
+	currentCount := stats.BySource[sourceID]
 	stats.BySource[sourceID] = currentCount + count
 
 	// Сохраняем обновленную статистику обратно в карту

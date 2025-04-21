@@ -113,8 +113,8 @@ func (s *Service) ProcessAndCacheMedia(content []byte, mediaType, cacheKey strin
 	if s.storage != nil {
 		err = s.storage.SaveMedia(cacheKey, processedContent)
 		if err != nil {
-			// Ошибка кэширования не критична
-			// можно продолжить работу
+			// Некритичная ошибка, можем продолжить
+			s.log.Error("Failed to save media to cache", "err", err)
 		}
 	}
 
@@ -189,20 +189,20 @@ func (s *Service) GetMediaFileSize(message *client.Message) (int64, error) {
 					largestSize = size
 				}
 			}
-			fileSize = int64(largestSize.Photo.Size)
+			fileSize = largestSize.Photo.Size
 		}
 	case *client.MessageVideo:
 		if content.Video != nil && content.Video.Video != nil {
-			fileSize = int64(content.Video.Video.Size)
+			fileSize = content.Video.Video.Size
 		}
 	case *client.MessageDocument:
-		fileSize = int64(content.Document.Document.Size)
+		fileSize = content.Document.Document.Size
 	case *client.MessageAudio:
-		fileSize = int64(content.Audio.Audio.Size)
+		fileSize = content.Audio.Audio.Size
 	case *client.MessageAnimation:
-		fileSize = int64(content.Animation.Animation.Size)
+		fileSize = content.Animation.Animation.Size
 	case *client.MessageVoiceNote:
-		fileSize = int64(content.VoiceNote.Voice.Size)
+		fileSize = content.VoiceNote.Voice.Size
 	default:
 		return 0, errors.New("unsupported media type")
 	}

@@ -1,7 +1,9 @@
+all: lint check build
+
 lint:
 	golangci-lint run
 
-test_v:
+check:
 	go test -short -failfast -v -race -count=1 ./...
 
 build:
@@ -34,8 +36,4 @@ test-auth-telegram-submit-password:
 		--data '{"password":"'$$PASSWORD'"}' \
 		http://localhost:7070/api/auth/telegram/password
 
-all:
-	lint
-	tests
-	build
 
