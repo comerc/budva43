@@ -11,7 +11,9 @@ import (
 )
 
 func TestRunRedis(t *testing.T) {
-	t.Skip()
+	if testing.Short() {
+		t.Skip()
+	}
 
 	ctx := context.Background()
 
