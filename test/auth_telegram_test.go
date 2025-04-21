@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"io"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -134,26 +136,26 @@ func TestAuthTelegram(t *testing.T) {
 	require.NoError(t, err)
 	time.Sleep(3 * time.Second)
 
-	// TODO: табличный тест для проверки webTransport
-	// target := "http://localhost:7070/api/auth/telegram/state"
+	target := "http://localhost:7070/api/auth/telegram/state"
 
-	// // Отправляем реальный HTTP-запрос к запущенному серверу
-	// client := &http.Client{
-	// 	Timeout: 5 * time.Second,
-	// }
-	// resp, err := client.Get(target)
-	// require.NoError(t, err, "Ошибка при выполнении HTTP-запроса к %s", target)
-	// defer resp.Body.Close()
+	// Отправляем реальный HTTP-запрос к запущенному серверу
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Get(target)
+	require.NoError(t, err, "Ошибка при выполнении HTTP-запроса к %s", target)
+	defer resp.Body.Close()
 
-	// // Проверяем статус ответа
-	// assert.Equal(t, http.StatusOK, resp.StatusCode, "Статус ответа должен быть 200 OK")
+	// Проверяем статус ответа
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Статус ответа должен быть 200 OK")
 
-	// // Читаем и проверяем тело ответа
-	// body, err := io.ReadAll(resp.Body)
-	// require.NoError(t, err, "Ошибка при чтении тела ответа")
+	// Читаем и проверяем тело ответа
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err, "Ошибка при чтении тела ответа")
 
-	// responseBody := string(body)
-	// assert.Contains(t, responseBody, "state_type", "Ответ должен содержать информацию о состоянии авторизации")
+	responseBody := string(body)
+	println(responseBody)
+	assert.Contains(t, responseBody, "state_type", "Ответ должен содержать информацию о состоянии авторизации")
 
 	// Проверяем команду exit
 	err = automator.SendInput("exit")
