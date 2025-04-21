@@ -393,8 +393,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 
 		// Проверяем с пустым шаблоном
 		found := automator.WaitForOutput("", 200*time.Millisecond)
-		// В зависимости от реализации, результат может быть true или false
-		_ = found // Используем переменную, чтобы избежать предупреждений
+		assert.True(t, found, "WaitForOutput должен вернуть true при пустом шаблоне")
 	})
 
 	t.Run("WaitForOutput после закрытия stdout", func(t *testing.T) {
