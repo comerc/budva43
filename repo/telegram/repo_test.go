@@ -12,8 +12,6 @@ import (
 )
 
 func TestRepo_Start(t *testing.T) {
-	t.Skip()
-
 	config.Telegram.UseTestDc = true
 
 	// Выведем информацию о путях для отладки
