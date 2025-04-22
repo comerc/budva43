@@ -120,9 +120,9 @@ type (
 	// Настройки движка форвардинга из budva32
 	engine struct {
 		// Настройки для замены ссылок на себя
-		ReplaceMyselfLinks map[int64]entity.ReplaceMyselfLinkSettings
+		ReplaceMyselfLinks map[int64]entity.ReplaceMyselfLink
 		// Настройки для замены фрагментов текста
-		ReplaceFragments map[int64]entity.ReplaceFragmentSettings
+		ReplaceFragments map[int64]entity.ReplaceFragment
 		// Настройки источников
 		Sources map[int64]entity.Source
 		// Настройки отчетов
@@ -133,11 +133,9 @@ type (
 		// Правила форвардинга
 		Forwards map[string]entity.ForwardRule
 		// Настройки автоответов
-		Answers map[int64]struct {
-			Auto bool
-		}
+		Answers map[int64]entity.Answer
 		// Удаление системных сообщений
-		DeleteSystemMessages map[int64]struct{}
+		DeleteSystemMessages map[int64]bool
 	}
 )
 
