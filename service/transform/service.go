@@ -24,7 +24,7 @@ func New() *Service {
 }
 
 // GetReplacement возвращает текст для замены или пустую строку, если замена не найдена
-func (s *Service) GetReplacement(settings *entity.ReplaceFragmentSettings, text string) string {
+func (s *Service) GetReplacement(settings *entity.ReplaceFragment, text string) string {
 	if settings.Replacements == nil {
 		return ""
 	}
@@ -36,7 +36,7 @@ func (s *Service) GetReplacement(settings *entity.ReplaceFragmentSettings, text 
 }
 
 // ReplaceText заменяет все фрагменты текста согласно настройкам
-func (s *Service) ReplaceText(settings *entity.ReplaceFragmentSettings, text string) string {
+func (s *Service) ReplaceText(settings *entity.ReplaceFragment, text string) string {
 	if settings.Replacements == nil {
 		return text
 	}
