@@ -47,7 +47,7 @@ func (r *Repo) Start(ctx context.Context, shutdown context.CancelFunc) error {
 // CreateClient создает клиент TDLib после установки авторизатора
 func (r *Repo) CreateClient(
 	createAuthorizer func(
-		setClient func(client *client.Client),
+		setClient func(*client.Client),
 		shutdown func(),
 	) client.AuthorizationStateHandler,
 ) {
@@ -114,9 +114,9 @@ func (r *Repo) GetClient() *client.Client {
 	return r.client
 }
 
-func (r *Repo) setClient(client *client.Client) {
+func (r *Repo) setClient(tdlibClient *client.Client) {
 	// r.log.Info("setClient")
-	r.client = client
+	r.client = tdlibClient
 	select {
 	case _, ok := <-r.initClientDone:
 		// r.log.Info("<-r.initClientDone", "ok", ok)
