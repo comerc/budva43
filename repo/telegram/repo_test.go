@@ -16,13 +16,11 @@ func TestRepo_Start(t *testing.T) {
 		t.Skip()
 	}
 
-	config.Telegram.UseTestDc = true
-
 	// Выведем информацию о путях для отладки
 	fmt.Println("Telegram Database Directory:", config.Telegram.DatabaseDirectory)
 	fmt.Println("Telegram Files Directory:", config.Telegram.FilesDirectory)
 
-	fmt.Println("UseTestDc:", config.Telegram.UseTestDc)
+	fmt.Println("config.Telegram.UseTestDc:", config.Telegram.UseTestDc)
 
 	fmt.Println("repo started and stopped")
 

@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -26,11 +27,12 @@ import (
 func initTelegram(t *testing.T) {
 	t.Helper()
 
+	fmt.Println("config.Telegram.UseTestDc:", config.Telegram.UseTestDc)
+
 	currDir, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("ошибка получения текущей директории: %v", err)
 	}
-	config.Telegram.UseTestDc = true
 	config.Telegram.DatabaseDirectory = path.Join(currDir, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = path.Join(currDir, ".data", "telegram", "files")
 	var dirs = []string{
