@@ -34,11 +34,11 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 ## Applied Technologies
 
 - [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
-- [ ] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
+- [x] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
 - [x] [mockery](https://github.com/vektra/mockery)
 - [ ] [easyjson](https://github.com/mailru/easyjson)
 - [x] Docker Compose
-- [x] [multi-stage build](https://docs.docker.com/build/building/multi-stage/)
+- [x] [docker multi-stage build](https://docs.docker.com/build/building/multi-stage/)
 - [x] zsh + [ohmyzsh](https://ohmyz.sh/)
 - [x] golangci-lint + [revive](https://revive.run/)
 - [x] Makefile
@@ -50,7 +50,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [ ] Redis
 - [x] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
 - [x] SOLID
-- [x] DRY (без фанатизма) 
+- [x] DRY
 - [x] KISS
 - [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
 - [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
@@ -72,27 +72,27 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [ ] samber/do
 - [ ] samber/oops
 - [ ] samber/slog-*
-- [ ] тестирование Time & Concurrency
+- [ ] тестирование Time & Concurrency https://danp.net/posts/synctest-experiment/
 - [ ] spf13/cobra
 - [x] go.mod replace
 - [ ] comerc/slog-module
 - [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
 - [x] voidint/g
+- [x] go mod vendor
 
 ## .env
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
 
 ```
-BUDVA32_API_ID=1234567
-BUDVA32_API_HASH=XXXXXXXX
-BUDVA32_PHONENUMBER=78901234567
-BUDVA32_PORT=4004
+BUDVA43__TELEGRAM__API_ID=1234567
+BUDVA43__TELEGRAM__API_HASH=XXXXXXXX
+BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
 ```
 
 ## First start for Telegram auth via web
 
-http://localhost:4004
+http://localhost:7007
 
 <!-- ## Old variants for Telegram auth (draft)
 
@@ -163,7 +163,7 @@ Forwards:
 
 ## Get chat list with limit (optional)
 
-http://localhost:4004?limit=10
+http://localhost:7007?limit=10
 
 ## Examples for go-tdlib
 
