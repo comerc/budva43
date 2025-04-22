@@ -12,6 +12,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+
+	"github.com/comerc/budva43/entity"
 )
 
 type (
@@ -19,12 +21,13 @@ type (
 	config struct {
 		General    general
 		LogOptions logOptions
+		Storage    storage
 		Telegram   telegram
+		Bot        bot
+		Web        web
 		Forwarding forwarding
 		Reports    reports
-		Storage    storage
-		Web        web
-		Bot        bot
+		Engine     engine
 	}
 
 	// Общие настройки
@@ -39,6 +42,17 @@ type (
 	logOptions struct {
 		Level     slog.Level
 		AddSource bool
+	}
+
+	// Настройки хранилища данных
+	storage struct {
+		DatabaseDirectory string
+		MaxCacheSize      int64
+		DataRetentionDays int
+		AutoCleanup       bool
+		BackupEnabled     bool
+		BackupDirectory   string
+		BackupFrequency   string
 	}
 
 	// Настройки Telegram
@@ -66,6 +80,22 @@ type (
 		AdminChatId int64
 	}
 
+	// Настройки веб-интерфейса
+	web struct {
+		Enabled         bool
+		Host            string
+		Port            int
+		ReadTimeout     time.Duration
+		WriteTimeout    time.Duration
+		ShutdownTimeout time.Duration
+		EnableTLS       bool
+		CertFile        string
+		KeyFile         string
+		RequireAuth     bool
+		SessionTimeout  time.Duration
+		AdminUsername   string
+	}
+
 	// Настройки для пересылки сообщений
 	forwarding struct {
 		DefaultDelay         int
@@ -87,31 +117,27 @@ type (
 		TemplateDirectory string
 	}
 
-	// Настройки хранилища данных
-	storage struct {
-		DatabaseDirectory string
-		MaxCacheSize      int64
-		DataRetentionDays int
-		AutoCleanup       bool
-		BackupEnabled     bool
-		BackupDirectory   string
-		BackupFrequency   string
-	}
-
-	// Настройки веб-интерфейса
-	web struct {
-		Enabled         bool
-		Host            string
-		Port            int
-		ReadTimeout     time.Duration
-		WriteTimeout    time.Duration
-		ShutdownTimeout time.Duration
-		EnableTLS       bool
-		CertFile        string
-		KeyFile         string
-		RequireAuth     bool
-		SessionTimeout  time.Duration
-		AdminUsername   string
+	// Настройки движка форвардинга из budva32
+	engine struct {
+		// Настройки для замены ссылок на себя
+		ReplaceMyselfLinks map[int64]entity.ReplaceMyselfLinkSettings
+		// Настройки для замены фрагментов текста
+		ReplaceFragments map[int64]entity.ReplaceFragmentSettings
+		// Настройки источников
+		Sources map[int64]entity.Source
+		// Настройки отчетов
+		Reports struct {
+			Template string
+			For      []int64
+		}
+		// Правила форвардинга
+		Forwards map[string]entity.ForwardRule
+		// Настройки автоответов
+		Answers map[int64]struct {
+			Auto bool
+		}
+		// Удаление системных сообщений
+		DeleteSystemMessages map[int64]struct{}
 	}
 )
 
@@ -121,12 +147,13 @@ var (
 	projectRoot string
 	General     = &cfg.General
 	LogOptions  = &cfg.LogOptions
+	Storage     = &cfg.Storage
 	Telegram    = &cfg.Telegram
+	Bot         = &cfg.Bot
+	Web         = &cfg.Web
 	Forwarding  = &cfg.Forwarding
 	Reports     = &cfg.Reports
-	Storage     = &cfg.Storage
-	Web         = &cfg.Web
-	Bot         = &cfg.Bot
+	Engine      = &cfg.Engine
 )
 
 // не используем slog, т.к. он инициализируется в main.go
