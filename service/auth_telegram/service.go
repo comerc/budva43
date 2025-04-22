@@ -13,7 +13,7 @@ type telegramRepo interface {
 	InitClientDone() chan any
 	CreateClient(
 		createAuthorizer func(
-			setClient func(client *client.Client),
+			setClient func(*client.Client),
 			shutdown func(),
 		) client.AuthorizationStateHandler,
 	)

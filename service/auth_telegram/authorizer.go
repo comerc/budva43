@@ -14,7 +14,7 @@ import (
 type Authorizer struct {
 	log *slog.Logger
 	//
-	setClient       func(client *client.Client)
+	setClient       func(*client.Client)
 	shutdown        func()
 	tdlibParameters *client.SetTdlibParametersRequest
 	phoneNumber     chan string
