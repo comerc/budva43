@@ -79,6 +79,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
 - [x] voidint/g
 - [x] go mod vendor
+- [x] gofiber/fiber
 
 ## .env
 

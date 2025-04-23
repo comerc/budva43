@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -18,6 +17,7 @@ type Repo struct {
 	//
 	client         *client.Client
 	initClientDone chan any
+	authClientDone chan any
 	ctx            context.Context
 	shutdown       func()
 }
@@ -29,6 +29,7 @@ func New() *Repo {
 		//
 		client:         nil,
 		initClientDone: make(chan any),
+		authClientDone: make(chan any),
 	}
 }
 
@@ -73,8 +74,8 @@ func (r *Repo) CreateClient(
 				continue
 			}
 		}
-		r.log.Info("TDLib client created")
-		// r.setClient(tdlibClient)
+		r.log.Info("TDLib client authorized")
+		close(r.authClientDone)
 		break
 	}
 
@@ -116,24 +117,28 @@ func (r *Repo) GetClient() *client.Client {
 
 func (r *Repo) setClient(tdlibClient *client.Client) {
 	// r.log.Info("setClient")
-	r.client = tdlibClient
-	select {
-	case _, ok := <-r.initClientDone:
-		// r.log.Info("<-r.initClientDone", "ok", ok)
-		if !ok {
-			// r.log.Info("initClientDone closed")
-			return
-		}
-	default:
-		// r.log.Info("Closing initClientDone")
-		close(r.initClientDone)
+	if r.client != nil {
+		return
 	}
+	r.client = tdlibClient
+	close(r.initClientDone)
+	// select {
+	// case _, ok := <-r.setClientDone:
+	// 	// r.log.Info("<-r.setClientDone", "ok", ok)
+	// 	if !ok {
+	// 		// r.log.Info("setClientDone closed")
+	// 		return
+	// 	}
+	// default:
+	// 	// r.log.Info("Closing setClientDone")
+	// 	close(r.setClientDone)
+	// }
 }
 
 // Stop закрывает соединение с Telegram API
 func (r *Repo) Stop() error {
 	if r.client == nil {
-		return fmt.Errorf("клиент TDLib не инициализирован")
+		return nil
 	}
 	_, err := r.client.Close()
 	if err != nil {
@@ -143,9 +148,14 @@ func (r *Repo) Stop() error {
 	return nil
 }
 
-// InitClientDone возвращает канал, который будет закрыт после инициализации клиента
+// setClientDone возвращает канал, который будет закрыт после инициализации клиента
 func (r *Repo) InitClientDone() chan any {
 	return r.initClientDone
+}
+
+// NewClientDone возвращает канал, который будет закрыт после авторизации клиента
+func (r *Repo) AuthClientDone() chan any {
+	return r.authClientDone
 }
 
 // // GetMessage получает сообщение по идентификатору
