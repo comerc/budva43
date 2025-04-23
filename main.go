@@ -16,16 +16,20 @@ import (
 	badgerRepo "github.com/comerc/budva43/repo/badger"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
+	engineService "github.com/comerc/budva43/service/engine"
+	filterService "github.com/comerc/budva43/service/filter"
 	forwardRuleService "github.com/comerc/budva43/service/forward_rule"
+	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
+	storageService "github.com/comerc/budva43/service/storage"
+	transformService "github.com/comerc/budva43/service/transform"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
-// TODO: удалить лишние service/*
 // TODO: доработать интерфейсы service/* для корректной работы с новым engine
 
 // Основная функция приложения
@@ -147,21 +151,25 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	forwardRuleService := forwardRuleService.New()
 	reportService := reportService.New()
 	authTelegramService := authTelegramService.New(telegramRepo)
-
-	// TODO: Инициализация сервиса engine для форвардинга в стиле budva32
-	// Для корректной работы нужно доработать интерфейсы существующих сервисов
-	// engineService := engineService.New(
-	//     messageService,
-	//     filterService,
-	//     transformService,
-	//     storageService,
-	//     telegramRepo.GetClient(),
-	// )
-	// if err := engineService.Start(ctx); err != nil {
-	//     return fmt.Errorf("ошибка запуска engineService: %w", err)
-	// }
-	// defer gracefulShutdown("engineService", errSet, engineService.Stop)
-	// slog.Info("engineService запущен")
+	filterService := filterService.New(messageService)
+	transformService := transformService.New()
+	storageService := storageService.New(badgerRepo)
+	mediaAlbumService := mediaAlbumService.New()
+	// Инициализация сервиса engine для форвардинга в стиле budva32
+	// TODO: Для корректной работы нужно доработать интерфейсы существующих сервисов
+	engineService := engineService.New(
+		messageService,
+		filterService,
+		transformService,
+		storageService,
+		mediaAlbumService,
+		telegramRepo,
+	)
+	if err := engineService.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска engineService: %w", err)
+	}
+	defer gracefulShutdown("engineService", errSet, engineService.Stop)
+	slog.Info("engineService запущен")
 
 	// - Инициализация контроллеров
 	messageController := messageController.New(

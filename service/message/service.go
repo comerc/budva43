@@ -143,3 +143,14 @@ func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]any
 
 	return metadata
 }
+
+func (s *Service) GetMessage(chatID, messageID int64) (*client.Message, error) {
+	// TODO: реализовать
+	return nil, nil
+}
+
+// DeleteMessages удаляет сообщения
+func (s *Service) DeleteMessages(chatID int64, messageIDs []int64) error {
+	// TODO: реализовать
+	return nil
+}

@@ -16,13 +16,13 @@ import (
 type messageService interface {
 	GetText(message *client.Message) string
 	GetCaption(message *client.Message) string
-	SendMessage(chatID int64, text string) (*client.Message, error)
-	ForwardMessage(fromChatID, messageID, toChatID int64) (*client.Message, error)
-	SendMessageAlbum(chatID int64, contents []client.InputMessageContent) (*client.Messages, error)
-	ForwardMessages(fromChatID int64, messageIDs []int64, toChatID int64) (*client.Messages, error)
-	EditMessageText(chatID, messageID int64, text *client.FormattedText) (*client.Message, error)
-	EditMessageMedia(chatID, messageID int64, content client.InputMessageContent) (*client.Message, error)
-	EditMessageCaption(chatID, messageID int64, caption *client.FormattedText) (*client.Message, error)
+	// SendMessage(chatID int64, text string) (*client.Message, error)
+	// ForwardMessage(fromChatID, messageID, toChatID int64) (*client.Message, error)
+	// SendMessageAlbum(chatID int64, contents []client.InputMessageContent) (*client.Messages, error)
+	// ForwardMessages(fromChatID int64, messageIDs []int64, toChatID int64) (*client.Messages, error)
+	// EditMessageText(chatID, messageID int64, text *client.FormattedText) (*client.Message, error)
+	// EditMessageMedia(chatID, messageID int64, content client.InputMessageContent) (*client.Message, error)
+	// EditMessageCaption(chatID, messageID int64, caption *client.FormattedText) (*client.Message, error)
 	DeleteMessages(chatID int64, messageIDs []int64) error
 	GetMessage(chatID, messageID int64) (*client.Message, error)
 }
@@ -34,25 +34,25 @@ type filterService interface {
 
 // transformService определяет интерфейс сервиса трансформации, необходимый для сервиса engine
 type transformService interface {
-	ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error
-	ReplaceFragments(text *client.FormattedText, dstChatID int64) error
-	AddSourceSign(text *client.FormattedText, title string) error
-	AddSourceLink(message *client.Message, text *client.FormattedText, title string) error
+	// ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error
+	// ReplaceFragments(text *client.FormattedText, dstChatID int64) error
+	// AddSourceSign(text *client.FormattedText, title string) error
+	// AddSourceLink(message *client.Message, text *client.FormattedText, title string) error
 }
 
 // storageService определяет интерфейс сервиса хранилища, необходимый для сервиса engine
 type storageService interface {
-	SetCopiedMessageID(fromChatMessageID string, toChatMessageID string) error
+	// SetCopiedMessageID(fromChatMessageID string, toChatMessageID string) error
 	GetCopiedMessageIDs(fromChatMessageID string) ([]string, error)
-	DeleteCopiedMessageIDs(fromChatMessageID string) error
+	// DeleteCopiedMessageIDs(fromChatMessageID string) error
 	SetNewMessageID(chatID, tmpMessageID, newMessageID int64) error
-	GetNewMessageID(chatID, tmpMessageID int64) (int64, error)
-	DeleteNewMessageID(chatID, tmpMessageID int64) error
+	// GetNewMessageID(chatID, tmpMessageID int64) (int64, error)
+	// DeleteNewMessageID(chatID, tmpMessageID int64) error
 	SetTmpMessageID(chatID, newMessageID, tmpMessageID int64) error
-	GetTmpMessageID(chatID, newMessageID int64) (int64, error)
-	DeleteTmpMessageID(chatID, newMessageID int64) error
-	IncrementViewedMessages(toChatID int64) error
-	IncrementForwardedMessages(toChatID int64) error
+	// GetTmpMessageID(chatID, newMessageID int64) (int64, error)
+	// DeleteTmpMessageID(chatID, newMessageID int64) error
+	// IncrementViewedMessages(toChatID int64) error
+	// IncrementForwardedMessages(toChatID int64) error
 	GetRuleByID(ruleID string) (entity.ForwardRule, bool)
 }
 
@@ -63,17 +63,22 @@ type mediaAlbumService interface {
 	GetMessages(forwardKey string, albumID client.JsonInt64) []*client.Message
 }
 
+type telegramRepo interface {
+	GetClient() *client.Client
+	AuthClientDone() chan any
+}
+
 // Service предоставляет функциональность движка пересылки сообщений
 type Service struct {
 	log *slog.Logger
 	//
-	message     messageService
-	filter      filterService
-	transform   transformService
-	storage     storageService
-	mediaAlbums mediaAlbumService
-	tdlibClient *client.Client
-	queue       chan func()
+	message      messageService
+	filter       filterService
+	transform    transformService
+	storage      storageService
+	mediaAlbums  mediaAlbumService
+	telegramRepo telegramRepo
+	queue        chan func()
 }
 
 // New создает новый экземпляр сервиса engine
@@ -83,23 +88,29 @@ func New(
 	transform transformService,
 	storage storageService,
 	mediaAlbums mediaAlbumService,
-	tdlibClient *client.Client,
+	telegramRepo telegramRepo,
+
+	// tdlibClient *client.Client,
 ) *Service {
+	return nil
+
 	return &Service{
 		log: slog.With("module", "service.engine"),
 		//
-		message:     message,
-		filter:      filter,
-		transform:   transform,
-		storage:     storage,
-		mediaAlbums: mediaAlbums,
-		tdlibClient: tdlibClient,
-		queue:       make(chan func(), 100),
+		message:      message,
+		filter:       filter,
+		transform:    transform,
+		storage:      storage,
+		mediaAlbums:  mediaAlbums,
+		telegramRepo: telegramRepo,
+		queue:        make(chan func(), 100),
 	}
 }
 
 // Start запускает обработчик обновлений от Telegram
 func (s *Service) Start(ctx context.Context) error {
+	return nil
+
 	s.log.Info("Запуск сервиса engine")
 
 	// Проверяем конфигурацию
@@ -109,17 +120,25 @@ func (s *Service) Start(ctx context.Context) error {
 
 	go s.processQueue(ctx)
 
-	// Получаем канал обновлений от Telegram
-	listener := s.tdlibClient.GetListener()
-
-	// Запускаем обработчик обновлений
-	go s.handleUpdates(ctx, listener)
+	go func() {
+		// Ждем авторизации клиента
+		select {
+		case <-s.telegramRepo.AuthClientDone():
+		case <-ctx.Done():
+			return
+		}
+		// Получаем канал обновлений от Telegram
+		listener := s.telegramRepo.GetClient().GetListener()
+		s.handleUpdates(ctx, listener)
+	}()
 
 	return nil
 }
 
 // Stop останавливает сервис
 func (s *Service) Stop() error {
+	return nil
+
 	s.log.Info("Остановка сервиса engine")
 	close(s.queue)
 	return nil
