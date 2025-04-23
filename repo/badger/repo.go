@@ -46,10 +46,10 @@ func (r *Repo) Stop() error {
 }
 
 // Get получает значение по ключу
-func (r *Repo) Get(key []byte) ([]byte, error) {
+func (r *Repo) Get(key string) ([]byte, error) {
 	var value []byte
 	err := r.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(key)
+		item, err := txn.Get([]byte(key))
 		if err != nil {
 			return err
 		}
@@ -60,40 +60,41 @@ func (r *Repo) Get(key []byte) ([]byte, error) {
 }
 
 // Set устанавливает значение по ключу
-func (r *Repo) Set(key, value []byte) error {
+func (r *Repo) Set(key string, value []byte) error {
 	return r.db.Update(func(txn *badger.Txn) error {
-		return txn.Set(key, value)
+		return txn.Set([]byte(key), value)
 	})
 }
 
 // SetWithTTL устанавливает значение по ключу с временем жизни
-func (r *Repo) SetWithTTL(key, value []byte, ttl time.Duration) error {
+func (r *Repo) SetWithTTL(key string, value []byte, ttl time.Duration) error {
 	return r.db.Update(func(txn *badger.Txn) error {
-		entry := badger.NewEntry(key, value).WithTTL(ttl)
+		entry := badger.NewEntry([]byte(key), value).WithTTL(ttl)
 		return txn.SetEntry(entry)
 	})
 }
 
 // Delete удаляет значение по ключу
-func (r *Repo) Delete(key []byte) error {
+func (r *Repo) Delete(key string) error {
 	return r.db.Update(func(txn *badger.Txn) error {
-		return txn.Delete(key)
+		return txn.Delete([]byte(key))
 	})
 }
 
 // Iterate выполняет итерацию по всем ключам с заданным префиксом
-func (r *Repo) Iterate(prefix []byte, fn func(key, value []byte) error) error {
+func (r *Repo) Iterate(prefix string, fn func(key string, value []byte) error) error {
 	return r.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchValues = true
 		it := txn.NewIterator(opts)
 		defer it.Close()
 
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+		prefixBytes := []byte(prefix)
+		for it.Seek(prefixBytes); it.ValidForPrefix(prefixBytes); it.Next() {
 			item := it.Item()
 			key := item.Key()
 			err := item.Value(func(val []byte) error {
-				return fn(key, val)
+				return fn(string(key), val)
 			})
 			if err != nil {
 				return err
