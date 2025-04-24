@@ -95,9 +95,6 @@ func (e *errSet) Error() string {
 	return result
 }
 
-// shutdownCallback представляет функцию остановки компонента
-type shutdownCallback func() error
-
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
 func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
 	slog.Info("Останавливаем компонент", "компонент", componentName)

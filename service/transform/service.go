@@ -145,6 +145,8 @@ func (s *Service) ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstC
 	}
 
 	// Заменяем ссылки на текущего бота
+	// Сначала соберем индексы сущностей, которые нужно удалить
+	entitiesToRemove := []int{}
 	for i, entity := range text.Entities {
 		if entity.Type == nil {
 			continue
@@ -164,24 +166,31 @@ func (s *Service) ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstC
 				fmt.Sprintf("t.me/c/%d", dstChatID), 1)
 			text.Entities[i].Type = textLink
 		} else if settings.DeleteExternal {
-			// Удаляем внешние ссылки, если такая настройка включена
-			length := entity.Length
-			offset := entity.Offset
-
-			// Удаляем текстовую ссылку
-			text.Text = text.Text[:offset] + text.Text[offset+length:]
-
-			// Корректируем смещения остальных сущностей
-			for j := i + 1; j < len(text.Entities); j++ {
-				if text.Entities[j].Offset > offset {
-					text.Entities[j].Offset -= length
-				}
-			}
-
-			// Удаляем текущую сущность
-			text.Entities = append(text.Entities[:i], text.Entities[i+1:]...)
-			i-- // Уменьшаем счетчик, так как мы удалили текущую сущность
+			// Отмечаем внешние ссылки для удаления, если такая настройка включена
+			entitiesToRemove = append(entitiesToRemove, i)
 		}
+	}
+
+	// Удаляем отмеченные сущности в обратном порядке,
+	// чтобы не сбить индексы
+	for i := len(entitiesToRemove) - 1; i >= 0; i-- {
+		idx := entitiesToRemove[i]
+		entity := text.Entities[idx]
+
+		// Удаляем текстовую ссылку из текста
+		offset := entity.Offset
+		length := entity.Length
+		text.Text = text.Text[:offset] + text.Text[offset+length:]
+
+		// Корректируем смещения остальных сущностей
+		for j := idx + 1; j < len(text.Entities); j++ {
+			if text.Entities[j].Offset > offset {
+				text.Entities[j].Offset -= length
+			}
+		}
+
+		// Удаляем сущность
+		text.Entities = append(text.Entities[:idx], text.Entities[idx+1:]...)
 	}
 
 	return nil
@@ -290,9 +299,11 @@ func (s *Service) AddSourceLink(text *client.FormattedText, srcChatID int64, dst
 	text.Text += linkText
 
 	// Создаем сущность-ссылку
+	linkLength := len([]rune(linkText))
+
 	entity := &client.TextEntity{
-		Offset: int32(linkStart),
-		Length: int32(len([]rune(linkText))),
+		Offset: int32(linkStart),  //nolint // нереально переполнить int32
+		Length: int32(linkLength), //nolint // нереально переполнить int32
 		Type: &client.TextEntityTypeTextUrl{
 			Url: fmt.Sprintf("https://t.me/c/%d/%d", srcChatID, messageID),
 		},

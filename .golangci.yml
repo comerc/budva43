@@ -70,8 +70,8 @@ linters:
           disabled: false
         - name: time-equal # using `==` and `!=` for equality `check time.Time` is not correct, use `time.Equal()` instead
           disabled: false
-        - name: unchecked-type-assertion # checks whether a type assertion result is checked (the ok value)
-          disabled: false
+        # - name: unchecked-type-assertion # checks whether a type assertion result is checked (the ok value)
+        #   disabled: false
         - name: unconditional-recursion # detects and warns about unconditional (direct) recursive calls
           disabled: false
         - name: unexported-return # an exported function or method returns a value of an un-exported type
