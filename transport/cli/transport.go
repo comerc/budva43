@@ -145,7 +145,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	return nil
 }
 
-func (t *Transport) Stop() error {
+func (t *Transport) Close() error {
 	return nil
 }
 

@@ -62,7 +62,7 @@ func TestNewCLIAutomator(t *testing.T) {
 	assert.NotNil(t, automator.outputLines, "канал outputLines не должен быть nil")
 
 	// Очищаем состояние
-	automator.Stop()
+	automator.Close()
 }
 
 // TestCLIAutomatorRunAndSendInput проверяет работу методов Run и SendInput
@@ -98,7 +98,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	automator, err := NewCLIAutomator()
 	require.NoError(t, err, "Не удалось создать CLIAutomator")
 	t.Cleanup(func() {
-		automator.Stop()
+		automator.Close()
 	})
 
 	// Запускаем обработку вывода в отдельной горутине
@@ -214,8 +214,8 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	})
 }
 
-// TestCLIAutomatorStop проверяет корректность метода Stop
-func TestCLIAutomatorStop(t *testing.T) {
+// TestCLIAutomatorClose проверяет корректность метода Close
+func TestCLIAutomatorClose(t *testing.T) {
 	// t.Parallel()
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
@@ -258,13 +258,13 @@ func TestCLIAutomatorStop(t *testing.T) {
 	// Запускаем и останавливаем автоматор
 	go automator.Run()
 	time.Sleep(100 * time.Millisecond) // Даем автоматору время запуститься
-	automator.Stop()
+	automator.Close()
 
 	// Проверяем, что после остановки глобальные переменные изменились
-	assert.NotEqual(t, stdinAfterCreate, os.Stdin, "stdin должен измениться после Stop")
-	assert.NotEqual(t, stdoutAfterCreate, os.Stdout, "stdout должен измениться после Stop")
+	assert.NotEqual(t, stdinAfterCreate, os.Stdin, "stdin должен измениться после Close")
+	assert.NotEqual(t, stdoutAfterCreate, os.Stdout, "stdout должен измениться после Close")
 
-	// Проверяем базовую функциональность - что после Stop автоматор не работает
+	// Проверяем базовую функциональность - что после Close автоматор не работает
 	// 1. Проверяем, что канал outputLines закрыт или пуст
 	select {
 	case _, ok := <-automator.outputLines:
@@ -277,11 +277,11 @@ func TestCLIAutomatorStop(t *testing.T) {
 		// Это ожидаемое поведение - канал пуст
 	}
 
-	// 2. Проверяем, что SendInput не работает или возвращает ошибку после Stop
+	// 2. Проверяем, что SendInput не работает или возвращает ошибку после Close
 	// Мы не можем строго утверждать, что SendInput должен возвращать ошибку,
 	// но можем проверить, что он не вызывает паники
-	err = automator.SendInput("Тестовый ввод после Stop")
-	require.Error(t, err, "SendInput должен возвращать ошибку после Stop")
+	err = automator.SendInput("Тестовый ввод после Close")
+	require.Error(t, err, "SendInput должен возвращать ошибку после Close")
 	// Не проверяем конкретную ошибку, т.к. реализация может отличаться
 }
 
@@ -303,7 +303,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	automator, err := NewCLIAutomator()
 	require.NoError(t, err, "Не удалось создать CLIAutomator")
 	t.Cleanup(func() {
-		automator.Stop()
+		automator.Close()
 	})
 
 	// Создаем временный буфер для подавления вывода в консоль
@@ -368,7 +368,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
 		t.Cleanup(func() {
-			automator.Stop()
+			automator.Close()
 		})
 
 		// Проверяем ситуацию, когда Run не запущен и WaitForOutput вызван с очень малым таймаутом
@@ -381,7 +381,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
 		t.Cleanup(func() {
-			automator.Stop()
+			automator.Close()
 		})
 
 		// Запускаем обработку вывода
@@ -403,7 +403,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
 		t.Cleanup(func() {
-			automator.Stop()
+			automator.Close()
 		})
 
 		// Создаем мок для ручного контроля канала вывода
@@ -425,17 +425,17 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		assert.Less(t, timeElapsed, 500*time.Millisecond, "WaitForOutput должен вернуться быстрее таймаута при закрытом канале")
 	})
 
-	t.Run("SendInput после Stop", func(t *testing.T) {
+	t.Run("SendInput после Close", func(t *testing.T) {
 		// Создаем автоматор
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
 
 		// Останавливаем автоматор
-		automator.Stop()
+		automator.Close()
 
 		// Пытаемся отправить ввод после остановки
 		err = automator.SendInput("тест")
-		require.Error(t, err, "SendInput должен возвращать ошибку после Stop")
+		require.Error(t, err, "SendInput должен возвращать ошибку после Close")
 		// Мы не проверяем конкретную ошибку, так как поведение может зависеть от реализации
 	})
 }

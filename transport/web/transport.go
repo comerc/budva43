@@ -381,8 +381,8 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	return nil
 }
 
-// Stop останавливает HTTP-сервер
-func (t *Transport) Stop() error {
+// Close останавливает HTTP-сервер
+func (t *Transport) Close() error {
 	t.log.Info("Stopping HTTP server")
 
 	// Создаем контекст с таймаутом для graceful shutdown

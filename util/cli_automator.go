@@ -135,8 +135,8 @@ func (c *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool
 	}
 }
 
-// Stop останавливает работу CLIAutomator и восстанавливает стандартные потоки ввода-вывода
-func (c *CLIAutomator) Stop() {
+// Close останавливает работу CLIAutomator и восстанавливает стандартные потоки ввода-вывода
+func (c *CLIAutomator) Close() {
 	// Восстанавливаем оригинальные стандартные потоки ввода-вывода
 	os.Stdin = c.originalStdin
 	os.Stdout = c.originalStdout

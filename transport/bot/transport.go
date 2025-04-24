@@ -42,7 +42,7 @@ type Transport struct {
 	forwardController forwardController
 	reportController  reportController
 	updates           chan client.Update
-	stopped           bool
+	stopped           bool // TODO: зачем этот флаг, если есть ctx.Done()?
 }
 
 // New создает новый экземпляр обработчика Telegram
@@ -72,12 +72,12 @@ func (t *Transport) Start(ctx context.Context) error {
 	}()
 
 	// Ожидаем сигнал остановки через контекст
-	<-ctx.Done()
-	return t.Stop()
+	<-ctx.Done() // TODO: это неверно для метода Start()
+	return nil
 }
 
-// Stop останавливает обработчик сообщений
-func (t *Transport) Stop() error {
+// Close останавливает обработчик сообщений
+func (t *Transport) Close() error {
 	if t.stopped {
 		return nil
 	}

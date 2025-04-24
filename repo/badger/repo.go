@@ -36,8 +36,8 @@ func (r *Repo) Start(ctx context.Context, shutdown func()) error {
 	return nil
 }
 
-// Stop закрывает соединение с базой данных
-func (r *Repo) Stop() error {
+// Close закрывает соединение с базой данных
+func (r *Repo) Close() error {
 	if r.db != nil {
 		return r.db.Close()
 	}
