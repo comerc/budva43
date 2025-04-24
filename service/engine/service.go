@@ -109,7 +109,7 @@ func New(
 
 // Start запускает обработчик обновлений от Telegram
 func (s *Service) Start(ctx context.Context) error {
-	return nil
+	// return nil
 
 	s.log.Info("Запуск сервиса engine")
 
@@ -135,9 +135,6 @@ func (s *Service) Start(ctx context.Context) error {
 
 // Close останавливает сервис
 func (s *Service) Close() error {
-	return nil
-
-	s.log.Info("Остановка сервиса engine")
 	return nil
 }
 
@@ -223,7 +220,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	}
 
 	// Проверяем удаление системных сообщений
-	if delete := config.Engine.DeleteSystemMessages[chatID]; delete {
+	if shouldDelete := config.Engine.DeleteSystemMessages[chatID]; shouldDelete {
 		if s.messageService.IsSystemMessage(message) {
 			go func() {
 				tdlibClient := s.telegramRepo.GetClient()
@@ -365,7 +362,10 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 			}
 
 			// Удаляем соответствие между оригинальным и скопированными сообщениями
-			s.storageService.DeleteCopiedMessageIDs(fromChatMessageID)
+			err = s.storageService.DeleteCopiedMessageIDs(fromChatMessageID)
+			if err != nil {
+				s.log.Error("Ошибка удаления скопированных сообщений", "err", err)
+			}
 		}
 	})
 }
@@ -862,8 +862,14 @@ func (s *Service) processSingleDeleted(fromChatMessageID, toChatMessageID string
 		// Удаляем соответствие между временным и постоянным ID
 		tmpMessageID, err := s.storageService.GetTmpMessageID(dstChatID, dstMessageID)
 		if err == nil && tmpMessageID != 0 {
-			s.storageService.DeleteTmpMessageID(dstChatID, dstMessageID)
-			s.storageService.DeleteNewMessageID(dstChatID, tmpMessageID)
+			err = s.storageService.DeleteTmpMessageID(dstChatID, dstMessageID)
+			if err != nil {
+				s.log.Error("Ошибка удаления временного ID сообщения", "err", err)
+			}
+			err = s.storageService.DeleteNewMessageID(dstChatID, tmpMessageID)
+			if err != nil {
+				s.log.Error("Ошибка удаления постоянного ID сообщения", "err", err)
+			}
 		}
 	}
 }
