@@ -16,9 +16,9 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	config "github.com/comerc/budva43/config"
-	authTelegramController "github.com/comerc/budva43/controller/auth_telegram"
+	authController "github.com/comerc/budva43/controller/auth"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
-	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
+	authService "github.com/comerc/budva43/service/auth"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
 	util "github.com/comerc/budva43/util"
@@ -43,7 +43,7 @@ func initTelegram(t *testing.T) {
 	config.MakeDirs(dirs...)
 }
 
-func TestAuthTelegram(t *testing.T) {
+func TestAuth(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
@@ -72,12 +72,12 @@ func TestAuthTelegram(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	authTelegramService := authTelegramService.New(telegramRepo)
+	authTelegramService := authService.New(telegramRepo)
 	require.NotNil(t, authTelegramService)
 
 	time.Sleep(1 * time.Second)
 
-	authTelegramController := authTelegramController.New(authTelegramService)
+	authTelegramController := authController.New(authTelegramService)
 	require.NotNil(t, authTelegramController)
 
 	state, err := authTelegramController.GetAuthorizationState()
