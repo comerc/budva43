@@ -1,10 +1,14 @@
 package text_transform
 
 import (
+	"fmt"
 	"log/slog"
 	"regexp"
 	"strings"
 
+	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
 )
 
@@ -126,4 +130,176 @@ func (s *Service) EscapeMarkdown(text string) string {
 	}
 
 	return result
+}
+
+// ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
+func (s *Service) ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error {
+	if text == nil {
+		return nil
+	}
+
+	// Получаем настройки замены ссылок
+	settings, ok := config.Engine.ReplaceMyselfLinks[dstChatID]
+	if !ok {
+		return nil
+	}
+
+	// Заменяем ссылки на текущего бота
+	for i, entity := range text.Entities {
+		if entity.Type == nil {
+			continue
+		}
+
+		// Проверяем, является ли сущность ссылкой
+		textLink, ok := entity.Type.(*client.TextEntityTypeTextUrl)
+		if !ok {
+			continue
+		}
+
+		// Заменяем ссылки на текущего бота
+		if strings.Contains(textLink.Url, fmt.Sprintf("t.me/c/%d", srcChatID)) {
+			// Заменяем ссылку на ссылку с целевым чатом
+			textLink.Url = strings.Replace(textLink.Url,
+				fmt.Sprintf("t.me/c/%d", srcChatID),
+				fmt.Sprintf("t.me/c/%d", dstChatID), 1)
+			text.Entities[i].Type = textLink
+		} else if settings.DeleteExternal {
+			// Удаляем внешние ссылки, если такая настройка включена
+			length := entity.Length
+			offset := entity.Offset
+
+			// Удаляем текстовую ссылку
+			text.Text = text.Text[:offset] + text.Text[offset+length:]
+
+			// Корректируем смещения остальных сущностей
+			for j := i + 1; j < len(text.Entities); j++ {
+				if text.Entities[j].Offset > offset {
+					text.Entities[j].Offset -= length
+				}
+			}
+
+			// Удаляем текущую сущность
+			text.Entities = append(text.Entities[:i], text.Entities[i+1:]...)
+			i-- // Уменьшаем счетчик, так как мы удалили текущую сущность
+		}
+	}
+
+	return nil
+}
+
+// ReplaceFragments заменяет фрагменты текста согласно настройкам
+func (s *Service) ReplaceFragments(text *client.FormattedText, dstChatID int64) error {
+	if text == nil {
+		return nil
+	}
+
+	// Получаем настройки замены фрагментов
+	settings, ok := config.Engine.ReplaceFragments[dstChatID]
+	if !ok {
+		return nil
+	}
+
+	// Заменяем фрагменты текста
+	for from, to := range settings.Replacements {
+		if from == "" {
+			continue
+		}
+
+		// Проверяем, что длины строк совпадают для корректной замены
+		if len([]rune(from)) != len([]rune(to)) {
+			s.log.Warn("Длина исходного и заменяемого текста не совпадает, пропускаем замену",
+				"from", from,
+				"to", to)
+			continue
+		}
+
+		// Заменяем все вхождения фрагмента
+		text.Text = strings.ReplaceAll(text.Text, from, to)
+	}
+
+	return nil
+}
+
+// AddSourceSign добавляет подпись источника к тексту
+func (s *Service) AddSourceSign(text *client.FormattedText, srcChatID int64, dstChatID int64) error {
+	if text == nil {
+		return nil
+	}
+
+	// Ищем источник в конфигурации
+	source, ok := config.Engine.Sources[srcChatID]
+	if !ok || source.Sign == nil {
+		return nil
+	}
+
+	// Проверяем, нужно ли добавлять подпись для этого чата
+	needSign := false
+	for _, chatID := range source.Sign.For {
+		if chatID == dstChatID {
+			needSign = true
+			break
+		}
+	}
+
+	if !needSign {
+		return nil
+	}
+
+	// Добавляем подпись к тексту
+	if text.Text != "" {
+		text.Text += "\n\n"
+	}
+	text.Text += source.Sign.Title
+
+	return nil
+}
+
+// AddSourceLink добавляет ссылку на источник к тексту
+func (s *Service) AddSourceLink(text *client.FormattedText, srcChatID int64, dstChatID int64, messageID int64) error {
+	if text == nil {
+		return nil
+	}
+
+	// Ищем источник в конфигурации
+	source, ok := config.Engine.Sources[srcChatID]
+	if !ok || source.Link == nil {
+		return nil
+	}
+
+	// Проверяем, нужно ли добавлять ссылку для этого чата
+	needLink := false
+	for _, chatID := range source.Link.For {
+		if chatID == dstChatID {
+			needLink = true
+			break
+		}
+	}
+
+	if !needLink {
+		return nil
+	}
+
+	// Добавляем ссылку к тексту
+	if text.Text != "" {
+		text.Text += "\n\n"
+	}
+
+	// Добавляем текст ссылки
+	linkText := source.Link.Title
+	linkStart := len([]rune(text.Text))
+	text.Text += linkText
+
+	// Создаем сущность-ссылку
+	entity := &client.TextEntity{
+		Offset: int32(linkStart),
+		Length: int32(len([]rune(linkText))),
+		Type: &client.TextEntityTypeTextUrl{
+			Url: fmt.Sprintf("https://t.me/c/%d/%d", srcChatID, messageID),
+		},
+	}
+
+	// Добавляем сущность в текст
+	text.Entities = append(text.Entities, entity)
+
+	return nil
 }

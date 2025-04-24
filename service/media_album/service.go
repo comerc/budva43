@@ -9,11 +9,6 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-const (
-	// Время ожидания для сбора медиа-альбома
-	WaitForMediaAlbum = 1 * time.Second
-)
-
 // MediaAlbum представляет группу сообщений, составляющих медиа-альбом
 type MediaAlbum struct {
 	Messages     []*client.Message

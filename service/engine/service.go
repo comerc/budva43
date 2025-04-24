@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -12,10 +13,23 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// messageService определяет интерфейс сервиса сообщений, необходимый для сервиса engine
+type ContentType string
+
+const (
+	ContentTypeText      ContentType = "text"
+	ContentTypePhoto     ContentType = "photo"
+	ContentTypeVideo     ContentType = "video"
+	ContentTypeDocument  ContentType = "document"
+	ContentTypeAudio     ContentType = "audio"
+	ContentTypeAnimation ContentType = "animation"
+	ContentTypeVoice     ContentType = "voice"
+)
+
 type messageService interface {
 	GetText(message *client.Message) string
 	GetCaption(message *client.Message) string
+	IsSystemMessage(message *client.Message) bool
+	// GetContentType(message *client.Message) string
 	// SendMessage(chatID int64, text string) (*client.Message, error)
 	// ForwardMessage(fromChatID, messageID, toChatID int64) (*client.Message, error)
 	// SendMessageAlbum(chatID int64, contents []client.InputMessageContent) (*client.Messages, error)
@@ -23,40 +37,35 @@ type messageService interface {
 	// EditMessageText(chatID, messageID int64, text *client.FormattedText) (*client.Message, error)
 	// EditMessageMedia(chatID, messageID int64, content client.InputMessageContent) (*client.Message, error)
 	// EditMessageCaption(chatID, messageID int64, caption *client.FormattedText) (*client.Message, error)
-	DeleteMessages(chatID int64, messageIDs []int64) error
-	GetMessage(chatID, messageID int64) (*client.Message, error)
+	// DeleteMessages(chatID int64, messageIDs []int64) error
+	// GetMessage(chatID, messageID int64) (*client.Message, error)
 }
 
-// filterService определяет интерфейс сервиса фильтрации, необходимый для сервиса engine
 type filterService interface {
 	ShouldForward(message *client.Message, rule *entity.ForwardRule) (bool, error)
 }
 
-// transformService определяет интерфейс сервиса трансформации, необходимый для сервиса engine
 type transformService interface {
-	// ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error
-	// ReplaceFragments(text *client.FormattedText, dstChatID int64) error
-	// AddSourceSign(text *client.FormattedText, title string) error
-	// AddSourceLink(message *client.Message, text *client.FormattedText, title string) error
+	ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error
+	ReplaceFragments(text *client.FormattedText, dstChatID int64) error
+	AddSourceSign(text *client.FormattedText, srcChatID, dstChatID int64) error
+	AddSourceLink(text *client.FormattedText, srcChatID, dstChatID int64, messageID int64) error
 }
 
-// storageService определяет интерфейс сервиса хранилища, необходимый для сервиса engine
 type storageService interface {
-	// SetCopiedMessageID(fromChatMessageID string, toChatMessageID string) error
+	SetCopiedMessageID(fromChatMessageID string, toChatMessageID string) error
 	GetCopiedMessageIDs(fromChatMessageID string) ([]string, error)
-	// DeleteCopiedMessageIDs(fromChatMessageID string) error
+	DeleteCopiedMessageIDs(fromChatMessageID string) error
 	SetNewMessageID(chatID, tmpMessageID, newMessageID int64) error
 	// GetNewMessageID(chatID, tmpMessageID int64) (int64, error)
-	// DeleteNewMessageID(chatID, tmpMessageID int64) error
+	DeleteNewMessageID(chatID, tmpMessageID int64) error
 	SetTmpMessageID(chatID, newMessageID, tmpMessageID int64) error
-	// GetTmpMessageID(chatID, newMessageID int64) (int64, error)
-	// DeleteTmpMessageID(chatID, newMessageID int64) error
+	GetTmpMessageID(chatID, newMessageID int64) (int64, error)
+	DeleteTmpMessageID(chatID, newMessageID int64) error
 	// IncrementViewedMessages(toChatID int64) error
 	// IncrementForwardedMessages(toChatID int64) error
-	GetRuleByID(ruleID string) (entity.ForwardRule, bool)
 }
 
-// mediaAlbumService определяет интерфейс сервиса медиа-альбомов, необходимый для сервиса engine
 type mediaAlbumService interface {
 	AddMessage(forwardKey string, message *client.Message) bool
 	GetLastReceivedDiff(forwardKey string, albumID client.JsonInt64) time.Duration
@@ -72,38 +81,34 @@ type telegramRepo interface {
 type Service struct {
 	log *slog.Logger
 	//
-	message      messageService
-	filter       filterService
-	transform    transformService
-	storage      storageService
-	mediaAlbums  mediaAlbumService
-	telegramRepo telegramRepo
-	queue        chan func()
+	messageService     messageService
+	filterService      filterService
+	transformService   transformService
+	storageService     storageService
+	mediaAlbumsService mediaAlbumService
+	telegramRepo       telegramRepo
+	queue              chan func()
 }
 
 // New создает новый экземпляр сервиса engine
 func New(
-	message messageService,
-	filter filterService,
-	transform transformService,
-	storage storageService,
-	mediaAlbums mediaAlbumService,
+	messageService messageService,
+	filterService filterService,
+	transformService transformService,
+	storageService storageService,
+	mediaAlbumsService mediaAlbumService,
 	telegramRepo telegramRepo,
-
-	// tdlibClient *client.Client,
 ) *Service {
-	return nil
-
 	return &Service{
 		log: slog.With("module", "service.engine"),
 		//
-		message:      message,
-		filter:       filter,
-		transform:    transform,
-		storage:      storage,
-		mediaAlbums:  mediaAlbums,
-		telegramRepo: telegramRepo,
-		queue:        make(chan func(), 100),
+		messageService:     messageService,
+		filterService:      filterService,
+		transformService:   transformService,
+		storageService:     storageService,
+		mediaAlbumsService: mediaAlbumsService,
+		telegramRepo:       telegramRepo,
+		queue:              make(chan func(), 100),
 	}
 }
 
@@ -214,7 +219,7 @@ func (s *Service) handleUpdates(ctx context.Context, listener *client.Listener) 
 	}
 }
 
-// Обрабатывает обновление о новом сообщении
+// handleUpdateNewMessage обрабатывает обновление о новом сообщении
 func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	message := update.Message
 	chatID := message.ChatId
@@ -227,7 +232,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	}
 
 	for ruleID, rule := range config.Engine.Forwards {
-		if rule.From == chatID {
+		if rule.From == chatID && rule.Status == entity.RuleStatusActive {
 			isSourceChat = true
 			forwardRules = append(forwardRules, struct {
 				ruleID string
@@ -242,102 +247,113 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 
 	// Проверяем удаление системных сообщений
 	if delete := config.Engine.DeleteSystemMessages[chatID]; delete {
-		if s.isSystemMessage(message) {
+		if s.messageService.IsSystemMessage(message) {
 			go func() {
-				if err := s.message.DeleteMessages(chatID, []int64{message.Id}); err != nil {
+				tdlibClient := s.telegramRepo.GetClient()
+				_, err := tdlibClient.DeleteMessages(&client.DeleteMessagesRequest{
+					ChatId:     chatID,
+					MessageIds: []int64{message.Id},
+					Revoke:     true, // Удаляем для всех участников, а не только для себя
+				})
+				if err != nil {
 					s.log.Error("Ошибка удаления системного сообщения", "err", err)
 				}
 			}()
 		}
 	}
 
-	// Проверяем тип сообщения, пропускаем необрабатываемые типы
-	text := s.message.GetText(message)
+	// Получаем текст сообщения
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.message.GetCaption(message)
-		if text == "" && !s.isMediaContent(message) {
-			return
-		}
+		text = s.messageService.GetCaption(message)
 	}
 
-	// Обрабатываем медиа-альбом
-	if message.MediaAlbumId != 0 {
-		for _, ruleInfo := range forwardRules {
-			isFirstMessage := s.mediaAlbums.AddMessage(ruleInfo.ruleID, message)
-			if isFirstMessage {
-				s.queue <- func() {
-					s.handleMediaAlbum(ruleInfo.ruleID, message.MediaAlbumId)
-				}
-			}
-		}
-		return
-	}
+	// Обрабатываем каждое правило
+	for _, ruleData := range forwardRules {
+		// Проверяем правило
+		rule := ruleData.rule
 
-	// Обрабатываем обычное сообщение
-	for _, ruleInfo := range forwardRules {
-		rule := ruleInfo.rule
-		if rule.Status != entity.RuleStatusActive {
+		// Проверяем, должно ли сообщение быть переслано согласно фильтрам
+		shouldForward, err := s.filterService.ShouldForward(message, &rule)
+		if err != nil {
+			s.log.Error("Ошибка проверки фильтров", "err", err)
 			continue
 		}
 
-		// Копируем сообщение для каждого правила в очередь, чтобы не блокировать обработку
-		messageCopy := message
-		ruleIDCopy := ruleInfo.ruleID
-		ruleCopy := rule
+		if !shouldForward {
+			s.log.Debug("Сообщение не проходит фильтры", "ruleID", ruleData.ruleID)
+			continue
+		}
 
-		s.queue <- func() {
-			s.processMessage([]*client.Message{messageCopy}, ruleIDCopy, ruleCopy)
+		// Обрабатываем сообщение в зависимости от типа
+		if message.MediaAlbumId == 0 {
+			// Одиночное сообщение
+			s.queue <- func() {
+				s.processMessage([]*client.Message{message}, ruleData.ruleID, rule)
+			}
+		} else {
+			// Медиа-альбом
+			isFirstMessage := s.mediaAlbumsService.AddMessage(ruleData.ruleID, message)
+			if isFirstMessage {
+				s.queue <- func() {
+					s.handleMediaAlbum(ruleData.ruleID, message.MediaAlbumId)
+				}
+			}
 		}
 	}
 }
 
-// Обрабатывает обновление о редактировании сообщения
+// handleUpdateMessageEdited обрабатывает обновление о редактировании сообщения
 func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) {
 	chatID := update.ChatId
 	messageID := update.MessageId
 
 	// Проверяем, является ли чат источником для какого-либо правила
-	isSourceChat := false
-	for _, rule := range config.Engine.Forwards {
-		if rule.From == chatID {
-			isSourceChat = true
-			break
-		}
-	}
-
-	if !isSourceChat {
+	if _, ok := isChatSource(chatID); !ok {
 		return
 	}
 
+	s.log.Debug("Обработка редактирования сообщения", "chatID", chatID, "messageID", messageID)
+
+	// Отправляем задачу в очередь
 	s.queue <- func() {
-		// Получаем информацию о скопированных сообщениях
+		// Формируем ключ для поиска скопированных сообщений
 		fromChatMessageID := fmt.Sprintf("%d:%d", chatID, messageID)
-		toChatMessageIDs, err := s.storage.GetCopiedMessageIDs(fromChatMessageID)
+
+		// Получаем идентификаторы скопированных сообщений
+		toChatMessageIDs, err := s.storageService.GetCopiedMessageIDs(fromChatMessageID)
 		if err != nil {
-			s.log.Error("Ошибка получения копий сообщения", "err", err)
+			s.log.Error("Ошибка получения скопированных сообщений", "err", err)
 			return
 		}
 
 		if len(toChatMessageIDs) == 0 {
+			s.log.Debug("Скопированные сообщения не найдены", "fromChatMessageID", fromChatMessageID)
 			return
 		}
 
-		// Получаем обновленное сообщение
-		message, err := s.message.GetMessage(chatID, messageID)
+		tdlibClient := s.telegramRepo.GetClient()
+
+		// Получаем исходное сообщение
+		src, err := tdlibClient.GetMessage(&client.GetMessageRequest{
+			ChatId:    chatID,
+			MessageId: messageID,
+		})
 		if err != nil {
-			s.log.Error("Ошибка получения сообщения", "err", err)
+			s.log.Error("Ошибка получения исходного сообщения", "err", err)
 			return
 		}
 
-		// Обрабатываем редактирование для каждой копии
+		// Обрабатываем каждое скопированное сообщение
 		for _, toChatMessageID := range toChatMessageIDs {
-			s.processSingleEdited(message, toChatMessageID)
+			s.processSingleEdited(src, toChatMessageID)
 		}
 	}
 }
 
-// Обрабатывает обновление об удалении сообщений
+// handleUpdateDeleteMessages обрабатывает обновление об удалении сообщений
 func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages) {
+	// Обрабатываем только постоянное удаление сообщений
 	if !update.IsPermanent {
 		return
 	}
@@ -346,24 +362,23 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 	messageIDs := update.MessageIds
 
 	// Проверяем, является ли чат источником для какого-либо правила
-	isSourceChat := false
-	for _, rule := range config.Engine.Forwards {
-		if rule.From == chatID {
-			isSourceChat = true
-			break
-		}
-	}
-
-	if !isSourceChat {
+	if _, ok := isChatSource(chatID); !ok {
 		return
 	}
 
+	s.log.Debug("Обработка удаления сообщений", "chatID", chatID, "messageIDs", messageIDs)
+
+	// Отправляем задачу в очередь
 	s.queue <- func() {
+		// Обрабатываем каждое удаленное сообщение
 		for _, messageID := range messageIDs {
+			// Формируем ключ для поиска скопированных сообщений
 			fromChatMessageID := fmt.Sprintf("%d:%d", chatID, messageID)
-			toChatMessageIDs, err := s.storage.GetCopiedMessageIDs(fromChatMessageID)
+
+			// Получаем идентификаторы скопированных сообщений
+			toChatMessageIDs, err := s.storageService.GetCopiedMessageIDs(fromChatMessageID)
 			if err != nil {
-				s.log.Error("Ошибка получения копий сообщения", "err", err)
+				s.log.Error("Ошибка получения скопированных сообщений", "err", err)
 				continue
 			}
 
@@ -371,79 +386,58 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 				continue
 			}
 
-			// Удаляем копии, если не установлен флаг Indelible
+			// Обрабатываем каждое скопированное сообщение
 			for _, toChatMessageID := range toChatMessageIDs {
 				s.processSingleDeleted(fromChatMessageID, toChatMessageID)
 			}
+
+			// Удаляем соответствие между оригинальным и скопированными сообщениями
+			s.storageService.DeleteCopiedMessageIDs(fromChatMessageID)
 		}
 	}
 }
 
-// Обрабатывает обновление об успешной отправке сообщения
+// handleUpdateMessageSendSucceeded обрабатывает обновление об успешной отправке сообщения
 func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
-	tmpMessageID := update.OldMessageId
+	chatID := message.ChatId
+	messageID := message.Id
+	oldMessageID := update.OldMessageId
 
+	s.log.Debug("Обработка успешной отправки сообщения",
+		"chatID", chatID,
+		"messageID", messageID,
+		"oldMessageID", oldMessageID)
+
+	// Отправляем задачу в очередь
 	s.queue <- func() {
-		if err := s.storage.SetNewMessageID(message.ChatId, tmpMessageID, message.Id); err != nil {
+		// Сохраняем соответствие между временным и постоянным ID сообщения
+		if err := s.storageService.SetNewMessageID(chatID, oldMessageID, messageID); err != nil {
 			s.log.Error("Ошибка сохранения нового ID сообщения", "err", err)
 		}
+	}
+}
 
-		if err := s.storage.SetTmpMessageID(message.ChatId, message.Id, tmpMessageID); err != nil {
-			s.log.Error("Ошибка сохранения временного ID сообщения", "err", err)
+// isChatSource проверяет, является ли чат источником для какого-либо правила
+func isChatSource(chatID int64) (map[string]entity.ForwardRule, bool) {
+	rules := make(map[string]entity.ForwardRule)
+
+	for ruleID, rule := range config.Engine.Forwards {
+		if rule.From == chatID && rule.Status == entity.RuleStatusActive {
+			rules[ruleID] = rule
 		}
 	}
-}
 
-// Проверяет, является ли сообщение системным
-func (s *Service) isSystemMessage(message *client.Message) bool {
-	switch message.Content.(type) {
-	case *client.MessageChatChangeTitle:
-		return true
-	case *client.MessageChatChangePhoto:
-		return true
-	case *client.MessageChatDeletePhoto:
-		return true
-	case *client.MessageChatAddMembers:
-		return true
-	case *client.MessageChatDeleteMember:
-		return true
-	case *client.MessageChatJoinByLink:
-		return true
-	case *client.MessagePinMessage:
-		return true
-	default:
-		return false
-	}
-}
-
-// Проверяет, содержит ли сообщение медиа-контент
-func (s *Service) isMediaContent(message *client.Message) bool {
-	switch message.Content.(type) {
-	case *client.MessagePhoto:
-		return true
-	case *client.MessageVideo:
-		return true
-	case *client.MessageAnimation:
-		return true
-	case *client.MessageAudio:
-		return true
-	case *client.MessageDocument:
-		return true
-	case *client.MessageVoiceNote:
-		return true
-	case *client.MessageVideoNote:
-		return true
-	default:
-		return false
-	}
+	return rules, len(rules) > 0
 }
 
 // Обрабатывает медиа-альбом
 func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) {
+	s.log.Debug("Обработка медиа-альбома", "forwardKey", forwardKey, "albumID", albumID)
+
 	// Ждем, пока соберутся все сообщения альбома
-	const waitForMediaAlbum = 1 * time.Second
-	diff := s.mediaAlbums.GetLastReceivedDiff(forwardKey, albumID)
+	const waitForMediaAlbum = 3 * time.Second
+	diff := s.mediaAlbumsService.GetLastReceivedDiff(forwardKey, albumID)
 	if diff < waitForMediaAlbum {
 		time.Sleep(waitForMediaAlbum - diff)
 		// Повторная проверка после ожидания, т.к. могли поступить новые сообщения
@@ -452,19 +446,39 @@ func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) 
 	}
 
 	// Получаем все сообщения альбома
-	messages := s.mediaAlbums.GetMessages(forwardKey, albumID)
+	messages := s.mediaAlbumsService.GetMessages(forwardKey, albumID)
 	if len(messages) == 0 {
+		s.log.Error("Пустой медиа-альбом", "forwardKey", forwardKey, "albumID", albumID)
 		return
 	}
 
-	// Находим правило пересылки
-	rule, ok := s.storage.GetRuleByID(forwardKey)
-	if !ok {
-		s.log.Error("Правило пересылки не найдено", "forwardKey", forwardKey)
+	// Нужно определить, какому правилу форвардинга соответствует данный ключ
+	var rule entity.ForwardRule
+	var ruleExists bool
+
+	for rID, r := range config.Engine.Forwards {
+		if rID == forwardKey {
+			rule = r
+			ruleExists = true
+			break
+		}
+	}
+
+	if !ruleExists {
+		s.log.Error("Правило форвардинга не найдено", "forwardKey", forwardKey)
 		return
 	}
 
-	if rule.Status != entity.RuleStatusActive {
+	// Проверяем, должны ли сообщения быть пересланы согласно фильтрам
+	srcMessage := messages[0]
+	shouldForward, err := s.filterService.ShouldForward(srcMessage, &rule)
+	if err != nil {
+		s.log.Error("Ошибка проверки фильтров", "err", err)
+		return
+	}
+
+	if !shouldForward {
+		s.log.Debug("Сообщения не проходят фильтры", "forwardKey", forwardKey)
 		return
 	}
 
@@ -472,17 +486,477 @@ func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) 
 	s.processMessage(messages, forwardKey, rule)
 }
 
-// Обрабатывает сообщение или группу сообщений
+// processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (s *Service) processMessage(messages []*client.Message, forwardKey string, rule entity.ForwardRule) {
-	// Реализация будет добавлена позже
+	src := messages[0]
+	s.log.Debug("Обработка сообщения",
+		"chatID", src.ChatId,
+		"messageID", src.Id,
+		"albumID", src.MediaAlbumId,
+		"forwardKey", forwardKey)
+
+	// Проверяем фильтры
+	text := s.messageService.GetText(src)
+	if text == "" {
+		text = s.messageService.GetCaption(src)
+	}
+
+	// Начинаем пересылку
+	for _, dstChatID := range rule.To {
+		// Пересылаем сообщения
+		s.forwardMessages(messages, src.ChatId, dstChatID, rule.SendCopy, rule.CopyOnce, forwardKey)
+	}
 }
 
-// Обрабатывает редактирование одиночного сообщения
+// forwardMessages пересылает сообщения в целевой чат
+func (s *Service) forwardMessages(messages []*client.Message, srcChatID, dstChatID int64, isSendCopy, isCopyOnce bool, forwardKey string) {
+	s.log.Debug("Пересылка сообщений",
+		"srcChatID", srcChatID,
+		"dstChatID", dstChatID,
+		"sendCopy", isSendCopy,
+		"copyOnce", isCopyOnce,
+		"messageCount", len(messages))
+
+	tdlibClient := s.telegramRepo.GetClient()
+
+	var (
+		result *client.Messages
+		err    error
+	)
+
+	// Метод пересылки в зависимости от флага SendCopy
+	if isSendCopy {
+		// Пересылка с созданием копии
+		if len(messages) == 1 {
+			// Пересылка одиночного сообщения
+			message, err := s.sendCopyMessage(tdlibClient, messages[0], dstChatID, forwardKey)
+			if err != nil {
+				s.log.Error("Ошибка пересылки сообщения", "err", err)
+				return
+			}
+
+			result = &client.Messages{
+				TotalCount: 1,
+				Messages:   []*client.Message{message},
+			}
+		} else {
+			// Пересылка медиа-альбома
+			result, err = s.sendCopyAlbum(tdlibClient, messages, dstChatID, forwardKey)
+			if err != nil {
+				s.log.Error("Ошибка пересылки медиа-альбома", "err", err)
+				return
+			}
+		}
+	} else {
+		// Прямая пересылка (forward)
+		messageIDs := make([]int64, len(messages))
+		for i, message := range messages {
+			messageIDs[i] = message.Id
+		}
+
+		result, err = tdlibClient.ForwardMessages(&client.ForwardMessagesRequest{
+			ChatId:     dstChatID,
+			FromChatId: srcChatID,
+			MessageIds: messageIDs,
+		})
+
+		if err != nil {
+			s.log.Error("Ошибка форвардинга сообщений", "err", err)
+			return
+		}
+	}
+
+	// Сохраняем соответствие между оригинальными и пересланными сообщениями
+	if result != nil && len(result.Messages) > 0 {
+		for i, message := range result.Messages {
+			// В случае форвардинга медиа-альбома, сообщения могут прийти не в том порядке
+			srcMessage := messages[i]
+			if len(messages) > 1 {
+				// Для альбома ищем соответствующее исходное сообщение
+				for _, msg := range messages {
+					if s.matchesMediaContent(msg, message) {
+						srcMessage = msg
+						break
+					}
+				}
+			}
+
+			// Сохраняем связь между оригинальным и пересланным сообщениями
+			fromChatMessageID := fmt.Sprintf("%d:%d", srcChatID, srcMessage.Id)
+			toChatMessageID := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatID, message.Id)
+
+			// Если это не разовое копирование (CopyOnce), сохраняем связь для последующего синхронизации при редактировании
+			if !isCopyOnce {
+				if err := s.storageService.SetCopiedMessageID(fromChatMessageID, toChatMessageID); err != nil {
+					s.log.Error("Ошибка сохранения связи сообщений", "err", err)
+				}
+			}
+
+			// Сохраняем временный ID сообщения для обработки асинхронных обновлений
+			if message.SendingState != nil {
+				if sendingState, ok := message.SendingState.(*client.MessageSendingStatePending); ok {
+					tmpMessageID := sendingState.SendingId
+
+					if err := s.storageService.SetTmpMessageID(dstChatID, message.Id, int64(tmpMessageID)); err != nil {
+						s.log.Error("Ошибка сохранения временного ID", "err", err)
+					}
+				}
+			}
+		}
+	}
+}
+
+// sendCopyMessage отправляет копию одиночного сообщения
+func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Message, dstChatID int64, forwardKey string) (*client.Message, error) {
+	// Получаем текст сообщения
+	formattedText, contentType := s.getMessageContent(message)
+	if contentType == "" {
+		return nil, fmt.Errorf("неподдерживаемый тип сообщения")
+	}
+
+	// Применяем трансформации к тексту
+	if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatID); err != nil {
+		s.log.Error("Ошибка при замене ссылок", "err", err)
+	}
+	if err := s.transformService.ReplaceFragments(formattedText, dstChatID); err != nil {
+		s.log.Error("Ошибка при замене фрагментов", "err", err)
+	}
+	if err := s.transformService.AddSourceSign(formattedText, message.ChatId, dstChatID); err != nil {
+		s.log.Error("Ошибка при добавлении подписи источника", "err", err)
+	}
+	if err := s.transformService.AddSourceLink(formattedText, message.ChatId, dstChatID, message.Id); err != nil {
+		s.log.Error("Ошибка при добавлении ссылки на источник", "err", err)
+	}
+
+	// Создаем входной контент для сообщения
+	var inputContent client.InputMessageContent
+
+	switch contentType {
+	case ContentTypeText:
+		inputContent = &client.InputMessageText{
+			Text: formattedText,
+		}
+	case ContentTypePhoto:
+		content := message.Content.(*client.MessagePhoto)
+		inputContent = &client.InputMessagePhoto{
+			Photo: &client.InputFileRemote{
+				Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
+			},
+			Caption: formattedText,
+		}
+	case ContentTypeVideo:
+		content := message.Content.(*client.MessageVideo)
+		inputContent = &client.InputMessageVideo{
+			Video: &client.InputFileRemote{
+				Id: content.Video.Video.Remote.Id,
+			},
+			Caption: formattedText,
+		}
+	case ContentTypeDocument:
+		content := message.Content.(*client.MessageDocument)
+		inputContent = &client.InputMessageDocument{
+			Document: &client.InputFileRemote{
+				Id: content.Document.Document.Remote.Id,
+			},
+			Caption: formattedText,
+		}
+	// Другие типы будут добавлены по мере необходимости
+	default:
+		return nil, fmt.Errorf("неподдерживаемый тип сообщения: %s", contentType)
+	}
+
+	// Отправляем сообщение
+	return tdlibClient.SendMessage(&client.SendMessageRequest{
+		ChatId:              dstChatID,
+		InputMessageContent: inputContent,
+	})
+}
+
+// sendCopyAlbum отправляет копию медиа-альбома
+func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.Message, dstChatID int64, forwardKey string) (*client.Messages, error) {
+	contents := make([]client.InputMessageContent, 0, len(messages))
+
+	for i, message := range messages {
+		formattedText, contentType := s.getMessageContent(message)
+		if contentType == "" {
+			continue
+		}
+
+		// Применяем трансформации только к первому сообщению
+		if i == 0 {
+			if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatID); err != nil {
+				s.log.Error("Ошибка при замене ссылок", "err", err)
+			}
+			if err := s.transformService.ReplaceFragments(formattedText, dstChatID); err != nil {
+				s.log.Error("Ошибка при замене фрагментов", "err", err)
+			}
+			if err := s.transformService.AddSourceSign(formattedText, message.ChatId, dstChatID); err != nil {
+				s.log.Error("Ошибка при добавлении подписи источника", "err", err)
+			}
+			if err := s.transformService.AddSourceLink(formattedText, message.ChatId, dstChatID, message.Id); err != nil {
+				s.log.Error("Ошибка при добавлении ссылки на источник", "err", err)
+			}
+		}
+
+		var inputContent client.InputMessageContent
+
+		switch contentType {
+		case ContentTypePhoto:
+			content := message.Content.(*client.MessagePhoto)
+			inputContent = &client.InputMessagePhoto{
+				Photo: &client.InputFileRemote{
+					Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
+				},
+				Caption: formattedText,
+			}
+		case ContentTypeVideo:
+			content := message.Content.(*client.MessageVideo)
+			inputContent = &client.InputMessageVideo{
+				Video: &client.InputFileRemote{
+					Id: content.Video.Video.Remote.Id,
+				},
+				Caption: formattedText,
+			}
+		default:
+			continue
+		}
+
+		contents = append(contents, inputContent)
+	}
+
+	if len(contents) == 0 {
+		return nil, fmt.Errorf("нет поддерживаемых типов контента в альбоме")
+	}
+
+	// Отправляем альбом
+	return tdlibClient.SendMessageAlbum(&client.SendMessageAlbumRequest{
+		ChatId:               dstChatID,
+		InputMessageContents: contents,
+	})
+}
+
+// getMessageContent извлекает содержимое сообщения
+func (s *Service) getMessageContent(message *client.Message) (*client.FormattedText, ContentType) {
+	var formattedText *client.FormattedText
+	var contentType ContentType
+
+	switch content := message.Content.(type) {
+	case *client.MessageText:
+		formattedText = content.Text
+		contentType = ContentTypeText
+	case *client.MessagePhoto:
+		formattedText = content.Caption
+		contentType = ContentTypePhoto
+	case *client.MessageVideo:
+		formattedText = content.Caption
+		contentType = ContentTypeVideo
+	case *client.MessageDocument:
+		formattedText = content.Caption
+		contentType = ContentTypeDocument
+	case *client.MessageAudio:
+		formattedText = content.Caption
+		contentType = ContentTypeAudio
+	case *client.MessageAnimation:
+		formattedText = content.Caption
+		contentType = ContentTypeAnimation
+	case *client.MessageVoiceNote:
+		formattedText = content.Caption
+		contentType = ContentTypeVoice
+	default:
+		formattedText = &client.FormattedText{}
+		return nil, ""
+	}
+
+	return formattedText, contentType
+}
+
+// matchesMediaContent проверяет, соответствует ли содержимое двух сообщений
+func (s *Service) matchesMediaContent(src, dst *client.Message) bool {
+	if src == nil || dst == nil || src.Content == nil || dst.Content == nil {
+		return false
+	}
+
+	_, srcType := s.getMessageContent(src)
+	_, dstType := s.getMessageContent(dst)
+
+	if srcType != dstType {
+		return false
+	}
+
+	// Для текстовых сообщений сравниваем сам текст
+	if srcType == ContentTypeText {
+		srcText := s.messageService.GetText(src)
+		dstText := s.messageService.GetText(dst)
+		return srcText == dstText
+	}
+
+	// Для медиа сравниваем подпись, если они есть
+	srcCaption := s.messageService.GetCaption(src)
+	dstCaption := s.messageService.GetCaption(dst)
+
+	return srcCaption == dstCaption
+}
+
+// processSingleEdited обрабатывает редактирование сообщения
 func (s *Service) processSingleEdited(message *client.Message, toChatMessageID string) {
-	// Реализация будет добавлена позже
+	// Разбираем toChatMessageID
+	ruleID, dstChatID, dstMessageID, err := parseToChatMessageID(toChatMessageID)
+	if err != nil {
+		s.log.Error("Ошибка разбора toChatMessageID", "toChatMessageID", toChatMessageID, "err", err)
+		return
+	}
+
+	s.log.Debug("Обработка редактирования сообщения",
+		"srcChatID", message.ChatId,
+		"srcMessageID", message.Id,
+		"dstChatID", dstChatID,
+		"dstMessageID", dstMessageID,
+		"ruleID", ruleID)
+
+	// Получаем правило форвардинга
+	rule, ok := config.Engine.Forwards[ruleID]
+	if !ok {
+		s.log.Error("Правило форвардинга не найдено", "ruleID", ruleID)
+		return
+	}
+
+	// Если установлен флаг CopyOnce, не обрабатываем редактирование
+	if rule.CopyOnce {
+		s.log.Debug("Сообщение скопировано однократно, редактирование не применяется",
+			"ruleID", ruleID,
+			"dstChatID", dstChatID)
+		return
+	}
+
+	tdlibClient := s.telegramRepo.GetClient()
+
+	// Получаем оригинальное сообщение
+	srcMessage, err := tdlibClient.GetMessage(&client.GetMessageRequest{
+		ChatId:    message.ChatId,
+		MessageId: message.Id,
+	})
+	if err != nil {
+		s.log.Error("Ошибка получения исходного сообщения", "err", err)
+		return
+	}
+
+	// Получаем контент сообщения
+	formattedText, contentType := s.getMessageContent(srcMessage)
+	if contentType == "" {
+		s.log.Error("Неподдерживаемый тип сообщения при редактировании")
+		return
+	}
+
+	// Применяем трансформации к тексту
+	if err := s.transformService.ReplaceMyselfLinks(formattedText, srcMessage.ChatId, dstChatID); err != nil {
+		s.log.Error("Ошибка при замене ссылок", "err", err)
+	}
+	if err := s.transformService.ReplaceFragments(formattedText, dstChatID); err != nil {
+		s.log.Error("Ошибка при замене фрагментов", "err", err)
+	}
+
+	// В зависимости от типа контента, применяем соответствующее редактирование
+	switch contentType {
+	case ContentTypeText:
+		// Редактирование текста
+		_, err = tdlibClient.EditMessageText(&client.EditMessageTextRequest{
+			ChatId:    dstChatID,
+			MessageId: dstMessageID,
+			InputMessageContent: &client.InputMessageText{
+				Text: formattedText,
+			},
+		})
+	case ContentTypePhoto, ContentTypeVideo, ContentTypeDocument, ContentTypeAudio, ContentTypeAnimation, ContentTypeVoice:
+		// Редактирование подписи медиа
+		_, err = tdlibClient.EditMessageCaption(&client.EditMessageCaptionRequest{
+			ChatId:    dstChatID,
+			MessageId: dstMessageID,
+			Caption:   formattedText,
+		})
+	default:
+		err = fmt.Errorf("неподдерживаемый тип контента: %s", contentType)
+	}
+
+	if err != nil {
+		s.log.Error("Ошибка редактирования сообщения", "err", err)
+	} else {
+		s.log.Debug("Сообщение успешно отредактировано",
+			"dstChatID", dstChatID,
+			"dstMessageID", dstMessageID)
+	}
 }
 
-// Обрабатывает удаление одиночного сообщения
+// processSingleDeleted обрабатывает удаление сообщения
 func (s *Service) processSingleDeleted(fromChatMessageID, toChatMessageID string) {
-	// Реализация будет добавлена позже
+	// Разбираем toChatMessageID
+	ruleID, dstChatID, dstMessageID, err := parseToChatMessageID(toChatMessageID)
+	if err != nil {
+		s.log.Error("Ошибка разбора toChatMessageID", "toChatMessageID", toChatMessageID, "err", err)
+		return
+	}
+
+	s.log.Debug("Обработка удаления сообщения",
+		"fromChatMessageID", fromChatMessageID,
+		"dstChatID", dstChatID,
+		"dstMessageID", dstMessageID,
+		"ruleID", ruleID)
+
+	// Получаем правило форвардинга
+	rule, ok := config.Engine.Forwards[ruleID]
+	if !ok {
+		s.log.Error("Правило форвардинга не найдено", "ruleID", ruleID)
+		return
+	}
+
+	// Если установлен флаг Indelible, не удаляем сообщение
+	if rule.Indelible {
+		s.log.Debug("Сообщение неудаляемое (Indelible), удаление не выполняется",
+			"ruleID", ruleID,
+			"dstChatID", dstChatID)
+		return
+	}
+
+	tdlibClient := s.telegramRepo.GetClient()
+
+	// Удаляем сообщение
+	_, err = tdlibClient.DeleteMessages(&client.DeleteMessagesRequest{
+		ChatId:     dstChatID,
+		MessageIds: []int64{dstMessageID},
+		Revoke:     true, // Удаляем для всех участников, а не только для себя
+	})
+	if err != nil {
+		s.log.Error("Ошибка удаления сообщения", "err", err)
+	} else {
+		s.log.Debug("Сообщение успешно удалено",
+			"dstChatID", dstChatID,
+			"dstMessageID", dstMessageID)
+
+		// Удаляем соответствие между временным и постоянным ID
+		tmpMessageID, err := s.storageService.GetTmpMessageID(dstChatID, dstMessageID)
+		if err == nil && tmpMessageID != 0 {
+			s.storageService.DeleteTmpMessageID(dstChatID, dstMessageID)
+			s.storageService.DeleteNewMessageID(dstChatID, tmpMessageID)
+		}
+	}
+}
+
+// parseToChatMessageID разбирает строку toChatMessageID в формате "ruleID:chatID:messageID"
+func parseToChatMessageID(toChatMessageID string) (ruleID string, chatID int64, messageID int64, err error) {
+	parts := strings.Split(toChatMessageID, ":")
+	if len(parts) != 3 {
+		return "", 0, 0, fmt.Errorf("неверный формат toChatMessageID: %s", toChatMessageID)
+	}
+
+	ruleID = parts[0]
+
+	var chatIDInt, messageIDInt int
+	if _, err := fmt.Sscanf(parts[1], "%d", &chatIDInt); err != nil {
+		return "", 0, 0, fmt.Errorf("ошибка преобразования chatID: %w", err)
+	}
+
+	if _, err := fmt.Sscanf(parts[2], "%d", &messageIDInt); err != nil {
+		return "", 0, 0, fmt.Errorf("ошибка преобразования messageID: %w", err)
+	}
+
+	return ruleID, int64(chatIDInt), int64(messageIDInt), nil
 }

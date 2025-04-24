@@ -54,7 +54,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [x] KISS
 - [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
 - [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
-- [x] Нотации start и run
+- [x] Notations Start & Run
 - [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
 - [ ] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
 - [ ] CQRS
@@ -79,7 +79,6 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
 - [x] voidint/g
 - [x] go mod vendor
-- [x] gofiber/fiber
 
 ## .env
 
