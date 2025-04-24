@@ -85,8 +85,6 @@ func TestAuthTelegram(t *testing.T) {
 	assert.Equal(t, client.TypeAuthorizationStateWaitPhoneNumber, state.AuthorizationStateType())
 
 	cliTransport := cliTransport.New(
-		nil, // messageController,
-		nil, // forwardController,
 		nil, // reportController,
 		authTelegramController,
 	)
@@ -98,8 +96,6 @@ func TestAuthTelegram(t *testing.T) {
 	})
 
 	webTransport := webTransport.New(
-		nil, // messageController,
-		nil, // forwardController,
 		nil, // reportController,
 		authTelegramController,
 	)

@@ -10,7 +10,6 @@ import (
 type Service struct {
 	log *slog.Logger
 	//
-	// Здесь могут быть зависимости, например, репозитории
 }
 
 // New создает новый экземпляр сервиса для работы с сообщениями
@@ -23,10 +22,6 @@ func New() *Service {
 
 // GetText возвращает текст сообщения, если это текстовое сообщение
 func (s *Service) GetText(message *client.Message) string {
-	if message == nil || message.Content == nil {
-		return ""
-	}
-
 	if content, ok := message.Content.(*client.MessageText); ok {
 		return content.Text.Text
 	}
@@ -36,10 +31,6 @@ func (s *Service) GetText(message *client.Message) string {
 
 // GetCaption возвращает подпись медиа сообщения
 func (s *Service) GetCaption(message *client.Message) string {
-	if message == nil || message.Content == nil {
-		return ""
-	}
-
 	switch content := message.Content.(type) {
 	case *client.MessagePhoto:
 		return content.Caption.Text
@@ -60,97 +51,90 @@ func (s *Service) GetCaption(message *client.Message) string {
 
 // IsTextMessage проверяет, является ли сообщение текстовым
 func (s *Service) IsTextMessage(message *client.Message) bool {
-	if message == nil || message.Content == nil {
-		return false
-	}
-
 	_, ok := message.Content.(*client.MessageText)
 	return ok
 }
 
-// IsMediaMessage проверяет, содержит ли сообщение медиа-контент
-func (s *Service) IsMediaMessage(message *client.Message) bool {
-	if message == nil || message.Content == nil {
+// IsSystemMessage проверяет, является ли сообщение системным
+func (s *Service) IsSystemMessage(message *client.Message) bool {
+	switch message.Content.(type) {
+	case *client.MessageChatChangeTitle,
+		*client.MessageChatChangePhoto,
+		*client.MessageChatDeletePhoto,
+		*client.MessageChatAddMembers,
+		*client.MessageChatDeleteMember,
+		*client.MessageChatJoinByLink,
+		*client.MessagePinMessage:
+		return true
+	default:
 		return false
 	}
+}
 
+// IsMediaMessage проверяет, содержит ли сообщение медиа-контент
+func (s *Service) IsMediaMessage(message *client.Message) bool {
 	switch message.Content.(type) {
-	case *client.MessagePhoto, *client.MessageVideo, *client.MessageDocument,
-		*client.MessageAudio, *client.MessageAnimation, *client.MessageVoiceNote:
+	case *client.MessagePhoto,
+		*client.MessageVideo,
+		*client.MessageDocument,
+		*client.MessageAudio,
+		*client.MessageAnimation,
+		*client.MessageVoiceNote:
 		return true
-	}
-
-	return false
-}
-
-// GetContentType возвращает тип содержимого сообщения
-func (s *Service) GetContentType(message *client.Message) string {
-	if message == nil || message.Content == nil {
-		return "unknown"
-	}
-
-	switch message.Content.(type) {
-	case *client.MessageText:
-		return "text"
-	case *client.MessagePhoto:
-		return "photo"
-	case *client.MessageVideo:
-		return "video"
-	case *client.MessageDocument:
-		return "document"
-	case *client.MessageAudio:
-		return "audio"
-	case *client.MessageAnimation:
-		return "animation"
-	case *client.MessageVoiceNote:
-		return "voice"
 	default:
-		return "other"
+		return false
 	}
 }
 
-// FormatMessageContent преобразует формат сообщения (например, из markdown в HTML)
-func (s *Service) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
-	// Здесь будет реализация преобразования между форматами
-	// Например, конвертация Markdown в HTML или обратно
+// // GetContentType возвращает тип содержимого сообщения
+// func (s *Service) GetContentType(message *client.Message) ContentType {
+// 	switch message.Content.(type) {
+// 	case *client.MessageText:
+// 		return ContentTypeText
+// 	case *client.MessagePhoto:
+// 		return ContentTypePhoto
+// 	case *client.MessageVideo:
+// 		return ContentTypeVideo
+// 	case *client.MessageDocument:
+// 		return ContentTypeDocument
+// 	case *client.MessageAudio:
+// 		return ContentTypeAudio
+// 	case *client.MessageAnimation:
+// 		return ContentTypeAnimation
+// 	case *client.MessageVoiceNote:
+// 		return ContentTypeVoice
+// 	default:
+// 		return ""
+// 	}
+// }
 
-	// Пока просто заглушка
-	return text, nil
-}
+// // FormatMessageContent преобразует формат сообщения (например, из markdown в HTML)
+// func (s *Service) FormatMessageContent(text string, fromFormat, toFormat string) (string, error) {
+// 	// Здесь будет реализация преобразования между форматами
+// 	// Например, конвертация Markdown в HTML или обратно
 
-// ExtractMessageMetadata извлекает метаданные из сообщения
-func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]any {
-	metadata := make(map[string]any)
+// 	// Пока просто заглушка
+// 	return text, nil
+// }
 
-	if message == nil {
-		return metadata
-	}
+// // ExtractMessageMetadata извлекает метаданные из сообщения
+// func (s *Service) ExtractMessageMetadata(message *client.Message) map[string]any {
+// 	metadata := make(map[string]any)
 
-	metadata["messageId"] = message.Id
-	metadata["chatId"] = message.ChatId
-	metadata["date"] = message.Date
+// 	metadata["messageId"] = message.Id
+// 	metadata["chatId"] = message.ChatId
+// 	metadata["date"] = message.Date
 
-	// Извлечение специфичных метаданных в зависимости от типа сообщения
-	switch content := message.Content.(type) {
-	case *client.MessageText:
-		metadata["contentType"] = "text"
-		metadata["textLength"] = len(content.Text.Text)
-	case *client.MessagePhoto:
-		metadata["contentType"] = "photo"
-		metadata["captionLength"] = len(content.Caption.Text)
-		// Другие типы сообщений...
-	}
+// 	// Извлечение специфичных метаданных в зависимости от типа сообщения
+// 	switch content := message.Content.(type) {
+// 	case *client.MessageText:
+// 		metadata["contentType"] = "text"
+// 		metadata["textLength"] = len(content.Text.Text)
+// 	case *client.MessagePhoto:
+// 		metadata["contentType"] = "photo"
+// 		metadata["captionLength"] = len(content.Caption.Text)
+// 		// TODO: реализовать другие типы сообщений...
+// 	}
 
-	return metadata
-}
-
-func (s *Service) GetMessage(chatID, messageID int64) (*client.Message, error) {
-	// TODO: реализовать
-	return nil, nil
-}
-
-// DeleteMessages удаляет сообщения
-func (s *Service) DeleteMessages(chatID int64, messageIDs []int64) error {
-	// TODO: реализовать
-	return nil
-}
+// 	return metadata
+// }

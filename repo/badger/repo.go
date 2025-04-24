@@ -3,7 +3,6 @@ package badger
 import (
 	"context"
 	"log/slog"
-	"time"
 
 	badger "github.com/dgraph-io/badger/v4"
 
@@ -60,17 +59,9 @@ func (r *Repo) Get(key string) ([]byte, error) {
 }
 
 // Set устанавливает значение по ключу
-func (r *Repo) Set(key string, value []byte) error {
+func (r *Repo) Set(key, value string) error {
 	return r.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(key), value)
-	})
-}
-
-// SetWithTTL устанавливает значение по ключу с временем жизни
-func (r *Repo) SetWithTTL(key string, value []byte, ttl time.Duration) error {
-	return r.db.Update(func(txn *badger.Txn) error {
-		entry := badger.NewEntry([]byte(key), value).WithTTL(ttl)
-		return txn.SetEntry(entry)
+		return txn.Set([]byte(key), []byte(value))
 	})
 }
 
@@ -82,7 +73,7 @@ func (r *Repo) Delete(key string) error {
 }
 
 // Iterate выполняет итерацию по всем ключам с заданным префиксом
-func (r *Repo) Iterate(prefix string, fn func(key string, value []byte) error) error {
+func (r *Repo) Iterate(prefix string, fn func(key, value string) error) error {
 	return r.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchValues = true
@@ -94,7 +85,7 @@ func (r *Repo) Iterate(prefix string, fn func(key string, value []byte) error) e
 			item := it.Item()
 			key := item.Key()
 			err := item.Value(func(val []byte) error {
-				return fn(string(key), val)
+				return fn(string(key), string(val))
 			})
 			if err != nil {
 				return err

@@ -6,7 +6,6 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// authTelegramService определяет интерфейс сервиса авторизации Telegram
 type authTelegramService interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)

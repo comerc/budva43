@@ -14,14 +14,14 @@ import (
 type messageService interface {
 	GetText(message *client.Message) string
 	GetCaption(message *client.Message) string
-	GetContentType(message *client.Message) string
+	// GetContentType(message *client.Message) string
 }
 
 // Service предоставляет методы для фильтрации сообщений
 type Service struct {
 	log *slog.Logger
 	//
-	message messageService
+	messageService messageService
 }
 
 // New создает новый экземпляр сервиса для фильтрации сообщений
@@ -29,7 +29,7 @@ func New(messageService messageService) *Service {
 	return &Service{
 		log: slog.With("module", "service.filter"),
 		//
-		message: messageService,
+		messageService: messageService,
 	}
 }
 
@@ -47,9 +47,9 @@ func (s *Service) MatchesRegexp(message *client.Message, pattern string) (bool, 
 	}
 
 	// Получаем текст сообщения или подпись
-	text := s.message.GetText(message)
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.message.GetCaption(message)
+		text = s.messageService.GetCaption(message)
 	}
 
 	// Проверяем соответствие
@@ -63,9 +63,9 @@ func (s *Service) MatchesKeywords(message *client.Message, keywords []string) bo
 	}
 
 	// Получаем текст сообщения или подпись
-	text := s.message.GetText(message)
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.message.GetCaption(message)
+		text = s.messageService.GetCaption(message)
 	}
 
 	// Приводим текст к нижнему регистру для регистронезависимого поиска
@@ -88,9 +88,9 @@ func (s *Service) MatchesAnyKeyword(message *client.Message, keywords []string) 
 	}
 
 	// Получаем текст сообщения или подпись
-	text := s.message.GetText(message)
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.message.GetCaption(message)
+		text = s.messageService.GetCaption(message)
 	}
 
 	// Приводим текст к нижнему регистру для регистронезависимого поиска
@@ -113,9 +113,9 @@ func (s *Service) MatchesHashtags(message *client.Message, hashtags []string) bo
 	}
 
 	// Получаем текст сообщения или подпись
-	text := s.message.GetText(message)
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.message.GetCaption(message)
+		text = s.messageService.GetCaption(message)
 	}
 
 	// Компилируем регулярное выражение для поиска хэштегов
@@ -145,30 +145,30 @@ func (s *Service) MatchesHashtags(message *client.Message, hashtags []string) bo
 	return true
 }
 
-// FilterByContentType фильтрует сообщения по типу содержимого
-func (s *Service) FilterByContentType(message *client.Message, allowedTypes []string) bool {
-	if len(allowedTypes) == 0 {
-		return true
-	}
+// // FilterByContentType фильтрует сообщения по типу содержимого
+// func (s *Service) FilterByContentType(message *client.Message, allowedTypes []string) bool {
+// 	if len(allowedTypes) == 0 {
+// 		return true
+// 	}
 
-	contentType := s.message.GetContentType(message)
+// 	contentType := s.message.GetContentType(message)
 
-	for _, allowedType := range allowedTypes {
-		if contentType == allowedType {
-			return true
-		}
-	}
+// 	for _, allowedType := range allowedTypes {
+// 		if contentType == allowedType {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }
 
 // ShouldForward проверяет, должно ли сообщение быть переслано согласно правилам
 func (s *Service) ShouldForward(message *client.Message, rule *entity.ForwardRule) (bool, error) {
 	// Проверка по исключающему регулярному выражению
 	if rule.ExcludeRegexp != nil {
-		text := s.message.GetText(message)
+		text := s.messageService.GetText(message)
 		if text == "" {
-			text = s.message.GetCaption(message)
+			text = s.messageService.GetCaption(message)
 		}
 		if rule.ExcludeRegexp.MatchString(text) {
 			return false, nil
@@ -177,9 +177,9 @@ func (s *Service) ShouldForward(message *client.Message, rule *entity.ForwardRul
 
 	// Проверка по включающему регулярному выражению
 	if rule.IncludeRegexp != nil {
-		text := s.message.GetText(message)
+		text := s.messageService.GetText(message)
 		if text == "" {
-			text = s.message.GetCaption(message)
+			text = s.messageService.GetCaption(message)
 		}
 		if !rule.IncludeRegexp.MatchString(text) {
 			return false, nil
@@ -188,9 +188,9 @@ func (s *Service) ShouldForward(message *client.Message, rule *entity.ForwardRul
 
 	// Проверка по подстрокам
 	if len(rule.IncludeSubmatch) > 0 {
-		text := s.message.GetText(message)
+		text := s.messageService.GetText(message)
 		if text == "" {
-			text = s.message.GetCaption(message)
+			text = s.messageService.GetCaption(message)
 		}
 
 		matchesAny := false

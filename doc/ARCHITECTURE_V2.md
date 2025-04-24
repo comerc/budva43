@@ -76,10 +76,6 @@ func NewMessageService(repo messageRepo) *MessageService {
 
 // GetText возвращает текст сообщения, если это текстовое сообщение
 func (s *MessageService) GetText(message *entity.Message) string {
-    if message == nil || message.Content == nil {
-        return ""
-    }
-    
     if content, ok := message.Content.(*client.MessageText); ok {
         return content.Text.Text
     }
@@ -89,10 +85,6 @@ func (s *MessageService) GetText(message *entity.Message) string {
 
 // IsTextMessage проверяет, является ли сообщение текстовым
 func (s *MessageService) IsTextMessage(message *entity.Message) bool {
-    if message == nil || message.Content == nil {
-        return false
-    }
-    
     _, ok := message.Content.(*client.MessageText)
     return ok
 }

@@ -9,8 +9,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-//go:generate mockery --name=messageProcessor --exported
-type messageProcessor interface {
+type messageService interface {
 	GetText(message *client.Message) string
 	GetCaption(message *client.Message) string
 }
@@ -75,20 +74,20 @@ type Rule struct {
 type Service struct {
 	log *slog.Logger
 	//
-	messageProcessor messageProcessor
-	rules            []*Rule
-	rulesByName      map[string]*Rule
-	mutex            sync.RWMutex
+	messageService messageService
+	rules          []*Rule
+	rulesByName    map[string]*Rule
+	mutex          sync.RWMutex
 }
 
 // New создает новый экземпляр сервиса для автоматических ответов
-func New(messageProcessor messageProcessor) *Service {
+func New(messageService messageService) *Service {
 	return &Service{
 		log: slog.With("module", "service.auto_answer"),
 		//
-		messageProcessor: messageProcessor,
-		rules:            make([]*Rule, 0),
-		rulesByName:      make(map[string]*Rule),
+		messageService: messageService,
+		rules:          make([]*Rule, 0),
+		rulesByName:    make(map[string]*Rule),
 	}
 }
 
@@ -169,14 +168,10 @@ func (s *Service) DisableRule(name string) bool {
 
 // ProcessMessage обрабатывает сообщение и возвращает автоответ, если есть подходящее правило
 func (s *Service) ProcessMessage(message *client.Message, isPrivate bool) (string, bool) {
-	if message == nil {
-		return "", false
-	}
-
 	// Получаем текст сообщения
-	text := s.messageProcessor.GetText(message)
+	text := s.messageService.GetText(message)
 	if text == "" {
-		text = s.messageProcessor.GetCaption(message)
+		text = s.messageService.GetCaption(message)
 	}
 	if text == "" {
 		return "", false

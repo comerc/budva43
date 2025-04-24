@@ -19,24 +19,24 @@ import (
 type (
 	// Настройки приложения
 	config struct {
-		General    general
+		// General    general
 		LogOptions logOptions
 		Storage    storage
 		Telegram   telegram
 		Bot        bot
 		Web        web
-		Forwarding forwarding
-		Reports    reports
-		Engine     engine
+		// Forwarding forwarding
+		// Reports reports
+		Engine engine
 	}
 
 	// Общие настройки
-	general struct {
-		AutoStart     bool
-		NotifyOnStart bool
-		Language      string
-		Theme         string
-	}
+	// general struct {
+	// 	AutoStart     bool
+	// 	NotifyOnStart bool
+	// 	Language      string
+	// 	Theme         string
+	// }
 
 	// Настройки логгера
 	logOptions struct {
@@ -47,12 +47,12 @@ type (
 	// Настройки хранилища данных
 	storage struct {
 		DatabaseDirectory string
-		MaxCacheSize      int64
-		DataRetentionDays int
-		AutoCleanup       bool
-		BackupEnabled     bool
-		BackupDirectory   string
-		BackupFrequency   string
+		// MaxCacheSize      int64
+		// DataRetentionDays int
+		// AutoCleanup       bool
+		// BackupEnabled     bool
+		BackupDirectory string
+		BackupFrequency string
 	}
 
 	// Настройки Telegram
@@ -82,40 +82,40 @@ type (
 
 	// Настройки веб-интерфейса
 	web struct {
-		Enabled         bool
+		// Enabled         bool
 		Host            string
 		Port            int
 		ReadTimeout     time.Duration
 		WriteTimeout    time.Duration
 		ShutdownTimeout time.Duration
-		EnableTLS       bool
-		CertFile        string
-		KeyFile         string
-		RequireAuth     bool
-		SessionTimeout  time.Duration
-		AdminUsername   string
+		// EnableTLS       bool
+		// CertFile        string
+		// KeyFile         string
+		// RequireAuth     bool
+		// SessionTimeout  time.Duration
+		// AdminUsername   string
 	}
 
 	// Настройки для пересылки сообщений
-	forwarding struct {
-		DefaultDelay         int
-		MaxMessagesPerMinute int
-		PreserveFormatting   bool
-		KeepMediaOriginal    bool
-		AutoSign             bool
-		AddSourceLink        bool
-		AddForwardedTag      bool
-	}
+	// forwarding struct {
+	// 	DefaultDelay         int
+	// 	MaxMessagesPerMinute int
+	// 	PreserveFormatting   bool
+	// 	KeepMediaOriginal    bool
+	// 	AutoSign             bool
+	// 	AddSourceLink        bool
+	// 	AddForwardedTag      bool
+	// }
 
 	// Настройки для отчетов
-	reports struct {
-		DefaultPeriod     string
-		AutoGenerate      bool
-		SendToAdmin       bool
-		IncludeStatistics bool
-		StatFormat        string
-		TemplateDirectory string
-	}
+	// reports struct {
+	// 	DefaultPeriod     string
+	// 	AutoGenerate      bool
+	// 	SendToAdmin       bool
+	// 	IncludeStatistics bool
+	// 	StatFormat        string
+	// 	TemplateDirectory string
+	// }
 
 	// Настройки движка форвардинга из budva32
 	engine struct {
@@ -143,15 +143,15 @@ var (
 	once        sync.Once
 	cfg         = &config{}
 	projectRoot string
-	General     = &cfg.General
-	LogOptions  = &cfg.LogOptions
-	Storage     = &cfg.Storage
-	Telegram    = &cfg.Telegram
-	Bot         = &cfg.Bot
-	Web         = &cfg.Web
-	Forwarding  = &cfg.Forwarding
-	Reports     = &cfg.Reports
-	Engine      = &cfg.Engine
+	// General     = &cfg.General
+	LogOptions = &cfg.LogOptions
+	Storage    = &cfg.Storage
+	Telegram   = &cfg.Telegram
+	Bot        = &cfg.Bot
+	Web        = &cfg.Web
+	// Forwarding = &cfg.Forwarding
+	// Reports = &cfg.Reports
+	Engine = &cfg.Engine
 )
 
 // не используем slog, т.к. он инициализируется в main.go

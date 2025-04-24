@@ -1,4 +1,4 @@
-package telegram
+package bot // TODO: under construction
 
 import (
 	"context"
@@ -13,36 +13,25 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// messageController определяет интерфейс контроллера сообщений, необходимый для Telegram транспорта
 type messageController interface {
 	GetMessage(chatID, messageID int64) (*client.Message, error)
 	SendMessage(chatID int64, text string) (*client.Message, error)
-	DeleteMessage(chatID, messageID int64) error
-	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
-	FormatMessage(text, fromFormat, toFormat string) (string, error)
+	// DeleteMessage(chatID, messageID int64) error
+	// EditMessage(chatID, messageID int64, text string) (*client.Message, error)
+	// FormatMessage(text, fromFormat, toFormat string) (string, error)
 	GetMessageText(message *client.Message) string
 }
 
-// forwardController определяет интерфейс контроллера пересылок, необходимый для Telegram транспорта
 type forwardController interface {
 	GetForwardRule(id string) (*entity.ForwardRule, error)
 	SaveForwardRule(rule *entity.ForwardRule) error
 	ForwardMessage(rule *entity.ForwardRule, fromChatID, messageID int64) ([]*client.Message, error)
 }
 
-// reportController определяет интерфейс контроллера отчетов, необходимый для Telegram транспорта
 type reportController interface {
 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
-}
-
-// telegramClient определяет интерфейс клиента Telegram, необходимый для обработчика
-type telegramClient interface {
-	GetMessage(chatID, messageID int64) (*client.Message, error)
-	SendMessage(chatID int64, text string) (*client.Message, error)
-	DeleteMessage(chatID, messageID int64) error
-	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
 }
 
 // Transport представляет обработчик сообщений из Telegram
@@ -52,7 +41,6 @@ type Transport struct {
 	messageController messageController
 	forwardController forwardController
 	reportController  reportController
-	telegramClient    telegramClient
 	updates           chan client.Update
 	stopped           bool
 }
@@ -62,7 +50,6 @@ func New(
 	messageController messageController,
 	forwardController forwardController,
 	reportController reportController,
-	telegramClient telegramClient,
 ) *Transport {
 	return &Transport{
 		log: slog.With("module", "transport.telegram"),
@@ -70,7 +57,6 @@ func New(
 		messageController: messageController,
 		forwardController: forwardController,
 		reportController:  reportController,
-		telegramClient:    telegramClient,
 		updates:           make(chan client.Update, 100),
 		stopped:           false,
 	}

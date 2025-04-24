@@ -17,10 +17,10 @@ import (
 )
 
 func setDefaultConfig(config *config) {
-	config.General.AutoStart = true
-	config.General.NotifyOnStart = true
-	config.General.Language = "en"
-	config.General.Theme = "light"
+	// config.General.AutoStart = true
+	// config.General.NotifyOnStart = true
+	// config.General.Language = "en"
+	// config.General.Theme = "light"
 
 	config.LogOptions.Level = slog.LevelDebug
 	config.LogOptions.AddSource = false
@@ -42,34 +42,34 @@ func setDefaultConfig(config *config) {
 	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "storage")
 	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "backups")
 
-	config.Forwarding.DefaultDelay = 3
-	config.Forwarding.MaxMessagesPerMinute = 20
-	config.Forwarding.PreserveFormatting = true
-	config.Forwarding.KeepMediaOriginal = true
-	config.Forwarding.AutoSign = false
-	config.Forwarding.AddSourceLink = true
-	config.Forwarding.AddForwardedTag = true
+	// config.Forwarding.DefaultDelay = 3
+	// config.Forwarding.MaxMessagesPerMinute = 20
+	// config.Forwarding.PreserveFormatting = true
+	// config.Forwarding.KeepMediaOriginal = true
+	// config.Forwarding.AutoSign = false
+	// config.Forwarding.AddSourceLink = true
+	// config.Forwarding.AddForwardedTag = true
 
-	config.Reports.DefaultPeriod = "daily"
-	config.Reports.AutoGenerate = false
-	config.Reports.SendToAdmin = false
-	config.Reports.IncludeStatistics = true
-	config.Reports.StatFormat = "text"
+	// config.Reports.DefaultPeriod = "daily"
+	// config.Reports.AutoGenerate = false
+	// config.Reports.SendToAdmin = false
+	// config.Reports.IncludeStatistics = true
+	// config.Reports.StatFormat = "text"
 
-	config.Storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
-	config.Storage.DataRetentionDays = 30
-	config.Storage.AutoCleanup = true
-	config.Storage.BackupEnabled = false
+	// config.Storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
+	// config.Storage.DataRetentionDays = 30
+	// config.Storage.AutoCleanup = true
+	// config.Storage.BackupEnabled = false
 
-	config.Web.Enabled = true
+	// config.Web.Enabled = true
 	config.Web.Port = 8080
 	config.Web.Host = "localhost"
 	config.Web.ReadTimeout = 15 * time.Second
 	config.Web.WriteTimeout = 15 * time.Second
 	config.Web.ShutdownTimeout = 5 * time.Second
-	config.Web.EnableTLS = false
-	config.Web.RequireAuth = true
-	config.Web.SessionTimeout = 60 * time.Minute
+	// config.Web.EnableTLS = false
+	// config.Web.RequireAuth = true
+	// config.Web.SessionTimeout = 60 * time.Minute
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {

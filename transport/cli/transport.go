@@ -19,32 +19,12 @@ import (
 
 // TODO: не нравится, что нужно вводить auth для каждого последующего шага
 
-// messageController определяет интерфейс контроллера сообщений для CLI
-type messageController interface {
-	GetMessage(chatID, messageID int64) (*client.Message, error)
-	SendMessage(chatID int64, text string) (*client.Message, error)
-	ListMessages(limit, offset int) ([]*client.Message, error)
-	GetMessageText(message *client.Message) string
-	IsTextMessage(message *client.Message) bool
-	GetContentType(message *client.Message) string
-}
-
-// forwardController определяет интерфейс контроллера пересылок для CLI
-type forwardController interface {
-	GetForwardRule(id string) (*entity.ForwardRule, error)
-	SaveForwardRule(rule *entity.ForwardRule) error
-	// ListForwardRules() ([]*entity.ForwardRule, error)
-	// DeleteForwardRule(id string) error
-}
-
-// reportController определяет интерфейс контроллера отчетов для CLI
 type reportController interface {
 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
-// authTelegramController определяет интерфейс контроллера авторизации Telegram для CLI
 type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
@@ -57,13 +37,11 @@ type authTelegramController interface {
 type Transport struct {
 	log *slog.Logger
 	//
-	messageController messageController
-	forwardController forwardController
-	reportController  reportController
-	authController    authTelegramController
-	scanner           *bufio.Scanner
-	commands          []command
-	commandMap        map[string]*command
+	reportController reportController
+	authController   authTelegramController
+	scanner          *bufio.Scanner
+	commands         []command
+	commandMap       map[string]*command
 }
 
 // command представляет команду CLI
@@ -75,20 +53,16 @@ type command struct {
 
 // New создает новый экземпляр CLI
 func New(
-	messageController messageController,
-	forwardController forwardController,
 	reportController reportController,
 	authController authTelegramController,
 ) *Transport {
 	cli := &Transport{
 		log: slog.With("module", "transport.cli"),
 		//
-		messageController: messageController,
-		forwardController: forwardController,
-		reportController:  reportController,
-		authController:    authController,
-		scanner:           bufio.NewScanner(os.Stdin),
-		commands:          []command{},
+		reportController: reportController,
+		authController:   authController,
+		scanner:          bufio.NewScanner(os.Stdin),
+		commands:         []command{},
 	}
 
 	// Регистрация команд
@@ -109,16 +83,6 @@ func (t *Transport) registerCommands() {
 			name:        "exit",
 			description: "Выйти из программы",
 			handler:     t.handleExit,
-		},
-		{
-			name:        "messages",
-			description: "Управление сообщениями: list, get, send",
-			handler:     t.handleMessages,
-		},
-		{
-			name:        "rules",
-			description: "Управление правилами пересылки: list, get, add, delete",
-			handler:     t.handleRules,
 		},
 		{
 			name:        "report",
@@ -220,202 +184,6 @@ func (t *Transport) handleHelp(args []string) error {
 func (t *Transport) handleExit(args []string) error {
 	fmt.Println("Выход из программы...")
 	return fmt.Errorf("exit")
-}
-
-// handleMessages обрабатывает команду messages
-func (t *Transport) handleMessages(args []string) error {
-	if len(args) == 0 {
-		fmt.Println("Использование: messages [list|get|send] ...")
-		return nil
-	}
-
-	switch args[0] {
-	case "list":
-		return t.handleMessageList()
-	case "get":
-		if len(args) < 3 {
-			fmt.Println("Использование: messages get [chat_id] [message_id]")
-			return nil
-		}
-		return t.handleMessageGet(args[1], args[2])
-	case "send":
-		if len(args) < 3 {
-			fmt.Println("Использование: messages send [chat_id] [текст сообщения]")
-			return nil
-		}
-		return t.handleMessageSend(args[1], strings.Join(args[2:], " "))
-	default:
-		fmt.Printf("Неизвестная подкоманда: %s. Доступные: list, get, send\n", args[0])
-		return nil
-	}
-}
-
-// handleMessageList обрабатывает команду messages list
-func (t *Transport) handleMessageList() error {
-	messages, err := t.messageController.ListMessages(10, 0)
-	if err != nil {
-		return fmt.Errorf("ошибка при получении списка сообщений: %w", err)
-	}
-
-	if len(messages) == 0 {
-		fmt.Println("Список сообщений пуст")
-		return nil
-	}
-
-	fmt.Println("Список последних сообщений:")
-	for i, msg := range messages {
-		text := t.messageController.GetMessageText(msg)
-		fmt.Printf("%d. Чат: %d, ID: %d, Текст: %s\n", i+1, msg.ChatId, msg.Id, text)
-	}
-
-	return nil
-}
-
-// handleMessageGet обрабатывает команду messages get
-func (t *Transport) handleMessageGet(chatIDStr, messageIDStr string) error {
-	var chatID, messageID int64
-	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
-		return fmt.Errorf("неверный формат chat_id: %w", err)
-	}
-	if _, err := fmt.Sscanf(messageIDStr, "%d", &messageID); err != nil {
-		return fmt.Errorf("неверный формат message_id: %w", err)
-	}
-
-	message, err := t.messageController.GetMessage(chatID, messageID)
-	if err != nil {
-		return fmt.Errorf("ошибка при получении сообщения: %w", err)
-	}
-
-	text := t.messageController.GetMessageText(message)
-	fmt.Printf("Сообщение:\nID: %d\nЧат: %d\nТекст: %s\n",
-		message.Id, message.ChatId, text)
-	return nil
-}
-
-// handleMessageSend обрабатывает команду messages send
-func (t *Transport) handleMessageSend(chatIDStr, text string) error {
-	var chatID int64
-	if _, err := fmt.Sscanf(chatIDStr, "%d", &chatID); err != nil {
-		return fmt.Errorf("неверный формат chat_id: %w", err)
-	}
-
-	message, err := t.messageController.SendMessage(chatID, text)
-	if err != nil {
-		return fmt.Errorf("ошибка при отправке сообщения: %w", err)
-	}
-
-	fmt.Printf("Сообщение отправлено:\nID: %d\nЧат: %d\nТекст: %s\n",
-		message.Id, message.ChatId, t.messageController.GetMessageText(message))
-	return nil
-}
-
-// handleRules обрабатывает команду rules
-func (t *Transport) handleRules(args []string) error {
-	if len(args) == 0 {
-		fmt.Println("Использование: rules [list|get|add|delete] ...")
-		return nil
-	}
-
-	switch args[0] {
-	case "list":
-		return t.handleRulesList()
-	case "get":
-		if len(args) < 2 {
-			fmt.Println("Использование: rules get [id]")
-			return nil
-		}
-		return t.handleRuleGet(args[1])
-	case "add":
-		if len(args) < 4 {
-			fmt.Println("Использование: rules add [from_chat_id] [to_chat_id] [active=true|false]")
-			return nil
-		}
-		return t.handleRuleAdd(args[1], args[2], args[3])
-	case "delete":
-		if len(args) < 2 {
-			fmt.Println("Использование: rules delete [id]")
-			return nil
-		}
-		return t.handleRuleDelete(args[1])
-	default:
-		fmt.Printf("Неизвестная подкоманда: %s. Доступные: list, get, add, delete\n", args[0])
-		return nil
-	}
-}
-
-// handleRulesList обрабатывает команду rules list
-func (t *Transport) handleRulesList() error {
-	// rules, err := t.forwardController.ListForwardRules()
-	// if err != nil {
-	// 	return fmt.Errorf("ошибка при получении списка правил: %w", err)
-	// }
-
-	// if len(rules) == 0 {
-	// 	fmt.Println("Список правил пересылки пуст")
-	// 	return nil
-	// }
-
-	// fmt.Println("Список правил пересылки:")
-	// for i, rule := range rules {
-	// 	fmt.Printf("%d. ID: %s, От: %d, К: %v, Активно: %t\n",
-	// 		i+1, rule.ID, rule.From, rule.To, rule.Status == entity.RuleStatusActive)
-	// }
-
-	return nil
-}
-
-// handleRuleGet обрабатывает команду rules get
-func (t *Transport) handleRuleGet(id string) error {
-	rule, err := t.forwardController.GetForwardRule(id)
-	if err != nil {
-		return fmt.Errorf("ошибка при получении правила: %w", err)
-	}
-
-	fmt.Printf("Правило:\nID: %s\nОт: %d\nК: %v\nАктивно: %t\n",
-		rule.ID, rule.From, rule.To, rule.Status == entity.RuleStatusActive)
-	return nil
-}
-
-// handleRuleAdd обрабатывает команду rules add
-func (t *Transport) handleRuleAdd(fromStr, toStr, activeStr string) error {
-	var from int64
-	if _, err := fmt.Sscanf(fromStr, "%d", &from); err != nil {
-		return fmt.Errorf("неверный формат from_chat_id: %w", err)
-	}
-
-	var to int64
-	if _, err := fmt.Sscanf(toStr, "%d", &to); err != nil {
-		return fmt.Errorf("неверный формат to_chat_id: %w", err)
-	}
-
-	active := activeStr == "true"
-	status := entity.RuleStatusInactive
-	if active {
-		status = entity.RuleStatusActive
-	}
-
-	rule := &entity.ForwardRule{
-		From:   from,
-		To:     []int64{to},
-		Status: status,
-	}
-
-	if err := t.forwardController.SaveForwardRule(rule); err != nil {
-		return fmt.Errorf("ошибка при добавлении правила: %w", err)
-	}
-
-	fmt.Println("Правило пересылки успешно добавлено")
-	return nil
-}
-
-// handleRuleDelete обрабатывает команду rules delete
-func (t *Transport) handleRuleDelete(id string) error {
-	// if err := t.forwardController.DeleteForwardRule(id); err != nil {
-	// 	return fmt.Errorf("ошибка при удалении правила: %w", err)
-	// }
-
-	// fmt.Println("Правило пересылки успешно удалено")
-	return nil
 }
 
 // handleReport обрабатывает команду report

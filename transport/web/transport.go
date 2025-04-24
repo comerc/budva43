@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -15,31 +14,12 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// messageController определяет интерфейс контроллера сообщений, необходимый для HTTP транспорта
-type messageController interface {
-	GetMessage(chatID, messageID int64) (*client.Message, error)
-	SendMessage(chatID int64, text string) (*client.Message, error)
-	DeleteMessage(chatID, messageID int64) error
-	EditMessage(chatID, messageID int64, text string) (*client.Message, error)
-	FormatMessage(text, fromFormat, toFormat string) (string, error)
-	GetMessageText(message *client.Message) string
-	GetContentType(message *client.Message) string
-}
-
-// forwardController определяет интерфейс контроллера пересылок, необходимый для HTTP транспорта
-type forwardController interface {
-	GetForwardRule(id string) (*entity.ForwardRule, error)
-	SaveForwardRule(rule *entity.ForwardRule) error
-}
-
-// reportController определяет интерфейс контроллера отчетов, необходимый для HTTP транспорта
 type reportController interface {
 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 }
 
-// authTelegramController определяет интерфейс контроллера авторизации Telegram
 type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
@@ -51,42 +31,28 @@ type authTelegramController interface {
 type Transport struct {
 	log *slog.Logger
 	//
-	messageController messageController
-	forwardController forwardController
-	reportController  reportController
-	authController    authTelegramController
-	authClients       map[string]chan client.AuthorizationState
-	server            *http.Server
+	reportController reportController
+	authController   authTelegramController
+	authClients      map[string]chan client.AuthorizationState
+	server           *http.Server
 }
 
 // New создает новый экземпляр HTTP маршрутизатора
 func New(
-	messageController messageController,
-	forwardController forwardController,
 	reportController reportController,
 	authController authTelegramController,
 ) *Transport {
 	return &Transport{
 		log: slog.With("module", "transport.web"),
 		//
-		messageController: messageController,
-		forwardController: forwardController,
-		reportController:  reportController,
-		authController:    authController,
-		authClients:       make(map[string]chan client.AuthorizationState),
+		reportController: reportController,
+		authController:   authController,
+		authClients:      make(map[string]chan client.AuthorizationState),
 	}
 }
 
 // setupRoutes настраивает HTTP маршруты
 func (t *Transport) setupRoutes(mux *http.ServeMux) {
-	// Маршруты для сообщений
-	mux.HandleFunc("/api/messages", t.handleMessages)
-	mux.HandleFunc("/api/messages/", t.handleMessageByID)
-
-	// Маршруты для правил пересылки
-	mux.HandleFunc("/api/forward-rules", t.handleForwardRules)
-	mux.HandleFunc("/api/forward-rules/", t.handleForwardRuleByID)
-
 	// Маршруты для отчетов
 	mux.HandleFunc("/api/reports", t.handleReports)
 
@@ -121,212 +87,6 @@ func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
 			"took", time.Since(now),
 			"err", err,
 		)
-	}
-}
-
-// handleMessages обрабатывает запросы для работы с сообщениями
-func (t *Transport) handleMessages(w http.ResponseWriter, req *http.Request) {
-	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
-
-	switch req.Method {
-	case http.MethodGet:
-		// Получение списка сообщений - не реализовано
-		http.Error(w, "Not implemented", http.StatusNotImplemented)
-		err = fmt.Errorf("not implemented")
-
-	case http.MethodPost:
-		// Отправка нового сообщения
-		var messageRequest struct {
-			ChatID int64  `json:"chat_id"`
-			Text   string `json:"text"`
-		}
-		err = json.NewDecoder(req.Body).Decode(&messageRequest)
-		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		var message *client.Message
-		message, err = t.messageController.SendMessage(messageRequest.ChatID, messageRequest.Text)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error sending message: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(message)
-		if err != nil {
-			t.log.Error("Failed to encode message", "err", err)
-		}
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		err = fmt.Errorf("method not allowed")
-	}
-}
-
-// handleMessageByID обрабатывает запросы для работы с конкретным сообщением
-func (t *Transport) handleMessageByID(w http.ResponseWriter, req *http.Request) {
-	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
-
-	// Получаем параметры
-	query := req.URL.Query()
-
-	messageIDStr := query.Get("message_id")
-	var messageID int64
-	messageID, err = strconv.ParseInt(messageIDStr, 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid message_id", http.StatusBadRequest)
-		return
-	}
-
-	chatIDStr := query.Get("chat_id")
-	var chatID int64
-	chatID, err = strconv.ParseInt(chatIDStr, 10, 64)
-	if err != nil {
-		http.Error(w, "Invalid chat_id", http.StatusBadRequest)
-		return
-	}
-
-	switch req.Method {
-	case http.MethodGet:
-		// Получение сообщения
-		var message *client.Message
-		message, err = t.messageController.GetMessage(chatID, messageID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error getting message: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(message)
-		if err != nil {
-			t.log.Error("Failed to encode message", "err", err)
-		}
-
-	case http.MethodPut:
-		// Редактирование сообщения
-		var requestBody struct {
-			Text string `json:"text"`
-		}
-
-		err = json.NewDecoder(req.Body).Decode(&requestBody)
-		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		var result *client.Message
-		result, err = t.messageController.EditMessage(chatID, messageID, requestBody.Text)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error editing message: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(result)
-		if err != nil {
-			t.log.Error("Failed to encode result", "err", err)
-		}
-
-	case http.MethodDelete:
-		// Удаление сообщения
-		err = t.messageController.DeleteMessage(chatID, messageID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error deleting message: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-// handleForwardRules обрабатывает запросы для работы с правилами пересылки
-func (t *Transport) handleForwardRules(w http.ResponseWriter, req *http.Request) {
-	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
-
-	switch req.Method {
-	case http.MethodPost:
-		// Создание нового правила пересылки
-		var rule entity.ForwardRule
-		err = json.NewDecoder(req.Body).Decode(&rule)
-		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		err = t.forwardController.SaveForwardRule(&rule)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error saving forward rule: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusCreated)
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-// handleForwardRuleByID обрабатывает запросы для работы с конкретным правилом пересылки
-func (t *Transport) handleForwardRuleByID(w http.ResponseWriter, req *http.Request) {
-	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
-
-	// Получаем параметры
-	query := req.URL.Query()
-
-	ruleID := query.Get("rule_id")
-	if ruleID == "" {
-		http.Error(w, "Missing rule_id parameter", http.StatusBadRequest)
-		return
-	}
-
-	switch req.Method {
-	case http.MethodGet:
-		// Получение правила пересылки
-		var rule *entity.ForwardRule
-		rule, err = t.forwardController.GetForwardRule(ruleID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error getting forward rule: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(rule)
-		if err != nil {
-			t.log.Error("Failed to encode rule", "err", err)
-		}
-
-	case http.MethodPut:
-		// Обновление правила пересылки
-		var rule entity.ForwardRule
-		err = json.NewDecoder(req.Body).Decode(&rule)
-		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		// Устанавливаем ID из URL
-		rule.ID = ruleID
-
-		err = t.forwardController.SaveForwardRule(&rule)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error updating forward rule: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 

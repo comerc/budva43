@@ -8,7 +8,6 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// reportService определяет интерфейс сервиса отчетов, необходимый контроллеру
 type reportService interface {
 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)

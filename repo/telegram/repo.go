@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -123,7 +124,7 @@ func (r *Repo) setClient(tdlibClient *client.Client) {
 	r.client = tdlibClient
 	close(r.initClientDone)
 	// select {
-	// case _, ok := <-r.setClientDone:
+	// case _, ok := <-r.initClientDone:
 	// 	// r.log.Info("<-r.setClientDone", "ok", ok)
 	// 	if !ok {
 	// 		// r.log.Info("setClientDone closed")
@@ -131,7 +132,7 @@ func (r *Repo) setClient(tdlibClient *client.Client) {
 	// 	}
 	// default:
 	// 	// r.log.Info("Closing setClientDone")
-	// 	close(r.setClientDone)
+	// 	close(r.initClientDone)
 	// }
 }
 
@@ -145,6 +146,14 @@ func (r *Repo) Stop() error {
 		return err
 	}
 	r.client = nil
+	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
+	/*
+	   [ 0][t 1][1745435133.056575059][Status.h:371][&ptr_ != nullptr && get_info().static_flag]       0x0 -3
+	   signal: abort trap
+	   make: *** [run] Error 1
+	*/
+	// возможно, нужно дождаться закрытия клиента
+	time.Sleep(1 * time.Second)
 	return nil
 }
 
@@ -157,33 +166,3 @@ func (r *Repo) InitClientDone() chan any {
 func (r *Repo) AuthClientDone() chan any {
 	return r.authClientDone
 }
-
-// // GetMessage получает сообщение по идентификатору
-// func (r *Repo) GetMessage(chatID, messageID int64) (*client.Message, error) {
-// 	// Реализация будет добавлена позже
-// 	return &client.Message{}, nil
-// }
-
-// // SendTextMessage отправляет текстовое сообщение
-// func (r *Repo) SendMessage(chatID int64, text string) (*client.Message, error) {
-// 	// Реализация будет добавлена позже
-// 	return &client.Message{}, nil
-// }
-
-// // ForwardMessage пересылает сообщение
-// func (r *Repo) ForwardMessage(fromChatID, messageID int64, toChatID int64) (*client.Message, error) {
-// 	// Реализация будет добавлена позже
-// 	return &client.Message{}, nil
-// }
-
-// // DeleteMessage удаляет сообщение
-// func (r *Repo) DeleteMessage(chatID, messageID int64) error {
-// 	// Реализация будет добавлена позже
-// 	return nil
-// }
-
-// // EditMessage редактирует сообщение
-// func (r *Repo) EditMessage(chatID, messageID int64, text string) (*client.Message, error) {
-// 	// Реализация будет добавлена позже
-// 	return &client.Message{}, nil
-// }

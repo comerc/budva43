@@ -10,15 +10,12 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authTelegramController "github.com/comerc/budva43/controller/auth_telegram"
-	forwardController "github.com/comerc/budva43/controller/forward"
-	messageController "github.com/comerc/budva43/controller/message"
 	reportController "github.com/comerc/budva43/controller/report"
 	badgerRepo "github.com/comerc/budva43/repo/badger"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
 	engineService "github.com/comerc/budva43/service/engine"
 	filterService "github.com/comerc/budva43/service/filter"
-	forwardRuleService "github.com/comerc/budva43/service/forward_rule"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
 	reportService "github.com/comerc/budva43/service/report"
@@ -30,7 +27,6 @@ import (
 
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
-// TODO: доработать интерфейсы service/* для корректной работы с новым engine
 
 // Основная функция приложения
 func main() {
@@ -148,7 +144,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	// - Инициализация сервисов
 	messageService := messsageService.New()
-	forwardRuleService := forwardRuleService.New()
 	reportService := reportService.New()
 	authTelegramService := authTelegramService.New(telegramRepo)
 	filterService := filterService.New(messageService)
@@ -172,13 +167,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("engineService запущен")
 
 	// - Инициализация контроллеров
-	messageController := messageController.New(
-		messageService,
-	)
-	forwardController := forwardController.New(
-		forwardRuleService,
-		messageService,
-	)
 	reportController := reportController.New(
 		reportService,
 	)
@@ -189,10 +177,8 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация транспортных адаптеров
 
 	// botTransport := botTransport.New(
-	// 	messageController,
-	// 	forwardController,
 	// 	reportController,
-	// 	telegramRepo,
+	//  authTelegramController,
 	// )
 	// if err := botTransport.Start(ctx, cancel); err != nil {
 	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
@@ -201,8 +187,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// slog.Info("botTransport запущен")
 
 	cliTransport := cliTransport.New(
-		messageController,
-		forwardController,
 		reportController,
 		authTelegramController,
 	)
@@ -213,8 +197,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("cliTransport запущен")
 
 	webTransport := webTransport.New(
-		messageController,
-		forwardController,
 		reportController,
 		authTelegramController,
 	)
