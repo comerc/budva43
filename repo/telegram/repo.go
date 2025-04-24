@@ -136,8 +136,8 @@ func (r *Repo) setClient(tdlibClient *client.Client) {
 	// }
 }
 
-// Stop закрывает соединение с Telegram API
-func (r *Repo) Stop() error {
+// Close закрывает соединение с Telegram API
+func (r *Repo) Close() error {
 	if r.client == nil {
 		return nil
 	}

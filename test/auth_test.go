@@ -60,7 +60,7 @@ func TestAuth(t *testing.T) {
 	automator, err := util.NewCLIAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		automator.Stop()
+		automator.Close()
 	})
 	go automator.Run()
 
@@ -68,7 +68,7 @@ func TestAuth(t *testing.T) {
 	err = telegramRepo.Start(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := telegramRepo.Stop()
+		err := telegramRepo.Close()
 		require.NoError(t, err)
 	})
 
@@ -91,7 +91,7 @@ func TestAuth(t *testing.T) {
 	err = cliTransport.Start(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := cliTransport.Stop()
+		err := cliTransport.Close()
 		require.NoError(t, err)
 	})
 
@@ -102,7 +102,7 @@ func TestAuth(t *testing.T) {
 	err = webTransport.Start(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := webTransport.Stop()
+		err := webTransport.Close()
 		require.NoError(t, err)
 	})
 
