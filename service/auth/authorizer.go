@@ -1,4 +1,4 @@
-package auth_telegram
+package auth
 
 import (
 	"log/slog"
@@ -42,7 +42,7 @@ func NewAuthorizer(setClient func(*client.Client), shutdown func()) *Authorizer 
 	}
 
 	return &Authorizer{
-		log: slog.With("module", "service.auth_telegram.authorizer"),
+		log: slog.With("module", "service.auth.authorizer"),
 		//
 		setClient:       setClient,
 		shutdown:        shutdown,

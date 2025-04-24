@@ -1,4 +1,4 @@
-package auth_telegram
+package auth
 
 import (
 	"log/slog"

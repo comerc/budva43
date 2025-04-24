@@ -1,5 +1,4 @@
-// service/auth_telegram/service.go
-package auth_telegram
+package auth
 
 import (
 	"errors"
@@ -27,10 +26,10 @@ type Service struct {
 	authorizer   *Authorizer
 }
 
-// New создает новый экземпляр сервиса авторизации Telegram
+// New создает новый экземпляр сервиса авторизации
 func New(telegramRepo telegramRepo) *Service {
 	s := &Service{
-		log: slog.With("module", "service.auth_telegram"),
+		log: slog.With("module", "service.auth"),
 		//
 		telegramRepo: telegramRepo,
 	}

@@ -9,11 +9,11 @@ import (
 	"syscall"
 
 	config "github.com/comerc/budva43/config"
-	authTelegramController "github.com/comerc/budva43/controller/auth_telegram"
+	authController "github.com/comerc/budva43/controller/auth"
 	reportController "github.com/comerc/budva43/controller/report"
 	badgerRepo "github.com/comerc/budva43/repo/badger"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
-	authTelegramService "github.com/comerc/budva43/service/auth_telegram"
+	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
 	filterService "github.com/comerc/budva43/service/filter"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
@@ -145,7 +145,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация сервисов
 	messageService := messsageService.New()
 	reportService := reportService.New()
-	authTelegramService := authTelegramService.New(telegramRepo)
+	authService := authService.New(telegramRepo)
 	filterService := filterService.New(messageService)
 	transformService := transformService.New()
 	storageService := storageService.New(badgerRepo)
@@ -171,14 +171,14 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		reportService,
 	)
 
-	// Инициализация контроллера авторизации Telegram
-	authTelegramController := authTelegramController.New(authTelegramService)
+	// Инициализация контроллера авторизации
+	authController := authController.New(authService)
 
 	// - Инициализация транспортных адаптеров
 
 	// botTransport := botTransport.New(
 	// 	reportController,
-	//  authTelegramController,
+	//  authController,
 	// )
 	// if err := botTransport.Start(ctx, cancel); err != nil {
 	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
@@ -188,7 +188,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	cliTransport := cliTransport.New(
 		reportController,
-		authTelegramController,
+		authController,
 	)
 	if err := cliTransport.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
@@ -198,7 +198,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	webTransport := webTransport.New(
 		reportController,
-		authTelegramController,
+		authController,
 	)
 	if err := webTransport.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска webTransport: %w", err)
