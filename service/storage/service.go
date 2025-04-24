@@ -24,14 +24,16 @@ type storageRepo interface {
 
 // Service предоставляет методы для хранения данных, специфичных для engine
 type Service struct {
-	log  *slog.Logger
+	log *slog.Logger
+	//
 	repo storageRepo
 }
 
 // New создает новый экземпляр сервиса хранения данных
 func New(repo storageRepo) *Service {
 	return &Service{
-		log:  slog.With("module", "service.storage"),
+		log: slog.With("module", "service.storage"),
+		//
 		repo: repo,
 	}
 }

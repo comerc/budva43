@@ -13,21 +13,15 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-type ContentType string
+// TODO: почистить код, чтобы Клавдия меньше спотыкалась
+// TODO: надо пройти по коду в budva32 и прокоментировать каждый блок - куда перенесён
 
-const (
-	ContentTypeText      ContentType = "text"
-	ContentTypePhoto     ContentType = "photo"
-	ContentTypeVideo     ContentType = "video"
-	ContentTypeDocument  ContentType = "document"
-	ContentTypeAudio     ContentType = "audio"
-	ContentTypeAnimation ContentType = "animation"
-	ContentTypeVoice     ContentType = "voice"
-)
+type queueService interface {
+	Add(task func())
+}
 
 type messageService interface {
-	GetText(message *client.Message) string
-	GetCaption(message *client.Message) string
+	GetContent(message *client.Message) (*client.FormattedText, string)
 	IsSystemMessage(message *client.Message) bool
 	// GetContentType(message *client.Message) string
 	// SendMessage(chatID int64, text string) (*client.Message, error)
@@ -42,7 +36,7 @@ type messageService interface {
 }
 
 type filterService interface {
-	ShouldForward(message *client.Message, rule *entity.ForwardRule) (bool, error)
+	ShouldForward(text string, rule *entity.ForwardRule) (bool, error)
 }
 
 type transformService interface {
@@ -81,17 +75,18 @@ type telegramRepo interface {
 type Service struct {
 	log *slog.Logger
 	//
+	queueService       queueService
 	messageService     messageService
 	filterService      filterService
 	transformService   transformService
 	storageService     storageService
 	mediaAlbumsService mediaAlbumService
 	telegramRepo       telegramRepo
-	queue              chan func()
 }
 
 // New создает новый экземпляр сервиса engine
 func New(
+	queueService queueService,
 	messageService messageService,
 	filterService filterService,
 	transformService transformService,
@@ -102,13 +97,13 @@ func New(
 	return &Service{
 		log: slog.With("module", "service.engine"),
 		//
+		queueService:       queueService,
 		messageService:     messageService,
 		filterService:      filterService,
 		transformService:   transformService,
 		storageService:     storageService,
 		mediaAlbumsService: mediaAlbumsService,
 		telegramRepo:       telegramRepo,
-		queue:              make(chan func(), 100),
 	}
 }
 
@@ -122,8 +117,6 @@ func (s *Service) Start(ctx context.Context) error {
 	if err := s.validateConfig(); err != nil {
 		return fmt.Errorf("ошибка валидации конфигурации: %w", err)
 	}
-
-	go s.processQueue(ctx)
 
 	go func() {
 		// Ждем авторизации клиента
@@ -140,12 +133,11 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-// Stop останавливает сервис
-func (s *Service) Stop() error {
+// Close останавливает сервис
+func (s *Service) Close() error {
 	return nil
 
 	s.log.Info("Остановка сервиса engine")
-	close(s.queue)
 	return nil
 }
 
@@ -172,21 +164,6 @@ func (s *Service) validateConfig() error {
 	}
 
 	return nil
-}
-
-// Обрабатывает очередь отложенных задач
-func (s *Service) processQueue(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case fn, ok := <-s.queue:
-			if !ok {
-				return
-			}
-			fn()
-		}
-	}
 }
 
 // Обрабатывает обновления от Telegram
@@ -262,11 +239,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 		}
 	}
 
-	// Получаем текст сообщения
-	text := s.messageService.GetText(message)
-	if text == "" {
-		text = s.messageService.GetCaption(message)
-	}
+	formattedText, _ := s.messageService.GetContent(message)
 
 	// Обрабатываем каждое правило
 	for _, ruleData := range forwardRules {
@@ -274,7 +247,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 		rule := ruleData.rule
 
 		// Проверяем, должно ли сообщение быть переслано согласно фильтрам
-		shouldForward, err := s.filterService.ShouldForward(message, &rule)
+		shouldForward, err := s.filterService.ShouldForward(formattedText.Text, &rule)
 		if err != nil {
 			s.log.Error("Ошибка проверки фильтров", "err", err)
 			continue
@@ -288,16 +261,16 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 		// Обрабатываем сообщение в зависимости от типа
 		if message.MediaAlbumId == 0 {
 			// Одиночное сообщение
-			s.queue <- func() {
+			s.queueService.Add(func() {
 				s.processMessage([]*client.Message{message}, ruleData.ruleID, rule)
-			}
+			})
 		} else {
 			// Медиа-альбом
 			isFirstMessage := s.mediaAlbumsService.AddMessage(ruleData.ruleID, message)
 			if isFirstMessage {
-				s.queue <- func() {
-					s.handleMediaAlbum(ruleData.ruleID, message.MediaAlbumId)
-				}
+				s.queueService.Add(func() {
+					s.processMediaAlbum(ruleData.ruleID, message.MediaAlbumId)
+				})
 			}
 		}
 	}
@@ -316,7 +289,7 @@ func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) 
 	s.log.Debug("Обработка редактирования сообщения", "chatID", chatID, "messageID", messageID)
 
 	// Отправляем задачу в очередь
-	s.queue <- func() {
+	s.queueService.Add(func() {
 		// Формируем ключ для поиска скопированных сообщений
 		fromChatMessageID := fmt.Sprintf("%d:%d", chatID, messageID)
 
@@ -348,7 +321,7 @@ func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) 
 		for _, toChatMessageID := range toChatMessageIDs {
 			s.processSingleEdited(src, toChatMessageID)
 		}
-	}
+	})
 }
 
 // handleUpdateDeleteMessages обрабатывает обновление об удалении сообщений
@@ -369,7 +342,7 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 	s.log.Debug("Обработка удаления сообщений", "chatID", chatID, "messageIDs", messageIDs)
 
 	// Отправляем задачу в очередь
-	s.queue <- func() {
+	s.queueService.Add(func() {
 		// Обрабатываем каждое удаленное сообщение
 		for _, messageID := range messageIDs {
 			// Формируем ключ для поиска скопированных сообщений
@@ -394,7 +367,7 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 			// Удаляем соответствие между оригинальным и скопированными сообщениями
 			s.storageService.DeleteCopiedMessageIDs(fromChatMessageID)
 		}
-	}
+	})
 }
 
 // handleUpdateMessageSendSucceeded обрабатывает обновление об успешной отправке сообщения
@@ -410,12 +383,12 @@ func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageS
 		"oldMessageID", oldMessageID)
 
 	// Отправляем задачу в очередь
-	s.queue <- func() {
+	s.queueService.Add(func() {
 		// Сохраняем соответствие между временным и постоянным ID сообщения
 		if err := s.storageService.SetNewMessageID(chatID, oldMessageID, messageID); err != nil {
 			s.log.Error("Ошибка сохранения нового ID сообщения", "err", err)
 		}
-	}
+	})
 }
 
 // isChatSource проверяет, является ли чат источником для какого-либо правила
@@ -432,7 +405,7 @@ func isChatSource(chatID int64) (map[string]entity.ForwardRule, bool) {
 }
 
 // Обрабатывает медиа-альбом
-func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) {
+func (s *Service) processMediaAlbum(forwardKey string, albumID client.JsonInt64) {
 	s.log.Debug("Обработка медиа-альбома", "forwardKey", forwardKey, "albumID", albumID)
 
 	// Ждем, пока соберутся все сообщения альбома
@@ -441,7 +414,7 @@ func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) 
 	if diff < waitForMediaAlbum {
 		time.Sleep(waitForMediaAlbum - diff)
 		// Повторная проверка после ожидания, т.к. могли поступить новые сообщения
-		s.handleMediaAlbum(forwardKey, albumID)
+		s.processMediaAlbum(forwardKey, albumID)
 		return
 	}
 
@@ -471,7 +444,8 @@ func (s *Service) handleMediaAlbum(forwardKey string, albumID client.JsonInt64) 
 
 	// Проверяем, должны ли сообщения быть пересланы согласно фильтрам
 	srcMessage := messages[0]
-	shouldForward, err := s.filterService.ShouldForward(srcMessage, &rule)
+	formattedText, _ := s.messageService.GetContent(srcMessage)
+	shouldForward, err := s.filterService.ShouldForward(formattedText.Text, &rule)
 	if err != nil {
 		s.log.Error("Ошибка проверки фильтров", "err", err)
 		return
@@ -494,12 +468,6 @@ func (s *Service) processMessage(messages []*client.Message, forwardKey string, 
 		"messageID", src.Id,
 		"albumID", src.MediaAlbumId,
 		"forwardKey", forwardKey)
-
-	// Проверяем фильтры
-	text := s.messageService.GetText(src)
-	if text == "" {
-		text = s.messageService.GetCaption(src)
-	}
 
 	// Начинаем пересылку
 	for _, dstChatID := range rule.To {
@@ -609,7 +577,7 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatID, dstChat
 // sendCopyMessage отправляет копию одиночного сообщения
 func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Message, dstChatID int64, forwardKey string) (*client.Message, error) {
 	// Получаем текст сообщения
-	formattedText, contentType := s.getMessageContent(message)
+	formattedText, contentType := s.messageService.GetContent(message)
 	if contentType == "" {
 		return nil, fmt.Errorf("неподдерживаемый тип сообщения")
 	}
@@ -632,11 +600,11 @@ func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Me
 	var inputContent client.InputMessageContent
 
 	switch contentType {
-	case ContentTypeText:
+	case client.TypeMessageText:
 		inputContent = &client.InputMessageText{
 			Text: formattedText,
 		}
-	case ContentTypePhoto:
+	case client.TypeMessagePhoto:
 		content := message.Content.(*client.MessagePhoto)
 		inputContent = &client.InputMessagePhoto{
 			Photo: &client.InputFileRemote{
@@ -644,7 +612,7 @@ func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Me
 			},
 			Caption: formattedText,
 		}
-	case ContentTypeVideo:
+	case client.TypeMessageVideo:
 		content := message.Content.(*client.MessageVideo)
 		inputContent = &client.InputMessageVideo{
 			Video: &client.InputFileRemote{
@@ -652,7 +620,7 @@ func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Me
 			},
 			Caption: formattedText,
 		}
-	case ContentTypeDocument:
+	case client.TypeMessageDocument:
 		content := message.Content.(*client.MessageDocument)
 		inputContent = &client.InputMessageDocument{
 			Document: &client.InputFileRemote{
@@ -660,7 +628,7 @@ func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Me
 			},
 			Caption: formattedText,
 		}
-	// Другие типы будут добавлены по мере необходимости
+	// TODO: перенести реализацию на остальные поддерживаемые типы
 	default:
 		return nil, fmt.Errorf("неподдерживаемый тип сообщения: %s", contentType)
 	}
@@ -677,7 +645,7 @@ func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.M
 	contents := make([]client.InputMessageContent, 0, len(messages))
 
 	for i, message := range messages {
-		formattedText, contentType := s.getMessageContent(message)
+		formattedText, contentType := s.messageService.GetContent(message)
 		if contentType == "" {
 			continue
 		}
@@ -701,7 +669,7 @@ func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.M
 		var inputContent client.InputMessageContent
 
 		switch contentType {
-		case ContentTypePhoto:
+		case client.TypeMessagePhoto:
 			content := message.Content.(*client.MessagePhoto)
 			inputContent = &client.InputMessagePhoto{
 				Photo: &client.InputFileRemote{
@@ -709,7 +677,7 @@ func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.M
 				},
 				Caption: formattedText,
 			}
-		case ContentTypeVideo:
+		case client.TypeMessageVideo:
 			content := message.Content.(*client.MessageVideo)
 			inputContent = &client.InputMessageVideo{
 				Video: &client.InputFileRemote{
@@ -735,66 +703,16 @@ func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.M
 	})
 }
 
-// getMessageContent извлекает содержимое сообщения
-func (s *Service) getMessageContent(message *client.Message) (*client.FormattedText, ContentType) {
-	var formattedText *client.FormattedText
-	var contentType ContentType
-
-	switch content := message.Content.(type) {
-	case *client.MessageText:
-		formattedText = content.Text
-		contentType = ContentTypeText
-	case *client.MessagePhoto:
-		formattedText = content.Caption
-		contentType = ContentTypePhoto
-	case *client.MessageVideo:
-		formattedText = content.Caption
-		contentType = ContentTypeVideo
-	case *client.MessageDocument:
-		formattedText = content.Caption
-		contentType = ContentTypeDocument
-	case *client.MessageAudio:
-		formattedText = content.Caption
-		contentType = ContentTypeAudio
-	case *client.MessageAnimation:
-		formattedText = content.Caption
-		contentType = ContentTypeAnimation
-	case *client.MessageVoiceNote:
-		formattedText = content.Caption
-		contentType = ContentTypeVoice
-	default:
-		formattedText = &client.FormattedText{}
-		return nil, ""
-	}
-
-	return formattedText, contentType
-}
-
 // matchesMediaContent проверяет, соответствует ли содержимое двух сообщений
 func (s *Service) matchesMediaContent(src, dst *client.Message) bool {
-	if src == nil || dst == nil || src.Content == nil || dst.Content == nil {
+	srcFormattedText, srcContentType := s.messageService.GetContent(src)
+	dstFormattedText, dstContentType := s.messageService.GetContent(dst)
+
+	if srcContentType == "" || srcContentType != dstContentType {
 		return false
 	}
 
-	_, srcType := s.getMessageContent(src)
-	_, dstType := s.getMessageContent(dst)
-
-	if srcType != dstType {
-		return false
-	}
-
-	// Для текстовых сообщений сравниваем сам текст
-	if srcType == ContentTypeText {
-		srcText := s.messageService.GetText(src)
-		dstText := s.messageService.GetText(dst)
-		return srcText == dstText
-	}
-
-	// Для медиа сравниваем подпись, если они есть
-	srcCaption := s.messageService.GetCaption(src)
-	dstCaption := s.messageService.GetCaption(dst)
-
-	return srcCaption == dstCaption
+	return srcFormattedText.Text == dstFormattedText.Text
 }
 
 // processSingleEdited обрабатывает редактирование сообщения
@@ -841,7 +759,7 @@ func (s *Service) processSingleEdited(message *client.Message, toChatMessageID s
 	}
 
 	// Получаем контент сообщения
-	formattedText, contentType := s.getMessageContent(srcMessage)
+	formattedText, contentType := s.messageService.GetContent(srcMessage)
 	if contentType == "" {
 		s.log.Error("Неподдерживаемый тип сообщения при редактировании")
 		return
@@ -857,7 +775,7 @@ func (s *Service) processSingleEdited(message *client.Message, toChatMessageID s
 
 	// В зависимости от типа контента, применяем соответствующее редактирование
 	switch contentType {
-	case ContentTypeText:
+	case client.TypeMessageText:
 		// Редактирование текста
 		_, err = tdlibClient.EditMessageText(&client.EditMessageTextRequest{
 			ChatId:    dstChatID,
@@ -866,7 +784,17 @@ func (s *Service) processSingleEdited(message *client.Message, toChatMessageID s
 				Text: formattedText,
 			},
 		})
-	case ContentTypePhoto, ContentTypeVideo, ContentTypeDocument, ContentTypeAudio, ContentTypeAnimation, ContentTypeVoice:
+	case client.TypeMessagePhoto:
+		// TODO: почему только тут применяется getInputMessageContent() ?
+		content := getInputMessageContent(srcMessage.Content, formattedText, contentType)
+		_, err = tdlibClient.EditMessageMedia(&client.EditMessageMediaRequest{
+			ChatId:              dstChatID,
+			MessageId:           dstMessageID,
+			InputMessageContent: content,
+		})
+	case client.TypeMessageVideo, client.TypeMessageDocument, client.TypeMessageAudio, client.TypeMessageAnimation:
+		// TODO: реализовать?
+	case client.TypeMessageVoiceNote:
 		// Редактирование подписи медиа
 		_, err = tdlibClient.EditMessageCaption(&client.EditMessageCaptionRequest{
 			ChatId:    dstChatID,
@@ -959,4 +887,114 @@ func parseToChatMessageID(toChatMessageID string) (ruleID string, chatID int64, 
 	}
 
 	return ruleID, int64(chatIDInt), int64(messageIDInt), nil
+}
+
+// TODO: ?? перенести в service/message/service.go ??
+func getInputMessageContent(messageContent client.MessageContent, formattedText *client.FormattedText, contentType string) client.InputMessageContent {
+	switch contentType {
+	case client.TypeMessageText:
+		// TODO: messageText := messageContent.(*client.MessageText) // при переносе budva32 не работает?
+		return &client.InputMessageText{
+			Text: formattedText,
+			// TODO: DisableWebPagePreview: messageText.WebPage == nil || messageText.WebPage.Url == "", // при переносе budva32 теперь не работает?
+			ClearDraft: true,
+		}
+	case client.TypeMessageAnimation:
+		messageAnimation := messageContent.(*client.MessageAnimation)
+		return &client.InputMessageAnimation{
+			Animation: &client.InputFileRemote{
+				Id: messageAnimation.Animation.Animation.Remote.Id,
+			},
+			// TODO: AddedStickerFileIds , // if applicable?
+			Duration: messageAnimation.Animation.Duration,
+			Width:    messageAnimation.Animation.Width,
+			Height:   messageAnimation.Animation.Height,
+			Caption:  formattedText,
+		}
+	case client.TypeMessageAudio:
+		messageAudio := messageContent.(*client.MessageAudio)
+		return &client.InputMessageAudio{
+			Audio: &client.InputFileRemote{
+				Id: messageAudio.Audio.Audio.Remote.Id,
+			},
+			AlbumCoverThumbnail: getInputThumbnail(messageAudio.Audio.AlbumCoverThumbnail),
+			Title:               messageAudio.Audio.Title,
+			Duration:            messageAudio.Audio.Duration,
+			Performer:           messageAudio.Audio.Performer,
+			Caption:             formattedText,
+		}
+	case client.TypeMessageDocument:
+		messageDocument := messageContent.(*client.MessageDocument)
+		return &client.InputMessageDocument{
+			Document: &client.InputFileRemote{
+				Id: messageDocument.Document.Document.Remote.Id,
+			},
+			Thumbnail: getInputThumbnail(messageDocument.Document.Thumbnail),
+			Caption:   formattedText,
+		}
+	case client.TypeMessagePhoto:
+		messagePhoto := messageContent.(*client.MessagePhoto)
+		return &client.InputMessagePhoto{
+			Photo: &client.InputFileRemote{
+				Id: messagePhoto.Photo.Sizes[0].Photo.Remote.Id,
+			},
+			// Thumbnail: , // https://github.com/tdlib/td/issues/1505
+			// A: if you use InputFileRemote, then there is no way to change the thumbnail, so there are no reasons to specify it.
+			// TODO: AddedStickerFileIds: ,
+			Width:   messagePhoto.Photo.Sizes[0].Width,
+			Height:  messagePhoto.Photo.Sizes[0].Height,
+			Caption: formattedText,
+			// Ttl: ,
+		}
+	case client.TypeMessageVideo:
+		messageVideo := messageContent.(*client.MessageVideo)
+		// TODO: https://github.com/tdlib/td/issues/1504
+		// var stickerSets *client.StickerSets
+		// var AddedStickerFileIds []int32 // ????
+		// if messageVideo.Video.HasStickers {
+		// 	var err error
+		// 	stickerSets, err = tdlibClient.GetAttachedStickerSets(&client.GetAttachedStickerSetsRequest{
+		// 		FileId: messageVideo.Video.Video.Id,
+		// 	})
+		// 	if err != nil {
+		// 		log.Print("GetAttachedStickerSets > ", err)
+		// 	}
+		// }
+		return &client.InputMessageVideo{
+			Video: &client.InputFileRemote{
+				Id: messageVideo.Video.Video.Remote.Id,
+			},
+			Thumbnail: getInputThumbnail(messageVideo.Video.Thumbnail),
+			// TODO: AddedStickerFileIds: ,
+			Duration:          messageVideo.Video.Duration,
+			Width:             messageVideo.Video.Width,
+			Height:            messageVideo.Video.Height,
+			SupportsStreaming: messageVideo.Video.SupportsStreaming,
+			Caption:           formattedText,
+			// Ttl: ,
+		}
+	case client.TypeMessageVoiceNote:
+		return &client.InputMessageVoiceNote{
+			// TODO: support ContentModeVoiceNote
+			// VoiceNote: ,
+			// Duration: ,
+			// Waveform: ,
+			Caption: formattedText,
+		}
+	}
+	return nil
+}
+
+// TODO: ?? перенести в service/message/service.go ??
+func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
+	if thumbnail == nil || thumbnail.File == nil && thumbnail.File.Remote == nil {
+		return nil
+	}
+	return &client.InputThumbnail{
+		Thumbnail: &client.InputFileRemote{
+			Id: thumbnail.File.Remote.Id,
+		},
+		Width:  thumbnail.Width,
+		Height: thumbnail.Height,
+	}
 }

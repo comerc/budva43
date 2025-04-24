@@ -18,7 +18,8 @@ type MediaAlbum struct {
 
 // Service управляет медиа-альбомами
 type Service struct {
-	log         *slog.Logger
+	log *slog.Logger
+	//
 	mu          sync.Mutex
 	mediaAlbums map[string]*MediaAlbum
 }
@@ -26,7 +27,8 @@ type Service struct {
 // New создает новый сервис для управления медиа-альбомами
 func New() *Service {
 	return &Service{
-		log:         slog.With("module", "service.media_album"),
+		log: slog.With("module", "service.media_album"),
+		//
 		mediaAlbums: make(map[string]*MediaAlbum),
 	}
 }

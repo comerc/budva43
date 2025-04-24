@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -18,6 +19,7 @@ import (
 	filterService "github.com/comerc/budva43/service/filter"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
+	queueService "github.com/comerc/budva43/service/queue"
 	reportService "github.com/comerc/budva43/service/report"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
@@ -97,9 +99,9 @@ func (e *errSet) Error() string {
 type shutdownCallback func() error
 
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
-func gracefulShutdown(componentName string, errSet *errSet, callback shutdownCallback) {
+func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
 	slog.Info("Останавливаем компонент", "компонент", componentName)
-	if err := callback(); err != nil {
+	if err := closer.Close(); err != nil {
 		slog.Error(
 			"Ошибка при остановке компонента",
 			"компонент", componentName,
@@ -131,7 +133,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err := badgerRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска badgerRepo: %w", err)
 	}
-	defer gracefulShutdown("badgerRepo", errSet, badgerRepo.Stop)
+	defer gracefulShutdown("badgerRepo", errSet, badgerRepo)
 	slog.Info("badgerRepo запущен")
 
 	// Создаем и запускаем репозиторий Telegram
@@ -139,20 +141,25 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err := telegramRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
-	defer gracefulShutdown("telegramRepo", errSet, telegramRepo.Stop)
+	defer gracefulShutdown("telegramRepo", errSet, telegramRepo)
 	slog.Info("telegramRepo запущен")
 
 	// - Инициализация сервисов
 	messageService := messsageService.New()
 	reportService := reportService.New()
 	authService := authService.New(telegramRepo)
-	filterService := filterService.New(messageService)
+	filterService := filterService.New()
 	transformService := transformService.New()
 	storageService := storageService.New(badgerRepo)
 	mediaAlbumService := mediaAlbumService.New()
-	// Инициализация сервиса engine для форвардинга в стиле budva32
-	// TODO: Для корректной работы нужно доработать интерфейсы существующих сервисов
+	queueService := queueService.New()
+	if err := queueService.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска queueService: %w", err)
+	}
+	defer gracefulShutdown("queueService", errSet, queueService)
+	slog.Info("queueService запущен")
 	engineService := engineService.New(
+		queueService,
 		messageService,
 		filterService,
 		transformService,
@@ -163,7 +170,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err := engineService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)
 	}
-	defer gracefulShutdown("engineService", errSet, engineService.Stop)
+	defer gracefulShutdown("engineService", errSet, engineService)
 	slog.Info("engineService запущен")
 
 	// - Инициализация контроллеров
@@ -183,7 +190,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// if err := botTransport.Start(ctx, cancel); err != nil {
 	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
 	// }
-	// defer gracefulShutdown("botTransport", errSet, botTransport.Stop)
+	// defer gracefulShutdown("botTransport", errSet, botTransport)
 	// slog.Info("botTransport запущен")
 
 	cliTransport := cliTransport.New(
@@ -193,7 +200,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err := cliTransport.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
 	}
-	defer gracefulShutdown("cliTransport", errSet, cliTransport.Stop)
+	defer gracefulShutdown("cliTransport", errSet, cliTransport)
 	slog.Info("cliTransport запущен")
 
 	webTransport := webTransport.New(
@@ -203,7 +210,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	if err := webTransport.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска webTransport: %w", err)
 	}
-	defer gracefulShutdown("webTransport", errSet, webTransport.Stop)
+	defer gracefulShutdown("webTransport", errSet, webTransport)
 	slog.Info("webTransport запущен")
 
 	// Ожидаем завершения контекста

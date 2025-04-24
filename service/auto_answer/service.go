@@ -5,14 +5,10 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-
-	"github.com/zelenin/go-tdlib/client"
 )
 
-type messageService interface {
-	GetText(message *client.Message) string
-	GetCaption(message *client.Message) string
-}
+// TODO: упростить функциональность, как было в budva32
+// TODO: применить в service/engine/service.go
 
 // MessageMatcher интерфейс для сопоставления сообщений
 type MessageMatcher interface {
@@ -74,20 +70,18 @@ type Rule struct {
 type Service struct {
 	log *slog.Logger
 	//
-	messageService messageService
-	rules          []*Rule
-	rulesByName    map[string]*Rule
-	mutex          sync.RWMutex
+	rules       []*Rule
+	rulesByName map[string]*Rule
+	mutex       sync.RWMutex
 }
 
 // New создает новый экземпляр сервиса для автоматических ответов
-func New(messageService messageService) *Service {
+func New() *Service {
 	return &Service{
 		log: slog.With("module", "service.auto_answer"),
 		//
-		messageService: messageService,
-		rules:          make([]*Rule, 0),
-		rulesByName:    make(map[string]*Rule),
+		rules:       make([]*Rule, 0),
+		rulesByName: make(map[string]*Rule),
 	}
 }
 
@@ -167,12 +161,7 @@ func (s *Service) DisableRule(name string) bool {
 }
 
 // ProcessMessage обрабатывает сообщение и возвращает автоответ, если есть подходящее правило
-func (s *Service) ProcessMessage(message *client.Message, isPrivate bool) (string, bool) {
-	// Получаем текст сообщения
-	text := s.messageService.GetText(message)
-	if text == "" {
-		text = s.messageService.GetCaption(message)
-	}
+func (s *Service) ProcessMessage(text string, isPrivate bool) (string, bool) {
 	if text == "" {
 		return "", false
 	}
