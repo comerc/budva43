@@ -25,21 +25,21 @@ type Source struct {
 	// ID идентификатор чата-источника
 	ID int64
 	// Sign настройки подписи для сообщений из этого источника
-	Sign *SignSettings
+	Sign *Sign
 	// Link настройки ссылки на источник
-	Link *LinkSettings
+	Link *Link
 }
 
-// SignSettings представляет настройки подписи для сообщений
-type SignSettings struct {
+// Sign представляет настройки подписи для сообщений
+type Sign struct {
 	// Title текст подписи (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется подпись
 	For []int64
 }
 
-// LinkSettings представляет настройки ссылки на источник сообщений
-type LinkSettings struct {
+// Link представляет настройки ссылки на источник сообщений
+type Link struct {
 	// Title текст ссылки (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется ссылка

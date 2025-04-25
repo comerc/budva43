@@ -13,17 +13,16 @@ import (
 	"golang.org/x/term"
 
 	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/entity"
 	"github.com/comerc/budva43/util"
 )
 
 // TODO: не нравится, что нужно вводить auth для каждого последующего шага
 
-type reportController interface {
-	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
-	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
-	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
-}
+// type reportController interface {
+// 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
+// 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
+// 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
+// }
 
 type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
@@ -37,11 +36,11 @@ type authTelegramController interface {
 type Transport struct {
 	log *slog.Logger
 	//
-	reportController reportController
-	authController   authTelegramController
-	scanner          *bufio.Scanner
-	commands         []command
-	commandMap       map[string]*command
+	// reportController reportController
+	authController authTelegramController
+	scanner        *bufio.Scanner
+	commands       []command
+	commandMap     map[string]*command
 }
 
 // command представляет команду CLI
@@ -53,16 +52,16 @@ type command struct {
 
 // New создает новый экземпляр CLI
 func New(
-	reportController reportController,
+	// reportController reportController,
 	authController authTelegramController,
 ) *Transport {
 	cli := &Transport{
 		log: slog.With("module", "transport.cli"),
 		//
-		reportController: reportController,
-		authController:   authController,
-		scanner:          bufio.NewScanner(os.Stdin),
-		commands:         []command{},
+		// reportController: reportController,
+		authController: authController,
+		scanner:        bufio.NewScanner(os.Stdin),
+		commands:       []command{},
 	}
 
 	// Регистрация команд
@@ -84,11 +83,11 @@ func (t *Transport) registerCommands() {
 			description: "Выйти из программы",
 			handler:     t.handleExit,
 		},
-		{
-			name:        "report",
-			description: "Генерация отчетов: activity, forwarding, error",
-			handler:     t.handleReport,
-		},
+		// {
+		// 	name:        "report",
+		// 	description: "Генерация отчетов: activity, forwarding, error",
+		// 	handler:     t.handleReport,
+		// },
 		{
 			name:        "auth",
 			description: "Запустить процесс авторизации в Telegram",
@@ -186,47 +185,47 @@ func (t *Transport) handleExit(args []string) error {
 	return fmt.Errorf("exit")
 }
 
-// handleReport обрабатывает команду report
-func (t *Transport) handleReport(args []string) error {
-	if len(args) == 0 {
-		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
-		return nil
-	}
+// // handleReport обрабатывает команду report
+// func (t *Transport) handleReport(args []string) error {
+// 	if len(args) == 0 {
+// 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
+// 		return nil
+// 	}
 
-	reportType := args[0]
-	days := 7
-	if len(args) > 1 {
-		if _, err := fmt.Sscanf(args[1], "%d", &days); err != nil {
-			fmt.Println("Используется период по умолчанию (7 дней)")
-		}
-	}
+// 	reportType := args[0]
+// 	days := 7
+// 	if len(args) > 1 {
+// 		if _, err := fmt.Sscanf(args[1], "%d", &days); err != nil {
+// 			fmt.Println("Используется период по умолчанию (7 дней)")
+// 		}
+// 	}
 
-	// Получаем даты для отчета
-	endDate := time.Now()
-	startDate := endDate.AddDate(0, 0, -days)
+// 	// Получаем даты для отчета
+// 	endDate := time.Now()
+// 	startDate := endDate.AddDate(0, 0, -days)
 
-	fmt.Printf("Генерация отчета '%s' за период %s - %s...\n",
-		reportType, startDate.Format("02.01.2006"), endDate.Format("02.01.2006"))
+// 	fmt.Printf("Генерация отчета '%s' за период %s - %s...\n",
+// 		reportType, startDate.Format("02.01.2006"), endDate.Format("02.01.2006"))
 
-	var err error
-	switch reportType {
-	case "activity":
-		_, err = t.reportController.GenerateActivityReport(startDate, endDate)
-	case "forwarding":
-		_, err = t.reportController.GenerateForwardingReport(startDate, endDate)
-	case "error":
-		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
-	default:
-		return fmt.Errorf("неизвестный тип отчета: %s. Доступные: activity, forwarding, error", reportType)
-	}
+// 	var err error
+// 	switch reportType {
+// 	case "activity":
+// 		_, err = t.reportController.GenerateActivityReport(startDate, endDate)
+// 	case "forwarding":
+// 		_, err = t.reportController.GenerateForwardingReport(startDate, endDate)
+// 	case "error":
+// 		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
+// 	default:
+// 		return fmt.Errorf("неизвестный тип отчета: %s. Доступные: activity, forwarding, error", reportType)
+// 	}
 
-	if err != nil {
-		return fmt.Errorf("ошибка при генерации отчета: %w", err)
-	}
+// 	if err != nil {
+// 		return fmt.Errorf("ошибка при генерации отчета: %w", err)
+// 	}
 
-	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
-	return nil
-}
+// 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
+// 	return nil
+// }
 
 // handleAuth обрабатывает команду auth
 func (t *Transport) handleAuth(args []string) error {

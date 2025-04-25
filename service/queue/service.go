@@ -5,6 +5,10 @@ import (
 	"log/slog"
 )
 
+// TODO: очередь задач должна быть реализована на основе "container/list"
+// с паузами между задачами, чтобы tdlibClient успевал обрабатывать другие события
+// (см. старую реализацию в _budva32/main0.go)
+
 // Service предоставляет функциональность асинхронной очереди задач
 type Service struct {
 	log *slog.Logger
@@ -17,7 +21,7 @@ func New() *Service {
 	return &Service{
 		log: slog.With("module", "service.queue"),
 		//
-		queue: make(chan func(), 100),
+		queue: make(chan func(), 100), // TODO: в старой реализации не было ограничения на размер очереди
 	}
 }
 

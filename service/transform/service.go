@@ -1,9 +1,9 @@
 package text_transform
 
 import (
-	"fmt"
 	"log/slog"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -133,184 +133,42 @@ func (s *Service) EscapeMarkdown(text string) string {
 }
 
 // ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
-func (s *Service) ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error {
-	if text == nil {
-		return nil
-	}
-
-	// Получаем настройки замены ссылок
-	settings, ok := config.Engine.ReplaceMyselfLinks[dstChatID]
-	if !ok {
-		return nil
-	}
-
-	// Заменяем ссылки на текущего бота
-	// Сначала соберем индексы сущностей, которые нужно удалить
-	entitiesToRemove := []int{}
-	for i, entity := range text.Entities {
-		if entity.Type == nil {
-			continue
-		}
-
-		// Проверяем, является ли сущность ссылкой
-		textLink, ok := entity.Type.(*client.TextEntityTypeTextUrl)
-		if !ok {
-			continue
-		}
-
-		// Заменяем ссылки на текущего бота
-		if strings.Contains(textLink.Url, fmt.Sprintf("t.me/c/%d", srcChatID)) {
-			// Заменяем ссылку на ссылку с целевым чатом
-			textLink.Url = strings.Replace(textLink.Url,
-				fmt.Sprintf("t.me/c/%d", srcChatID),
-				fmt.Sprintf("t.me/c/%d", dstChatID), 1)
-			text.Entities[i].Type = textLink
-		} else if settings.DeleteExternal {
-			// Отмечаем внешние ссылки для удаления, если такая настройка включена
-			entitiesToRemove = append(entitiesToRemove, i)
-		}
-	}
-
-	// Удаляем отмеченные сущности в обратном порядке,
-	// чтобы не сбить индексы
-	for i := len(entitiesToRemove) - 1; i >= 0; i-- {
-		idx := entitiesToRemove[i]
-		entity := text.Entities[idx]
-
-		// Удаляем текстовую ссылку из текста
-		offset := entity.Offset
-		length := entity.Length
-		text.Text = text.Text[:offset] + text.Text[offset+length:]
-
-		// Корректируем смещения остальных сущностей
-		for j := idx + 1; j < len(text.Entities); j++ {
-			if text.Entities[j].Offset > offset {
-				text.Entities[j].Offset -= length
-			}
-		}
-
-		// Удаляем сущность
-		text.Entities = append(text.Entities[:idx], text.Entities[idx+1:]...)
-	}
-
+func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatID, dstChatID int64) error {
+	// TODO: выполнить корректный перенос из budva32
 	return nil
 }
 
 // ReplaceFragments заменяет фрагменты текста согласно настройкам
-func (s *Service) ReplaceFragments(text *client.FormattedText, dstChatID int64) error {
-	if text == nil {
-		return nil
-	}
-
-	// Получаем настройки замены фрагментов
-	settings, ok := config.Engine.ReplaceFragments[dstChatID]
-	if !ok {
-		return nil
-	}
-
-	// Заменяем фрагменты текста
-	for from, to := range settings.Replacements {
-		if from == "" {
-			continue
-		}
-
-		// Проверяем, что длины строк совпадают для корректной замены
-		if len([]rune(from)) != len([]rune(to)) {
-			s.log.Warn("Длина исходного и заменяемого текста не совпадает, пропускаем замену",
-				"from", from,
-				"to", to)
-			continue
-		}
-
-		// Заменяем все вхождения фрагмента
-		text.Text = strings.ReplaceAll(text.Text, from, to)
-	}
-
+func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatID int64) error {
+	// TODO: выполнить корректный перенос из budva32
 	return nil
 }
 
-// AddSourceSign добавляет подпись источника к тексту
-func (s *Service) AddSourceSign(text *client.FormattedText, srcChatID int64, dstChatID int64) error {
-	if text == nil {
-		return nil
-	}
-
-	// Ищем источник в конфигурации
-	source, ok := config.Engine.Sources[srcChatID]
-	if !ok || source.Sign == nil {
-		return nil
-	}
-
-	// Проверяем, нужно ли добавлять подпись для этого чата
-	needSign := false
-	for _, chatID := range source.Sign.For {
-		if chatID == dstChatID {
-			needSign = true
-			break
-		}
-	}
-
-	if !needSign {
-		return nil
-	}
-
-	// Добавляем подпись к тексту
-	if text.Text != "" {
-		text.Text += "\n\n"
-	}
-	text.Text += source.Sign.Title
-
+// addSourceSign добавляет подпись источника к тексту
+func (s *Service) addSourceSign(formattedText *client.FormattedText, title string) error {
+	// TODO: выполнить корректный перенос из budva32
 	return nil
 }
 
-// AddSourceLink добавляет ссылку на источник к тексту
-func (s *Service) AddSourceLink(text *client.FormattedText, srcChatID int64, dstChatID int64, messageID int64) error {
-	if text == nil {
-		return nil
-	}
+// addSourceLink добавляет ссылку на источник к тексту
+func (s *Service) addSourceLink(formattedText *client.FormattedText, title string, message *client.Message) error {
+	// TODO: выполнить корректный перенос из budva32
+	return nil
+}
 
-	// Ищем источник в конфигурации
-	source, ok := config.Engine.Sources[srcChatID]
-	if !ok || source.Link == nil {
-		return nil
-	}
-
-	// Проверяем, нужно ли добавлять ссылку для этого чата
-	needLink := false
-	for _, chatID := range source.Link.For {
-		if chatID == dstChatID {
-			needLink = true
-			break
+// AddSources добавляет подпись и ссылку на источник к тексту
+func (s *Service) AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error {
+	if source, ok := config.Engine.Sources[message.ChatId]; ok {
+		if slices.Contains(source.Sign.For, dstChatId) {
+			return s.addSourceSign(formattedText, source.Sign.Title)
+		} else if slices.Contains(source.Link.For, dstChatId) {
+			return s.addSourceLink(formattedText, source.Link.Title, message)
 		}
 	}
-
-	if !needLink {
-		return nil
-	}
-
-	// Добавляем ссылку к тексту
-	if text.Text != "" {
-		text.Text += "\n\n"
-	}
-
-	// Добавляем текст ссылки
-	linkText := source.Link.Title
-	linkStart := len([]rune(text.Text))
-	text.Text += linkText
-
-	// Создаем сущность-ссылку
-	linkLength := len([]rune(linkText))
-
-	entity := &client.TextEntity{
-		Offset: int32(linkStart),  //nolint // нереально переполнить int32
-		Length: int32(linkLength), //nolint // нереально переполнить int32
-		Type: &client.TextEntityTypeTextUrl{
-			Url: fmt.Sprintf("https://t.me/c/%d/%d", srcChatID, messageID),
-		},
-	}
-
-	// Добавляем сущность в текст
-	text.Entities = append(text.Entities, entity)
-
 	return nil
+}
+
+// AddAutoAnswer добавляет ответ на сообщение
+func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
+	// TODO: выполнить корректный перенос из budva32
 }
