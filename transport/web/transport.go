@@ -11,14 +11,13 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/entity"
 )
 
-type reportController interface {
-	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
-	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
-	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
-}
+// type reportController interface {
+// 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
+// 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
+// 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
+// }
 
 type authTelegramController interface {
 	SubmitPhoneNumber(phone string)
@@ -31,30 +30,30 @@ type authTelegramController interface {
 type Transport struct {
 	log *slog.Logger
 	//
-	reportController reportController
-	authController   authTelegramController
-	authClients      map[string]chan client.AuthorizationState
-	server           *http.Server
+	// reportController reportController
+	authController authTelegramController
+	authClients    map[string]chan client.AuthorizationState
+	server         *http.Server
 }
 
 // New создает новый экземпляр HTTP маршрутизатора
 func New(
-	reportController reportController,
+	// reportController reportController,
 	authController authTelegramController,
 ) *Transport {
 	return &Transport{
 		log: slog.With("module", "transport.web"),
 		//
-		reportController: reportController,
-		authController:   authController,
-		authClients:      make(map[string]chan client.AuthorizationState),
+		// reportController: reportController,
+		authController: authController,
+		authClients:    make(map[string]chan client.AuthorizationState),
 	}
 }
 
 // setupRoutes настраивает HTTP маршруты
 func (t *Transport) setupRoutes(mux *http.ServeMux) {
 	// Маршруты для отчетов
-	mux.HandleFunc("/api/reports", t.handleReports)
+	// mux.HandleFunc("/api/reports", t.handleReports)
 
 	// Маршруты для авторизации Telegram
 	mux.HandleFunc("/api/auth/telegram/state", t.handleAuthState)
@@ -90,77 +89,77 @@ func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
 	}
 }
 
-// handleReports обрабатывает запросы для работы с отчетами
-func (t *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
-	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+// // handleReports обрабатывает запросы для работы с отчетами
+// func (t *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
+// 	var err error
+// 	defer t.logHandler(&err, time.Now(), "handleMessages")
 
-	if req.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+// 	if req.Method != http.MethodGet {
+// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 		return
+// 	}
 
-	// Получаем параметры запроса
-	query := req.URL.Query()
+// 	// Получаем параметры запроса
+// 	query := req.URL.Query()
 
-	reportType := query.Get("type")
-	if reportType == "" {
-		http.Error(w, "Missing type parameter", http.StatusBadRequest)
-		return
-	}
+// 	reportType := query.Get("type")
+// 	if reportType == "" {
+// 		http.Error(w, "Missing type parameter", http.StatusBadRequest)
+// 		return
+// 	}
 
-	startDateStr := query.Get("start_date")
-	endDateStr := query.Get("end_date")
+// 	startDateStr := query.Get("start_date")
+// 	endDateStr := query.Get("end_date")
 
-	// Парсим даты
-	var startDate, endDate time.Time
+// 	// Парсим даты
+// 	var startDate, endDate time.Time
 
-	if startDateStr != "" {
-		startDate, err = time.Parse("2006-01-02", startDateStr)
-		if err != nil {
-			http.Error(w, "Invalid start_date format. Use YYYY-MM-DD", http.StatusBadRequest)
-			return
-		}
-	} else {
-		startDate = time.Now().AddDate(0, 0, -7) // По умолчанию - неделя назад
-	}
+// 	if startDateStr != "" {
+// 		startDate, err = time.Parse("2006-01-02", startDateStr)
+// 		if err != nil {
+// 			http.Error(w, "Invalid start_date format. Use YYYY-MM-DD", http.StatusBadRequest)
+// 			return
+// 		}
+// 	} else {
+// 		startDate = time.Now().AddDate(0, 0, -7) // По умолчанию - неделя назад
+// 	}
 
-	if endDateStr != "" {
-		endDate, err = time.Parse("2006-01-02", endDateStr)
-		if err != nil {
-			http.Error(w, "Invalid end_date format. Use YYYY-MM-DD", http.StatusBadRequest)
-			return
-		}
-	} else {
-		endDate = time.Now() // По умолчанию - текущая дата
-	}
+// 	if endDateStr != "" {
+// 		endDate, err = time.Parse("2006-01-02", endDateStr)
+// 		if err != nil {
+// 			http.Error(w, "Invalid end_date format. Use YYYY-MM-DD", http.StatusBadRequest)
+// 			return
+// 		}
+// 	} else {
+// 		endDate = time.Now() // По умолчанию - текущая дата
+// 	}
 
-	var report any
+// 	var report any
 
-	// Генерируем отчет в зависимости от типа
-	switch reportType {
-	case "activity":
-		report, err = t.reportController.GenerateActivityReport(startDate, endDate)
-	case "forwarding":
-		report, err = t.reportController.GenerateForwardingReport(startDate, endDate)
-	case "error":
-		report, err = t.reportController.GenerateErrorReport(startDate, endDate)
-	default:
-		http.Error(w, "Invalid report type. Use 'activity', 'forwarding', or 'error'", http.StatusBadRequest)
-		return
-	}
+// 	// Генерируем отчет в зависимости от типа
+// 	switch reportType {
+// 	case "activity":
+// 		report, err = t.reportController.GenerateActivityReport(startDate, endDate)
+// 	case "forwarding":
+// 		report, err = t.reportController.GenerateForwardingReport(startDate, endDate)
+// 	case "error":
+// 		report, err = t.reportController.GenerateErrorReport(startDate, endDate)
+// 	default:
+// 		http.Error(w, "Invalid report type. Use 'activity', 'forwarding', or 'error'", http.StatusBadRequest)
+// 		return
+// 	}
 
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error generating report: %v", err), http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Error generating report: %v", err), http.StatusInternalServerError)
+// 		return
+// 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(report)
-	if err != nil {
-		t.log.Error("Failed to encode report", "err", err)
-	}
-}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	err = json.NewEncoder(w).Encode(report)
+// 	if err != nil {
+// 		t.log.Error("Failed to encode report", "err", err)
+// 	}
+// }
 
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {

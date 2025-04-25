@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// TODO: выполнить корректный перенос из budva32:
+// - Интерфейс для работы с хранилищем более формализован, но некоторые методы могут работать иначе, чем в старой версии
+// - Особенно это касается функций работы с идентификаторами сообщений
+// - Функционал инкрементирования счетчиков может отличаться от старой версии
+
 const (
 	// Префиксы ключей для хранения в BadgerDB
 	CopiedMessageIDsPrefix  = "copiedMsgIds"
@@ -231,6 +236,24 @@ func (s *Service) IncrementViewedMessages(toChatID int64) error {
 	}
 
 	return nil
+}
+
+const answerMessageIdPrefix = "answerMsgId"
+
+// SetAnswerMessageId устанавливает идентификатор сообщения ответа
+func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
+	// TODO: выполнить корректный перенос из budva32
+}
+
+// GetAnswerMessageId возвращает идентификатор сообщения ответа
+func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
+	// TODO: выполнить корректный перенос из budva32
+	return ""
+}
+
+// DeleteAnswerMessageId удаляет идентификатор сообщения ответа
+func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) {
+	// TODO: выполнить корректный перенос из budva32
 }
 
 // IncrementForwardedMessages увеличивает счетчик пересланных сообщений

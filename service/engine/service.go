@@ -13,8 +13,10 @@ import (
 	"github.com/comerc/budva43/entity"
 )
 
-// TODO: почистить код, чтобы Клавдия меньше спотыкалась
-// TODO: надо пройти по коду в budva32 и прокоментировать каждый блок - куда перенесён
+// TODO: выполнить корректный перенос из budva32 (нужно вернуть функционал старой версии):
+// - Функции пересылки сообщений (`forwardMessages`, `sendCopyMessage`, `sendCopyAlbum`) имеют более формализованный интерфейс, но могут не полностью воспроизводить логику старой версии
+// - Обработка редактированных сообщений (`processSingleEdited`) отличается от старой реализации, что может приводить к различиям в поведении
+// - Функция `matchesMediaContent` для проверки соответствия медиа-контента отсутствовала в старой версии и может быть избыточной
 
 type queueService interface {
 	Add(task func())
@@ -40,10 +42,9 @@ type filterService interface {
 }
 
 type transformService interface {
-	ReplaceMyselfLinks(text *client.FormattedText, srcChatID, dstChatID int64) error
-	ReplaceFragments(text *client.FormattedText, dstChatID int64) error
-	AddSourceSign(text *client.FormattedText, srcChatID, dstChatID int64) error
-	AddSourceLink(text *client.FormattedText, srcChatID, dstChatID int64, messageID int64) error
+	ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatID, dstChatID int64) error
+	ReplaceFragments(formattedText *client.FormattedText, dstChatID int64) error
+	AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error
 }
 
 type storageService interface {
@@ -62,8 +63,8 @@ type storageService interface {
 
 type mediaAlbumService interface {
 	AddMessage(forwardKey string, message *client.Message) bool
-	GetLastReceivedDiff(forwardKey string, albumID client.JsonInt64) time.Duration
-	GetMessages(forwardKey string, albumID client.JsonInt64) []*client.Message
+	GetLastReceivedDiff(key string) time.Duration
+	GetMessages(key string) []*client.Message
 }
 
 type telegramRepo interface {
@@ -119,7 +120,7 @@ func (s *Service) Start(ctx context.Context) error {
 	}
 
 	go func() {
-		// Ждем авторизации клиента
+		// Ждём авторизации клиента
 		select {
 		case <-s.telegramRepo.AuthClientDone():
 		case <-ctx.Done():
@@ -163,7 +164,7 @@ func (s *Service) validateConfig() error {
 	return nil
 }
 
-// Обрабатывает обновления от Telegram
+// handleUpdates обрабатывает обновления от Telegram
 func (s *Service) handleUpdates(ctx context.Context, listener *client.Listener) {
 	for {
 		select {
@@ -406,58 +407,8 @@ func isChatSource(chatID int64) (map[string]entity.ForwardRule, bool) {
 
 // Обрабатывает медиа-альбом
 func (s *Service) processMediaAlbum(forwardKey string, albumID client.JsonInt64) {
-	s.log.Debug("Обработка медиа-альбома", "forwardKey", forwardKey, "albumID", albumID)
-
-	// Ждем, пока соберутся все сообщения альбома
-	const waitForMediaAlbum = 3 * time.Second
-	diff := s.mediaAlbumsService.GetLastReceivedDiff(forwardKey, albumID)
-	if diff < waitForMediaAlbum {
-		time.Sleep(waitForMediaAlbum - diff)
-		// Повторная проверка после ожидания, т.к. могли поступить новые сообщения
-		s.processMediaAlbum(forwardKey, albumID)
-		return
-	}
-
-	// Получаем все сообщения альбома
-	messages := s.mediaAlbumsService.GetMessages(forwardKey, albumID)
-	if len(messages) == 0 {
-		s.log.Error("Пустой медиа-альбом", "forwardKey", forwardKey, "albumID", albumID)
-		return
-	}
-
-	// Нужно определить, какому правилу форвардинга соответствует данный ключ
-	var rule entity.ForwardRule
-	var ruleExists bool
-
-	for rID, r := range config.Engine.Forwards {
-		if rID == forwardKey {
-			rule = r
-			ruleExists = true
-			break
-		}
-	}
-
-	if !ruleExists {
-		s.log.Error("Правило форвардинга не найдено", "forwardKey", forwardKey)
-		return
-	}
-
-	// Проверяем, должны ли сообщения быть пересланы согласно фильтрам
-	srcMessage := messages[0]
-	formattedText, _ := s.messageService.GetContent(srcMessage)
-	shouldForward, err := s.filterService.ShouldForward(formattedText.Text, &rule)
-	if err != nil {
-		s.log.Error("Ошибка проверки фильтров", "err", err)
-		return
-	}
-
-	if !shouldForward {
-		s.log.Debug("Сообщения не проходят фильтры", "forwardKey", forwardKey)
-		return
-	}
-
-	// Обрабатываем альбом
-	s.processMessage(messages, forwardKey, rule)
+	// TODO: выполнить корректный перенос из budva32
+	// TODO: правильно было переименовать из handleMediaAlbum?
 }
 
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
@@ -589,11 +540,8 @@ func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Me
 	if err := s.transformService.ReplaceFragments(formattedText, dstChatID); err != nil {
 		s.log.Error("Ошибка при замене фрагментов", "err", err)
 	}
-	if err := s.transformService.AddSourceSign(formattedText, message.ChatId, dstChatID); err != nil {
-		s.log.Error("Ошибка при добавлении подписи источника", "err", err)
-	}
-	if err := s.transformService.AddSourceLink(formattedText, message.ChatId, dstChatID, message.Id); err != nil {
-		s.log.Error("Ошибка при добавлении ссылки на источник", "err", err)
+	if err := s.transformService.AddSources(formattedText, message, dstChatID); err != nil {
+		s.log.Error("Ошибка при добавлении источников", "err", err)
 	}
 
 	// Создаем входной контент для сообщения
@@ -658,11 +606,8 @@ func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.M
 			if err := s.transformService.ReplaceFragments(formattedText, dstChatID); err != nil {
 				s.log.Error("Ошибка при замене фрагментов", "err", err)
 			}
-			if err := s.transformService.AddSourceSign(formattedText, message.ChatId, dstChatID); err != nil {
-				s.log.Error("Ошибка при добавлении подписи источника", "err", err)
-			}
-			if err := s.transformService.AddSourceLink(formattedText, message.ChatId, dstChatID, message.Id); err != nil {
-				s.log.Error("Ошибка при добавлении ссылки на источник", "err", err)
+			if err := s.transformService.AddSources(formattedText, message, dstChatID); err != nil {
+				s.log.Error("Ошибка при добавлении источников", "err", err)
 			}
 		}
 
