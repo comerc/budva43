@@ -141,7 +141,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	// - Инициализация сервисов
 	messageService := messsageService.New()
-	reportService := reportService.New()
+	// reportService := reportService.New()
 	authService := authService.New(telegramRepo)
 	filterService := filterService.New()
 	transformService := transformService.New()
@@ -169,9 +169,9 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("engineService запущен")
 
 	// - Инициализация контроллеров
-	reportController := reportController.New(
-		reportService,
-	)
+	// reportController := reportController.New(
+	// 	reportService,
+	// )
 
 	// Инициализация контроллера авторизации
 	authController := authController.New(authService)
@@ -189,7 +189,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// slog.Info("botTransport запущен")
 
 	cliTransport := cliTransport.New(
-		reportController,
+		// reportController,
 		authController,
 	)
 	if err := cliTransport.Start(ctx, cancel); err != nil {
@@ -199,7 +199,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("cliTransport запущен")
 
 	webTransport := webTransport.New(
-		reportController,
+		// reportController,
 		authController,
 	)
 	if err := webTransport.Start(ctx, cancel); err != nil {
