@@ -4,26 +4,32 @@ import (
 	"regexp"
 )
 
+// ChatId идентификатор чата
+type ChatId = int64
+
 // ReplaceMyselfLink представляет настройки для замены ссылок на текущего бота
 type ReplaceMyselfLink struct {
-	// ChatID идентификатор чата, для которого применяется замена
-	ChatID int64
+	// Id идентификатор чата-источника - обогощаем при загрузке
+	ChatId ChatId
 	// DeleteExternal если true, то внешние ссылки удаляются
 	DeleteExternal bool
 }
 
+// Replacements карта замен (ключ - исходный текст, значение - текст для замены)
+type Replacements = map[string]string
+
 // ReplaceFragment представляет настройки для замены фрагментов текста
 type ReplaceFragment struct {
-	// ChatID идентификатор чата, для которого применяется замена
-	ChatID int64
+	// Id идентификатор чата-источника - обогощаем при загрузке
+	ChatId ChatId
 	// Replacements карта замен (ключ - исходный текст, значение - текст для замены)
-	Replacements map[string]string
+	Replacements
 }
 
 // Source представляет настройки источника сообщений
 type Source struct {
-	// ID идентификатор чата-источника
-	ID int64
+	// Id идентификатор чата-источника - обогощаем при загрузке
+	ChatId ChatId
 	// Sign настройки подписи для сообщений из этого источника
 	Sign *Sign
 	// Link настройки ссылки на источник
@@ -35,7 +41,7 @@ type Sign struct {
 	// Title текст подписи (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется подпись
-	For []int64
+	For []ChatId
 }
 
 // Link представляет настройки ссылки на источник сообщений
@@ -43,17 +49,19 @@ type Link struct {
 	// Title текст ссылки (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется ссылка
-	For []int64
+	For []ChatId
 }
+
+type ForwardRuleId string
 
 // ForwardRule представляет правило пересылки сообщений
 type ForwardRule struct {
-	// ID уникальный идентификатор правила
-	ID string
+	// Id уникальный идентификатор правила - обогощаем при загрузке
+	Id ForwardRuleId
 	// From идентификатор чата-источника
-	From int64
+	From ChatId
 	// To список идентификаторов чатов-получателей
-	To []int64
+	To []ChatId
 	// SendCopy если true, то отправляет копию сообщения вместо пересылки
 	SendCopy bool
 	// CopyOnce если true, то сообщение копируется однократно без синхронизации при редактировании
@@ -71,9 +79,9 @@ type ForwardRule struct {
 	// IncludeSubmatch правила для подстрок в сообщениях
 	IncludeSubmatch []SubmatchRule
 	// Other идентификатор чата для отправки сообщений, которые прошли включающий фильтр
-	Other int64
+	Other ChatId
 	// Check идентификатор чата для отправки сообщений, которые прошли исключающий фильтр
-	Check int64
+	Check ChatId
 	// Status статус активности правила
 	Status RuleStatus
 }
@@ -102,7 +110,7 @@ type SubmatchRule struct {
 	Match []string `json:"match"`
 }
 
-type Answer struct {
-	ChatID int64
-	Auto   bool
-}
+// type Answer struct {
+// 	ChatId ChatId
+// 	Auto   bool
+// }
