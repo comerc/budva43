@@ -11,6 +11,7 @@ import (
 
 	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
+	"github.com/comerc/budva43/util"
 )
 
 // TODO: выполнить корректный перенос из budva32 (нужно вернуть функционал старой версии):
@@ -144,7 +145,7 @@ func (s *Service) validateConfig() error {
 	// Проверяем заменяемые фрагменты текста
 	for chatID, settings := range config.Engine.ReplaceFragments {
 		for from, to := range settings.Replacements {
-			if len([]rune(from)) != len([]rune(to)) {
+			if util.RuneCountForUTF16(from) != util.RuneCountForUTF16(to) {
 				return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", from, to)
 			}
 		}
