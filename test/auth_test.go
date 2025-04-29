@@ -72,12 +72,12 @@ func TestAuth(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	authTelegramService := authService.New(telegramRepo)
-	require.NotNil(t, authTelegramService)
+	authService := authService.New(telegramRepo)
+	require.NotNil(t, authService)
 
 	time.Sleep(1 * time.Second)
 
-	authController := authController.New(authTelegramService)
+	authController := authController.New(authService)
 	require.NotNil(t, authController)
 
 	state, err := authController.GetAuthorizationState()
