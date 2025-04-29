@@ -30,13 +30,7 @@ import (
 
 // Основная функция приложения
 func main() {
-	// Настройка логгера
-	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     config.LogOptions.Level,
-		AddSource: config.LogOptions.AddSource,
-	})
-	logger := slog.New(logHandler)
-	slog.SetDefault(logger)
+	setupLogger()
 
 	slog.Info("Запуск приложения Budva43")
 
@@ -104,6 +98,16 @@ func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
 		)
 		errSet.add(fmt.Errorf("ошибка при остановке %s: %w", componentName, err))
 	}
+}
+
+// setupLogger настраивает логгер
+func setupLogger() {
+	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     config.LogOptions.Level,
+		AddSource: config.LogOptions.AddSource,
+	})
+	logger := slog.New(logHandler)
+	slog.SetDefault(logger)
 }
 
 // setupSignalHandler настраивает обработку сигналов остановки
