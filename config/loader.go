@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"log/slog"
 	"path/filepath"
 	"reflect"
@@ -93,12 +93,12 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
-func load() (*config, error) {
+func load() *config {
 	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами - cobra?
 
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
-		return nil, fmt.Errorf("не удалось загрузить .env файл: %w", err)
+		log.Panicf("не удалось загрузить .env файл: %v", err)
 	}
 
 	// Настройка Viper для чтения конфигурации из файла
@@ -118,7 +118,7 @@ func load() (*config, error) {
 
 	// Читаем конфигурацию из файла
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("ошибка чтения конфигурации: %w", err)
+		log.Panicf("ошибка чтения конфигурации: %v", err)
 	}
 
 	options := viper.DecodeHook(
@@ -135,8 +135,8 @@ func load() (*config, error) {
 
 	// Переопределяем значения из конфигурационного файла и переменных окружения
 	if err := viper.Unmarshal(config, options); err != nil {
-		return nil, fmt.Errorf("ошибка разбора конфигурации: %w", err)
+		log.Panicf("ошибка разбора конфигурации: %v", err)
 	}
 
-	return config, nil
+	return config
 }
