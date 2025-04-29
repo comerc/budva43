@@ -120,45 +120,50 @@ $ sudo chmod -R 777 ./tdata
 
 ```yml
 # escape markdown '\*\_\{\}\[\]\(\)\#\+\-\.\!'
-ReplaceMyselfLinks: # for destinations
-	-2222:
-    DeleteExternal: true
-ReplaceFragments: # for destinations
-  -2222:
-    "aaaa": "bbbb" # must be equal length
-Sources:
-  -1234:
-    Sign:
-      Title: '*\#Source*' # for SendCopy (with markdown)
-      For: [-8888]
-    Link:
-			Title: "*Source*" # for SendCopy (with markdown)
-			For: [-4321]
-Reports:
-  Template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
-  For: [
-      -2222,
-      -4321,
-      -8888,
+destinations:
+	-321:
+		replace-myself-links:
+			delete-external: true
+		replace-fragments: # must be equal length
+			- from: "ccc"
+				to: "ddd"
+			- from: "aaa"
+				to: "bbb"
+sources:
+  -123:
+    sign:
+      title: '*\#Source*' # for SendCopy (with markdown)
+      for: [-888]
+    link:
+			title: "*Source*" # for SendCopy (with markdown)
+			for: [-321]
+		auto-answer: true
+		delete-system-messages: true
+reports:
+  template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
+  for: [
+      -222,
+      -321,
+      -888,
     ]
-Forwards:
+forwards:
 	"id1":
-		From: -1111
-		To: [-2222]
+		from: -111
+		to: [-222]
 	"id2":
-		From: -1234
-		To: [-4321, -8888]
-		SendCopy: true
-		CopyOnce: true # wo edit-sync
-		Indelible: true # wo delete-sync
-		Exclude: 'Крамер|#УТРЕННИЙ_ОБЗОР'
-		Include: '#ARK|#Идеи_покупок|#ОТЧЕТЫ'
-		IncludeSubmatch:
-			- Regexp: '(^|[^A-Z])\$([A-Z]+)'
-				Group: 2
-				Match: ['F', 'GM', 'TSLA']
-		Other: -4444 # after include (copy only)
-		Check: -7777 # after exclude (forward only)
+		from: -123
+		to: [-321, -888]
+		send-copy: true
+		copy-once: true # wo edit-sync
+		indelible: true # wo delete-sync
+		exclude: 'Крамер|#УТРЕННИЙ_ОБЗОР'
+		include: '#ARK|#Идеи_покупок|#ОТЧЕТЫ'
+		include-submatch:
+			- regexp: '(^|[^A-Z])\$([A-Z]+)'
+				group: 2
+				match: ['F', 'GM', 'TSLA']
+		other: -444 # after include (copy only)
+		check: -777 # after exclude (forward only)
 ```
 
 ## Get chat list with limit (optional)
