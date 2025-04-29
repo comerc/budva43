@@ -4,7 +4,7 @@ import "time"
 
 // Report интерфейс для всех типов отчетов
 type Report interface {
-	GetID() string
+	GetId() string
 	GetStartTime() time.Time
 	GetEndTime() time.Time
 	GetStatus() ReportStatus
@@ -12,8 +12,8 @@ type Report interface {
 
 // BaseReport базовая структура для всех типов отчетов
 type BaseReport struct {
-	// ID уникальный идентификатор отчета
-	ID string
+	// Id уникальный идентификатор отчета
+	Id string
 	// Period период времени, за который составляется отчет
 	Period ReportPeriod
 	// StartTime время начала периода отчета
@@ -28,9 +28,9 @@ type BaseReport struct {
 	Status ReportStatus
 }
 
-// GetID возвращает идентификатор отчета
-func (r *BaseReport) GetID() string {
-	return r.ID
+// GetId возвращает идентификатор отчета
+func (r *BaseReport) GetId() string {
+	return r.Id
 }
 
 // GetStartTime возвращает время начала периода отчета
