@@ -3,6 +3,7 @@ package badger
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	badger "github.com/dgraph-io/badger/v4"
 
@@ -33,6 +34,9 @@ func (r *Repo) Start(ctx context.Context, shutdown func()) error {
 		return err
 	}
 	r.db = db
+
+	go r.runGarbageCollection(ctx)
+
 	return nil
 }
 
@@ -93,4 +97,21 @@ func (r *Repo) Iterate(prefix string, fn func(key, value string) error) error {
 		}
 		return nil
 	})
+}
+
+func (r *Repo) runGarbageCollection(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		again:
+			err := r.db.RunValueLogGC(0.7)
+			if err == nil {
+				goto again
+			}
+		}
+	}
 }
