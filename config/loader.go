@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"path/filepath"
 	"reflect"
@@ -99,8 +98,7 @@ func load() (*config, error) {
 
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
-		log.Print("Не удалось загрузить .env файл %w", err)
-		// Продолжаем выполнение
+		return nil, fmt.Errorf("не удалось загрузить .env файл: %w", err)
 	}
 
 	// Настройка Viper для чтения конфигурации из файла
