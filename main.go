@@ -11,7 +11,6 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
-	reportController "github.com/comerc/budva43/controller/report"
 	badgerRepo "github.com/comerc/budva43/repo/badger"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
@@ -20,7 +19,6 @@ import (
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
 	queueService "github.com/comerc/budva43/service/queue"
-	reportService "github.com/comerc/budva43/service/report"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
 	cliTransport "github.com/comerc/budva43/transport/cli"

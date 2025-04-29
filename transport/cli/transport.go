@@ -24,7 +24,7 @@ import (
 // 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
 // }
 
-type authTelegramController interface {
+type authController interface {
 	SubmitPhoneNumber(phone string)
 	SubmitCode(code string)
 	SubmitPassword(password string)
@@ -37,7 +37,7 @@ type Transport struct {
 	log *slog.Logger
 	//
 	// reportController reportController
-	authController authTelegramController
+	authController authController
 	scanner        *bufio.Scanner
 	commands       []command
 	commandMap     map[string]*command
@@ -53,7 +53,7 @@ type command struct {
 // New создает новый экземпляр CLI
 func New(
 	// reportController reportController,
-	authController authTelegramController,
+	authController authController,
 ) *Transport {
 	cli := &Transport{
 		log: slog.With("module", "transport.cli"),
