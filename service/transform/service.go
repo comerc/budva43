@@ -133,13 +133,13 @@ func (s *Service) EscapeMarkdown(text string) string {
 }
 
 // ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
-func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatID, dstChatID int64) error {
+func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error {
 	// TODO: выполнить корректный перенос из budva32
 	return nil
 }
 
 // ReplaceFragments заменяет фрагменты текста согласно настройкам
-func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatID int64) error {
+func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatId int64) error {
 	// TODO: выполнить корректный перенос из budva32
 	return nil
 }

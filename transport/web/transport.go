@@ -297,11 +297,11 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 
 	// Создаем канал для событий авторизации
-	clientID := generateClientID()
+	clientId := generateClientId()
 	events := make(chan client.AuthorizationState, 10)
 
 	// Регистрируем клиента
-	t.authClients[clientID] = events
+	t.authClients[clientId] = events
 
 	// Отправляем текущее состояние сразу при подключении
 	var state client.AuthorizationState
@@ -323,7 +323,7 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 
 	// Закрываем канал и удаляем клиента при завершении запроса
 	defer func() {
-		delete(t.authClients, clientID)
+		delete(t.authClients, clientId)
 		close(events)
 	}()
 
@@ -347,8 +347,8 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// generateClientID генерирует уникальный идентификатор клиента
-func generateClientID() string {
+// generateClientId генерирует уникальный идентификатор клиента
+func generateClientId() string {
 	return fmt.Sprintf("client-%d", time.Now().UnixNano())
 }
 
@@ -403,12 +403,12 @@ func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
 		"state", state.AuthorizationStateType())
 
 	// Отправляем обновление всем подключенным клиентам
-	for clientID, clientChan := range t.authClients {
+	for clientId, clientChan := range t.authClients {
 		select {
 		case clientChan <- state:
-			t.log.Debug("Отправлено обновление состояния клиенту", "clientID", clientID)
+			t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
 		default:
-			t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientID", clientID)
+			t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
 		}
 	}
 }
