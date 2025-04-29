@@ -7,23 +7,27 @@ import (
 // ChatId идентификатор чата
 type ChatId = int64
 
-// ReplaceMyselfLink представляет настройки для замены ссылок на текущего бота
-type ReplaceMyselfLink struct {
-	// Id идентификатор чата-источника - обогощаем при загрузке
+type Destination struct {
+	// Id идентификатор чата-получателя - обогощаем при загрузке
 	ChatId ChatId
+	// ReplaceMyselfLinks настройки для замены ссылок на текущего бота
+	ReplaceMyselfLinks *ReplaceMyselfLinks
+	// ReplaceFragments настройки для замены фрагментов текста
+	ReplaceFragments []*ReplaceFragment
+}
+
+// ReplaceMyselfLinks настройки для замены ссылок на текущего бота
+type ReplaceMyselfLinks struct {
 	// DeleteExternal если true, то внешние ссылки удаляются
 	DeleteExternal bool
 }
 
-// Replacements карта замен (ключ - исходный текст, значение - текст для замены)
-type Replacements = map[string]string
-
-// ReplaceFragment представляет настройки для замены фрагментов текста
+// ReplaceFragment представляет настройки для замены фрагмента текста
 type ReplaceFragment struct {
-	// Id идентификатор чата-источника - обогощаем при загрузке
-	ChatId ChatId
-	// Replacements карта замен (ключ - исходный текст, значение - текст для замены)
-	Replacements
+	// From исходный текст
+	From string
+	// To текст для замены
+	To string
 }
 
 // Source представляет настройки источника сообщений
@@ -34,6 +38,10 @@ type Source struct {
 	Sign *Sign
 	// Link настройки ссылки на источник
 	Link *Link
+	// AutoAnswer настройки автоматического ответа
+	AutoAnswer bool
+	// DeleteSystemMessages настройки удаления системных сообщений
+	DeleteSystemMessages bool
 }
 
 // Sign представляет настройки подписи для сообщений
@@ -70,47 +78,24 @@ type ForwardRule struct {
 	Indelible bool
 	// Exclude регулярное выражение для исключения сообщений
 	Exclude string
-	// ExcludeRegexp скомпилированное регулярное выражение для исключения
-	ExcludeRegexp *regexp.Regexp
 	// Include регулярное выражение для включения сообщений
 	Include string
-	// IncludeRegexp скомпилированное регулярное выражение для включения
-	IncludeRegexp *regexp.Regexp
 	// IncludeSubmatch правила для подстрок в сообщениях
-	IncludeSubmatch []SubmatchRule
+	IncludeSubmatch []*SubmatchRule
 	// Other идентификатор чата для отправки сообщений, которые прошли включающий фильтр
 	Other ChatId
 	// Check идентификатор чата для отправки сообщений, которые прошли исключающий фильтр
 	Check ChatId
-	// Status статус активности правила
-	Status RuleStatus
 }
-
-// RuleStatus представляет статус правила
-type RuleStatus string
-
-const (
-	// RuleStatusActive правило активно
-	RuleStatusActive RuleStatus = "active"
-	// RuleStatusInactive правило неактивно
-	RuleStatusInactive RuleStatus = "inactive"
-	// RuleStatusPaused правило временно приостановлено
-	RuleStatusPaused RuleStatus = "paused"
-)
 
 // SubmatchRule представляет правило для работы с подстроками в сообщениях
 type SubmatchRule struct {
 	// Regexp регулярное выражение для поиска подстрок
-	Regexp string `json:"regexp"`
+	Regexp string
 	// CompiledRegexp скомпилированное регулярное выражение
-	CompiledRegexp *regexp.Regexp `json:"-"`
+	CompiledRegexp *regexp.Regexp
 	// Group номер группы в регулярном выражении для сравнения
-	Group int `json:"group"`
+	Group int
 	// Match список строк для сравнения с подстрокой
-	Match []string `json:"match"`
+	Match []string
 }
-
-// type Answer struct {
-// 	ChatId ChatId
-// 	Auto   bool
-// }

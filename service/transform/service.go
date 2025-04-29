@@ -9,7 +9,6 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/entity"
 )
 
 // Service предоставляет методы для преобразования и замены текста
@@ -27,35 +26,35 @@ func New() *Service {
 	}
 }
 
-// GetReplacement возвращает текст для замены или пустую строку, если замена не найдена
-func (s *Service) GetReplacement(settings *entity.ReplaceFragment, text string) string {
-	if settings.Replacements == nil {
-		return ""
-	}
-	replacement, ok := settings.Replacements[text]
-	if !ok {
-		return ""
-	}
-	return replacement
-}
+// // GetReplacement возвращает текст для замены или пустую строку, если замена не найдена
+// func (s *Service) GetReplacement(settings *entity.ReplaceFragment, text string) string {
+// 	if settings.Replacements == nil {
+// 		return ""
+// 	}
+// 	replacement, ok := settings.Replacements[text]
+// 	if !ok {
+// 		return ""
+// 	}
+// 	return replacement
+// }
 
-// ReplaceText заменяет все фрагменты текста согласно настройкам
-func (s *Service) ReplaceText(settings *entity.ReplaceFragment, text string) string {
-	if settings.Replacements == nil {
-		return text
-	}
+// // ReplaceText заменяет все фрагменты текста согласно настройкам
+// func (s *Service) ReplaceText(settings *entity.ReplaceFragment, text string) string {
+// 	if settings.Replacements == nil {
+// 		return text
+// 	}
 
-	result := text
-	for from, to := range settings.Replacements {
-		// Здесь может быть реализован более сложный алгоритм замены,
-		// но для простоты используем стандартную замену строк
-		if from != "" {
-			result = s.replaceAll(result, from, to)
-		}
-	}
+// 	result := text
+// 	for from, to := range settings.Replacements {
+// 		// Здесь может быть реализован более сложный алгоритм замены,
+// 		// но для простоты используем стандартную замену строк
+// 		if from != "" {
+// 			result = s.replaceAll(result, from, to)
+// 		}
+// 	}
 
-	return result
-}
+// 	return result
+// }
 
 // replaceAll заменяет все вхождения подстроки в строке
 // Используется вместо strings.ReplaceAll для возможности

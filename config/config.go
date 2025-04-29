@@ -118,23 +118,17 @@ type (
 
 	// Настройки движка форвардинга из budva32
 	engine struct {
-		// Настройки для замены ссылок на себя
-		ReplaceMyselfLinks map[entity.ChatId]*entity.ReplaceMyselfLink
-		// Настройки для замены фрагментов текста
-		ReplaceFragments map[entity.ChatId]*entity.ReplaceFragment
+		// Настройки получателей
+		Destinations map[entity.ChatId]*entity.Destination
 		// Настройки источников
 		Sources map[entity.ChatId]*entity.Source
+		// Правила форвардинга
+		Forwards map[entity.ForwardRuleId]*entity.ForwardRule
 		// Настройки отчетов
 		Reports struct {
 			Template string
 			For      []entity.ChatId
 		}
-		// Правила форвардинга
-		Forwards map[entity.ForwardRuleId]*entity.ForwardRule
-		// Настройки автоответов
-		// Answers map[int64]entity.Answer
-		// Удаление системных сообщений
-		DeleteSystemMessages map[entity.ChatId]bool
 	}
 )
 

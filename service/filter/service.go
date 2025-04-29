@@ -24,45 +24,45 @@ func New() *Service {
 
 // ShouldForward проверяет, должно ли сообщение быть переслано согласно правилам
 func (s *Service) ShouldForward(text string, rule *entity.ForwardRule) (bool, error) {
-	// Проверка по исключающему регулярному выражению
-	if rule.ExcludeRegexp != nil {
-		if rule.ExcludeRegexp.MatchString(text) {
-			return false, nil
-		}
-	}
+	// // Проверка по исключающему регулярному выражению
+	// if rule.ExcludeRegexp != nil {
+	// 	if rule.ExcludeRegexp.MatchString(text) {
+	// 		return false, nil
+	// 	}
+	// }
 
-	// Проверка по включающему регулярному выражению
-	if rule.IncludeRegexp != nil {
-		if !rule.IncludeRegexp.MatchString(text) {
-			return false, nil
-		}
-	}
+	// // Проверка по включающему регулярному выражению
+	// if rule.IncludeRegexp != nil {
+	// 	if !rule.IncludeRegexp.MatchString(text) {
+	// 		return false, nil
+	// 	}
+	// }
 
-	// Проверка по подстрокам
-	if len(rule.IncludeSubmatch) > 0 {
-		matchesAny := false
-		for _, submatch := range rule.IncludeSubmatch {
-			if submatch.CompiledRegexp != nil {
-				matches := submatch.CompiledRegexp.FindStringSubmatch(text) // TODO: зачем внутри цикла?
-				if len(matches) > submatch.Group && submatch.Group >= 0 {
-					matchValue := matches[submatch.Group]
-					for _, allowedMatch := range submatch.Match {
-						if matchValue == allowedMatch {
-							matchesAny = true
-							break
-						}
-					}
-				}
-			}
-			if matchesAny {
-				break
-			}
-		}
+	// // Проверка по подстрокам
+	// if len(rule.IncludeSubmatch) > 0 {
+	// 	matchesAny := false
+	// 	for _, submatch := range rule.IncludeSubmatch {
+	// 		if submatch.CompiledRegexp != nil {
+	// 			matches := submatch.CompiledRegexp.FindStringSubmatch(text) // TODO: зачем внутри цикла?
+	// 			if len(matches) > submatch.Group && submatch.Group >= 0 {
+	// 				matchValue := matches[submatch.Group]
+	// 				for _, allowedMatch := range submatch.Match {
+	// 					if matchValue == allowedMatch {
+	// 						matchesAny = true
+	// 						break
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		if matchesAny {
+	// 			break
+	// 		}
+	// 	}
 
-		if !matchesAny {
-			return false, nil
-		}
-	}
+	// 	if !matchesAny {
+	// 		return false, nil
+	// 	}
+	// }
 
 	return true, nil
 }
