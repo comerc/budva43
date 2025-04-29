@@ -77,16 +77,16 @@ func TestAuth(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	authTelegramController := authController.New(authTelegramService)
-	require.NotNil(t, authTelegramController)
+	authController := authController.New(authTelegramService)
+	require.NotNil(t, authController)
 
-	state, err := authTelegramController.GetAuthorizationState()
+	state, err := authController.GetAuthorizationState()
 	require.NoError(t, err)
 	assert.Equal(t, client.TypeAuthorizationStateWaitPhoneNumber, state.AuthorizationStateType())
 
 	cliTransport := cliTransport.New(
-		nil, // reportController,
-		authTelegramController,
+		// reportController,
+		authController,
 	)
 	err = cliTransport.Start(ctx, cancel)
 	require.NoError(t, err)
@@ -96,8 +96,8 @@ func TestAuth(t *testing.T) {
 	})
 
 	webTransport := webTransport.New(
-		nil, // reportController,
-		authTelegramController,
+		// reportController,
+		authController,
 	)
 	err = webTransport.Start(ctx, cancel)
 	require.NoError(t, err)
