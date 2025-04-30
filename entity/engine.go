@@ -60,7 +60,7 @@ type Link struct {
 	For []ChatId
 }
 
-type ForwardRuleId string
+type ForwardRuleId = string
 
 // ForwardRule представляет правило пересылки сообщений
 type ForwardRule struct {
