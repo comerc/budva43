@@ -29,4 +29,3 @@ config.yml
 .data/
 .try/
 vendor/
-**/_*
