@@ -27,5 +27,5 @@ go.work.sum
 bin/
 config.yml
 .data/
-.try/
 vendor/
+_try/
