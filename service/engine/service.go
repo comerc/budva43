@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"regexp"
 	"strings"
 	"time"
 
@@ -156,8 +157,11 @@ func (s *Service) validateConfig() error {
 		s.log.Info("Валидированы настройки замены фрагментов", "chatId", chatId, "replacements", len(dsc.ReplaceFragments))
 	}
 
-	// Проверяем правила пересылки
+	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
 	for ruleId, rule := range config.Engine.Forwards {
+		if re.FindString(ruleId) != "" {
+			return fmt.Errorf("нельзя использовать [:,] в идентификаторе правила: %s", ruleId)
+		}
 		for _, dstChatId := range rule.To {
 			if rule.From == dstChatId {
 				return fmt.Errorf("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
@@ -177,8 +181,13 @@ func (s *Service) enrichConfig() error {
 	for key, val := range config.Engine.Sources {
 		val.ChatId = key
 	}
-	for key, val := range config.Engine.Forwards {
-		val.Id = key
+	for key, rule := range config.Engine.Forwards {
+		rule.Id = key
+		if _, ok := config.Engine.Sources[rule.From]; !ok {
+			config.Engine.Sources[rule.From] = &entity.Source{
+				ChatId: rule.From,
+			}
+		}
 	}
 	return nil
 }
