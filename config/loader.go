@@ -98,7 +98,7 @@ func load() *config {
 
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
-		log.Panicf("не удалось загрузить .env файл: %v", err)
+		log.Panic("не удалось загрузить .env файл: ", err)
 	}
 
 	// Настройка Viper для чтения конфигурации из файла
@@ -118,7 +118,7 @@ func load() *config {
 
 	// Читаем конфигурацию из файла
 	if err := viper.ReadInConfig(); err != nil {
-		log.Panicf("ошибка чтения конфигурации: %v", err)
+		log.Panic("ошибка чтения конфигурации: ", err)
 	}
 
 	options := viper.DecodeHook(
@@ -135,7 +135,7 @@ func load() *config {
 
 	// Переопределяем значения из конфигурационного файла и переменных окружения
 	if err := viper.Unmarshal(config, options); err != nil {
-		log.Panicf("ошибка разбора конфигурации: %v", err)
+		log.Panic("ошибка разбора конфигурации: ", err)
 	}
 
 	return config
