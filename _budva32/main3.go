@@ -80,7 +80,7 @@ func checkFilters(formattedText *client.FormattedText, forward config.Forward) F
 	return FiltersOK
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/middleware.go
+// НЕТ: не перенесено, предлагаю - transport/web/middleware.go (withBasicAuth)
 func withBasicAuth(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
@@ -95,7 +95,7 @@ func withBasicAuth(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/middleware.go
+// НЕТ: не перенесено, предлагаю - transport/web/middleware.go (withAuthentiation)
 func withAuthentiation(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if outputCh != nil {
@@ -120,7 +120,7 @@ func withAuthentiation(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - util/network.go
+// NO: не перенесено, предлагаю - util/network.go (getIP)
 func getIP() string {
 	interfaces, _ := net.Interfaces()
 	for _, i := range interfaces {
@@ -139,12 +139,12 @@ func getIP() string {
 	return ""
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/transport.go
+// НЕТ: не перенесено, предлагаю - transport/web/transport.go (getFaviconHandler)
 func getFaviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/transport.go
+// НЕТ: не перенесено, предлагаю - transport/web/transport.go (getAnswerHandler)
 func getAnswerHandler(w http.ResponseWriter, r *http.Request) {
 	// использует коды ошибок HTTP для статусов: error, ok, wait
 	// 200 OK
@@ -218,7 +218,7 @@ func getAnswerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/transport.go
+// НЕТ: не перенесено, предлагаю - transport/web/transport.go (getPingHandler)
 func getPingHandler(w http.ResponseWriter, r *http.Request) {
 	ret, err := time.Now().UTC().MarshalJSON()
 	if err != nil {
@@ -229,7 +229,7 @@ func getPingHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, fmt.Sprintf("{now:%s}", string(ret)))
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/transport.go
+// НЕТ: не перенесено, предлагаю - transport/web/transport.go (getChatsHandler)
 func getChatsHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	var limit = 1000
@@ -258,7 +258,7 @@ func getChatsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // see https://stackoverflow.com/questions/37782348/how-to-use-getchats-in-tdlib
-// НЕТ: не перенесено, предлагаю - service/telegram/service.go
+// НЕТ: не перенесено, предлагаю - service/telegram/service.go (getChatList)
 func getChatList(tdlibClient *client.Client, limit int) ([]*client.Chat, error) {
 	var (
 		allChats     []*client.Chat
@@ -301,7 +301,7 @@ func getChatList(tdlibClient *client.Client, limit int) ([]*client.Chat, error) 
 	return allChats, nil
 }
 
-// ДА: перенесено - service/media_album/service.go
+// OK: перенесено - service/media_album/service.go
 type MediaAlbum struct {
 	messages     []*client.Message
 	lastReceived time.Time
@@ -413,7 +413,7 @@ func doUpdateNewMessage(messages []*client.Message, forwardKey string, forward c
 // 	return result
 // }
 
-// НЕТ: не перенесено, предлагаю - util/panic.go
+// NO: не перенесено, предлагаю - util/panic.go
 func handlePanic() {
 	if err := recover(); err != nil {
 		log.Printf("Panic...\n%s\n\n%s", err, debug.Stack())

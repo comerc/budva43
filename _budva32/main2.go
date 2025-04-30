@@ -517,7 +517,7 @@ func getFormattedText(messageContent client.MessageContent) (*client.FormattedTe
 	return formattedText, contentMode
 }
 
-// ДА: перенесено - slices.Contains()
+// OK: перенесено - slices.Contains()
 func contains(a []string, s string) bool {
 	for _, t := range a {
 		if t == s {
@@ -527,7 +527,7 @@ func contains(a []string, s string) bool {
 	return false
 }
 
-// ДА: перенесено - slices.Contains()
+// OK: перенесено - slices.Contains()
 func containsInt64(a []int64, e int64) bool {
 	for _, t := range a {
 		if t == e {

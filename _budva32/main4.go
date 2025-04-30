@@ -16,7 +16,7 @@ import (
 
 var queue = list.New()
 
-// НЕТ: перенесено частично - service/queue/service.go (Start и processQueue)
+// НЕТ: перенесено частично - service/queue/service.go (processQueue)
 func runQueue() {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
@@ -33,7 +33,7 @@ func runQueue() {
 	}
 }
 
-// ДА: перенесено - service/storage/service.go и util/slice.go
+// ДА: перенесено - util/primitive.go (Distinct)
 func distinct(a []string) []string {
 	set := make(map[string]struct{})
 	for _, val := range a {
@@ -48,7 +48,7 @@ func distinct(a []string) []string {
 
 const waitForForward = 3 * time.Second // чтобы бот успел отреагировать на сообщение
 
-// ДА: перенесено - service/engine/service.go
+// ДА: перенесено - service/engine/service.go (getInputThumbnail)
 func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
 	if thumbnail == nil || thumbnail.File == nil && thumbnail.File.Remote == nil {
 		return nil
@@ -184,7 +184,7 @@ func addSourceLink(message *client.Message, formattedText *client.FormattedText,
 	log.Printf("addSourceLink > %#v", formattedText)
 }
 
-// ДА: перенесено - service/engine/service.go
+// ДА: перенесено - service/engine/service.go (getInputMessageContent)
 func getInputMessageContent(messageContent client.MessageContent, formattedText *client.FormattedText, contentMode ContentMode) client.InputMessageContent {
 	switch contentMode {
 	case ContentModeText:

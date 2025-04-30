@@ -134,7 +134,7 @@ func main() {
 	// НЕТ: перенесено частично - config/config.go (Watch)
 	go config.Watch(reload)
 
-	// НЕТ: не перенесено, предлагаю - transport/http/server.go (StartHTTPServer)
+	// НЕТ: не перенесено, предлагаю - transport/web/transport.go (StartHTTPServer)
 	go func() {
 		http.HandleFunc("/favicon.ico", getFaviconHandler)
 		http.HandleFunc("/", withBasicAuth(withAuthentiation(getChatsHandler)))
