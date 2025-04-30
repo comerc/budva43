@@ -125,10 +125,10 @@ type (
 		// Правила форвардинга
 		Forwards map[entity.ForwardRuleId]*entity.ForwardRule
 		// Настройки отчетов
-		Reports struct {
-			Template string
-			For      []entity.ChatId
-		}
+		// Report struct {
+		// 	Template string
+		// 	For      []entity.ChatId
+		// }
 	}
 )
 

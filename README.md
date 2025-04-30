@@ -139,7 +139,7 @@ sources:
 			for: [-321]
 		auto-answer: true
 		delete-system-messages: true
-reports:
+report:
   template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
   for: [
       -222,
