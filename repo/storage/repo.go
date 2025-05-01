@@ -1,0 +1,131 @@
+package badger
+
+import (
+	"context"
+	"encoding/binary"
+	"log/slog"
+	"time"
+
+	badger "github.com/dgraph-io/badger/v4"
+
+	"github.com/comerc/budva43/config"
+)
+
+// Repo определяет интерфейс для работы с хранилищем BadgerDB
+type Repo struct {
+	log *slog.Logger
+	//
+	db *badger.DB
+}
+
+// New создает новый экземпляр репозитория для BadgerDB
+func New() *Repo {
+	return &Repo{
+		log: slog.With("module", "repo.storage"),
+		//
+		db: nil,
+	}
+}
+
+// Start устанавливает соединение с базой данных
+func (r *Repo) Start(ctx context.Context, shutdown func()) error {
+	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
+	db, err := badger.Open(opts)
+	if err != nil {
+		return err
+	}
+	r.db = db
+
+	go r.runGarbageCollection(ctx)
+
+	return nil
+}
+
+// Close закрывает соединение с базой данных
+func (r *Repo) Close() error {
+	if r.db != nil {
+		return r.db.Close()
+	}
+	return nil
+}
+
+// Get получает значение по ключу
+func (r *Repo) Get(key string) ([]byte, error) {
+	var value []byte
+	err := r.db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte(key))
+		if err != nil {
+			return err
+		}
+		value, err = item.ValueCopy(nil)
+		return err
+	})
+	return value, err
+}
+
+// Set устанавливает значение по ключу
+func (r *Repo) Set(key, value string) error {
+	return r.db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key), []byte(value))
+	})
+}
+
+// Delete удаляет значение по ключу
+func (r *Repo) Delete(key string) error {
+	return r.db.Update(func(txn *badger.Txn) error {
+		return txn.Delete([]byte(key))
+	})
+}
+
+// Iterate выполняет итерацию по всем ключам с заданным префиксом
+func (r *Repo) Iterate(prefix string, fn func(key, value string) error) error {
+	return r.db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchValues = true
+		it := txn.NewIterator(opts)
+		defer it.Close()
+
+		prefixBytes := []byte(prefix)
+		for it.Seek(prefixBytes); it.ValidForPrefix(prefixBytes); it.Next() {
+			item := it.Item()
+			key := item.Key()
+			err := item.Value(func(val []byte) error {
+				return fn(string(key), string(val))
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// convertUint64ToBytes преобразует uint64 в байтовый массив
+func (r *Repo) convertUint64ToBytes(i uint64) []byte {
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], i)
+	return buf[:]
+}
+
+// ConvertBytesToUint64 преобразует байтовый массив в uint64
+func (r *Repo) ConvertBytesToUint64(b []byte) uint64 {
+	return binary.BigEndian.Uint64(b)
+}
+
+// runGarbageCollection выполняет сборку мусора для базы данных
+func (r *Repo) runGarbageCollection(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		again:
+			err := r.db.RunValueLogGC(0.7)
+			if err == nil {
+				goto again
+			}
+		}
+	}
+}

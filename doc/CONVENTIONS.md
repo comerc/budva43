@@ -181,7 +181,7 @@
 
 Нотация Start должна применяться для компонентов, которые требуют инициализации ресурсов или запуска фоновых процессов.
 
-- **репозитории** (Telegram, Badger) реализуют Start для управления соединениями
+- **репозитории** (Telegram, Storage) реализуют Start для управления соединениями
 - **транспортные слои** (Web, Bot, CLI) реализуют Start для управления серверами и обработчиками
 
 Однако, **сервисы и контроллеры** обычно не имеют своего состояния, требующего инициализации или освобождения ресурсов, поэтому они не должны реализовывать метод Start. Но в особых случаях это допустимо.
@@ -219,11 +219,11 @@ func main() {
 
 func runApp(ctx context.Context, errSet *errors.ErrSet) error {
     // Инициализация BadgerDB
-    badgerRepo := badger.New()
-    if err := badgerRepo.Connect(ctx); err != nil {
+    storageRepo := badger.New()
+    if err := storageRepo.Connect(ctx); err != nil {
         return fmt.Errorf("failed to connect to BadgerDB: %w", err)
     }
-    defer util.Shutdown("badgerRepo", errSet, badgerRepo.Close)
+    defer util.Shutdown("storageRepo", errSet, storageRepo.Close)
 
     // Инициализация TDLib
     telegramRepo, err := telegramRepo.New()
@@ -233,7 +233,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
     defer util.Shutdown("telegramRepo", errSet, telegramRepo.Close)
 
     // Инициализация сервисов
-    messageService := messageService.New(telegramRepo, badgerRepo)
+    messageService := messageService.New(telegramRepo, storageRepo)
     forwardService := forwardService.New(messageService)
     
     // Запуск HTTP-сервера
