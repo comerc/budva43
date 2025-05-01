@@ -2,6 +2,7 @@ package badger
 
 import (
 	"context"
+	"encoding/binary"
 	"log/slog"
 	"time"
 
@@ -99,6 +100,19 @@ func (r *Repo) Iterate(prefix string, fn func(key, value string) error) error {
 	})
 }
 
+// convertUint64ToBytes преобразует uint64 в байтовый массив
+func (r *Repo) convertUint64ToBytes(i uint64) []byte {
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], i)
+	return buf[:]
+}
+
+// ConvertBytesToUint64 преобразует байтовый массив в uint64
+func (r *Repo) ConvertBytesToUint64(b []byte) uint64 {
+	return binary.BigEndian.Uint64(b)
+}
+
+// runGarbageCollection выполняет сборку мусора для базы данных
 func (r *Repo) runGarbageCollection(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()

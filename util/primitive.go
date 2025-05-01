@@ -1,8 +1,8 @@
 package util
 
 import (
-	"encoding/binary"
 	"log"
+	"slices"
 	"strconv"
 	"unicode/utf16"
 )
@@ -21,14 +21,8 @@ func ConvertToInt[T int | int64](s string) T {
 	return T(i)
 }
 
-// Uint64ToBytes преобразует uint64 в байтовый массив
-func Uint64ToBytes(i uint64) []byte {
-	var buf [8]byte
-	binary.BigEndian.PutUint64(buf[:], i)
-	return buf[:]
-}
-
-// BytesToUint64 преобразует байтовый массив в uint64
-func BytesToUint64(b []byte) uint64 {
-	return binary.BigEndian.Uint64(b)
+// Distinct возвращает уникальные элементы из массива строк
+func Distinct(a []string) []string {
+	slices.Sort(a)
+	return slices.Compact(a)
 }
