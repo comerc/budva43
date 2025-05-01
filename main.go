@@ -11,7 +11,7 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
-	badgerRepo "github.com/comerc/budva43/repo/badger"
+	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
@@ -128,12 +128,12 @@ func runApp(ctx context.Context, errSet *errSet) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	badgerRepo := badgerRepo.New()
-	if err := badgerRepo.Start(ctx, cancel); err != nil {
-		return fmt.Errorf("ошибка запуска badgerRepo: %w", err)
+	storageRepo := storageRepo.New()
+	if err := storageRepo.Start(ctx, cancel); err != nil {
+		return fmt.Errorf("ошибка запуска storageRepo: %w", err)
 	}
-	defer gracefulShutdown("badgerRepo", errSet, badgerRepo)
-	slog.Info("badgerRepo запущен")
+	defer gracefulShutdown("storageRepo", errSet, storageRepo)
+	slog.Info("storageRepo запущен")
 
 	// Создаем и запускаем репозиторий Telegram
 	telegramRepo := telegramRepo.New()
@@ -149,7 +149,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	authService := authService.New(telegramRepo)
 	filterService := filterService.New()
 	transformService := transformService.New()
-	storageService := storageService.New(badgerRepo)
+	storageService := storageService.New(storageRepo)
 	mediaAlbumService := mediaAlbumService.New()
 	queueService := queueService.New()
 	if err := queueService.Start(ctx); err != nil {

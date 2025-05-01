@@ -58,16 +58,16 @@ func main() {
 		if _, err = os.Stat(path); os.IsNotExist(err) {
 			os.Mkdir(path, os.ModePerm)
 		}
-		// OK: перенесено - repo/badger/repo.go (Start)
+		// OK: перенесено - repo/storage/repo.go (Start)
 		badgerDB, err = badger.Open(badger.DefaultOptions(path))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	// OK: перенесено - repo/badger/repo.go (Close)
+	// OK: перенесено - repo/storage/repo.go (Close)
 	defer badgerDB.Close()
 
-	// OK: перенесено - repo/badger/repo.go (runGarbageCollection)
+	// OK: перенесено - repo/storage/repo.go (runGarbageCollection)
 	go func() {
 		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
