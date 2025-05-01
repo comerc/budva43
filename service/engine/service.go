@@ -965,7 +965,7 @@ func getInputMessageContent(messageContent client.MessageContent, formattedText 
 	return nil
 }
 
-// TODO: ?? перенести в service/message/service.go ??
+// getInputThumbnail преобразует thumbnail в входной контент
 func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
 	if thumbnail == nil || thumbnail.File == nil && thumbnail.File.Remote == nil {
 		return nil
