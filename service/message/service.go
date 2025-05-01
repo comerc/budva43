@@ -20,7 +20,7 @@ func New() *Service {
 	}
 }
 
-// GetContent извлекает содержимое сообщения
+// GetContent извлекает содержимое сообщения для поддерживаемых типов
 func (s *Service) GetContent(message *client.Message) (*client.FormattedText, string) {
 	if message == nil || message.Content == nil {
 		return &client.FormattedText{}, ""
