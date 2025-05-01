@@ -1,4 +1,4 @@
-package text_transform
+package transform
 
 import (
 	"log/slog"
@@ -118,19 +118,6 @@ func (s *Service) FormatText(text string, rules map[string]string) string {
 	return result
 }
 
-// EscapeMarkdown экранирует специальные символы Markdown в тексте
-func (s *Service) EscapeMarkdown(text string) string {
-	// Экранирование специальных символов Markdown
-	specialChars := []string{`\`, `*`, `_`, "`", "[", "]", "(", ")", "{", "}", "#", "+", "-", ".", "!"}
-	result := text
-
-	for _, char := range specialChars {
-		result = strings.ReplaceAll(result, char, `\`+char)
-	}
-
-	return result
-}
-
 // ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
 func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error {
 	// TODO: выполнить корректный перенос из budva32
@@ -170,4 +157,36 @@ func (s *Service) AddSources(formattedText *client.FormattedText, message *clien
 // AddAutoAnswer добавляет ответ на сообщение
 func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	// TODO: выполнить корректный перенос из budva32
+}
+
+// escapeMarkdown экранирует специальные символы Markdown в тексте
+func escapeMarkdown(text string) string {
+	// эскейпит все символы: которые нужны для markdown-разметки
+	a := []string{
+		"_",
+		"*",
+		`\[`,
+		`\]`,
+		"(",
+		")",
+		"~",
+		"`",
+		">",
+		"#",
+		"+",
+		`\-`,
+		"=",
+		"|",
+		"{",
+		"}",
+		".",
+		"!",
+	}
+	result := text
+	for _, v := range a {
+		result = strings.ReplaceAll(result, v, `\`+v)
+	}
+	return result
+	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
+	// return re.ReplaceAllString(text, `\$0`)
 }
