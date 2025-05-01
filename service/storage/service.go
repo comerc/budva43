@@ -23,7 +23,7 @@ const (
 //go:generate mockery --name=storageRepo --exported
 type storageRepo interface {
 	Set(key, value string) error
-	Get(key string) ([]byte, error)
+	Get(key string) (string, error)
 	Delete(key string) error
 }
 
@@ -60,7 +60,7 @@ func distinct(slice []string) []string {
 func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error {
 	key := fmt.Sprintf("%s:%s", CopiedMessageIdsPrefix, fromChatMessageId)
 
-	var val []byte
+	var val string
 	var err error
 
 	// Получаем текущий список скопированных сообщений
