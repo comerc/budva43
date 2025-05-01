@@ -468,7 +468,7 @@ func bytesToUint64(b []byte) uint64 {
 	return binary.BigEndian.Uint64(b)
 }
 
-// НЕТ: не перенесено, предлагаю - repo/storage/repo.go (IncrementByDB)
+// OK: перенесено - repo/storage/repo.go (Increment)
 func incrementByDB(key []byte) []byte {
 	// Merge function to add two uint64 numbers
 	add := func(existing, new []byte) []byte {
@@ -481,7 +481,7 @@ func incrementByDB(key []byte) []byte {
 	return result
 }
 
-// НЕТ: не перенесено, предлагаю - repo/storage/repo.go (GetForDB)
+// OK: перенесено - repo/storage/repo.go (Get)
 func getForDB(key []byte) []byte {
 	var (
 		err error
@@ -507,7 +507,7 @@ func getForDB(key []byte) []byte {
 	return val
 }
 
-// НЕТ: не перенесено, предлагаю - repo/storage/repo.go (SetForDB)
+// OK: перенесено - repo/storage/repo.go (Set)
 func setForDB(key []byte, val []byte) {
 	err := badgerDB.Update(func(txn *badger.Txn) error {
 		err := txn.Set(key, val)
@@ -520,7 +520,7 @@ func setForDB(key []byte, val []byte) {
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - repo/storage/repo.go (DeleteForDB)
+// OK: перенесено - repo/storage/repo.go (Delete)
 func deleteForDB(key []byte) {
 	err := badgerDB.Update(func(txn *badger.Txn) error {
 		return txn.Delete(key)

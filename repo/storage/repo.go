@@ -1,4 +1,4 @@
-package badger
+package storage
 
 import (
 	"context"
@@ -49,69 +49,6 @@ func (r *Repo) Close() error {
 	return nil
 }
 
-// Get получает значение по ключу
-func (r *Repo) Get(key string) ([]byte, error) {
-	var value []byte
-	err := r.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-		value, err = item.ValueCopy(nil)
-		return err
-	})
-	return value, err
-}
-
-// Set устанавливает значение по ключу
-func (r *Repo) Set(key, value string) error {
-	return r.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(key), []byte(value))
-	})
-}
-
-// Delete удаляет значение по ключу
-func (r *Repo) Delete(key string) error {
-	return r.db.Update(func(txn *badger.Txn) error {
-		return txn.Delete([]byte(key))
-	})
-}
-
-// Iterate выполняет итерацию по всем ключам с заданным префиксом
-func (r *Repo) Iterate(prefix string, fn func(key, value string) error) error {
-	return r.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		opts.PrefetchValues = true
-		it := txn.NewIterator(opts)
-		defer it.Close()
-
-		prefixBytes := []byte(prefix)
-		for it.Seek(prefixBytes); it.ValidForPrefix(prefixBytes); it.Next() {
-			item := it.Item()
-			key := item.Key()
-			err := item.Value(func(val []byte) error {
-				return fn(string(key), string(val))
-			})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
-// convertUint64ToBytes преобразует uint64 в байтовый массив
-func (r *Repo) convertUint64ToBytes(i uint64) []byte {
-	var buf [8]byte
-	binary.BigEndian.PutUint64(buf[:], i)
-	return buf[:]
-}
-
-// ConvertBytesToUint64 преобразует байтовый массив в uint64
-func (r *Repo) ConvertBytesToUint64(b []byte) uint64 {
-	return binary.BigEndian.Uint64(b)
-}
-
 // runGarbageCollection выполняет сборку мусора для базы данных
 func (r *Repo) runGarbageCollection(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Minute)
@@ -128,4 +65,79 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 			}
 		}
 	}
+}
+
+// Increment увеличивает значение по ключу на 1
+func (r *Repo) Increment(key []byte) []byte {
+	// Merge function to add two uint64 numbers
+	add := func(existing, new []byte) []byte {
+		return convertUint64ToBytes(ConvertBytesToUint64(existing) + ConvertBytesToUint64(new))
+	}
+	m := r.db.GetMergeOperator(key, add, 200*time.Millisecond)
+	defer m.Stop()
+	m.Add(convertUint64ToBytes(1))
+	result, _ := m.Get()
+	return result
+}
+
+// Get получает значение по ключу
+func (r *Repo) Get(key string) string {
+	var (
+		err error
+		val []byte
+	)
+	err = r.db.View(func(txn *badger.Txn) error {
+		var item *badger.Item
+		item, err = txn.Get([]byte(key))
+		if err != nil {
+			return err
+		}
+		val, err = item.ValueCopy(nil)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		r.log.Error("Get", "key", key, "err", err)
+	} else {
+		r.log.Info("Get", "key", key, "val", val)
+	}
+	return string(val)
+}
+
+// Set устанавливает значение по ключу
+func (r *Repo) Set(key, val string) {
+	err := r.db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key), []byte(val))
+	})
+	if err != nil {
+		r.log.Error("Set", "key", key, "err", err)
+	} else {
+		r.log.Info("Set", "key", key, "val", val)
+	}
+}
+
+// Delete удаляет значение по ключу
+func (r *Repo) Delete(key string) {
+	err := r.db.Update(func(txn *badger.Txn) error {
+		return txn.Delete([]byte(key))
+	})
+	if err != nil {
+		r.log.Error("Delete", "key", key, "err", err)
+	} else {
+		r.log.Info("Delete", "key", key)
+	}
+}
+
+// convertUint64ToBytes преобразует uint64 в байтовый массив
+func convertUint64ToBytes(i uint64) []byte {
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], i)
+	return buf[:]
+}
+
+// ConvertBytesToUint64 преобразует байтовый массив в uint64
+func ConvertBytesToUint64(b []byte) uint64 {
+	return binary.BigEndian.Uint64(b)
 }
