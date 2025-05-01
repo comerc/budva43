@@ -184,7 +184,7 @@ func addSourceLink(message *client.Message, formattedText *client.FormattedText,
 	log.Printf("addSourceLink > %#v", formattedText)
 }
 
-// ДА: перенесено - service/engine/service.go (getInputMessageContent)
+// OK: перенесено - service/engine/service.go (getInputMessageContent)
 func getInputMessageContent(messageContent client.MessageContent, formattedText *client.FormattedText, contentMode ContentMode) client.InputMessageContent {
 	switch contentMode {
 	case ContentModeText:

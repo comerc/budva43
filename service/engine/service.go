@@ -869,15 +869,15 @@ func parseToChatMessageId(toChatMessageId string) (ruleId string, chatId int64, 
 	return ruleId, int64(chatIdInt), int64(messageIdInt), nil
 }
 
-// TODO: ?? перенести в service/message/service.go ??
+// getInputMessageContent преобразует содержимое сообщения во входной контент
 func getInputMessageContent(messageContent client.MessageContent, formattedText *client.FormattedText, contentType string) client.InputMessageContent {
 	switch contentType {
 	case client.TypeMessageText:
-		// TODO: messageText := messageContent.(*client.MessageText) // при переносе budva32 не работает?
+		messageText := messageContent.(*client.MessageText)
 		return &client.InputMessageText{
-			Text: formattedText,
-			// TODO: DisableWebPagePreview: messageText.WebPage == nil || messageText.WebPage.Url == "", // при переносе budva32 теперь не работает?
-			ClearDraft: true,
+			Text:               formattedText,
+			LinkPreviewOptions: messageText.LinkPreviewOptions,
+			ClearDraft:         true,
 		}
 	case client.TypeMessageAnimation:
 		messageAnimation := messageContent.(*client.MessageAnimation)
