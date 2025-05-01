@@ -459,6 +459,7 @@ func getReplyMarkupData(message *client.Message) ([]byte, bool) {
 	return nil, false
 }
 
+// OK: не перенесено - используется client.TypeMessage*
 type ContentMode string
 
 const (
@@ -471,13 +472,12 @@ const (
 	ContentModeVoiceNote = "voiceNote"
 )
 
-// ДА: перенесено - service/message/service.go (GetContent)
+// OK: перенесено - service/message/service.go (GetContent)
 func getFormattedText(messageContent client.MessageContent) (*client.FormattedText, ContentMode) {
 	var (
 		formattedText *client.FormattedText
 		contentMode   ContentMode
 	)
-	// TODO: как использовать switch для разблюдовки по приведению типа?
 	if content, ok := messageContent.(*client.MessageText); ok {
 		formattedText = content.Text
 		contentMode = ContentModeText
@@ -500,6 +500,7 @@ func getFormattedText(messageContent client.MessageContent) (*client.FormattedTe
 		formattedText = content.Caption
 		contentMode = ContentModeVoiceNote
 	} else {
+		// TODO: надо поддерживать больше типов?
 		// client.MessageExpiredPhoto
 		// client.MessageSticker
 		// client.MessageExpiredVideo

@@ -456,19 +456,19 @@ func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
 
 // **** db routines
 
-// OK: перенесено - util/primitive.go (Uint64ToBytes)
+// OK: перенесено - repo/badger/repo.go (convertUint64ToBytes)
 func uint64ToBytes(i uint64) []byte {
 	var buf [8]byte
 	binary.BigEndian.PutUint64(buf[:], i)
 	return buf[:]
 }
 
-// OK: перенесено - util/primitive.go (BytesToUint64)
+// OK: перенесено - repo/badger/repo.go (ConvertBytesToUint64)
 func bytesToUint64(b []byte) uint64 {
 	return binary.BigEndian.Uint64(b)
 }
 
-// НЕТ: не перенесено, предлагаю - service/storage/service.go (IncrementByDB)
+// НЕТ: не перенесено, предлагаю - repo/badger/repo.go (IncrementByDB)
 func incrementByDB(key []byte) []byte {
 	// Merge function to add two uint64 numbers
 	add := func(existing, new []byte) []byte {
@@ -481,7 +481,7 @@ func incrementByDB(key []byte) []byte {
 	return result
 }
 
-// НЕТ: не перенесено, предлагаю - service/storage/service.go (GetForDB)
+// НЕТ: не перенесено, предлагаю - repo/badger/repo.go (GetForDB)
 func getForDB(key []byte) []byte {
 	var (
 		err error
@@ -507,7 +507,7 @@ func getForDB(key []byte) []byte {
 	return val
 }
 
-// НЕТ: не перенесено, предлагаю - service/storage/service.go (SetForDB)
+// НЕТ: не перенесено, предлагаю - repo/badger/repo.go (SetForDB)
 func setForDB(key []byte, val []byte) {
 	err := badgerDB.Update(func(txn *badger.Txn) error {
 		err := txn.Set(key, val)
@@ -520,7 +520,7 @@ func setForDB(key []byte, val []byte) {
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - service/storage/service.go (DeleteForDB)
+// НЕТ: не перенесено, предлагаю - repo/badger/repo.go (DeleteForDB)
 func deleteForDB(key []byte) {
 	err := badgerDB.Update(func(txn *badger.Txn) error {
 		return txn.Delete(key)

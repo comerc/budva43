@@ -33,7 +33,7 @@ func runQueue() {
 	}
 }
 
-// ДА: перенесено - util/primitive.go (Distinct)
+// OK: перенесено - util/primitive.go (Distinct)
 func distinct(a []string) []string {
 	set := make(map[string]struct{})
 	for _, val := range a {
@@ -328,7 +328,7 @@ func replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatI
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - service/transform/service.go (CopyFormattedText)
+// OK: перенесено - util/client.go (CopyFormattedText)
 func copyFormattedText(formattedText *client.FormattedText) *client.FormattedText {
 	result := *formattedText
 	return &result

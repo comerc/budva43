@@ -256,13 +256,13 @@ func main() {
 		os.Exit(1)
 	}()
 
-	// НЕТ: не перенесено, предлагаю - util/panic.go (HandlePanic)
+	// NO: не перенесено, предлагаю - util/panic.go (HandlePanic)
 	defer handlePanic()
 
 	// НЕТ: не перенесено, предлагаю - service/report/service.go (StartReportService)
 	go runReports()
 
-	// ДА: перенесено - service/queue/service.go (Start)
+	// OK: перенесено - service/queue/service.go (Start)
 	go runQueue()
 
 	// НЕТ: перенесено частично - service/engine/service.go (handleUpdates)
