@@ -26,3 +26,9 @@ func Distinct(a []string) []string {
 	slices.Sort(a)
 	return slices.Compact(a)
 }
+
+// Copy копирует любую структуру
+func Copy[T any](v *T) *T {
+	result := *v
+	return &result
+}

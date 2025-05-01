@@ -328,7 +328,7 @@ func replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatI
 	}
 }
 
-// OK: перенесено - util/client.go (CopyFormattedText)
+// OK: перенесено - util/primitive.go (Copy)
 func copyFormattedText(formattedText *client.FormattedText) *client.FormattedText {
 	result := *formattedText
 	return &result
