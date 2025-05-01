@@ -334,7 +334,7 @@ func copyFormattedText(formattedText *client.FormattedText) *client.FormattedTex
 	return &result
 }
 
-// ДА: перенесено - service/transform/service.go (EscapeMarkdown)
+// OK: перенесено - service/transform/service.go (escapeMarkdown)
 func escapeAll(s string) string {
 	// эскейпит все символы: которые нужны для markdown-разметки
 	a := []string{
