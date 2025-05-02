@@ -29,7 +29,7 @@ const (
 	FiltersOther FiltersMode = "other"
 )
 
-// НЕТ: перенесено частично - service/filter/service.go (ShouldForward)
+// OK: перенесено - service/engine/service.go (mapFiltersMode)
 func checkFilters(formattedText *client.FormattedText, forward config.Forward) FiltersMode {
 	if formattedText.Text == "" {
 		hasInclude := false

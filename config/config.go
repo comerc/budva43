@@ -123,7 +123,7 @@ type (
 		// Настройки источников
 		Sources map[entity.ChatId]*entity.Source
 		// Правила форвардинга
-		Forwards map[entity.ForwardRuleId]*entity.ForwardRule
+		ForwardRules map[entity.ForwardRuleId]*entity.ForwardRule
 		// Настройки отчетов
 		// Report struct {
 		// 	Template string

@@ -15,7 +15,6 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
-	filterService "github.com/comerc/budva43/service/filter"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
 	queueService "github.com/comerc/budva43/service/queue"
@@ -147,7 +146,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	messageService := messsageService.New()
 	// reportService := reportService.New()
 	authService := authService.New(telegramRepo)
-	filterService := filterService.New()
 	transformService := transformService.New()
 	storageService := storageService.New(storageRepo)
 	mediaAlbumService := mediaAlbumService.New()
@@ -160,7 +158,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	engineService := engineService.New(
 		queueService,
 		messageService,
-		filterService,
 		transformService,
 		storageService,
 		mediaAlbumService,
