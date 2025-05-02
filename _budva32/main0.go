@@ -179,7 +179,7 @@ func main() {
 	// botToken := "000000000:gsVCGG5YbikxYHC7bP5vRvmBqJ7Xz6vG6td"
 	// authorizer := client.BotAuthorizer(botToken)
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/client.go (InitClient)
+	// OK: перенесено - service/auth/authorizer.go (NewAuthorizer)
 	authorizer.TdlibParameters <- &client.TdlibParameters{
 		UseTestDc:              false,
 		DatabaseDirectory:      filepath.Join(path, "db"),
@@ -198,7 +198,7 @@ func main() {
 		IgnoreFileNames:        false,
 	}
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/client.go (SetupLogs)
+	// OK: перенесено - repo/telegram/repo.go (setupOptions)
 	logStream := func(tdlibClient *client.Client) {
 		tdlibClient.SetLogStream(&client.SetLogStreamRequest{
 			LogStream: &client.LogStreamFile{
@@ -208,7 +208,6 @@ func main() {
 			},
 		})
 	}
-
 	logVerbosity := func(tdlibClient *client.Client) {
 		tdlibClient.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 			NewVerbosityLevel: 1,

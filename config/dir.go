@@ -10,6 +10,7 @@ func getAllDirs() []string {
 	return []string{
 		Storage.DatabaseDirectory,
 		Storage.BackupDirectory,
+		Telegram.LogDirectory,
 		Telegram.DatabaseDirectory,
 		Telegram.FilesDirectory,
 	}

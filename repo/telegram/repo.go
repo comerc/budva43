@@ -55,16 +55,10 @@ func (r *Repo) CreateClient(
 ) {
 	r.log.Info("Creating TDLib client")
 
-	options := []client.Option{
-		client.WithLogVerbosity(&client.SetLogVerbosityLevelRequest{
-			NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
-		}),
-	}
-
 	// Если неудачная авторизации, то клиент закрывается, потому перезапуск цикла
 	for {
 		authorizationStateHandler := createAuthorizer(r.setClient, r.shutdown)
-		_, err := client.NewClient(authorizationStateHandler, options...)
+		_, err := client.NewClient(authorizationStateHandler, setupOptions()...)
 		if err != nil {
 			r.log.Error("ошибка при создании клиента TDLib", "err", err)
 			select {
@@ -165,4 +159,25 @@ func (r *Repo) InitClientDone() chan any {
 // NewClientDone возвращает канал, который будет закрыт после авторизации клиента
 func (r *Repo) AuthClientDone() chan any {
 	return r.authClientDone
+}
+
+// setupOptions устанавливает опции для клиента TDLib
+func setupOptions() []client.Option {
+	options := []client.Option{
+		func(tdlibClient *client.Client) {
+			tdlibClient.SetLogStream(&client.SetLogStreamRequest{
+				LogStream: &client.LogStreamFile{
+					Path:           config.Telegram.LogDirectory,
+					MaxFileSize:    config.Telegram.LogMaxFileSize,
+					RedirectStderr: true,
+				},
+			})
+		},
+		func(tdlibClient *client.Client) {
+			tdlibClient.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
+				NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
+			})
+		},
+	}
+	return options
 }

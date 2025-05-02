@@ -71,6 +71,8 @@ type (
 		UseMessageDatabase  bool
 		UseSecretChats      bool
 		LogVerbosityLevel   int32
+		LogDirectory        string
+		LogMaxFileSize      int64
 	}
 
 	// Настройки для бота

@@ -33,9 +33,11 @@ func initTelegram(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ошибка получения текущей директории: %v", err)
 	}
+	config.Telegram.LogDirectory = path.Join(currDir, ".data", "telegram", "log")
 	config.Telegram.DatabaseDirectory = path.Join(currDir, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = path.Join(currDir, ".data", "telegram", "files")
 	var dirs = []string{
+		config.Telegram.LogDirectory,
 		config.Telegram.DatabaseDirectory,
 		config.Telegram.FilesDirectory,
 	}

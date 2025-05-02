@@ -34,7 +34,9 @@ func setDefaultConfig(config *config) {
 	config.Telegram.SystemVersion = "1.0.0"
 	config.Telegram.ApplicationVersion = "1.0.0"
 	config.Telegram.LogVerbosityLevel = 0
+	config.Telegram.LogMaxFileSize = 10485760
 
+	config.Telegram.LogDirectory = filepath.Join(projectRoot, ".data", "telegram", "log")
 	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = filepath.Join(projectRoot, ".data", "telegram", "files")
 
