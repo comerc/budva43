@@ -112,7 +112,7 @@ func setupLogger() {
 // setupSignalHandler настраивает обработку сигналов остановки
 func setupSignalHandler(shutdown func()) {
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		sig := <-sigs

@@ -246,7 +246,7 @@ func main() {
 	listener := tdlibClient.GetListener()
 	defer listener.Close()
 
-	// НЕТ: не перенесено, предлагаю - internal/app/signals.go (HandleSignals)
+	// OK: перенесено - main.go (setupSignalHandler)
 	// Handle Ctrl+C
 	ch := make(chan os.Signal, 2)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
