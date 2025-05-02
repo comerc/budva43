@@ -86,6 +86,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] voidint/g
 - [x] go mod vendor
 - [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
+- [ ] temporal
 
 ## .env
 
@@ -153,7 +154,7 @@ report:
       -321,
       -888,
     ]
-forwards:
+forward-rules:
 	"id1":
 		from: -111
 		to: [-222]

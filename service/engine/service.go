@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -37,10 +38,6 @@ type messageService interface {
 	// EditMessageCaption(chatId, messageId int64, caption *client.FormattedText) (*client.Message, error)
 	// DeleteMessages(chatId int64, messageIds []int64) error
 	// GetMessage(chatId, messageId int64) (*client.Message, error)
-}
-
-type filterService interface {
-	ShouldForward(text string, rule *entity.ForwardRule) (bool, error)
 }
 
 type transformService interface {
@@ -80,7 +77,6 @@ type Service struct {
 	//
 	queueService       queueService
 	messageService     messageService
-	filterService      filterService
 	transformService   transformService
 	storageService     storageService
 	mediaAlbumsService mediaAlbumService
@@ -91,7 +87,6 @@ type Service struct {
 func New(
 	queueService queueService,
 	messageService messageService,
-	filterService filterService,
 	transformService transformService,
 	storageService storageService,
 	mediaAlbumsService mediaAlbumService,
@@ -102,7 +97,6 @@ func New(
 		//
 		queueService:       queueService,
 		messageService:     messageService,
-		filterService:      filterService,
 		transformService:   transformService,
 		storageService:     storageService,
 		mediaAlbumsService: mediaAlbumsService,
@@ -158,7 +152,7 @@ func (s *Service) validateConfig() error {
 	}
 
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
-	for ruleId, rule := range config.Engine.Forwards {
+	for ruleId, rule := range config.Engine.ForwardRules {
 		if re.FindString(ruleId) != "" {
 			return fmt.Errorf("нельзя использовать [:,] в идентификаторе правила: %s", ruleId)
 		}
@@ -181,7 +175,7 @@ func (s *Service) enrichConfig() error {
 	for key, val := range config.Engine.Sources {
 		val.ChatId = key
 	}
-	for key, rule := range config.Engine.Forwards {
+	for key, rule := range config.Engine.ForwardRules {
 		rule.Id = key
 		if _, ok := config.Engine.Sources[rule.From]; !ok {
 			config.Engine.Sources[rule.From] = &entity.Source{
@@ -846,6 +840,65 @@ func (s *Service) processSingleDeleted(fromChatMessageId, toChatMessageId string
 	// 		}
 	// 	}
 	// }
+}
+
+type filtersMode string
+
+const (
+	filtersOK    filtersMode = "ok"
+	filtersCheck filtersMode = "check"
+	filtersOther filtersMode = "other"
+)
+
+// mapFiltersMode определяет, какой режим фильтрации применим
+func mapFiltersMode(formattedText *client.FormattedText, rule entity.ForwardRule) filtersMode {
+	if formattedText.Text == "" {
+		hasInclude := false
+		if rule.Include != "" {
+			hasInclude = true
+		}
+		for _, includeSubmatch := range rule.IncludeSubmatch {
+			if includeSubmatch.Regexp != "" {
+				hasInclude = true
+				break
+			}
+		}
+		if hasInclude {
+			return filtersOther
+		}
+	} else {
+		if rule.Exclude != "" {
+			re := regexp.MustCompile("(?i)" + rule.Exclude)
+			if re.FindString(formattedText.Text) != "" {
+				return filtersCheck
+			}
+		}
+		hasInclude := false
+		if rule.Include != "" {
+			hasInclude = true
+			re := regexp.MustCompile("(?i)" + rule.Include)
+			if re.FindString(formattedText.Text) != "" {
+				return filtersOK
+			}
+		}
+		for _, includeSubmatch := range rule.IncludeSubmatch {
+			if includeSubmatch.Regexp != "" {
+				hasInclude = true
+				re := regexp.MustCompile("(?i)" + includeSubmatch.Regexp)
+				matches := re.FindAllStringSubmatch(formattedText.Text, -1)
+				for _, match := range matches {
+					s := match[includeSubmatch.Group]
+					if slices.Contains(includeSubmatch.Match, s) {
+						return filtersOK
+					}
+				}
+			}
+		}
+		if hasInclude {
+			return filtersOther
+		}
+	}
+	return filtersOK
 }
 
 // parseToChatMessageId разбирает строку toChatMessageId в формате "ruleId:chatId:messageId"
