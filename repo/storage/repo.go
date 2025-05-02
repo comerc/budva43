@@ -81,7 +81,7 @@ func (r *Repo) Increment(key []byte) []byte {
 }
 
 // Get получает значение по ключу
-func (r *Repo) Get(key string) string {
+func (r *Repo) Get(key string) (string, error) {
 	var (
 		err error
 		val []byte
@@ -103,11 +103,11 @@ func (r *Repo) Get(key string) string {
 	} else {
 		r.log.Info("Get", "key", key, "val", val)
 	}
-	return string(val)
+	return string(val), err
 }
 
 // Set устанавливает значение по ключу
-func (r *Repo) Set(key, val string) {
+func (r *Repo) Set(key, val string) error {
 	err := r.db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), []byte(val))
 	})
@@ -116,10 +116,11 @@ func (r *Repo) Set(key, val string) {
 	} else {
 		r.log.Info("Set", "key", key, "val", val)
 	}
+	return err
 }
 
 // Delete удаляет значение по ключу
-func (r *Repo) Delete(key string) {
+func (r *Repo) Delete(key string) error {
 	err := r.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(key))
 	})
@@ -128,6 +129,7 @@ func (r *Repo) Delete(key string) {
 	} else {
 		r.log.Info("Delete", "key", key)
 	}
+	return err
 }
 
 // convertUint64ToBytes преобразует uint64 в байтовый массив
