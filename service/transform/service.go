@@ -59,9 +59,9 @@ func New() *Service {
 // replaceAll заменяет все вхождения подстроки в строке
 // Используется вместо strings.ReplaceAll для возможности
 // реализации более сложной логики замены в будущем
-func (s *Service) replaceAll(text, from, to string) string {
-	return strings.ReplaceAll(text, from, to)
-}
+// func (s *Service) replaceAll(text, from, to string) string {
+// 	return strings.ReplaceAll(text, from, to)
+// }
 
 // ReplaceLinks заменяет ссылки в тексте согласно настройкам
 func (s *Service) ReplaceLinks(text string, linkReplacements map[string]string) string {
