@@ -31,6 +31,12 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - Install built TDLib to /usr/local instead of placing the files to td/tdlib.
 - Choose which compiler you want to use to build TDLib: clang (recommended)
 
+### Install Mockery V2
+
+```bash
+$ go install github.com/vektra/mockery/v2@v2.53.3
+```
+
 ## Applied Technologies
 
 - [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
@@ -79,6 +85,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 - [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
 - [x] voidint/g
 - [x] go mod vendor
+- [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
 
 ## .env
 
