@@ -10,6 +10,8 @@ linters:
     - prealloc # reports slice declarations that could be preallocated
     - revive # drop-in replacement of golint
     - unconvert # detects unneeded conversions in if statements
+  disable:
+    - unused # отключение предупреждений о неиспользуемых функциях
   settings:
     revive:
       severity: error

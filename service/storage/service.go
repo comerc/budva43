@@ -72,7 +72,7 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 	// Добавляем новое сообщение в список
 	result := []string{}
 	if len(val) > 0 {
-		result = strings.Split(string(val), ",")
+		result = strings.Split(val, ",")
 	}
 
 	// Добавляем новый Id и удаляем дубликаты
@@ -102,7 +102,7 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error
 
 	toChatMessageIds := []string{}
 	if len(val) > 0 {
-		toChatMessageIds = strings.Split(string(val), ",")
+		toChatMessageIds = strings.Split(val, ",")
 	}
 
 	s.log.Debug("получены скопированные сообщения",
@@ -149,7 +149,7 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 	}
 
 	var newMessageId int64
-	if _, err := fmt.Sscanf(string(val), "%d", &newMessageId); err != nil {
+	if _, err := fmt.Sscanf(val, "%d", &newMessageId); err != nil {
 		return 0, fmt.Errorf("ошибка преобразования newMessageId: %w", err)
 	}
 
@@ -193,7 +193,7 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 	}
 
 	var tmpMessageId int64
-	if _, err := fmt.Sscanf(string(val), "%d", &tmpMessageId); err != nil {
+	if _, err := fmt.Sscanf(val, "%d", &tmpMessageId); err != nil {
 		return 0, fmt.Errorf("ошибка преобразования tmpMessageId: %w", err)
 	}
 
@@ -223,7 +223,7 @@ func (s *Service) IncrementViewedMessages(toChatId int64) error {
 
 	var count int64
 	if len(val) > 0 {
-		if _, err := fmt.Sscanf(string(val), "%d", &count); err != nil {
+		if _, err := fmt.Sscanf(val, "%d", &count); err != nil {
 			return fmt.Errorf("ошибка преобразования счетчика просмотренных сообщений: %w", err)
 		}
 	}
@@ -267,7 +267,7 @@ func (s *Service) IncrementForwardedMessages(toChatId int64) error {
 
 	var count int64
 	if len(val) > 0 {
-		if _, err := fmt.Sscanf(string(val), "%d", &count); err != nil {
+		if _, err := fmt.Sscanf(val, "%d", &count); err != nil {
 			return fmt.Errorf("ошибка преобразования счетчика пересланных сообщений: %w", err)
 		}
 	}
