@@ -18,7 +18,7 @@ type Repo struct {
 	//
 	client         *client.Client
 	initClientDone chan any
-	authClientDone chan any
+	listenerChan   chan *client.Listener
 	ctx            context.Context
 	shutdown       func()
 }
@@ -30,7 +30,7 @@ func New() *Repo {
 		//
 		client:         nil,
 		initClientDone: make(chan any),
-		authClientDone: make(chan any),
+		listenerChan:   make(chan *client.Listener),
 	}
 }
 
@@ -70,7 +70,7 @@ func (r *Repo) CreateClient(
 			}
 		}
 		r.log.Info("TDLib client authorized")
-		close(r.authClientDone)
+		r.listenerChan <- r.client.GetListener()
 		break
 	}
 
@@ -106,10 +106,17 @@ func (r *Repo) CreateClient(
 	r.log.Info("Me", "FirstName", me.FirstName) // , "LastName", me.LastName)
 }
 
+// GetListener возвращает канал, который вернёт Listener после авторизации клиента
+func (r *Repo) GetListener() chan *client.Listener {
+	return r.listenerChan
+}
+
+// GetClient возвращает клиент TDLib
 func (r *Repo) GetClient() *client.Client {
 	return r.client
 }
 
+// setClient устанавливает клиент TDLib
 func (r *Repo) setClient(tdlibClient *client.Client) {
 	// r.log.Info("setClient")
 	if r.client != nil {
@@ -154,11 +161,6 @@ func (r *Repo) Close() error {
 // setClientDone возвращает канал, который будет закрыт после инициализации клиента
 func (r *Repo) InitClientDone() chan any {
 	return r.initClientDone
-}
-
-// NewClientDone возвращает канал, который будет закрыт после авторизации клиента
-func (r *Repo) AuthClientDone() chan any {
-	return r.authClientDone
 }
 
 // setupOptions устанавливает опции для клиента TDLib
