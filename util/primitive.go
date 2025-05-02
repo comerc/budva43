@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strconv"
 	"unicode/utf16"
+
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // RuneCountForUTF16 возвращает количество символов в строке, учитывая UTF-16
@@ -28,7 +30,17 @@ func Distinct(a []string) []string {
 }
 
 // Copy копирует любую структуру
-func Copy[T any](v *T) *T {
-	result := *v
-	return &result
+func Copy[T any](from *T) *T {
+	var err error
+	var b []byte
+	b, err = msgpack.Marshal(from)
+	if err != nil {
+		log.Panic("Copy: ", err)
+	}
+	to := new(T)
+	err = msgpack.Unmarshal(b, to)
+	if err != nil {
+		log.Panic("Copy: ", err)
+	}
+	return to
 }
