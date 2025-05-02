@@ -27,7 +27,7 @@ func New() *Service {
 func (s *Service) Start(ctx context.Context) error {
 	s.log.Info("Запуск сервиса очереди")
 
-	go s.processQueue(ctx)
+	go s.runQueue(ctx)
 
 	return nil
 }
