@@ -74,36 +74,42 @@ func (r *Repo) CreateClient(
 		break
 	}
 
-	// Получаем информацию о версии TDLib
+	version := r.GetVersion()
+	r.log.Info("TDLib", "version", version)
+
+	me := r.GetMe()
+	r.log.Info("Me",
+		"FirstName", me.FirstName,
+		"LastName", me.LastName,
+		"Username", func() string {
+			if me.Usernames != nil {
+				return me.Usernames.EditableUsername
+			}
+			return ""
+		}(),
+	)
+}
+
+// GetVersion выводит информацию о версии TDLib
+func (r *Repo) GetVersion() string {
 	versionOption, err := r.client.GetOption(&client.GetOptionRequest{
 		Name: "version",
 	})
 	if err != nil {
-		r.log.Error("GetOption error", "err", err)
-		return
+		r.log.Error("GetOption", "err", err)
+		return ""
 	}
+	return versionOption.(*client.OptionValueString).Value
+}
 
-	commitOption, err := r.client.GetOption(&client.GetOptionRequest{
-		Name: "commit_hash",
-	})
-	if err != nil {
-		r.log.Error("GetOption error", "err", err)
-		return
-	}
-
-	r.log.Info("TDLib",
-		"version", versionOption.(*client.OptionValueString).Value,
-		"commit", commitOption.(*client.OptionValueString).Value,
-	)
-
-	// Получаем информацию о пользователе
+// GetMe выводит информацию о пользователе
+func (r *Repo) GetMe() *client.User {
 	me, err := r.client.GetMe()
 	if err != nil {
-		r.log.Error("GetMe error", "err", err)
-		return
+		r.log.Error("GetMe", "err", err)
+		return nil
 	}
-
-	r.log.Info("Me", "FirstName", me.FirstName) // , "LastName", me.LastName)
+	return me
 }
 
 // GetListener возвращает канал, который вернёт Listener после авторизации клиента

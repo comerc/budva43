@@ -225,7 +225,7 @@ func main() {
 
 	log.Print("Start...")
 
-	// НЕТ: не перенесено, предлагаю - repo/telegram/repo.go (GetVersion)
+	// OK: перенесено - repo/telegram/repo.go (GetVersion)
 	if optionValue, err := tdlibClient.GetOption(&client.GetOptionRequest{
 		Name: "version",
 	}); err != nil {
@@ -234,7 +234,7 @@ func main() {
 		log.Printf("TDLib version: %s", optionValue.(*client.OptionValueString).Value)
 	}
 
-	// НЕТ: не перенесено, предлагаю - repo/telegram/repo.go (GetMe)
+	// OK: перенесено - repo/telegram/repo.go (GetMe)
 	if me, err := tdlibClient.GetMe(); err != nil {
 		log.Fatalf("GetMe error: %s", err)
 	} else {
