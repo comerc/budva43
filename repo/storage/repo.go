@@ -68,16 +68,33 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 }
 
 // Increment увеличивает значение по ключу на 1
-func (r *Repo) Increment(key []byte) []byte {
+func (r *Repo) Increment(key []byte) ([]byte, error) {
+	var (
+		err error
+		val []byte
+	)
+	defer func() {
+		if err != nil {
+			r.log.Error("Increment", "key", key, "err", err)
+		} else {
+			r.log.Info("Increment", "key", key, "val", val)
+		}
+	}()
 	// Merge function to add two uint64 numbers
-	add := func(existing, new []byte) []byte {
-		return convertUint64ToBytes(ConvertBytesToUint64(existing) + ConvertBytesToUint64(new))
+	add := func(existing, _new []byte) []byte {
+		return convertUint64ToBytes(ConvertBytesToUint64(existing) + ConvertBytesToUint64(_new))
 	}
 	m := r.db.GetMergeOperator(key, add, 200*time.Millisecond)
 	defer m.Stop()
-	m.Add(convertUint64ToBytes(1))
-	result, _ := m.Get()
-	return result
+	err = m.Add(convertUint64ToBytes(1))
+	if err != nil {
+		return nil, err
+	}
+	val, err = m.Get()
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
 }
 
 // Get получает значение по ключу
@@ -86,6 +103,13 @@ func (r *Repo) Get(key string) (string, error) {
 		err error
 		val []byte
 	)
+	defer func() {
+		if err != nil {
+			r.log.Error("Get", "key", key, "err", err)
+		} else {
+			r.log.Info("Get", "key", key, "val", val)
+		}
+	}()
 	err = r.db.View(func(txn *badger.Txn) error {
 		var item *badger.Item
 		item, err = txn.Get([]byte(key))
@@ -98,37 +122,38 @@ func (r *Repo) Get(key string) (string, error) {
 		}
 		return nil
 	})
-	if err != nil {
-		r.log.Error("Get", "key", key, "err", err)
-	} else {
-		r.log.Info("Get", "key", key, "val", val)
-	}
 	return string(val), err
 }
 
 // Set устанавливает значение по ключу
 func (r *Repo) Set(key, val string) error {
-	err := r.db.Update(func(txn *badger.Txn) error {
+	var err error
+	defer func() {
+		if err != nil {
+			r.log.Error("Set", "key", key, "err", err)
+		} else {
+			r.log.Info("Set", "key", key, "val", val)
+		}
+	}()
+	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), []byte(val))
 	})
-	if err != nil {
-		r.log.Error("Set", "key", key, "err", err)
-	} else {
-		r.log.Info("Set", "key", key, "val", val)
-	}
 	return err
 }
 
 // Delete удаляет значение по ключу
 func (r *Repo) Delete(key string) error {
-	err := r.db.Update(func(txn *badger.Txn) error {
+	var err error
+	defer func() {
+		if err != nil {
+			r.log.Error("Delete", "key", key, "err", err)
+		} else {
+			r.log.Info("Delete", "key", key)
+		}
+	}()
+	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(key))
 	})
-	if err != nil {
-		r.log.Error("Delete", "key", key, "err", err)
-	} else {
-		r.log.Info("Delete", "key", key)
-	}
 	return err
 }
 
