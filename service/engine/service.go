@@ -68,7 +68,7 @@ type mediaAlbumService interface {
 
 type telegramRepo interface {
 	GetClient() *client.Client
-	AuthClientDone() chan any
+	GetListener() chan *client.Listener
 }
 
 // Service предоставляет функциональность движка пересылки сообщений
@@ -120,17 +120,7 @@ func (s *Service) Start(ctx context.Context) error {
 		return fmt.Errorf("ошибка обогащения конфигурации: %w", err)
 	}
 
-	go func() {
-		// Ждём авторизации клиента
-		select {
-		case <-ctx.Done():
-			return
-		case <-s.telegramRepo.AuthClientDone():
-			// Получаем канал обновлений от Telegram
-			listener := s.telegramRepo.GetClient().GetListener()
-			s.handleUpdates(ctx, listener)
-		}
-	}()
+	go s.runHandler(ctx)
 
 	return nil
 }
@@ -186,12 +176,23 @@ func (s *Service) enrichConfig() error {
 	return nil
 }
 
+// runHandler запускает обработчик обновлений от Telegram
+func (s *Service) runHandler(ctx context.Context) {
+	// Ждём авторизации клиента и получаем канал обновлений от Telegram
+	select {
+	case <-ctx.Done():
+		return
+	case listener := <-s.telegramRepo.GetListener():
+		defer listener.Close()
+		s.handleUpdates(ctx, listener)
+	}
+}
+
 // handleUpdates обрабатывает обновления от Telegram
 func (s *Service) handleUpdates(ctx context.Context, listener *client.Listener) {
 	for {
 		select {
 		case <-ctx.Done():
-			listener.Close()
 			return
 		case update, ok := <-listener.Updates:
 			if !ok {

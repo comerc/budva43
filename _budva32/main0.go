@@ -214,7 +214,7 @@ func main() {
 		})
 	}
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/client.go (NewClient)
+	// OK: перенесено - repo/telegram/repo.go (CreateClient)
 	tdlibClient, err = client.NewClient(authorizer, logStream, logVerbosity)
 	if err != nil {
 		log.Fatalf("NewClient error: %s", err)
@@ -225,7 +225,7 @@ func main() {
 
 	log.Print("Start...")
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/client.go (GetVersion)
+	// НЕТ: не перенесено, предлагаю - repo/telegram/repo.go (GetVersion)
 	if optionValue, err := tdlibClient.GetOption(&client.GetOptionRequest{
 		Name: "version",
 	}); err != nil {
@@ -234,14 +234,14 @@ func main() {
 		log.Printf("TDLib version: %s", optionValue.(*client.OptionValueString).Value)
 	}
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/user.go (GetMe)
+	// НЕТ: не перенесено, предлагаю - repo/telegram/repo.go (GetMe)
 	if me, err := tdlibClient.GetMe(); err != nil {
 		log.Fatalf("GetMe error: %s", err)
 	} else {
 		log.Printf("Me: %s %s [@%s]", me.FirstName, me.LastName, me.Username)
 	}
 
-	// НЕТ: не перенесено, предлагаю - service/telegram/client.go (GetListener)
+	// OK: перенесено - service/engine/service.go (runHandler)
 	listener := tdlibClient.GetListener()
 	defer listener.Close()
 
