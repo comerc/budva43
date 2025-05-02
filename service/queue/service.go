@@ -1,19 +1,17 @@
 package queue
 
 import (
+	"container/list"
 	"context"
 	"log/slog"
+	"time"
 )
-
-// TODO: очередь задач должна быть реализована на основе "container/list"
-// с паузами между задачами, чтобы tdlibClient успевал обрабатывать другие события
-// (см. старую реализацию в _budva32/main0.go)
 
 // Service предоставляет функциональность асинхронной очереди задач
 type Service struct {
 	log *slog.Logger
 	//
-	queue chan func()
+	queue *list.List
 }
 
 // New создает новый экземпляр сервиса очереди
@@ -21,7 +19,7 @@ func New() *Service {
 	return &Service{
 		log: slog.With("module", "service.queue"),
 		//
-		queue: make(chan func(), 100), // TODO: в старой реализации не было ограничения на размер очереди
+		queue: list.New(),
 	}
 }
 
@@ -36,26 +34,30 @@ func (s *Service) Start(ctx context.Context) error {
 
 // Close останавливает сервис очереди
 func (s *Service) Close() error {
-	close(s.queue)
 	return nil
 }
 
 // Add добавляет задачу в очередь
-func (s *Service) Add(task func()) {
-	s.queue <- task
+func (s *Service) Add(fn func()) {
+	s.queue.PushBack(fn)
 }
 
-// processQueue обрабатывает очередь задач
-func (s *Service) processQueue(ctx context.Context) {
+// runQueue обрабатывает очередь задач
+func (s *Service) runQueue(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case fn, ok := <-s.queue:
-			if !ok {
-				return
+		case <-ticker.C:
+			front := s.queue.Front()
+			if front != nil {
+				fn := front.Value.(func())
+				fn()
+				// This will remove the allocated memory and avoid memory leaks
+				s.queue.Remove(front)
 			}
-			fn()
 		}
 	}
 }

@@ -16,7 +16,7 @@ import (
 
 var queue = list.New()
 
-// НЕТ: перенесено частично - service/queue/service.go (processQueue)
+// OK: перенесено - service/queue/service.go (runQueue)
 func runQueue() {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
