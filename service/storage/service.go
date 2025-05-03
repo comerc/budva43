@@ -228,8 +228,10 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 }
 
 // IncrementViewedMessages увеличивает счетчик просмотренных сообщений
-func (s *Service) IncrementViewedMessages(toChatId int64) error {
-	date := time.Now().UTC().Format("2006-01-02")
+func (s *Service) IncrementViewedMessages(toChatId int64, date string) error {
+	if date == "" { // внешняя date нужна для тестирования
+		date = time.Now().UTC().Format("2006-01-02")
+	}
 	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
 	var (
 		err error
@@ -244,14 +246,36 @@ func (s *Service) IncrementViewedMessages(toChatId int64) error {
 
 	s.log.Debug("IncrementViewedMessages",
 		"toChatId", toChatId,
+		"date", date,
 		"val", val,
 	)
 	return nil
 }
 
+// GetViewedMessages получает количество просмотренных сообщений
+func (s *Service) GetViewedMessages(toChatId int64, date string) (int64, error) {
+	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
+
+	val, err := s.repo.Get(key)
+	if err != nil {
+		return 0, fmt.Errorf("GetViewedMessages: %w", err)
+	}
+
+	viewed := util.ConvertToInt[int64](val)
+
+	s.log.Debug("GetViewedMessages",
+		"toChatId", toChatId,
+		"date", date,
+		"val", val,
+	)
+	return viewed, nil
+}
+
 // IncrementForwardedMessages увеличивает счетчик пересланных сообщений
-func (s *Service) IncrementForwardedMessages(toChatId int64) error {
-	date := time.Now().UTC().Format("2006-01-02")
+func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error {
+	if date == "" { // внешняя date нужна для тестирования
+		date = time.Now().UTC().Format("2006-01-02")
+	}
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
 
 	val, err := s.repo.Increment(key)
@@ -262,6 +286,7 @@ func (s *Service) IncrementForwardedMessages(toChatId int64) error {
 
 	s.log.Debug("IncrementForwardedMessages",
 		"toChatId", toChatId,
+		"date", date,
 		"val", val,
 	)
 	return nil
