@@ -149,7 +149,7 @@ func main() {
 		}
 	}()
 
-	// НЕТ: не перенесено, предлагаю - service/auth/service.go (RequestAuthData)
+	// НЕТ: перенесено частично - service/auth/authorizer.go (Handle)
 	// client authorizer
 	authorizer := client.ClientAuthorizer()
 	go func() {

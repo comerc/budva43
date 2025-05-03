@@ -9,6 +9,12 @@ import (
 	"github.com/comerc/budva43/config"
 )
 
+// TODO: (?) а можно сделать проще, используя client.ClientAuthorizer(),
+// плюс общий канал inputCh и собственный AuthState(),
+// (?) только возможна проблема с переполнением state
+
+// TODO: (?) собственный AuthState() - чтобы отказаться от setClient()
+
 // Authorizer реализует интерфейс client.AuthorizationStateHandler
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
