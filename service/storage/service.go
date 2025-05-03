@@ -13,11 +13,11 @@ import (
 
 const (
 	// Префиксы ключей для хранения в BadgerDB
-	CopiedMessageIdsPrefix  = "copiedMsgIds"
-	NewMessageIdPrefix      = "newMsgId"
-	TmpMessageIdPrefix      = "tmpMsgId"
-	ViewedMessagesPrefix    = "viewedMsgs"
-	ForwardedMessagesPrefix = "forwardedMsgs"
+	copiedMessageIdsPrefix  = "copiedMsgIds"
+	newMessageIdPrefix      = "newMsgId"
+	tmpMessageIdPrefix      = "tmpMsgId"
+	viewedMessagesPrefix    = "viewedMsgs"
+	forwardedMessagesPrefix = "forwardedMsgs"
 )
 
 //go:generate mockery --name=storageRepo --exported
@@ -58,14 +58,14 @@ func distinct(slice []string) []string {
 
 // SetCopiedMessageId сохраняет связь между оригинальным и скопированным сообщением
 func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error {
-	key := fmt.Sprintf("%s:%s", CopiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
 
 	var val string
 	var err error
 
 	// Получаем текущий список скопированных сообщений
 	val, err = s.repo.Get(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
@@ -90,13 +90,10 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 
 // GetCopiedMessageIds получает идентификаторы скопированных сообщений по Id оригинала
 func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error) {
-	key := fmt.Sprintf("%s:%s", CopiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		if err.Error() == "key not found" {
-			return []string{}, nil
-		}
 		return nil, fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
@@ -114,10 +111,10 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error
 
 // DeleteCopiedMessageIds удаляет связь между оригинальным и скопированными сообщениями
 func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
-	key := fmt.Sprintf("%s:%s", CopiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
 
 	err := s.repo.Delete(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка удаления значения: %w", err)
 	}
 
@@ -126,7 +123,7 @@ func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 
 // SetNewMessageId сохраняет соответствие между временным и постоянным Id сообщения
 func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error {
-	key := fmt.Sprintf("%s:%d:%d", NewMessageIdPrefix, chatId, tmpMessageId)
+	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
 
 	err := s.repo.Set(key, fmt.Sprintf("%d", newMessageId))
 	if err != nil {
@@ -138,13 +135,10 @@ func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) erro
 
 // GetNewMessageId получает постоянный Id сообщения по временному
 func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
-	key := fmt.Sprintf("%s:%d:%d", NewMessageIdPrefix, chatId, tmpMessageId)
+	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		if err.Error() == "key not found" {
-			return 0, nil
-		}
 		return 0, fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
@@ -158,10 +152,10 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 
 // DeleteNewMessageId удаляет соответствие между временным и постоянным Id сообщения
 func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) error {
-	key := fmt.Sprintf("%s:%d:%d", NewMessageIdPrefix, chatId, tmpMessageId)
+	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
 
 	err := s.repo.Delete(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка удаления значения: %w", err)
 	}
 
@@ -170,7 +164,7 @@ func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) error {
 
 // SetTmpMessageId сохраняет соответствие между постоянным и временным Id сообщения
 func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error {
-	key := fmt.Sprintf("%s:%d:%d", TmpMessageIdPrefix, chatId, newMessageId)
+	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
 
 	err := s.repo.Set(key, fmt.Sprintf("%d", tmpMessageId))
 	if err != nil {
@@ -182,13 +176,10 @@ func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) erro
 
 // GetTmpMessageId получает временный Id сообщения по постоянному
 func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
-	key := fmt.Sprintf("%s:%d:%d", TmpMessageIdPrefix, chatId, newMessageId)
+	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		if err.Error() == "key not found" {
-			return 0, nil
-		}
 		return 0, fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
@@ -202,10 +193,10 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 
 // DeleteTmpMessageId удаляет соответствие между постоянным и временным Id сообщения
 func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
-	key := fmt.Sprintf("%s:%d:%d", TmpMessageIdPrefix, chatId, newMessageId)
+	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
 
 	err := s.repo.Delete(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка удаления значения: %w", err)
 	}
 
@@ -214,10 +205,10 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 
 // IncrementViewedMessages увеличивает счетчик просмотренных сообщений
 func (s *Service) IncrementViewedMessages(toChatId int64) error {
-	key := fmt.Sprintf("%s:%d", ViewedMessagesPrefix, toChatId)
+	key := fmt.Sprintf("%s:%d", viewedMessagesPrefix, toChatId)
 
 	val, err := s.repo.Get(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
@@ -258,10 +249,10 @@ func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 
 // IncrementForwardedMessages увеличивает счетчик пересланных сообщений
 func (s *Service) IncrementForwardedMessages(toChatId int64) error {
-	key := fmt.Sprintf("%s:%d", ForwardedMessagesPrefix, toChatId)
+	key := fmt.Sprintf("%s:%d", forwardedMessagesPrefix, toChatId)
 
 	val, err := s.repo.Get(key)
-	if err != nil && err.Error() != "key not found" {
+	if err != nil {
 		return fmt.Errorf("ошибка получения значения: %w", err)
 	}
 
