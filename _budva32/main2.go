@@ -93,7 +93,7 @@ func convertToInt(s string) int {
 
 const copiedMessageIdsPrefix = "copiedMsgIds"
 
-// ДА: перенесено - service/storage/service.go (DeleteCopiedMessageIDs)
+// OK: перенесено - service/storage/service.go (DeleteCopiedMessageIds)
 func deleteCopiedMessageIds(fromChatMessageId string) {
 	key := []byte(fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId))
 	err := badgerDB.Update(func(txn *badger.Txn) error {
