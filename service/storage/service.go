@@ -218,9 +218,14 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 
 	err := s.repo.Delete(key)
 	if err != nil {
-		return fmt.Errorf("ошибка удаления значения: %w", err)
+		s.log.Error("DeleteTmpMessageId", "err", err)
+		return fmt.Errorf("DeleteTmpMessageId: %w", err)
 	}
 
+	s.log.Debug("DeleteTmpMessageId",
+		"chatId", chatId,
+		"newMessageId", newMessageId,
+	)
 	return nil
 }
 

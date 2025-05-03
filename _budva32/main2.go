@@ -278,7 +278,7 @@ func getTmpMessageId(chatId, newMessageId int64) int64 {
 	return tmpMessageId
 }
 
-// ДА: перенесено - service/storage/service.go (DeleteTmpMessageId)
+// OK: перенесено - service/storage/service.go (DeleteTmpMessageId)
 func deleteTmpMessageId(chatId, newMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	err := badgerDB.Update(func(txn *badger.Txn) error {
