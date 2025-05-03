@@ -30,7 +30,7 @@ func New() *Repo {
 		//
 		client:         nil,
 		initClientDone: make(chan any),
-		listenerChan:   make(chan *client.Listener),
+		listenerChan:   make(chan *client.Listener, 1),
 	}
 }
 
@@ -80,13 +80,13 @@ func (r *Repo) CreateClient(
 	me := r.GetMe()
 	r.log.Info("Me",
 		"FirstName", me.FirstName,
-		"LastName", me.LastName,
-		"Username", func() string {
-			if me.Usernames != nil {
-				return me.Usernames.EditableUsername
-			}
-			return ""
-		}(),
+		// "LastName", me.LastName,
+		// "Username", func() string {
+		// 	if me.Usernames != nil {
+		// 		return me.Usernames.EditableUsername
+		// 	}
+		// 	return ""
+		// }(),
 	)
 }
 
