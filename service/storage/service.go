@@ -22,6 +22,7 @@ const (
 
 //go:generate mockery --name=storageRepo --exported
 type storageRepo interface {
+	GetSet(key string, fn func(val string) (string, error)) (string, error)
 	Set(key, value string) error
 	Get(key string) (string, error)
 	Delete(key string) error
@@ -59,32 +60,30 @@ func distinct(slice []string) []string {
 // SetCopiedMessageId сохраняет связь между оригинальным и скопированным сообщением
 func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error {
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
+	var (
+		err error
+		val string
+	)
 
-	var val string
-	var err error
+	fn := func(val string) (string, error) {
+		var ss []string
+		if val != "" {
+			// workaround https://stackoverflow.com/questions/28330908/how-to-string-split-an-empty-string-in-go
+			ss = strings.Split(val, ",")
+		}
+		ss = append(ss, toChatMessageId)
+		ss = distinct(ss)
+		return strings.Join(ss, ","), nil
+	}
 
-	// Получаем текущий список скопированных сообщений
-	val, err = s.repo.Get(key)
+	val, err = s.repo.GetSet(key, fn)
+
 	if err != nil {
-		return fmt.Errorf("ошибка получения значения: %w", err)
+		s.log.Error("SetCopiedMessageId", "err", err)
+		return fmt.Errorf("SetCopiedMessageId: %w", err)
 	}
 
-	// Добавляем новое сообщение в список
-	result := []string{}
-	if len(val) > 0 {
-		result = strings.Split(val, ",")
-	}
-
-	// Добавляем новый Id и удаляем дубликаты
-	result = append(result, toChatMessageId)
-	result = distinct(result)
-
-	// Сохраняем обновленный список
-	err = s.repo.Set(key, strings.Join(result, ","))
-	if err != nil {
-		return fmt.Errorf("ошибка сохранения значения: %w", err)
-	}
-
+	s.log.Debug("SetCopiedMessageId", "key", key, "val", val)
 	return nil
 }
 
@@ -115,9 +114,11 @@ func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 
 	err := s.repo.Delete(key)
 	if err != nil {
-		return fmt.Errorf("ошибка удаления значения: %w", err)
+		s.log.Error("DeleteCopiedMessageIds", "err", err)
+		return fmt.Errorf("DeleteCopiedMessageIds: %w", err)
 	}
 
+	s.log.Debug("DeleteCopiedMessageIds", "key", key)
 	return nil
 }
 
