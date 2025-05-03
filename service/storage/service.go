@@ -338,6 +338,17 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) (string, err
 }
 
 // DeleteAnswerMessageId удаляет идентификатор сообщения ответа
-func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) {
-	// TODO: выполнить корректный перенос из budva32
+func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) error {
+	key := fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId)
+	err := s.repo.Delete(key)
+	if err != nil {
+		s.log.Error("DeleteAnswerMessageId", "err", err)
+		return fmt.Errorf("DeleteAnswerMessageId: %w", err)
+	}
+
+	s.log.Debug("DeleteAnswerMessageId",
+		"dstChatId", dstChatId,
+		"tmpMessageId", tmpMessageId,
+	)
+	return nil
 }
