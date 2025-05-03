@@ -321,9 +321,20 @@ func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMess
 }
 
 // GetAnswerMessageId возвращает идентификатор сообщения ответа
-func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
-	// TODO: выполнить корректный перенос из budva32
-	return ""
+func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) (string, error) {
+	key := fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId)
+	val, err := s.repo.Get(key)
+	if err != nil {
+		s.log.Error("GetAnswerMessageId", "err", err)
+		return "", fmt.Errorf("GetAnswerMessageId: %w", err)
+	}
+
+	s.log.Debug("GetAnswerMessageId",
+		"dstChatId", dstChatId,
+		"tmpMessageId", tmpMessageId,
+		"fromChatMessageId", val,
+	)
+	return val, nil
 }
 
 // DeleteAnswerMessageId удаляет идентификатор сообщения ответа
