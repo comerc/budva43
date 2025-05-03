@@ -143,14 +143,17 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return 0, fmt.Errorf("ошибка получения значения: %w", err)
+		s.log.Error("GetNewMessageId", "err", err)
+		return 0, fmt.Errorf("GetNewMessageId: %w", err)
 	}
 
-	var newMessageId int64
-	if _, err := fmt.Sscanf(val, "%d", &newMessageId); err != nil {
-		return 0, fmt.Errorf("ошибка преобразования newMessageId: %w", err)
-	}
+	newMessageId := util.ConvertToInt[int64](val)
 
+	s.log.Debug("GetNewMessageId",
+		"chatId", chatId,
+		"tmpMessageId", tmpMessageId,
+		"newMessageId", newMessageId,
+	)
 	return newMessageId, nil
 }
 
