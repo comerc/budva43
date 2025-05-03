@@ -64,7 +64,7 @@ func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
 
 const answerMessageIdPrefix = "answerMsgId"
 
-// НЕТ: перенесено частично - service/storage/service.go (SetAnswerMessageId)
+// OK: перенесено service/storage/service.go (SetAnswerMessageId)
 func setAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId))
 	val := []byte(fromChatMessageId)
