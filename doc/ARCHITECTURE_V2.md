@@ -23,7 +23,7 @@
 package entity
 
 type ForwardRule struct {
-    ID     string
+    Id     string
     From   int64
     To     []int64
     Status RuleStatus
@@ -155,11 +155,11 @@ import (
 )
 
 type Message struct {
-    ID         int64
+    Id         int64
     Text       string
     Date       time.Time
-    SenderID   int64
-    ChatID     int64
+    SenderId   int64
+    ChatId     int64
     MediaType  string
     MediaURL   string
 }
@@ -179,11 +179,11 @@ func (_ *Message) UnmarshalJSON(data []byte) (error) {
 // Метод для подготовки ответа API (ранее функционал DTO)
 func (m *Message) ToResponse() map[string]interface{} {
     return map[string]interface{}{
-        "id":         m.ID,
+        "id":         m.Id,
         "text":       m.Text,
         "date":       m.Date.Format(time.RFC3339),
-        "sender_id":  m.SenderID,
-        "chat_id":    m.ChatID,
+        "sender_id":  m.SenderId,
+        "chat_id":    m.ChatId,
         "media_type": m.MediaType,
         "media_url":  m.MediaURL,
     }

@@ -284,9 +284,9 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 3. **Пример взаимодействия слоев через Entity**:
    ```go
    // В контроллере
-   func (c *MessageController) GetMessage(ctx context.Context, messageID int64) (*entity.Message, error) {
+   func (c *MessageController) GetMessage(ctx context.Context, messageId int64) (*entity.Message, error) {
        // Получаем сообщение через сервис
-       message, err := c.messageService.GetMessage(ctx, messageID)
+       message, err := c.messageService.GetMessage(ctx, messageId)
        if err != nil {
            return nil, err
        }
@@ -296,8 +296,8 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
    
    // В HTTP-обработчике
    func (h *HTTPHandler) HandleGetMessage(w http.ResponseWriter, r *http.Request) {
-       // Получаем ID из запроса
-       id := getIDFromRequest(r)
+       // Получаем Id из запроса
+       id := getIdFromRequest(r)
        
        // Получаем сообщение через контроллер
        message, err := h.messageController.GetMessage(r.Context(), id)
@@ -390,25 +390,25 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
 ```go
 // Пример интерфейса контроллера
 type MessageController interface {
-    GetMessage(chatID, messageID int64) (*model.Message, error)
+    GetMessage(chatId, messageId int64) (*model.Message, error)
     SendMessage(message *model.Message) (*model.Message, error)
-    EditMessage(chatID, messageID int64, text string) (*model.Message, error)
-    DeleteMessage(chatID, messageID int64) error
+    EditMessage(chatId, messageId int64, text string) (*model.Message, error)
+    DeleteMessage(chatId, messageId int64) error
 }
 
 // Пример интерфейса сервиса
 type MessageService interface {
-    GetMessage(chatID, messageID int64) (*entity.Message, error)
+    GetMessage(chatId, messageId int64) (*entity.Message, error)
     SendMessage(message *entity.Message) (*entity.Message, error)
-    EditMessage(chatID, messageID int64, text string) (*entity.Message, error)
-    DeleteMessage(chatID, messageID int64) error
+    EditMessage(chatId, messageId int64, text string) (*entity.Message, error)
+    DeleteMessage(chatId, messageId int64) error
 }
 
 // Пример интерфейса репозитория
 type TelegramRepo interface {
-    SendMessage(chatID int64, text string) (*entity.Message, error)
-    GetMessage(chatID, messageID int64) (*entity.Message, error)
-    DeleteMessage(chatID, messageID int64) error
+    SendMessage(chatId int64, text string) (*entity.Message, error)
+    GetMessage(chatId, messageId int64) (*entity.Message, error)
+    DeleteMessage(chatId, messageId int64) error
 }
 ```
 
