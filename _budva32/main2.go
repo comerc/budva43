@@ -28,6 +28,7 @@ func runReports() {
 			for _, toChatId := range configData.Reports.For {
 				date := utc.Add(-1 * time.Minute).Format("2006-01-02")
 				var viewed, forwarded int64
+				// НЕТ: не перенесено - service/storage/service.go (GetViewedMessages)
 				{
 					key := []byte(fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date))
 					val := getForDB(key)
@@ -37,6 +38,7 @@ func runReports() {
 						viewed = int64(bytesToUint64(val))
 					}
 				}
+				// НЕТ: не перенесено - service/storage/service.go (GetForwardedMessages)
 				{
 					key := []byte(fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date))
 					val := getForDB(key)

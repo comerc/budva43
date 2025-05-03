@@ -433,7 +433,7 @@ func incrementViewedMessages(toChatId int64) {
 
 const forwardedMessagesPrefix = "forwardedMsgs"
 
-// НЕТ: перенесено частично - service/storage/service.go (IncrementForwardedMessages)
+// OK: перенесено - service/storage/service.go (IncrementForwardedMessages)
 func incrementForwardedMessages(toChatId int64) {
 	date := time.Now().UTC().Format("2006-01-02")
 	key := []byte(fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date))

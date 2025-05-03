@@ -9,11 +9,6 @@ import (
 	"github.com/comerc/budva43/util"
 )
 
-// TODO: выполнить корректный перенос из budva32:
-// - Интерфейс для работы с хранилищем более формализован, но некоторые методы могут работать иначе, чем в старой версии
-// - Особенно это касается функций работы с идентификаторами сообщений
-// - Функционал инкрементирования счетчиков может отличаться от старой версии
-
 const (
 	// Префиксы ключей для хранения в BadgerDB
 	copiedMessageIdsPrefix  = "copiedMsgIds"
@@ -21,6 +16,7 @@ const (
 	tmpMessageIdPrefix      = "tmpMsgId"
 	viewedMessagesPrefix    = "viewedMsgs"
 	forwardedMessagesPrefix = "forwardedMsgs"
+	answerMessageIdPrefix   = "answerMsgId"
 )
 
 //go:generate mockery --name=storageRepo --exported
@@ -253,7 +249,23 @@ func (s *Service) IncrementViewedMessages(toChatId int64) error {
 	return nil
 }
 
-const answerMessageIdPrefix = "answerMsgId"
+// IncrementForwardedMessages увеличивает счетчик пересланных сообщений
+func (s *Service) IncrementForwardedMessages(toChatId int64) error {
+	date := time.Now().UTC().Format("2006-01-02")
+	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
+
+	val, err := s.repo.Increment(key)
+	if err != nil {
+		s.log.Error("IncrementForwardedMessages", "err", err)
+		return fmt.Errorf("IncrementForwardedMessages: %w", err)
+	}
+
+	s.log.Debug("IncrementForwardedMessages",
+		"toChatId", toChatId,
+		"val", val,
+	)
+	return nil
+}
 
 // SetAnswerMessageId устанавливает идентификатор сообщения ответа
 func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
@@ -269,30 +281,4 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
 // DeleteAnswerMessageId удаляет идентификатор сообщения ответа
 func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 	// TODO: выполнить корректный перенос из budva32
-}
-
-// IncrementForwardedMessages увеличивает счетчик пересланных сообщений
-func (s *Service) IncrementForwardedMessages(toChatId int64) error {
-	key := fmt.Sprintf("%s:%d", forwardedMessagesPrefix, toChatId)
-
-	val, err := s.repo.Get(key)
-	if err != nil {
-		return fmt.Errorf("ошибка получения значения: %w", err)
-	}
-
-	var count int64
-	if len(val) > 0 {
-		if _, err := fmt.Sscanf(val, "%d", &count); err != nil {
-			return fmt.Errorf("ошибка преобразования счетчика пересланных сообщений: %w", err)
-		}
-	}
-
-	count++
-
-	err = s.repo.Set(key, fmt.Sprintf("%d", count))
-	if err != nil {
-		return fmt.Errorf("ошибка сохранения значения: %w", err)
-	}
-
-	return nil
 }
