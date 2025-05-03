@@ -139,7 +139,7 @@ func getIP() string {
 	return ""
 }
 
-// НЕТ: не перенесено, предлагаю - transport/web/transport.go (getFaviconHandler)
+// OK: перенесено - transport/web/transport.go (handleFavicon)
 func getFaviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
