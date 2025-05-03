@@ -105,7 +105,7 @@ func deleteCopiedMessageIds(fromChatMessageId string) {
 	log.Printf("deleteCopiedMessageIds > fromChatMessageId: %s", fromChatMessageId)
 }
 
-// ДА: перенесено - service/storage/service.go (SetCopiedMessageID)
+// OK: перенесено - service/storage/service.go (SetCopiedMessageId)
 func setCopiedMessageId(fromChatMessageId string, toChatMessageId string) {
 	key := []byte(fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId))
 	var (
@@ -140,7 +140,7 @@ func setCopiedMessageId(fromChatMessageId string, toChatMessageId string) {
 	log.Printf("setCopiedMessageId > fromChatMessageId: %s toChatMessageId: %s val: %s", fromChatMessageId, toChatMessageId, val)
 }
 
-// ДА: перенесено - service/storage/service.go (GetCopiedMessageIDs)
+// ДА: перенесено - service/storage/service.go (GetCopiedMessageIds)
 func getCopiedMessageIds(fromChatMessageId string) []string {
 	key := []byte(fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId))
 	var (
@@ -178,7 +178,7 @@ func getCopiedMessageIds(fromChatMessageId string) []string {
 
 const newMessageIdPrefix = "newMsgId"
 
-// ДА: перенесено - service/storage/service.go (SetNewMessageID)
+// ДА: перенесено - service/storage/service.go (SetNewMessageId)
 func setNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId))
 	val := []byte(fmt.Sprintf("%d", newMessageId))
@@ -193,7 +193,7 @@ func setNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 	// newMessageIds[ChatMessageId(fmt.Sprintf("%d:%d", chatId, tmpMessageId))] = newMessageId
 }
 
-// ДА: перенесено - service/storage/service.go (GetNewMessageID)
+// ДА: перенесено - service/storage/service.go (GetNewMessageId)
 func getNewMessageId(chatId, tmpMessageId int64) int64 {
 	key := []byte(fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId))
 	var (
@@ -222,7 +222,7 @@ func getNewMessageId(chatId, tmpMessageId int64) int64 {
 	// return newMessageIds[ChatMessageId(fmt.Sprintf("%d:%d", chatId, tmpMessageId))]
 }
 
-// ДА: перенесено - service/storage/service.go (DeleteNewMessageID)
+// ДА: перенесено - service/storage/service.go (DeleteNewMessageId)
 func deleteNewMessageId(chatId, tmpMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId))
 	err := badgerDB.Update(func(txn *badger.Txn) error {
@@ -236,7 +236,7 @@ func deleteNewMessageId(chatId, tmpMessageId int64) {
 
 const tmpMessageIdPrefix = "tmpMsgId"
 
-// ДА: перенесено - service/storage/service.go (SetTmpMessageID)
+// ДА: перенесено - service/storage/service.go (SetTmpMessageId)
 func setTmpMessageId(chatId, newMessageId, tmpMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	val := []byte(fmt.Sprintf("%d", tmpMessageId))
@@ -250,7 +250,7 @@ func setTmpMessageId(chatId, newMessageId, tmpMessageId int64) {
 	log.Printf("setTmpMessageId > key: %d:%d val: %d", chatId, newMessageId, tmpMessageId)
 }
 
-// ДА: перенесено - service/storage/service.go (GetTmpMessageID)
+// ДА: перенесено - service/storage/service.go (GetTmpMessageId)
 func getTmpMessageId(chatId, newMessageId int64) int64 {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	var (
@@ -278,7 +278,7 @@ func getTmpMessageId(chatId, newMessageId int64) int64 {
 	return tmpMessageId
 }
 
-// ДА: перенесено - service/storage/service.go (DeleteTmpMessageID)
+// ДА: перенесено - service/storage/service.go (DeleteTmpMessageId)
 func deleteTmpMessageId(chatId, newMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	err := badgerDB.Update(func(txn *badger.Txn) error {
