@@ -264,7 +264,7 @@ func main() {
 	// OK: перенесено - service/queue/service.go (Start)
 	go runQueue()
 
-	// НЕТ: перенесено частично - service/engine/service.go (handleUpdates)
+	// OK: перенесено - service/engine/service.go (handleUpdates)
 	for update := range listener.Updates {
 		handleUpdate(update)
 	}
