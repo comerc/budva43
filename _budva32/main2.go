@@ -38,7 +38,7 @@ func runReports() {
 						viewed = int64(bytesToUint64(val))
 					}
 				}
-				// НЕТ: не перенесено - service/storage/service.go (GetForwardedMessages)
+				// OK: перенесено - service/storage/service.go (GetForwardedMessages)
 				{
 					key := []byte(fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date))
 					val := getForDB(key)
