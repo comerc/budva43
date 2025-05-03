@@ -134,7 +134,6 @@ func main() {
 	// НЕТ: перенесено частично - config/config.go (Watch)
 	go config.Watch(reload)
 
-	// НЕТ: не перенесено, предлагаю - transport/web/transport.go (StartHTTPServer)
 	go func() {
 		http.HandleFunc("/favicon.ico", getFaviconHandler)
 		http.HandleFunc("/", withBasicAuth(withAuthentiation(getChatsHandler)))
@@ -142,6 +141,7 @@ func main() {
 		http.HandleFunc("/answer", getAnswerHandler)
 		host := getIP()
 		port := ":" + port
+		// OK: перенесено - transport/web/transport.go (Start)
 		fmt.Println("Web-server is running: http://" + host + port)
 		if err := http.ListenAndServe(port, http.DefaultServeMux); err != nil {
 			log.Fatal("Error starting http server: ", err)
