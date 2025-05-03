@@ -376,7 +376,6 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	}()
 
 	t.log.Info("HTTP server started", "addr", t.server.Addr)
-
 	return nil
 }
 
