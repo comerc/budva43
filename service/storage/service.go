@@ -198,14 +198,17 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return 0, fmt.Errorf("ошибка получения значения: %w", err)
+		s.log.Error("GetTmpMessageId", "err", err)
+		return 0, fmt.Errorf("GetTmpMessageId: %w", err)
 	}
 
-	var tmpMessageId int64
-	if _, err := fmt.Sscanf(val, "%d", &tmpMessageId); err != nil {
-		return 0, fmt.Errorf("ошибка преобразования tmpMessageId: %w", err)
-	}
+	tmpMessageId := util.ConvertToInt[int64](val)
 
+	s.log.Debug("GetTmpMessageId",
+		"chatId", chatId,
+		"newMessageId", newMessageId,
+		"tmpMessageId", tmpMessageId,
+	)
 	return tmpMessageId, nil
 }
 

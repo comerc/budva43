@@ -250,7 +250,7 @@ func setTmpMessageId(chatId, newMessageId, tmpMessageId int64) {
 	log.Printf("setTmpMessageId > key: %d:%d val: %d", chatId, newMessageId, tmpMessageId)
 }
 
-// ДА: перенесено - service/storage/service.go (GetTmpMessageId)
+// OK: перенесено - service/storage/service.go (GetTmpMessageId)
 func getTmpMessageId(chatId, newMessageId int64) int64 {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	var (
