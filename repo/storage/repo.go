@@ -68,32 +68,28 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 }
 
 // Increment увеличивает значение по ключу на 1
-func (r *Repo) Increment(key []byte) ([]byte, error) {
+func (r *Repo) Increment(key string) (string, error) {
 	var (
 		err error
-		val []byte
+		val string
 	)
-	defer func() {
-		if err != nil {
-			r.log.Error("Increment", "key", key, "err", err)
-		} else {
-			r.log.Info("Increment", "key", key, "val", val)
-		}
-	}()
+	defer r.logOperation(&err, "Increment", key, &val)
 	// Merge function to add two uint64 numbers
 	add := func(existing, _new []byte) []byte {
 		return convertUint64ToBytes(ConvertBytesToUint64(existing) + ConvertBytesToUint64(_new))
 	}
-	m := r.db.GetMergeOperator(key, add, 200*time.Millisecond)
+	m := r.db.GetMergeOperator([]byte(key), add, 200*time.Millisecond)
 	defer m.Stop()
 	err = m.Add(convertUint64ToBytes(1))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	val, err = m.Get()
+	var valBytes []byte
+	valBytes, err = m.Get()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
+	val = string(valBytes)
 	return val, nil
 }
 
@@ -101,40 +97,30 @@ func (r *Repo) Increment(key []byte) ([]byte, error) {
 func (r *Repo) Get(key string) (string, error) {
 	var (
 		err error
-		val []byte
+		val string
 	)
-	defer func() {
-		if err != nil {
-			r.log.Error("Get", "key", key, "err", err)
-		} else {
-			r.log.Info("Get", "key", key, "val", val)
-		}
-	}()
+	defer r.logOperation(&err, "Get", key, &val)
 	err = r.db.View(func(txn *badger.Txn) error {
 		var item *badger.Item
 		item, err = txn.Get([]byte(key))
 		if err != nil {
 			return err
 		}
-		val, err = item.ValueCopy(nil)
+		var valBytes []byte
+		valBytes, err = item.ValueCopy(nil)
 		if err != nil {
 			return err
 		}
+		val = string(valBytes)
 		return nil
 	})
-	return string(val), err
+	return val, err
 }
 
 // Set устанавливает значение по ключу
 func (r *Repo) Set(key, val string) error {
 	var err error
-	defer func() {
-		if err != nil {
-			r.log.Error("Set", "key", key, "err", err)
-		} else {
-			r.log.Info("Set", "key", key, "val", val)
-		}
-	}()
+	defer r.logOperation(&err, "Set", key, &val)
 	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), []byte(val))
 	})
@@ -144,17 +130,25 @@ func (r *Repo) Set(key, val string) error {
 // Delete удаляет значение по ключу
 func (r *Repo) Delete(key string) error {
 	var err error
-	defer func() {
-		if err != nil {
-			r.log.Error("Delete", "key", key, "err", err)
-		} else {
-			r.log.Info("Delete", "key", key)
-		}
-	}()
+	defer r.logOperation(&err, "Delete", key, nil)
 	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(key))
 	})
 	return err
+}
+
+// logOperation логирует операцию
+func (r *Repo) logOperation(errPointer *error, name string, key string, val *string) {
+	err := *errPointer
+	if err == nil {
+		if val != nil {
+			r.log.Info(name, "key", key, "val", *val)
+		} else {
+			r.log.Info(name, "key", key)
+		}
+	} else {
+		r.log.Error(name, "key", key, "err", err)
+	}
 }
 
 // convertUint64ToBytes преобразует uint64 в байтовый массив
