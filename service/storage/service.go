@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/comerc/budva43/util"
 )
@@ -28,6 +29,7 @@ type storageRepo interface {
 	Set(key, value string) error
 	Get(key string) (string, error)
 	Delete(key string) error
+	Increment(key string) (string, error)
 }
 
 // Service предоставляет методы для хранения данных, специфичных для engine
@@ -231,27 +233,23 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 
 // IncrementViewedMessages увеличивает счетчик просмотренных сообщений
 func (s *Service) IncrementViewedMessages(toChatId int64) error {
-	key := fmt.Sprintf("%s:%d", viewedMessagesPrefix, toChatId)
+	date := time.Now().UTC().Format("2006-01-02")
+	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
+	var (
+		err error
+		val string
+	)
 
-	val, err := s.repo.Get(key)
+	val, err = s.repo.Increment(key)
 	if err != nil {
-		return fmt.Errorf("ошибка получения значения: %w", err)
+		s.log.Error("IncrementViewedMessages", "err", err)
+		return fmt.Errorf("IncrementViewedMessages: %w", err)
 	}
 
-	var count int64
-	if len(val) > 0 {
-		if _, err := fmt.Sscanf(val, "%d", &count); err != nil {
-			return fmt.Errorf("ошибка преобразования счетчика просмотренных сообщений: %w", err)
-		}
-	}
-
-	count++
-
-	err = s.repo.Set(key, fmt.Sprintf("%d", count))
-	if err != nil {
-		return fmt.Errorf("ошибка сохранения значения: %w", err)
-	}
-
+	s.log.Debug("IncrementViewedMessages",
+		"toChatId", toChatId,
+		"val", val,
+	)
 	return nil
 }
 

@@ -423,7 +423,7 @@ func handlePanic() {
 
 const viewedMessagesPrefix = "viewedMsgs"
 
-// НЕТ: перенесено частично - service/storage/service.go (IncrementViewedMessages)
+// OK: перенесено - service/storage/service.go (IncrementViewedMessages)
 func incrementViewedMessages(toChatId int64) {
 	date := time.Now().UTC().Format("2006-01-02")
 	key := []byte(fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date))
