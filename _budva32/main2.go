@@ -140,7 +140,7 @@ func setCopiedMessageId(fromChatMessageId string, toChatMessageId string) {
 	log.Printf("setCopiedMessageId > fromChatMessageId: %s toChatMessageId: %s val: %s", fromChatMessageId, toChatMessageId, val)
 }
 
-// ДА: перенесено - service/storage/service.go (GetCopiedMessageIds)
+// OK: перенесено - service/storage/service.go (GetCopiedMessageIds)
 func getCopiedMessageIds(fromChatMessageId string) []string {
 	key := []byte(fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId))
 	var (

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+
+	"github.com/comerc/budva43/util"
 )
 
 // TODO: выполнить корректный перенос из budva32:
@@ -44,19 +46,6 @@ func New(repo storageRepo) *Service {
 	}
 }
 
-// distinct удаляет дубликаты из слайса строк
-func distinct(slice []string) []string {
-	keys := make(map[string]bool)
-	var list []string
-	for _, entry := range slice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
 // SetCopiedMessageId сохраняет связь между оригинальным и скопированным сообщением
 func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error {
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
@@ -72,7 +61,7 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 			ss = strings.Split(val, ",")
 		}
 		ss = append(ss, toChatMessageId)
-		ss = distinct(ss)
+		ss = util.Distinct(ss)
 		return strings.Join(ss, ","), nil
 	}
 
@@ -83,7 +72,11 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 		return fmt.Errorf("SetCopiedMessageId: %w", err)
 	}
 
-	s.log.Debug("SetCopiedMessageId", "key", key, "val", val)
+	s.log.Debug("SetCopiedMessageId",
+		"fromChatMessageId", fromChatMessageId,
+		"toChatMessageId", toChatMessageId,
+		"val", val,
+	)
 	return nil
 }
 
@@ -93,17 +86,19 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error
 
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка получения значения: %w", err)
+		return nil, fmt.Errorf("GetCopiedMessageIds: %w", err)
 	}
 
 	toChatMessageIds := []string{}
-	if len(val) > 0 {
+	if val != "" {
+		// workaround https://stackoverflow.com/questions/28330908/how-to-string-split-an-empty-string-in-go
 		toChatMessageIds = strings.Split(val, ",")
 	}
 
-	s.log.Debug("получены скопированные сообщения",
+	s.log.Debug("GetCopiedMessageIds",
 		"fromChatMessageId", fromChatMessageId,
-		"toChatMessageIds", toChatMessageIds)
+		"toChatMessageIds", toChatMessageIds,
+	)
 
 	return toChatMessageIds, nil
 }
@@ -118,7 +113,9 @@ func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 		return fmt.Errorf("DeleteCopiedMessageIds: %w", err)
 	}
 
-	s.log.Debug("DeleteCopiedMessageIds", "key", key)
+	s.log.Debug("DeleteCopiedMessageIds",
+		"fromChatMessageId", fromChatMessageId,
+	)
 	return nil
 }
 
