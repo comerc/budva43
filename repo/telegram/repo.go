@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"log/slog"
+	"path"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -180,7 +181,7 @@ func (r *Repo) setupClientLog() error {
 	var err error
 	_, err = client.SetLogStream(&client.SetLogStreamRequest{
 		LogStream: &client.LogStreamFile{
-			Path:           config.Telegram.LogDirectory,
+			Path:           path.Join(config.Telegram.LogDirectory, "telegram.log"),
 			MaxFileSize:    config.Telegram.LogMaxFileSize,
 			RedirectStderr: true,
 		},
