@@ -78,7 +78,7 @@ func getAnswerMessageId(dstChatId, tmpMessageId int64) string {
 	return string(val)
 }
 
-// НЕТ: перенесено частично - service/storage/service.go (DeleteAnswerMessageId)
+// OK: перенесено - service/storage/service.go (DeleteAnswerMessageId)
 func deleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId))
 	deleteForDB(key)
