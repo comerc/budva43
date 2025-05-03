@@ -193,7 +193,7 @@ func setNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 	// newMessageIds[ChatMessageId(fmt.Sprintf("%d:%d", chatId, tmpMessageId))] = newMessageId
 }
 
-// ДА: перенесено - service/storage/service.go (GetNewMessageId)
+// OK: перенесено - service/storage/service.go (GetNewMessageId)
 func getNewMessageId(chatId, tmpMessageId int64) int64 {
 	key := []byte(fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId))
 	var (
