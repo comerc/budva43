@@ -178,7 +178,7 @@ func getCopiedMessageIds(fromChatMessageId string) []string {
 
 const newMessageIdPrefix = "newMsgId"
 
-// ДА: перенесено - service/storage/service.go (SetNewMessageId)
+// OK: перенесено - service/storage/service.go (SetNewMessageId)
 func setNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId))
 	val := []byte(fmt.Sprintf("%d", newMessageId))
