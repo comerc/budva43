@@ -52,18 +52,21 @@ func New(
 
 // setupRoutes настраивает HTTP маршруты
 func (t *Transport) setupRoutes(mux *http.ServeMux) {
-	// Маршруты для отчетов
 	// mux.HandleFunc("/api/reports", t.handleReports)
 
-	// Маршруты для авторизации Telegram
 	mux.HandleFunc("/api/auth/telegram/state", t.handleAuthState)
 	mux.HandleFunc("/api/auth/telegram/phone", t.handleSubmitPhone)
 	mux.HandleFunc("/api/auth/telegram/code", t.handleSubmitCode)
 	mux.HandleFunc("/api/auth/telegram/password", t.handleSubmitPassword)
 	mux.HandleFunc("/api/auth/telegram/events", t.handleAuthEvents)
 
-	// Маршрут для основной страницы
+	mux.HandleFunc("/favicon.ico", t.handleFavicon)
 	mux.HandleFunc("/", t.handleRoot)
+}
+
+// handleFavicon обрабатывает запросы к favicon
+func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/favicon.ico")
 }
 
 // handleRoot обрабатывает запросы к корневому маршруту
