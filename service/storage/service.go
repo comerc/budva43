@@ -125,9 +125,15 @@ func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) erro
 
 	err := s.repo.Set(key, fmt.Sprintf("%d", newMessageId))
 	if err != nil {
-		return fmt.Errorf("ошибка сохранения значения: %w", err)
+		s.log.Error("SetNewMessageId", "err", err)
+		return fmt.Errorf("SetNewMessageId: %w", err)
 	}
 
+	s.log.Debug("SetNewMessageId",
+		"chatId", chatId,
+		"tmpMessageId", tmpMessageId,
+		"newMessageId", newMessageId,
+	)
 	return nil
 }
 
