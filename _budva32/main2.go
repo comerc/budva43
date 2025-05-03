@@ -236,7 +236,7 @@ func deleteNewMessageId(chatId, tmpMessageId int64) {
 
 const tmpMessageIdPrefix = "tmpMsgId"
 
-// ДА: перенесено - service/storage/service.go (SetTmpMessageId)
+// OK: перенесено - service/storage/service.go (SetTmpMessageId)
 func setTmpMessageId(chatId, newMessageId, tmpMessageId int64) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId))
 	val := []byte(fmt.Sprintf("%d", tmpMessageId))

@@ -180,9 +180,15 @@ func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) erro
 
 	err := s.repo.Set(key, fmt.Sprintf("%d", tmpMessageId))
 	if err != nil {
-		return fmt.Errorf("ошибка сохранения значения: %w", err)
+		s.log.Error("SetTmpMessageId", "err", err)
+		return fmt.Errorf("SetTmpMessageId: %w", err)
 	}
 
+	s.log.Debug("SetTmpMessageId",
+		"chatId", chatId,
+		"newMessageId", newMessageId,
+		"tmpMessageId", tmpMessageId,
+	)
 	return nil
 }
 
