@@ -261,12 +261,17 @@ func (s *Service) GetViewedMessages(toChatId int64, date string) (int64, error) 
 		return 0, fmt.Errorf("GetViewedMessages: %w", err)
 	}
 
-	viewed := util.ConvertToInt[int64](val)
+	var viewed int64
+	if val == "" {
+		viewed = 0
+	} else {
+		viewed = util.ConvertToInt[int64](val)
+	}
 
 	s.log.Debug("GetViewedMessages",
 		"toChatId", toChatId,
 		"date", date,
-		"val", val,
+		"viewed", viewed,
 	)
 	return viewed, nil
 }
@@ -290,6 +295,33 @@ func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error 
 		"val", val,
 	)
 	return nil
+}
+
+// GetForwardedMessages получает количество пересланных сообщений
+func (s *Service) GetForwardedMessages(toChatId int64, date string) (int64, error) {
+	if date == "" { // внешняя date нужна для тестирования
+		date = time.Now().UTC().Format("2006-01-02")
+	}
+	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
+
+	val, err := s.repo.Get(key)
+	if err != nil {
+		return 0, fmt.Errorf("GetForwardedMessages: %w", err)
+	}
+
+	var forwarded int64
+	if val == "" {
+		forwarded = 0
+	} else {
+		forwarded = util.ConvertToInt[int64](val)
+	}
+
+	s.log.Debug("GetForwardedMessages",
+		"toChatId", toChatId,
+		"date", date,
+		"forwarded", forwarded,
+	)
+	return forwarded, nil
 }
 
 // SetAnswerMessageId устанавливает идентификатор сообщения ответа
