@@ -93,6 +93,38 @@ func (r *Repo) Increment(key string) (string, error) {
 	return val, nil
 }
 
+// GetSet получает значение по ключу и устанавливает новое значение
+func (r *Repo) GetSet(key string, fn func(val string) (string, error)) (string, error) {
+	var (
+		err error
+		val string
+	)
+	defer r.logOperation(&err, "GetSet", key, &val)
+	err = r.db.Update(func(txn *badger.Txn) error {
+		var item *badger.Item
+		item, err = txn.Get([]byte(key))
+		if err != nil && err != badger.ErrKeyNotFound {
+			return err
+		}
+		var valBytes []byte
+		if err != badger.ErrKeyNotFound {
+			valBytes, err = item.ValueCopy(nil)
+			if err != nil {
+				return err
+			}
+		}
+		val, err = fn(string(valBytes))
+		if err != nil {
+			return err
+		}
+		return txn.Set([]byte(key), []byte(val))
+	})
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}
+
 // Get получает значение по ключу
 func (r *Repo) Get(key string) (string, error) {
 	var (
