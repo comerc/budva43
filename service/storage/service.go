@@ -46,12 +46,6 @@ func New(repo storageRepo) *Service {
 
 // SetCopiedMessageId сохраняет связь между оригинальным и скопированным сообщением
 func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error {
-	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
-	var (
-		err error
-		val string
-	)
-
 	fn := func(val string) (string, error) {
 		var ss []string
 		if val != "" {
@@ -63,7 +57,8 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 		return strings.Join(ss, ","), nil
 	}
 
-	val, err = s.repo.GetSet(key, fn)
+	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
+	val, err := s.repo.GetSet(key, fn)
 
 	if err != nil {
 		s.log.Error("SetCopiedMessageId", "err", err)
@@ -81,7 +76,6 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 // GetCopiedMessageIds получает идентификаторы скопированных сообщений по Id оригинала
 func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error) {
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
-
 	val, err := s.repo.Get(key)
 	if err != nil {
 		return nil, fmt.Errorf("GetCopiedMessageIds: %w", err)
@@ -104,7 +98,6 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error
 // DeleteCopiedMessageIds удаляет связь между оригинальным и скопированными сообщениями
 func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
-
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteCopiedMessageIds", "err", err)
@@ -120,7 +113,6 @@ func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 // SetNewMessageId сохраняет соответствие между временным и постоянным Id сообщения
 func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error {
 	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
-
 	err := s.repo.Set(key, fmt.Sprintf("%d", newMessageId))
 	if err != nil {
 		s.log.Error("SetNewMessageId", "err", err)
@@ -138,7 +130,6 @@ func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) erro
 // GetNewMessageId получает постоянный Id сообщения по временному
 func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
-
 	val, err := s.repo.Get(key)
 	if err != nil {
 		s.log.Error("GetNewMessageId", "err", err)
@@ -158,7 +149,6 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 // DeleteNewMessageId удаляет соответствие между временным и постоянным Id сообщения
 func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) error {
 	key := fmt.Sprintf("%s:%d:%d", newMessageIdPrefix, chatId, tmpMessageId)
-
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteNewMessageId", "err", err)
@@ -175,7 +165,6 @@ func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) error {
 // SetTmpMessageId сохраняет соответствие между постоянным и временным Id сообщения
 func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error {
 	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
-
 	err := s.repo.Set(key, fmt.Sprintf("%d", tmpMessageId))
 	if err != nil {
 		s.log.Error("SetTmpMessageId", "err", err)
@@ -193,7 +182,6 @@ func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) erro
 // GetTmpMessageId получает временный Id сообщения по постоянному
 func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
-
 	val, err := s.repo.Get(key)
 	if err != nil {
 		s.log.Error("GetTmpMessageId", "err", err)
@@ -213,7 +201,6 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 // DeleteTmpMessageId удаляет соответствие между постоянным и временным Id сообщения
 func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 	key := fmt.Sprintf("%s:%d:%d", tmpMessageIdPrefix, chatId, newMessageId)
-
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteTmpMessageId", "err", err)
@@ -233,12 +220,7 @@ func (s *Service) IncrementViewedMessages(toChatId int64, date string) error {
 		date = time.Now().UTC().Format("2006-01-02")
 	}
 	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
-	var (
-		err error
-		val string
-	)
-
-	val, err = s.repo.Increment(key)
+	val, err := s.repo.Increment(key)
 	if err != nil {
 		s.log.Error("IncrementViewedMessages", "err", err)
 		return fmt.Errorf("IncrementViewedMessages: %w", err)
@@ -255,7 +237,6 @@ func (s *Service) IncrementViewedMessages(toChatId int64, date string) error {
 // GetViewedMessages получает количество просмотренных сообщений
 func (s *Service) GetViewedMessages(toChatId int64, date string) (int64, error) {
 	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
-
 	val, err := s.repo.Get(key)
 	if err != nil {
 		return 0, fmt.Errorf("GetViewedMessages: %w", err)
@@ -282,7 +263,6 @@ func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error 
 		date = time.Now().UTC().Format("2006-01-02")
 	}
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
-
 	val, err := s.repo.Increment(key)
 	if err != nil {
 		s.log.Error("IncrementForwardedMessages", "err", err)
@@ -303,7 +283,6 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) (int64, erro
 		date = time.Now().UTC().Format("2006-01-02")
 	}
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
-
 	val, err := s.repo.Get(key)
 	if err != nil {
 		return 0, fmt.Errorf("GetForwardedMessages: %w", err)
@@ -325,8 +304,20 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) (int64, erro
 }
 
 // SetAnswerMessageId устанавливает идентификатор сообщения ответа
-func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
-	// TODO: выполнить корректный перенос из budva32
+func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) error {
+	key := fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId)
+	err := s.repo.Set(key, fromChatMessageId)
+	if err != nil {
+		s.log.Error("SetAnswerMessageId", "err", err)
+		return fmt.Errorf("SetAnswerMessageId: %w", err)
+	}
+
+	s.log.Debug("SetAnswerMessageId",
+		"dstChatId", dstChatId,
+		"tmpMessageId", tmpMessageId,
+		"fromChatMessageId", fromChatMessageId,
+	)
+	return nil
 }
 
 // GetAnswerMessageId возвращает идентификатор сообщения ответа
