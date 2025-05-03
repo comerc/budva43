@@ -64,14 +64,14 @@ func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
 
 const answerMessageIdPrefix = "answerMsgId"
 
-// OK: перенесено service/storage/service.go (SetAnswerMessageId)
+// OK: перенесено - service/storage/service.go (SetAnswerMessageId)
 func setAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
 	key := []byte(fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId))
 	val := []byte(fromChatMessageId)
 	setForDB(key, val)
 }
 
-// НЕТ: перенесено частично - service/storage/service.go (GetAnswerMessageId)
+// OK: перенесено - service/storage/service.go (GetAnswerMessageId)
 func getAnswerMessageId(dstChatId, tmpMessageId int64) string {
 	key := []byte(fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId))
 	val := getForDB(key)
