@@ -310,7 +310,7 @@ type MediaAlbum struct {
 var mediaAlbums = make(map[string]MediaAlbum)
 
 // https://github.com/tdlib/td/issues/1482
-// НЕТ: перенесено частично - service/media_album/service.go (AddMessage)
+// OK: перенесено - service/media_album/service.go (AddMessage)
 func addMessageToMediaAlbum(forwardKey string, message *client.Message) bool {
 	key := fmt.Sprintf("%s:%d", forwardKey, message.MediaAlbumId)
 	item, ok := mediaAlbums[key]
@@ -341,7 +341,7 @@ func getMediaAlbumMessages(key string) []*client.Message {
 
 const waitForMediaAlbum = 3 * time.Second
 
-// НЕТ: не перенесено, предлагаю - service/media_album/service.go (HandleMediaAlbum)
+// НЕТ: не перенесено, предлагаю - service/engine/service.go (HandleMediaAlbum)
 func handleMediaAlbum(forwardKey string, id client.JsonInt64, cb func(messages []*client.Message)) {
 	key := fmt.Sprintf("%s:%d", forwardKey, id)
 	diff := getMediaAlbumLastReceivedDiff(key)
