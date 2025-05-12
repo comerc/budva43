@@ -447,7 +447,7 @@ func forwardNewMessages(tdlibClient *client.Client, messages []*client.Message, 
 	}
 }
 
-// НЕТ: не перенесено, предлагаю - service/message/service.go (GetReplyMarkupData)
+// OK: перенесено - service/message/service.go (GetReplyMarkupData)
 func getReplyMarkupData(message *client.Message) ([]byte, bool) {
 	if message.ReplyMarkup != nil {
 		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
