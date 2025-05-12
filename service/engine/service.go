@@ -66,6 +66,10 @@ type mediaAlbumService interface {
 	GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
 }
 
+type rateLimiterService interface {
+	WaitForForward(ctx context.Context, dstChatId int64)
+}
+
 type telegramRepo interface {
 	GetClient() *client.Client
 	GetListener() chan *client.Listener
@@ -80,6 +84,7 @@ type Service struct {
 	transformService   transformService
 	storageService     storageService
 	mediaAlbumsService mediaAlbumService
+	rateLimiterService rateLimiterService
 	telegramRepo       telegramRepo
 }
 
@@ -90,6 +95,7 @@ func New(
 	transformService transformService,
 	storageService storageService,
 	mediaAlbumsService mediaAlbumService,
+	rateLimiterService rateLimiterService,
 	telegramRepo telegramRepo,
 ) *Service {
 	return &Service{
@@ -100,6 +106,7 @@ func New(
 		transformService:   transformService,
 		storageService:     storageService,
 		mediaAlbumsService: mediaAlbumsService,
+		rateLimiterService: rateLimiterService,
 		telegramRepo:       telegramRepo,
 	}
 }
