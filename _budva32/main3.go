@@ -323,7 +323,7 @@ func addMessageToMediaAlbum(forwardKey string, message *client.Message) bool {
 	return !ok
 }
 
-// НЕТ: перенесено частично - service/media_album/service.go (GetLastReceivedDiff)
+// OK: перенесено - service/media_album/service.go (GetLastReceivedDiff)
 func getMediaAlbumLastReceivedDiff(key string) time.Duration {
 	mediaAlbumsMu.Lock()
 	defer mediaAlbumsMu.Unlock()

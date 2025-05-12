@@ -40,8 +40,9 @@ func (s *Service) AddMessage(forwardKey string, message *client.Message) bool {
 
 // GetLastReceivedDiff возвращает время, прошедшее с момента получения последнего сообщения в альбоме
 func (s *Service) GetLastReceivedDiff(key string) time.Duration {
-	// TODO: выполнить корректный перенос из budva32
-	return 0
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return time.Since(s.mediaAlbums[key].lastReceived)
 }
 
 // GetMessages возвращает сообщения альбома
