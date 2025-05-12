@@ -99,3 +99,6 @@ type SubmatchRule struct {
 	// Match список строк для сравнения с подстрокой
 	Match []string
 }
+
+// MediaAlbumForwardKey ключ для пересылаемого медиа-альбома
+type MediaAlbumForwardKey = string

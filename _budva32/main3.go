@@ -330,7 +330,7 @@ func getMediaAlbumLastReceivedDiff(key string) time.Duration {
 	return time.Since(mediaAlbums[key].lastReceived)
 }
 
-// НЕТ: перенесено частично - service/media_album/service.go (GetMessages)
+// OK: перенесено - service/media_album/service.go (GetMessages)
 func getMediaAlbumMessages(key string) []*client.Message {
 	mediaAlbumsMu.Lock()
 	defer mediaAlbumsMu.Unlock()

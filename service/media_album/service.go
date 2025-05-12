@@ -6,11 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/comerc/budva43/entity"
 	"github.com/zelenin/go-tdlib/client"
-)
 
-type Key = string
+	"github.com/comerc/budva43/entity"
+)
 
 // mediaAlbum представляет группу сообщений, составляющих медиа-альбом
 type mediaAlbum struct {
@@ -23,7 +22,7 @@ type Service struct {
 	log *slog.Logger
 	//
 	mu          sync.Mutex
-	mediaAlbums map[Key]*mediaAlbum
+	mediaAlbums map[entity.MediaAlbumForwardKey]*mediaAlbum
 }
 
 // New создает новый сервис для управления медиа-альбомами
@@ -31,7 +30,7 @@ func New() *Service {
 	return &Service{
 		log: slog.With("module", "service.media_album"),
 		//
-		mediaAlbums: make(map[Key]*mediaAlbum),
+		mediaAlbums: make(map[entity.MediaAlbumForwardKey]*mediaAlbum),
 	}
 }
 
@@ -39,31 +38,34 @@ func New() *Service {
 // AddMessage добавляет сообщение в медиа-альбом
 // Возвращает true, если это первое сообщение в медиа-альбоме
 func (s *Service) AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool {
-	key := s.GetKey(forwardRuleId, message.MediaAlbumId)
-	item, ok := s.mediaAlbums[key]
+	forwardKey := s.GetForwardKey(forwardRuleId, message.MediaAlbumId)
+	item, ok := s.mediaAlbums[forwardKey]
 	if !ok {
 		item = &mediaAlbum{}
 	}
 	item.messages = append(item.messages, message)
 	item.lastReceived = time.Now()
-	s.mediaAlbums[key] = item
+	s.mediaAlbums[forwardKey] = item
 	return !ok
 }
 
 // GetLastReceivedDiff возвращает время, прошедшее с момента получения последнего сообщения в медиа-альбоме
-func (s *Service) GetLastReceivedDiff(key string) time.Duration {
+func (s *Service) GetLastReceivedDiff(forwardKey entity.MediaAlbumForwardKey) time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return time.Since(s.mediaAlbums[key].lastReceived)
+	return time.Since(s.mediaAlbums[forwardKey].lastReceived)
 }
 
 // GetMessages возвращает сообщения медиа-альбома
-func (s *Service) GetMessages(key string) []*client.Message {
-	// TODO: выполнить корректный перенос из budva32
-	return nil
+func (s *Service) GetMessages(forwardKey entity.MediaAlbumForwardKey) []*client.Message {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	messages := s.mediaAlbums[forwardKey].messages
+	delete(s.mediaAlbums, forwardKey)
+	return messages
 }
 
-// GetKey возвращает ключ для пересылаемого медиа-альбома
-func (s *Service) GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) Key {
+// GetForwardKey возвращает ключ для пересылаемого медиа-альбома
+func (s *Service) GetForwardKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumForwardKey {
 	return fmt.Sprintf("%s:%d", forwardRuleId, MediaAlbumId)
 }

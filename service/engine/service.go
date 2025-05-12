@@ -61,9 +61,9 @@ type storageService interface {
 }
 
 type mediaAlbumService interface {
-	AddMessage(forwardKey string, message *client.Message) bool
-	GetLastReceivedDiff(key string) time.Duration
-	GetMessages(key string) []*client.Message
+	AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
+	GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
+	GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
 }
 
 type telegramRepo interface {
