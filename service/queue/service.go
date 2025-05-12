@@ -27,7 +27,7 @@ func New() *Service {
 func (s *Service) Start(ctx context.Context) error {
 	s.log.Info("Запуск сервиса очереди")
 
-	go s.runQueue(ctx)
+	go s.run(ctx)
 
 	return nil
 }
@@ -42,8 +42,8 @@ func (s *Service) Add(fn func()) {
 	s.queue.PushBack(fn)
 }
 
-// runQueue обрабатывает очередь задач
-func (s *Service) runQueue(ctx context.Context) {
+// run обрабатывает очередь задач
+func (s *Service) run(ctx context.Context) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {

@@ -18,6 +18,7 @@ import (
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
 	queueService "github.com/comerc/budva43/service/queue"
+	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
 	cliTransport "github.com/comerc/budva43/transport/cli"
@@ -149,6 +150,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	transformService := transformService.New()
 	storageService := storageService.New(storageRepo)
 	mediaAlbumService := mediaAlbumService.New()
+	rateLimiterService := rateLimiterService.New()
 	queueService := queueService.New()
 	if err := queueService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска queueService: %w", err)
@@ -161,6 +163,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		transformService,
 		storageService,
 		mediaAlbumService,
+		rateLimiterService,
 		telegramRepo,
 	)
 	if err := engineService.Start(ctx); err != nil {

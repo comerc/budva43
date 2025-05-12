@@ -297,14 +297,14 @@ var (
 	lastForwardedMu sync.Mutex
 )
 
-// НЕТ: не перенесено, предлагаю - service/rate_limiter/service.go (GetLastForwardedDiff)
+// OK: перенесено - service/rate_limiter/service.go (getLastForwardedDiff)
 func getLastForwardedDiff(chatId int64) time.Duration {
 	lastForwardedMu.Lock()
 	defer lastForwardedMu.Unlock()
 	return time.Since(lastForwarded[chatId])
 }
 
-// НЕТ: не перенесено, предлагаю - service/rate_limiter/service.go (SetLastForwarded)
+// OK: перенесено - service/rate_limiter/service.go (setLastForwarded)
 func setLastForwarded(chatId int64) {
 	lastForwardedMu.Lock()
 	defer lastForwardedMu.Unlock()
