@@ -60,3 +60,17 @@ func (s *Service) IsSystemMessage(message *client.Message) bool {
 		return false
 	}
 }
+
+// GetReplyMarkupData извлекает данные из replyMarkup
+func (s *Service) GetReplyMarkupData(message *client.Message) ([]byte, bool) {
+	if message.ReplyMarkup != nil {
+		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
+			row := a.Rows[0]
+			btn := row[0]
+			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
+				return callback.Data, true
+			}
+		}
+	}
+	return nil, false
+}
