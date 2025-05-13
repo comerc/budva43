@@ -21,8 +21,27 @@ import (
 // - Обработка редактированных сообщений (`processSingleEdited`) отличается от старой реализации, что может приводить к различиям в поведении
 // - Функция `matchesMediaContent` для проверки соответствия медиа-контента отсутствовала в старой версии и может быть избыточной
 
-type queueService interface {
+type telegramRepo interface {
+	GetClient() *client.Client
+	GetListener() chan *client.Listener
+}
+
+type queueRepo interface {
 	Add(task func())
+}
+
+type storageService interface {
+	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error
+	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
+	DeleteCopiedMessageIds(fromChatMessageId string) error
+	SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error
+	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
+	DeleteNewMessageId(chatId, tmpMessageId int64) error
+	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error
+	GetTmpMessageId(chatId, newMessageId int64) (int64, error)
+	DeleteTmpMessageId(chatId, newMessageId int64) error
+	// IncrementViewedMessages(toChatId int64) error
+	// IncrementForwardedMessages(toChatId int64) error
 }
 
 type messageService interface {
@@ -46,20 +65,6 @@ type transformService interface {
 	AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error
 }
 
-type storageService interface {
-	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error
-	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
-	DeleteCopiedMessageIds(fromChatMessageId string) error
-	SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error
-	// GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
-	DeleteNewMessageId(chatId, tmpMessageId int64) error
-	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error
-	GetTmpMessageId(chatId, newMessageId int64) (int64, error)
-	DeleteTmpMessageId(chatId, newMessageId int64) error
-	// IncrementViewedMessages(toChatId int64) error
-	// IncrementForwardedMessages(toChatId int64) error
-}
-
 type mediaAlbumService interface {
 	AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
 	GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
@@ -70,44 +75,39 @@ type rateLimiterService interface {
 	WaitForForward(ctx context.Context, dstChatId int64)
 }
 
-type telegramRepo interface {
-	GetClient() *client.Client
-	GetListener() chan *client.Listener
-}
-
 // Service предоставляет функциональность движка пересылки сообщений
 type Service struct {
 	log *slog.Logger
 	//
-	queueService       queueService
+	telegramRepo       telegramRepo
+	queueRepo          queueRepo
+	storageService     storageService
 	messageService     messageService
 	transformService   transformService
-	storageService     storageService
 	mediaAlbumsService mediaAlbumService
 	rateLimiterService rateLimiterService
-	telegramRepo       telegramRepo
 }
 
 // New создает новый экземпляр сервиса engine
 func New(
-	queueService queueService,
+	telegramRepo telegramRepo,
+	queueRepo queueRepo,
+	storageService storageService,
 	messageService messageService,
 	transformService transformService,
-	storageService storageService,
 	mediaAlbumsService mediaAlbumService,
 	rateLimiterService rateLimiterService,
-	telegramRepo telegramRepo,
 ) *Service {
 	return &Service{
 		log: slog.With("module", "service.engine"),
 		//
-		queueService:       queueService,
+		telegramRepo:       telegramRepo,
+		queueRepo:          queueRepo,
+		storageService:     storageService,
 		messageService:     messageService,
 		transformService:   transformService,
-		storageService:     storageService,
 		mediaAlbumsService: mediaAlbumsService,
 		rateLimiterService: rateLimiterService,
-		telegramRepo:       telegramRepo,
 	}
 }
 
@@ -120,14 +120,14 @@ func (s *Service) Start(ctx context.Context) error {
 		return fmt.Errorf("ошибка валидации конфигурации: %w", err)
 	}
 
-	return nil
+	// return nil
 
 	// Обогащаем конфигурацию
 	if err := s.enrichConfig(); err != nil {
 		return fmt.Errorf("ошибка обогащения конфигурации: %w", err)
 	}
 
-	go s.runHandler(ctx)
+	go s.run(ctx)
 
 	return nil
 }
@@ -183,8 +183,8 @@ func (s *Service) enrichConfig() error {
 	return nil
 }
 
-// runHandler запускает обработчик обновлений от Telegram
-func (s *Service) runHandler(ctx context.Context) {
+// run запускает обработчик обновлений от Telegram
+func (s *Service) run(ctx context.Context) {
 	// Ждём авторизации клиента и получаем канал обновлений от Telegram
 	select {
 	case <-ctx.Done():

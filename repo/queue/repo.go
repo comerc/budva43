@@ -7,43 +7,41 @@ import (
 	"time"
 )
 
-// Service предоставляет функциональность асинхронной очереди задач
-type Service struct {
+// Repo предоставляет функциональность асинхронной очереди задач
+type Repo struct {
 	log *slog.Logger
 	//
 	queue *list.List
 }
 
 // New создает новый экземпляр сервиса очереди
-func New() *Service {
-	return &Service{
-		log: slog.With("module", "service.queue"),
+func New() *Repo {
+	return &Repo{
+		log: slog.With("module", "repo.queue"),
 		//
 		queue: list.New(),
 	}
 }
 
 // Start запускает обработчик очереди
-func (s *Service) Start(ctx context.Context) error {
-	s.log.Info("Запуск сервиса очереди")
-
+func (s *Repo) Start(ctx context.Context) error {
 	go s.run(ctx)
 
 	return nil
 }
 
 // Close останавливает сервис очереди
-func (s *Service) Close() error {
+func (s *Repo) Close() error {
 	return nil
 }
 
 // Add добавляет задачу в очередь
-func (s *Service) Add(fn func()) {
+func (s *Repo) Add(fn func()) {
 	s.queue.PushBack(fn)
 }
 
 // run обрабатывает очередь задач
-func (s *Service) run(ctx context.Context) {
+func (s *Repo) run(ctx context.Context) {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -55,7 +53,7 @@ func (s *Service) run(ctx context.Context) {
 			if front != nil {
 				fn := front.Value.(func())
 				fn()
-				// This will remove the allocated memory and avoid memory leaks
+				// Это позволит удалить выделенную память и избежать утечек памяти
 				s.queue.Remove(front)
 			}
 		}

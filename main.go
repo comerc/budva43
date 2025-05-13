@@ -11,13 +11,13 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
+	queueRepo "github.com/comerc/budva43/repo/queue"
 	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messsageService "github.com/comerc/budva43/service/message"
-	queueService "github.com/comerc/budva43/service/queue"
 	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
@@ -127,21 +127,28 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация репозиториев
 
 	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	storageRepo := storageRepo.New()
-	if err := storageRepo.Start(ctx, cancel); err != nil {
+	if err := storageRepo.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска storageRepo: %w", err)
 	}
 	defer gracefulShutdown("storageRepo", errSet, storageRepo)
 	slog.Info("storageRepo запущен")
 
-	// Создаем и запускаем репозиторий Telegram
 	telegramRepo := telegramRepo.New()
 	if err := telegramRepo.Start(ctx, cancel); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
 	defer gracefulShutdown("telegramRepo", errSet, telegramRepo)
 	slog.Info("telegramRepo запущен")
+
+	queueRepo := queueRepo.New()
+	if err := queueRepo.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска queueRepo: %w", err)
+	}
+	defer gracefulShutdown("queueRepo", errSet, queueRepo)
+	slog.Info("queueRepo запущен")
 
 	// - Инициализация сервисов
 	messageService := messsageService.New()
@@ -151,20 +158,14 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	storageService := storageService.New(storageRepo)
 	mediaAlbumService := mediaAlbumService.New()
 	rateLimiterService := rateLimiterService.New()
-	queueService := queueService.New()
-	if err := queueService.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска queueService: %w", err)
-	}
-	defer gracefulShutdown("queueService", errSet, queueService)
-	slog.Info("queueService запущен")
 	engineService := engineService.New(
-		queueService,
+		telegramRepo,
+		queueRepo,
+		storageService,
 		messageService,
 		transformService,
-		storageService,
 		mediaAlbumService,
 		rateLimiterService,
-		telegramRepo,
 	)
 	if err := engineService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)
