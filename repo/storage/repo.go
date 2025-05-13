@@ -28,7 +28,7 @@ func New() *Repo {
 }
 
 // Start устанавливает соединение с базой данных
-func (r *Repo) Start(ctx context.Context, shutdown func()) error {
+func (r *Repo) Start(ctx context.Context) error {
 	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
 	db, err := badger.Open(opts)
 	if err != nil {
