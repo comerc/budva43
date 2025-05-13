@@ -29,7 +29,7 @@ func New() *Repo {
 	return &Repo{
 		log: slog.With("module", "repo.telegram"),
 		//
-		client:         nil,
+		client:         nil, // клиент будет создан позже, после установки авторизатора
 		initClientDone: make(chan any),
 		listenerChan:   make(chan *client.Listener, 1),
 	}
@@ -37,13 +37,30 @@ func New() *Repo {
 
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(ctx context.Context, shutdown context.CancelFunc) error {
-	// Инициализируем базовые настройки репозитория
-	// Клиент будет создан позже, после установки авторизатора
-	r.log.Info("Telegram repository initialization started")
-
 	r.ctx = ctx // TODO: некрасиво!
 	r.shutdown = shutdown
 
+	return nil
+}
+
+// Close закрывает соединение с Telegram API
+func (r *Repo) Close() error {
+	if r.client == nil {
+		return nil
+	}
+	_, err := r.client.Close()
+	if err != nil {
+		return err
+	}
+	r.client = nil
+	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
+	/*
+	   [ 0][t 1][1745435133.056575059][Status.h:371][&ptr_ != nullptr && get_info().static_flag]       0x0 -3
+	   signal: abort trap
+	   make: *** [run] Error 1
+	*/
+	// TODO: возможно, нужно дождаться закрытия клиента
+	time.Sleep(1 * time.Second)
 	return nil
 }
 
@@ -148,27 +165,6 @@ func (r *Repo) setClient(tdlibClient *client.Client) {
 	// 	// r.log.Info("Closing setClientDone")
 	// 	close(r.initClientDone)
 	// }
-}
-
-// Close закрывает соединение с Telegram API
-func (r *Repo) Close() error {
-	if r.client == nil {
-		return nil
-	}
-	_, err := r.client.Close()
-	if err != nil {
-		return err
-	}
-	r.client = nil
-	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
-	/*
-	   [ 0][t 1][1745435133.056575059][Status.h:371][&ptr_ != nullptr && get_info().static_flag]       0x0 -3
-	   signal: abort trap
-	   make: *** [run] Error 1
-	*/
-	// возможно, нужно дождаться закрытия клиента
-	time.Sleep(1 * time.Second)
-	return nil
 }
 
 // setClientDone возвращает канал, который будет закрыт после инициализации клиента
