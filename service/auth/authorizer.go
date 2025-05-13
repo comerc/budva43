@@ -15,6 +15,10 @@ import (
 
 // TODO: (?) собственный AuthState() - чтобы отказаться от setClient()
 
+// Zelenin: You should implement AuthorizationStateHandler.
+// Just copy the required code and change it as needed.
+// https://github.com/zelenin/go-tdlib/issues/157
+
 // Authorizer реализует интерфейс client.AuthorizationStateHandler
 // для управления процессом авторизации в Telegram
 type Authorizer struct {
