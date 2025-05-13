@@ -443,7 +443,7 @@ func incrementForwardedMessages(toChatId int64) {
 
 var forwardedToMu sync.Mutex
 
-// НЕТ: не перенесено, предлагаю - service/engine/service.go (IsNotForwardedTo)
+// OK: перенесено - service/engine/service.go (isNotForwardedTo)
 func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
 	forwardedToMu.Lock()
 	defer forwardedToMu.Unlock()
