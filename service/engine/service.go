@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -40,8 +41,10 @@ type storageService interface {
 	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error
 	GetTmpMessageId(chatId, newMessageId int64) (int64, error)
 	DeleteTmpMessageId(chatId, newMessageId int64) error
-	// IncrementViewedMessages(toChatId int64) error
-	// IncrementForwardedMessages(toChatId int64) error
+	IncrementViewedMessages(toChatId int64, date string) error
+	// GetViewedMessages(toChatId int64, date string) (int64, error)
+	IncrementForwardedMessages(toChatId int64, date string) error
+	// GetForwardedMessages(toChatId int64, date string) (int64, error)
 }
 
 type messageService interface {
@@ -850,7 +853,20 @@ func (s *Service) processSingleDeleted(fromChatMessageId, toChatMessageId string
 	// }
 }
 
-type filtersMode string
+var forwardedToMu sync.Mutex
+
+// isNotForwardedTo проверяет, было ли сообщение уже отправлено в данный чат
+func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
+	forwardedToMu.Lock()
+	defer forwardedToMu.Unlock()
+	if !forwardedTo[dstChatId] {
+		forwardedTo[dstChatId] = true
+		return true
+	}
+	return false
+}
+
+type filtersMode = string
 
 const (
 	filtersOK    filtersMode = "ok"
