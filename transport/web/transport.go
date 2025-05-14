@@ -20,10 +20,9 @@ import (
 // }
 
 type authController interface {
-	SubmitPhoneNumber(phone string)
-	SubmitCode(code string)
-	SubmitPassword(password string)
-	GetAuthorizationState() (client.AuthorizationState, error)
+	GetInitDone() <-chan any
+	GetAuthState() client.AuthorizationState
+	GetInputChan() chan string
 }
 
 // Transport представляет HTTP маршрутизатор для API
@@ -54,6 +53,7 @@ func New(
 func (t *Transport) setupRoutes(mux *http.ServeMux) {
 	// mux.HandleFunc("/api/reports", t.handleReports)
 
+	// TODO: перенести в middleware
 	mux.HandleFunc("/api/auth/telegram/state", t.handleAuthState)
 	mux.HandleFunc("/api/auth/telegram/phone", t.handleSubmitPhone)
 	mux.HandleFunc("/api/auth/telegram/code", t.handleSubmitCode)
@@ -174,14 +174,11 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var state client.AuthorizationState
-	state, err = t.authController.GetAuthorizationState()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error getting authorization state: %v", err), http.StatusInternalServerError)
-		return
+	var stateType string
+	state := t.authController.GetAuthState()
+	if state != nil {
+		stateType = state.AuthorizationStateType()
 	}
-
-	stateType := state.AuthorizationStateType()
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]any{
@@ -212,7 +209,7 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.authController.SubmitPhoneNumber(data.Phone)
+	t.authController.GetInputChan() <- data.Phone
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -244,7 +241,7 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.authController.SubmitCode(data.Code)
+	t.authController.GetInputChan() <- data.Code
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -276,7 +273,7 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	t.authController.SubmitPassword(data.Password)
+	t.authController.GetInputChan() <- data.Password
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -307,12 +304,7 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	t.authClients[clientId] = events
 
 	// Отправляем текущее состояние сразу при подключении
-	var state client.AuthorizationState
-	state, err = t.authController.GetAuthorizationState()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error getting authorization state: %v", err), http.StatusInternalServerError)
-		return
-	}
+	state := t.authController.GetAuthState()
 	if state != nil {
 		events <- state
 	}
@@ -373,12 +365,18 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.authController.GetInitDone():
+			t.log.Info("TDLib клиент готов к выполнению авторизации")
+		}
+		t.log.Info("Start HTTP server", "addr", t.server.Addr)
 		if err := t.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			t.log.Error("HTTP server terminated with error", "err", err)
 		}
 	}()
 
-	t.log.Info("HTTP server started", "addr", t.server.Addr)
 	return nil
 }
 

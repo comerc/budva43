@@ -17,11 +17,11 @@ import (
 type Repo struct {
 	log *slog.Logger
 	//
-	client         *client.Client
-	initClientDone chan any
-	listenerChan   chan *client.Listener
-	ctx            context.Context
-	shutdown       func()
+	client     *client.Client
+	initDone   chan any
+	clientDone chan any
+	authState  client.AuthorizationState
+	inputChan  chan string
 }
 
 // New создает новый экземпляр репозитория Telegram
@@ -29,16 +29,106 @@ func New() *Repo {
 	return &Repo{
 		log: slog.With("module", "repo.telegram"),
 		//
-		client:         nil, // клиент будет создан позже, после установки авторизатора
-		initClientDone: make(chan any),
-		listenerChan:   make(chan *client.Listener, 1),
+		client:     nil,            // клиент будет создан позже, после успеха авторизатора
+		initDone:   make(chan any), // закроется, когда инициализация завершена
+		clientDone: make(chan any), // закроется, когда клиент авторизован
+		authState:  nil,            // nil, потому что авторизатор ещё не запущен
+		inputChan:  make(chan string, 1),
 	}
 }
 
 // Start устанавливает соединение с Telegram API
-func (r *Repo) Start(ctx context.Context, shutdown context.CancelFunc) error {
-	r.ctx = ctx // TODO: некрасиво!
-	r.shutdown = shutdown
+func (r *Repo) Start(ctx context.Context) error {
+	r.log.Info("Creating TDLib client")
+
+	err := r.setupClientLog()
+	if err != nil {
+		r.log.Error("setupClientLog", "err", err)
+		return err
+	}
+
+	tdlibParameters := &client.SetTdlibParametersRequest{
+		UseTestDc:           config.Telegram.UseTestDc,
+		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
+		FilesDirectory:      config.Telegram.FilesDirectory,
+		UseFileDatabase:     config.Telegram.UseFileDatabase,
+		UseChatInfoDatabase: config.Telegram.UseChatInfoDatabase,
+		UseMessageDatabase:  config.Telegram.UseMessageDatabase,
+		UseSecretChats:      config.Telegram.UseSecretChats,
+		ApiId:               config.Telegram.ApiId,
+		ApiHash:             config.Telegram.ApiHash,
+		SystemLanguageCode:  config.Telegram.SystemLanguageCode,
+		DeviceModel:         config.Telegram.DeviceModel,
+		SystemVersion:       config.Telegram.SystemVersion,
+		ApplicationVersion:  config.Telegram.ApplicationVersion,
+	}
+	authorizer := client.ClientAuthorizer(tdlibParameters)
+
+	go func() {
+		initDoneFlag := false
+		for {
+			select {
+			case <-ctx.Done():
+				r.log.Info("ctx.Done()")
+				return
+			case r.authState = <-authorizer.State:
+				if !initDoneFlag {
+					close(r.initDone)
+					initDoneFlag = true
+				}
+				switch r.authState.(type) {
+				case *client.AuthorizationStateWaitPhoneNumber:
+					s := <-r.inputChan
+					authorizer.PhoneNumber <- s
+				case *client.AuthorizationStateWaitCode:
+					s := <-r.inputChan
+					authorizer.Code <- s
+				case *client.AuthorizationStateWaitPassword:
+					s := <-r.inputChan
+					authorizer.Password <- s
+				case *client.AuthorizationStateReady:
+					break
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			tdlibClient, err := client.NewClient(authorizer)
+			if err != nil {
+				r.log.Error("client.NewClient", "err", err)
+				select {
+				case <-ctx.Done():
+					r.log.Info("ctx.Done()")
+					return
+				default:
+					continue
+				}
+			}
+			r.client = tdlibClient
+			close(r.clientDone)
+			r.log.Info("TDLib client authorized")
+			break
+		}
+
+		version := r.GetVersion()
+		r.log.Info("TDLib", "version", version)
+
+		me := r.GetMe()
+		r.log.Info("Me",
+			"FirstName", me.FirstName,
+			// "LastName", me.LastName,
+			// "Username", func() string {
+			// 	if me.Usernames != nil {
+			// 		return me.Usernames.EditableUsername
+			// 	}
+			// 	return ""
+			// }(),
+		)
+
+		// r.listenerChan <- r.client.GetListener()
+	}()
 
 	return nil
 }
@@ -64,56 +154,6 @@ func (r *Repo) Close() error {
 	return nil
 }
 
-// CreateClient создает клиент TDLib после установки авторизатора
-func (r *Repo) CreateClient(
-	createAuthorizer func(
-		setClient func(*client.Client),
-		shutdown func(),
-	) client.AuthorizationStateHandler,
-) {
-	r.log.Info("Creating TDLib client")
-
-	err := r.setupClientLog()
-	if err != nil {
-		r.log.Error("setupClientLog", "err", err)
-		return
-	}
-
-	// Если неудачная авторизации, то клиент закрывается, потому перезапуск цикла
-	for {
-		authorizationStateHandler := createAuthorizer(r.setClient, r.shutdown)
-		_, err := client.NewClient(authorizationStateHandler)
-		if err != nil {
-			r.log.Error("ошибка при создании клиента TDLib", "err", err)
-			select {
-			case <-r.ctx.Done():
-				r.log.Info("ctx.Done()")
-				return
-			default:
-				continue
-			}
-		}
-		r.log.Info("TDLib client authorized")
-		r.listenerChan <- r.client.GetListener()
-		break
-	}
-
-	version := r.GetVersion()
-	r.log.Info("TDLib", "version", version)
-
-	me := r.GetMe()
-	r.log.Info("Me",
-		"FirstName", me.FirstName,
-		// "LastName", me.LastName,
-		// "Username", func() string {
-		// 	if me.Usernames != nil {
-		// 		return me.Usernames.EditableUsername
-		// 	}
-		// 	return ""
-		// }(),
-	)
-}
-
 // GetVersion выводит информацию о версии TDLib
 func (r *Repo) GetVersion() string {
 	versionOption, err := r.client.GetOption(&client.GetOptionRequest{
@@ -136,40 +176,30 @@ func (r *Repo) GetMe() *client.User {
 	return me
 }
 
-// GetListener возвращает канал, который вернёт Listener после авторизации клиента
-func (r *Repo) GetListener() chan *client.Listener {
-	return r.listenerChan
-}
-
-// GetClient возвращает клиент TDLib
+// GetClient возвращает клиент TDLib, если он авторизован
 func (r *Repo) GetClient() *client.Client {
+	<-r.clientDone
 	return r.client
 }
 
-// setClient устанавливает клиент TDLib
-func (r *Repo) setClient(tdlibClient *client.Client) {
-	// r.log.Info("setClient")
-	if r.client != nil {
-		return
-	}
-	r.client = tdlibClient
-	close(r.initClientDone)
-	// select {
-	// case _, ok := <-r.initClientDone:
-	// 	// r.log.Info("<-r.setClientDone", "ok", ok)
-	// 	if !ok {
-	// 		// r.log.Info("setClientDone closed")
-	// 		return
-	// 	}
-	// default:
-	// 	// r.log.Info("Closing setClientDone")
-	// 	close(r.initClientDone)
-	// }
+// GetInitDone возвращает канал, который будет закрыт после инициализации клиента
+func (r *Repo) GetInitDone() <-chan any {
+	return r.initDone
 }
 
-// setClientDone возвращает канал, который будет закрыт после инициализации клиента
-func (r *Repo) InitClientDone() chan any {
-	return r.initClientDone
+// GetClientDone возвращает канал, который будет закрыт после авторизации клиента
+func (r *Repo) GetClientDone() <-chan any {
+	return r.clientDone
+}
+
+// GetAuthState возвращает состояние авторизации
+func (r *Repo) GetAuthState() client.AuthorizationState {
+	return r.authState
+}
+
+// GetInputChan возвращает канал для ввода данных
+func (r *Repo) GetInputChan() chan string {
+	return r.inputChan
 }
 
 // setupClientLog устанавливает опции для клиента TDLib
