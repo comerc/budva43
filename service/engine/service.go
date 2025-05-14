@@ -24,7 +24,7 @@ import (
 
 type telegramRepo interface {
 	GetClient() *client.Client
-	GetListener() chan *client.Listener
+	GetClientDone() <-chan any
 }
 
 type queueRepo interface {
@@ -118,12 +118,12 @@ func New(
 func (s *Service) Start(ctx context.Context) error {
 	s.log.Info("Запуск сервиса engine")
 
+	return nil
+
 	// Проверяем конфигурацию
 	if err := s.validateConfig(); err != nil {
 		return fmt.Errorf("ошибка валидации конфигурации: %w", err)
 	}
-
-	// return nil
 
 	// Обогащаем конфигурацию
 	if err := s.enrichConfig(); err != nil {
@@ -192,7 +192,8 @@ func (s *Service) run(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		return
-	case listener := <-s.telegramRepo.GetListener():
+	case <-s.telegramRepo.GetClientDone():
+		listener := s.telegramRepo.GetClient().GetListener()
 		defer listener.Close()
 		s.handleUpdates(ctx, listener)
 	}

@@ -24,7 +24,7 @@ import (
 	util "github.com/comerc/budva43/util"
 )
 
-func initTelegram(t *testing.T) {
+func initTelegramDirs(t *testing.T) {
 	t.Helper()
 
 	fmt.Println("config.Telegram.UseTestDc:", config.Telegram.UseTestDc)
@@ -55,7 +55,7 @@ func TestAuth(t *testing.T) {
 		cancel()
 	})
 
-	initTelegram(t)
+	initTelegramDirs(t)
 
 	var err error
 
@@ -67,7 +67,7 @@ func TestAuth(t *testing.T) {
 	go automator.Run()
 
 	telegramRepo := telegramRepo.New()
-	err = telegramRepo.Start(ctx, cancel)
+	err = telegramRepo.Start(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := telegramRepo.Close()
@@ -82,8 +82,8 @@ func TestAuth(t *testing.T) {
 	authController := authController.New(authService)
 	require.NotNil(t, authController)
 
-	state, err := authController.GetAuthorizationState()
-	require.NoError(t, err)
+	state := authController.GetAuthState()
+	require.NotNil(t, state)
 	assert.Equal(t, client.TypeAuthorizationStateWaitPhoneNumber, state.AuthorizationStateType())
 
 	cliTransport := cliTransport.New(

@@ -25,11 +25,9 @@ import (
 // }
 
 type authController interface {
-	SubmitPhoneNumber(phone string)
-	SubmitCode(code string)
-	SubmitPassword(password string)
-	InitClientDone() chan any
-	GetAuthorizationState() (client.AuthorizationState, error)
+	GetInitDone() <-chan any
+	GetAuthState() client.AuthorizationState
+	GetInputChan() chan string
 }
 
 // Transport представляет интерфейс командной строки
@@ -88,6 +86,7 @@ func (t *Transport) registerCommands() {
 		// 	description: "Генерация отчетов: activity, forwarding, error",
 		// 	handler:     t.handleReport,
 		// },
+		// TODO: перенести в запуск cli
 		{
 			name:        "auth",
 			description: "Запустить процесс авторизации в Telegram",
@@ -109,9 +108,8 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		select {
 		case <-ctx.Done():
 			return
-		case <-t.authController.InitClientDone():
-			// Если пришло какое-либо состояние, то TDLib клиент готов
-			t.log.Info("TDLib клиент готов")
+		case <-t.authController.GetInitDone():
+			t.log.Info("TDLib клиент готов к выполнению авторизации")
 		}
 
 		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
@@ -231,19 +229,19 @@ func (t *Transport) handleExit(args []string) error {
 func (t *Transport) handleAuth(args []string) error {
 	var err error
 
-	state, err := t.authController.GetAuthorizationState()
-	if err != nil {
-		return fmt.Errorf("ошибка при получении состояния авторизации: %w", err)
+	state := t.authController.GetAuthState()
+	if state == nil {
+		t.log.Info("GetAuthState() вернул nil")
+		return nil
 	}
 
-	t.log.Debug("GetAuthorizationState()", "state", state.AuthorizationStateType())
+	t.log.Debug("GetAuthState()", "state", state.AuthorizationStateType())
 
-	switch state.AuthorizationStateType() {
-	case client.TypeAuthorizationStateWaitPhoneNumber:
-
+	switch state.(type) {
+	case *client.AuthorizationStateWaitPhoneNumber:
 		var phoneNumber string
 		if config.Telegram.PhoneNumber != "" {
-			// TODO: перенести в authController
+			// TODO: перенести в authController?
 			phoneNumber = config.Telegram.PhoneNumber
 			fmt.Println("Используется номер телефона из конфигурации:", util.MaskPhoneNumber(phoneNumber))
 			time.Sleep(3 * time.Second)
@@ -254,25 +252,25 @@ func (t *Transport) handleAuth(args []string) error {
 				return fmt.Errorf("ошибка при чтении телефона: %w", err)
 			}
 		}
-		t.authController.SubmitPhoneNumber(phoneNumber)
+		t.authController.GetInputChan() <- phoneNumber
 
-	case client.TypeAuthorizationStateWaitCode:
+	case *client.AuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
 		code, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении кода: %w", err)
 		}
-		t.authController.SubmitCode(code)
+		t.authController.GetInputChan() <- code
 
-	case client.TypeAuthorizationStateWaitPassword:
+	case *client.AuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
 		password, err := t.hiddenReadLine()
 		if err != nil {
 			return fmt.Errorf("ошибка при чтении пароля: %w", err)
 		}
-		t.authController.SubmitPassword(password)
+		t.authController.GetInputChan() <- password
 
-	case client.TypeAuthorizationStateReady:
+	case *client.AuthorizationStateReady:
 		fmt.Println("Авторизация в Telegram успешно завершена!")
 	}
 

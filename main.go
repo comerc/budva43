@@ -89,12 +89,12 @@ func (e *errSet) Error() string {
 
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
 func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
-	slog.Info("Останавливаем компонент", "компонент", componentName)
+	slog.Info("Останавливаем", "componentName", componentName)
 	if err := closer.Close(); err != nil {
 		slog.Error(
-			"Ошибка при остановке компонента",
-			"компонент", componentName,
-			"ошибка", err,
+			"Ошибка при остановке",
+			"componentName", componentName,
+			"err", err,
 		)
 		errSet.add(fmt.Errorf("ошибка при остановке %s: %w", componentName, err))
 	}
@@ -137,7 +137,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("storageRepo запущен")
 
 	telegramRepo := telegramRepo.New()
-	if err := telegramRepo.Start(ctx, cancel); err != nil {
+	if err := telegramRepo.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
 	defer gracefulShutdown("telegramRepo", errSet, telegramRepo)
