@@ -18,8 +18,8 @@ type Repo struct {
 	log *slog.Logger
 	//
 	client     *client.Client
-	initDone   chan any
 	clientDone chan any
+	initDone   chan any
 	authState  client.AuthorizationState
 	inputChan  chan string
 }
@@ -30,8 +30,8 @@ func New() *Repo {
 		log: slog.With("module", "repo.telegram"),
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
-		initDone:   make(chan any), // закроется, когда инициализация завершена
 		clientDone: make(chan any), // закроется, когда клиент авторизован
+		initDone:   make(chan any), // закроется, когда авторизатор запущен
 		authState:  nil,            // nil, потому что авторизатор ещё не запущен
 		inputChan:  make(chan string, 1),
 	}
@@ -65,16 +65,16 @@ func (r *Repo) Start(ctx context.Context) error {
 	authorizer := client.ClientAuthorizer(tdlibParameters)
 
 	go func() {
-		initDoneFlag := false
+		initFlag := false
 		for {
 			select {
 			case <-ctx.Done():
 				r.log.Info("ctx.Done()")
 				return
 			case r.authState = <-authorizer.State:
-				if !initDoneFlag {
+				if !initFlag {
 					close(r.initDone)
-					initDoneFlag = true
+					initFlag = true
 				}
 				switch r.authState.(type) {
 				case *client.AuthorizationStateWaitPhoneNumber:
@@ -126,8 +126,6 @@ func (r *Repo) Start(ctx context.Context) error {
 			// 	return ""
 			// }(),
 		)
-
-		// r.listenerChan <- r.client.GetListener()
 	}()
 
 	return nil
