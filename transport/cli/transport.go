@@ -25,9 +25,9 @@ import (
 // }
 
 type authController interface {
-	GetInitDone() chan any
+	GetInitDone() <-chan any
 	GetState() client.AuthorizationState
-	GetInputChan() chan string
+	GetInputChan() chan<- string
 }
 
 // Transport представляет интерфейс командной строки

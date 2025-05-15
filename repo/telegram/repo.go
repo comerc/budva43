@@ -137,7 +137,7 @@ func (r *Repo) GetClient() *client.Client {
 }
 
 // GetClientDone возвращает канал, который будет закрыт после авторизации клиента
-func (r *Repo) GetClientDone() chan any {
+func (r *Repo) GetClientDone() <-chan any {
 	return r.clientDone
 }
 

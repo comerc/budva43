@@ -24,7 +24,7 @@ import (
 
 type telegramRepo interface {
 	GetClient() *client.Client
-	GetClientDone() chan any
+	GetClientDone() <-chan any
 }
 
 type queueRepo interface {

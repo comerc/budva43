@@ -7,9 +7,9 @@ import (
 )
 
 type authService interface {
-	GetInitDone() chan any
+	GetInitDone() <-chan any
 	GetState() client.AuthorizationState
-	GetInputChan() chan string
+	GetInputChan() chan<- string
 }
 
 // Controller представляет контроллер для авторизации в Telegram
@@ -29,7 +29,7 @@ func New(authService authService) *Controller {
 }
 
 // GetInitDone возвращает канал, который будет закрыт после инициализации клиента
-func (c *Controller) GetInitDone() chan any {
+func (c *Controller) GetInitDone() <-chan any {
 	return c.authService.GetInitDone()
 }
 
@@ -39,6 +39,6 @@ func (c *Controller) GetState() client.AuthorizationState {
 }
 
 // GetInputChan возвращает канал для ввода данных
-func (c *Controller) GetInputChan() chan string {
+func (c *Controller) GetInputChan() chan<- string {
 	return c.authService.GetInputChan()
 }
