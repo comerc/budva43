@@ -153,7 +153,6 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация сервисов
 	messageService := messsageService.New()
 	// reportService := reportService.New()
-	authService := authService.New(telegramRepo)
 	transformService := transformService.New()
 	storageService := storageService.New(storageRepo)
 	mediaAlbumService := mediaAlbumService.New()
@@ -172,6 +171,12 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	}
 	defer gracefulShutdown("engineService", errSet, engineService)
 	slog.Info("engineService запущен")
+	authService := authService.New(telegramRepo)
+	if err := authService.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска authService: %w", err)
+	}
+	defer gracefulShutdown("authService", errSet, authService)
+	slog.Info("authService запущен")
 
 	// - Инициализация контроллеров
 	// reportController := reportController.New(
