@@ -400,7 +400,7 @@ func (t *Transport) Close() error {
 // OnAuthStateChanged обработчик изменения состояния авторизации
 func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
 	t.log.Debug("Web транспорт получил обновление состояния авторизации",
-		"state", state.AuthorizationStateType())
+		"stateType", state.AuthorizationStateType())
 
 	// Отправляем обновление всем подключенным клиентам
 	for clientId, clientChan := range t.authClients {
