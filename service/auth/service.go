@@ -111,12 +111,12 @@ func (s *Service) handleAuthorizationStates(ctx context.Context) {
 }
 
 // GetInitDone возвращает канал, который будет закрыт после инициализации клиента
-func (s *Service) GetInitDone() chan any {
+func (s *Service) GetInitDone() <-chan any {
 	return s.initDone
 }
 
 // GetInputChan возвращает канал для ввода данных
-func (s *Service) GetInputChan() chan string {
+func (s *Service) GetInputChan() chan<- string {
 	return s.inputChan
 }
 
@@ -129,7 +129,7 @@ func (s *Service) GetState() client.AuthorizationState {
 type clientAuthorizer struct {
 	client.AuthorizationStateHandler // адаптер для client.AuthorizationStateHandler
 	State                            chan client.AuthorizationState
-	PhoneNumber                      chan string
-	Code                             chan string
-	Password                         chan string
+	PhoneNumber                      chan<- string
+	Code                             chan<- string
+	Password                         chan<- string
 }

@@ -20,9 +20,9 @@ import (
 // }
 
 type authController interface {
-	GetInitDone() chan any
+	GetInitDone() <-chan any
 	GetState() client.AuthorizationState
-	GetInputChan() chan string
+	GetInputChan() chan<- string
 }
 
 // Transport представляет HTTP маршрутизатор для API
@@ -31,7 +31,7 @@ type Transport struct {
 	//
 	// reportController reportController
 	authController authController
-	authClients    map[string]chan client.AuthorizationState
+	authClients    map[string]chan<- client.AuthorizationState
 	server         *http.Server
 }
 
@@ -45,7 +45,7 @@ func New(
 		//
 		// reportController: reportController,
 		authController: authController,
-		authClients:    make(map[string]chan client.AuthorizationState),
+		authClients:    make(map[string]chan<- client.AuthorizationState),
 	}
 }
 
@@ -300,7 +300,7 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	clientId := generateClientId()
 	events := make(chan client.AuthorizationState, 10)
 
-	// Регистрируем клиента
+	// Регистрируем клиента с каналом для записи
 	t.authClients[clientId] = events
 
 	// Отправляем текущее состояние сразу при подключении
