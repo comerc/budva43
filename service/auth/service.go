@@ -71,6 +71,11 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
+// Close останавливает сервис
+func (s *Service) Close() error {
+	return nil
+}
+
 // handleAuthStates обрабатывает состояния авторизации
 func (s *Service) handleAuthorizationStates(ctx context.Context) {
 	initFlag := false
@@ -85,6 +90,9 @@ func (s *Service) handleAuthorizationStates(ctx context.Context) {
 				initFlag = true
 			}
 			switch s.state.(type) {
+			// case *client.AuthorizationStateWaitTdlibParameters:
+			// TODO: ошибка установки параметров TDLib приведёт к зацикливанию?
+			// невозможно вычленить ошибку - "500 Request aborted"
 			case *client.AuthorizationStateWaitPhoneNumber:
 				s.log.Info("Требуется номер телефона")
 				s.clientAuthorizer.PhoneNumber <- <-s.inputChan
