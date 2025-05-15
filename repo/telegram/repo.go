@@ -51,6 +51,10 @@ func (r *Repo) Start(_ context.Context) error {
 func (r *Repo) CreateClient(ctx context.Context, authorizationStateHandler client.AuthorizationStateHandler) {
 	for {
 		tdlibClient, err := client.NewClient(authorizationStateHandler)
+		// TODO: невозможно перехватить остановку по CGO abort()
+		// требуется перезапуск TDLib в отдельном процессе
+		// cmd := exec.Command("./tdlib_wrapper", "параметры")
+		// err := cmd.Run()
 		if err != nil {
 			r.log.Error("client.NewClient", "err", err)
 			select {
