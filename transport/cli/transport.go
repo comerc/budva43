@@ -231,14 +231,15 @@ func (t *Transport) handleAuth(args []string) error {
 
 	state := t.authController.GetState()
 	if state == nil {
-		t.log.Info("GetAuthState() вернул nil")
+		t.log.Info("GetState вернул nil")
 		return nil
 	}
 
-	t.log.Debug("GetAuthState()", "state", state.AuthorizationStateType())
+	stateType := state.AuthorizationStateType()
+	t.log.Debug("GetState", "stateType", stateType)
 
-	switch state.(type) {
-	case *client.AuthorizationStateWaitPhoneNumber:
+	switch stateType {
+	case client.TypeAuthorizationStateWaitPhoneNumber:
 		var phoneNumber string
 		if config.Telegram.PhoneNumber != "" {
 			// TODO: перенести в authController?
@@ -254,7 +255,7 @@ func (t *Transport) handleAuth(args []string) error {
 		}
 		t.authController.GetInputChan() <- phoneNumber
 
-	case *client.AuthorizationStateWaitCode:
+	case client.TypeAuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
 		code, err := t.hiddenReadLine()
 		if err != nil {
@@ -262,7 +263,7 @@ func (t *Transport) handleAuth(args []string) error {
 		}
 		t.authController.GetInputChan() <- code
 
-	case *client.AuthorizationStateWaitPassword:
+	case client.TypeAuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
 		password, err := t.hiddenReadLine()
 		if err != nil {
@@ -270,8 +271,6 @@ func (t *Transport) handleAuth(args []string) error {
 		}
 		t.authController.GetInputChan() <- password
 
-	case *client.AuthorizationStateReady:
-		fmt.Println("Авторизация в Telegram успешно завершена!")
 	}
 
 	return nil

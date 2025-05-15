@@ -36,8 +36,6 @@ func New() *Repo {
 
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(_ context.Context) error {
-	r.log.Info("Creating TDLib client")
-
 	err := r.setupClientLog()
 	if err != nil {
 		r.log.Error("setupClientLog", "err", err)
@@ -48,22 +46,14 @@ func (r *Repo) Start(_ context.Context) error {
 }
 
 // CreateClient создает клиент TDLib после успешной авторизации
-func (r *Repo) CreateClient(ctx context.Context, authorizationStateHandler client.AuthorizationStateHandler) {
+func (r *Repo) CreateClient(createAuthorizationStateHandler func() client.AuthorizationStateHandler) {
 	for {
+		r.log.Info("Creating TDLib client")
+		authorizationStateHandler := createAuthorizationStateHandler()
 		tdlibClient, err := client.NewClient(authorizationStateHandler)
-		// TODO: невозможно перехватить остановку по CGO abort()
-		// требуется перезапуск TDLib в отдельном процессе
-		// cmd := exec.Command("./tdlib_wrapper", "параметры")
-		// err := cmd.Run()
 		if err != nil {
 			r.log.Error("client.NewClient", "err", err)
-			select {
-			case <-ctx.Done():
-				r.log.Info("ctx.Done()")
-				return
-			default:
-				continue
-			}
+			continue
 		}
 		r.client = tdlibClient
 		close(r.clientDone)
@@ -110,7 +100,7 @@ func (r *Repo) Close() error {
 
 // GetVersion выводит информацию о версии TDLib
 func (r *Repo) GetVersion() string {
-	versionOption, err := r.client.GetOption(&client.GetOptionRequest{
+	versionOption, err := r.GetClient().GetOption(&client.GetOptionRequest{
 		Name: "version",
 	})
 	if err != nil {
@@ -122,7 +112,7 @@ func (r *Repo) GetVersion() string {
 
 // GetMe выводит информацию о пользователе
 func (r *Repo) GetMe() *client.User {
-	me, err := r.client.GetMe()
+	me, err := r.GetClient().GetMe()
 	if err != nil {
 		r.log.Error("GetMe", "err", err)
 		return nil
