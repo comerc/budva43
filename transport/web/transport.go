@@ -20,8 +20,8 @@ import (
 // }
 
 type authController interface {
-	GetInitDone() <-chan any
-	GetAuthState() client.AuthorizationState
+	GetInitDone() chan any
+	GetState() client.AuthorizationState
 	GetInputChan() chan string
 }
 
@@ -175,7 +175,7 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var stateType string
-	state := t.authController.GetAuthState()
+	state := t.authController.GetState()
 	if state != nil {
 		stateType = state.AuthorizationStateType()
 	}
@@ -304,7 +304,7 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	t.authClients[clientId] = events
 
 	// Отправляем текущее состояние сразу при подключении
-	state := t.authController.GetAuthState()
+	state := t.authController.GetState()
 	if state != nil {
 		events <- state
 	}

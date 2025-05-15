@@ -25,8 +25,8 @@ import (
 // }
 
 type authController interface {
-	GetInitDone() <-chan any
-	GetAuthState() client.AuthorizationState
+	GetInitDone() chan any
+	GetState() client.AuthorizationState
 	GetInputChan() chan string
 }
 
@@ -229,7 +229,7 @@ func (t *Transport) handleExit(args []string) error {
 func (t *Transport) handleAuth(args []string) error {
 	var err error
 
-	state := t.authController.GetAuthState()
+	state := t.authController.GetState()
 	if state == nil {
 		t.log.Info("GetAuthState() вернул nil")
 		return nil

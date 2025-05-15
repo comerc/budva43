@@ -7,8 +7,8 @@ import (
 )
 
 type authService interface {
-	GetInitDone() <-chan any
-	GetAuthState() client.AuthorizationState
+	GetInitDone() chan any
+	GetState() client.AuthorizationState
 	GetInputChan() chan string
 }
 
@@ -29,13 +29,13 @@ func New(authService authService) *Controller {
 }
 
 // GetInitDone возвращает канал, который будет закрыт после инициализации клиента
-func (c *Controller) GetInitDone() <-chan any {
+func (c *Controller) GetInitDone() chan any {
 	return c.authService.GetInitDone()
 }
 
 // GetAuthState возвращает состояние авторизации
-func (c *Controller) GetAuthState() client.AuthorizationState {
-	return c.authService.GetAuthState()
+func (c *Controller) GetState() client.AuthorizationState {
+	return c.authService.GetState()
 }
 
 // GetInputChan возвращает канал для ввода данных
