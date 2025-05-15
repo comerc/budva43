@@ -82,7 +82,7 @@ func TestAuth(t *testing.T) {
 	authController := authController.New(authService)
 	require.NotNil(t, authController)
 
-	state := authController.GetAuthState()
+	state := authController.GetState()
 	require.NotNil(t, state)
 	assert.Equal(t, client.TypeAuthorizationStateWaitPhoneNumber, state.AuthorizationStateType())
 
