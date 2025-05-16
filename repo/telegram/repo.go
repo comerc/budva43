@@ -46,10 +46,10 @@ func (r *Repo) Start(_ context.Context) error {
 }
 
 // CreateClient создает клиент TDLib после успешной авторизации
-func (r *Repo) CreateClient(createAuthorizationStateHandler func() client.AuthorizationStateHandler) {
+func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler) {
 	for {
 		r.log.Info("Creating TDLib client")
-		authorizationStateHandler := createAuthorizationStateHandler()
+		authorizationStateHandler := runAuthorizationStateHandler()
 		tdlibClient, err := client.NewClient(authorizationStateHandler)
 		if err != nil {
 			r.log.Error("client.NewClient", "err", err)
