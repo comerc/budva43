@@ -11,7 +11,7 @@ import (
 
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
 type telegramRepo interface {
-	CreateClient(createAuthorizationStateHandler func() client.AuthorizationStateHandler)
+	CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler)
 }
 
 // Service управляет процессом авторизации в Telegram
@@ -41,7 +41,7 @@ func New(telegramRepo telegramRepo) *Service {
 func (s *Service) Start(ctx context.Context) error {
 	s.log.Info("Запуск процесса авторизации")
 
-	go s.telegramRepo.CreateClient(s.createAuthorizationStateHandler(ctx))
+	go s.telegramRepo.CreateClient(s.runAuthorizationStateHandler(ctx))
 
 	return nil
 }
@@ -53,8 +53,8 @@ func (s *Service) Close() error {
 	return nil
 }
 
-// createAuthorizationStateHandler обрабатывает состояния авторизации
-func (s *Service) createAuthorizationStateHandler(ctx context.Context) func() client.AuthorizationStateHandler {
+// runAuthorizationStateHandler обрабатывает состояния авторизации
+func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() client.AuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
 		tdlibParameters := &client.SetTdlibParametersRequest{
