@@ -3,6 +3,7 @@ package transform
 import (
 	"fmt"
 	"log/slog"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -51,7 +52,20 @@ func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcCha
 
 // ReplaceFragments заменяет фрагменты текста согласно настройкам
 func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatId int64) error {
-	// TODO: выполнить корректный перенос из budva32
+	destination, ok := config.Engine.Destinations[dstChatId]
+	if !ok {
+		return nil
+	}
+	for _, replaceFragment := range destination.ReplaceFragments {
+		re := regexp.MustCompile("(?i)" + replaceFragment.From)
+		if re.FindString(formattedText.Text) != "" {
+			// вынесено в engineService.validateConfig()
+			// if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
+			// 	return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+			// }
+			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
+		}
+	}
 	return nil
 }
 
