@@ -386,7 +386,7 @@ func addSources(formattedText *client.FormattedText, src *client.Message, dstCha
 // 	}
 // }
 
-// НЕТ: перенесено частично - service/transform/service.go (ReplaceFragments)
+// OK: перенесено - service/transform/service.go (ReplaceFragments)
 func replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
 	if data, ok := configData.ReplaceFragments[dstChatId]; ok {
 		isReplaced := false

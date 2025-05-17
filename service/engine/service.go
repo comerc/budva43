@@ -143,9 +143,9 @@ func (s *Service) Close() error {
 // validateConfig проверяет корректность конфигурации
 func (s *Service) validateConfig() error {
 	for chatId, dsc := range config.Engine.Destinations {
-		for _, v := range dsc.ReplaceFragments {
-			if util.RuneCountForUTF16(v.From) != util.RuneCountForUTF16(v.To) {
-				return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", v.From, v.To)
+		for _, replaceFragment := range dsc.ReplaceFragments {
+			if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
+				return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
 			}
 		}
 		s.log.Info("Валидированы настройки замены фрагментов", "chatId", chatId, "replacements", len(dsc.ReplaceFragments))
