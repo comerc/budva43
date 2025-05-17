@@ -53,8 +53,31 @@ func New(
 	}
 }
 
-// ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
-func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error {
+// Transform преобразует содержимое сообщения
+func (s *Service) Transform(formattedText *client.FormattedText, isFirstMessageInAlbum bool, src *client.Message, dstChatId int64) error {
+	if err := s.addAutoAnswer(formattedText, src); err != nil {
+		return fmt.Errorf("addAutoAnswer: %w", err)
+	}
+	if err := s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId); err != nil {
+		return fmt.Errorf("replaceMyselfLinks: %w", err)
+	}
+	if err := s.replaceFragments(formattedText, dstChatId); err != nil {
+		return fmt.Errorf("replaceFragments: %w", err)
+	}
+	// if err := s.resetEntities(formattedText, dstChatId); err != nil {
+	// 	return fmt.Errorf("resetEntities: %w", err)
+	// }
+	// TODO: только addSources() нужно ограничивать для первого сообщения в альбоме?
+	if isFirstMessageInAlbum {
+		if err := s.addSources(formattedText, src, dstChatId); err != nil {
+			return fmt.Errorf("addSources: %w", err)
+		}
+	}
+	return nil
+}
+
+// replaceMyselfLinks заменяет ссылки на текущего бота в тексте
+func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error {
 	data, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
 		return nil
@@ -119,8 +142,8 @@ func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcCha
 	return nil
 }
 
-// ReplaceFragments заменяет фрагменты текста согласно настройкам
-func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatId int64) error {
+// replaceFragments заменяет фрагменты текста согласно настройкам
+func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatId int64) error {
 	destination, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
 		return nil
@@ -138,7 +161,7 @@ func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatI
 	return nil
 }
 
-func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client.Message) error {
+func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message) error {
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		return nil
@@ -167,8 +190,8 @@ func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client
 	return nil
 }
 
-// AddSources добавляет подпись и ссылку на источник к тексту
-func (s *Service) AddSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) error {
+// addSources добавляет подпись и ссылку на источник к тексту
+func (s *Service) addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) error {
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		return nil
