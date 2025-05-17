@@ -166,6 +166,7 @@ func (s *Service) validateConfig() error {
 
 // enrichConfig обогащает конфигурацию
 func (s *Service) enrichConfig() error {
+	config.Engine.UniqueFrom = make(map[entity.ChatId]struct{})
 	for key, val := range config.Engine.Destinations {
 		val.ChatId = key
 	}
@@ -179,6 +180,7 @@ func (s *Service) enrichConfig() error {
 				ChatId: rule.From,
 			}
 		}
+		config.Engine.UniqueFrom[rule.From] = struct{}{}
 	}
 	return nil
 }
