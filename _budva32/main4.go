@@ -123,7 +123,7 @@ func addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	}
 }
 
-// OK: перенесено - service/transform/service.go (addSourceSign)
+// OK: перенесено - service/transform/service.go (AddSources)
 func addSourceSign(formattedText *client.FormattedText, title string) {
 	sourceSign, err := tdlibClient.ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: title,
@@ -148,7 +148,7 @@ func addSourceSign(formattedText *client.FormattedText, title string) {
 	log.Printf("addSourceSign > %#v", formattedText)
 }
 
-// OK: перенесено - service/transform/service.go (addSourceLink)
+// OK: перенесено - service/transform/service.go (AddSources)
 func addSourceLink(message *client.Message, formattedText *client.FormattedText, title string) {
 	messageLink, err := tdlibClient.GetMessageLink(&client.GetMessageLinkRequest{
 		ChatId:     message.ChatId,
@@ -361,7 +361,7 @@ func escapeAll(s string) string {
 	return re.ReplaceAllString(s, `\$0`)
 }
 
-// НЕТ: перенесено частично - service/transform/service.go (AddSources)
+// OK: перенесено - service/transform/service.go (AddSources)
 func addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) {
 	if source, ok := configData.Sources[src.ChatId]; ok {
 		if containsInt64(source.Sign.For, dstChatId) {
