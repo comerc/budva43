@@ -38,7 +38,7 @@ func New() *Service {
 // AddMessage добавляет сообщение в медиа-альбом
 // Возвращает true, если это первое сообщение в медиа-альбоме
 func (s *Service) AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool {
-	forwardKey := s.GetForwardKey(forwardRuleId, message.MediaAlbumId)
+	forwardKey := s.getForwardKey(forwardRuleId, message.MediaAlbumId)
 	item, ok := s.mediaAlbums[forwardKey]
 	if !ok {
 		item = &mediaAlbum{}
@@ -65,7 +65,7 @@ func (s *Service) GetMessages(forwardKey entity.MediaAlbumForwardKey) []*client.
 	return messages
 }
 
-// GetForwardKey возвращает ключ для пересылаемого медиа-альбома
-func (s *Service) GetForwardKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumForwardKey {
+// getForwardKey возвращает ключ для пересылаемого медиа-альбома
+func (s *Service) getForwardKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumForwardKey {
 	return fmt.Sprintf("%s:%d", forwardRuleId, MediaAlbumId)
 }
