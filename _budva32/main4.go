@@ -372,6 +372,7 @@ func addSources(formattedText *client.FormattedText, src *client.Message, dstCha
 	}
 }
 
+// НЕТ: не перенесено - service/transform/service.go (resetEntities)
 // func resetEntities(formattedText *client.FormattedText, dstChatId int64) {
 //	// withResetEntities := containsInt64(configData.ResetEntities, dstChatId)
 // 	if result, err := tdlibClient.ParseTextEntities(&client.ParseTextEntitiesRequest{
