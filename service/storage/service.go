@@ -62,7 +62,7 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 
 	if err != nil {
 		s.log.Error("SetCopiedMessageId", "err", err)
-		return fmt.Errorf("SetCopiedMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("SetCopiedMessageId",
@@ -78,7 +78,7 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return nil, fmt.Errorf("GetCopiedMessageIds: %w", err)
+		return nil, err
 	}
 
 	toChatMessageIds := []string{}
@@ -101,7 +101,7 @@ func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) error {
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteCopiedMessageIds", "err", err)
-		return fmt.Errorf("DeleteCopiedMessageIds: %w", err)
+		return err
 	}
 
 	s.log.Debug("DeleteCopiedMessageIds",
@@ -116,7 +116,7 @@ func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) erro
 	err := s.repo.Set(key, fmt.Sprintf("%d", newMessageId))
 	if err != nil {
 		s.log.Error("SetNewMessageId", "err", err)
-		return fmt.Errorf("SetNewMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("SetNewMessageId",
@@ -133,7 +133,7 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) (int64, error) {
 	val, err := s.repo.Get(key)
 	if err != nil {
 		s.log.Error("GetNewMessageId", "err", err)
-		return 0, fmt.Errorf("GetNewMessageId: %w", err)
+		return 0, err
 	}
 
 	newMessageId := util.ConvertToInt[int64](val)
@@ -152,7 +152,7 @@ func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) error {
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteNewMessageId", "err", err)
-		return fmt.Errorf("DeleteNewMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("DeleteNewMessageId",
@@ -168,7 +168,7 @@ func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) erro
 	err := s.repo.Set(key, fmt.Sprintf("%d", tmpMessageId))
 	if err != nil {
 		s.log.Error("SetTmpMessageId", "err", err)
-		return fmt.Errorf("SetTmpMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("SetTmpMessageId",
@@ -185,7 +185,7 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) (int64, error) {
 	val, err := s.repo.Get(key)
 	if err != nil {
 		s.log.Error("GetTmpMessageId", "err", err)
-		return 0, fmt.Errorf("GetTmpMessageId: %w", err)
+		return 0, err
 	}
 
 	tmpMessageId := util.ConvertToInt[int64](val)
@@ -204,7 +204,7 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteTmpMessageId", "err", err)
-		return fmt.Errorf("DeleteTmpMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("DeleteTmpMessageId",
@@ -223,7 +223,7 @@ func (s *Service) IncrementViewedMessages(toChatId int64, date string) error {
 	val, err := s.repo.Increment(key)
 	if err != nil {
 		s.log.Error("IncrementViewedMessages", "err", err)
-		return fmt.Errorf("IncrementViewedMessages: %w", err)
+		return err
 	}
 
 	s.log.Debug("IncrementViewedMessages",
@@ -239,7 +239,7 @@ func (s *Service) GetViewedMessages(toChatId int64, date string) (int64, error) 
 	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return 0, fmt.Errorf("GetViewedMessages: %w", err)
+		return 0, err
 	}
 
 	var viewed int64
@@ -266,7 +266,7 @@ func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error 
 	val, err := s.repo.Increment(key)
 	if err != nil {
 		s.log.Error("IncrementForwardedMessages", "err", err)
-		return fmt.Errorf("IncrementForwardedMessages: %w", err)
+		return err
 	}
 
 	s.log.Debug("IncrementForwardedMessages",
@@ -285,7 +285,7 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) (int64, erro
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
 	val, err := s.repo.Get(key)
 	if err != nil {
-		return 0, fmt.Errorf("GetForwardedMessages: %w", err)
+		return 0, err
 	}
 
 	var forwarded int64
@@ -309,7 +309,7 @@ func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMess
 	err := s.repo.Set(key, fromChatMessageId)
 	if err != nil {
 		s.log.Error("SetAnswerMessageId", "err", err)
-		return fmt.Errorf("SetAnswerMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("SetAnswerMessageId",
@@ -326,7 +326,7 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) (string, err
 	val, err := s.repo.Get(key)
 	if err != nil {
 		s.log.Error("GetAnswerMessageId", "err", err)
-		return "", fmt.Errorf("GetAnswerMessageId: %w", err)
+		return "", err
 	}
 
 	s.log.Debug("GetAnswerMessageId",
@@ -343,7 +343,7 @@ func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) error {
 	err := s.repo.Delete(key)
 	if err != nil {
 		s.log.Error("DeleteAnswerMessageId", "err", err)
-		return fmt.Errorf("DeleteAnswerMessageId: %w", err)
+		return err
 	}
 
 	s.log.Debug("DeleteAnswerMessageId",
