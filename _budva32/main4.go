@@ -148,7 +148,7 @@ func addSourceSign(formattedText *client.FormattedText, title string) {
 	log.Printf("addSourceSign > %#v", formattedText)
 }
 
-// НЕТ: перенесено частично - service/transform/service.go (addSourceLink)
+// OK: перенесено - service/transform/service.go (addSourceLink)
 func addSourceLink(message *client.Message, formattedText *client.FormattedText, title string) {
 	messageLink, err := tdlibClient.GetMessageLink(&client.GetMessageLinkRequest{
 		ChatId:     message.ChatId,
