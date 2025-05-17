@@ -47,7 +47,7 @@ func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatI
 
 // addSource добавляет источник к тексту
 func (s *Service) addSource(formattedText *client.FormattedText, title string) error {
-	source, err := s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
+	parsedTitle, err := s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: title,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,
@@ -61,43 +61,36 @@ func (s *Service) addSource(formattedText *client.FormattedText, title string) e
 		formattedText.Text += "\n\n"
 		offset = offset + 2
 	}
-	for _, entity := range source.Entities {
+	for _, entity := range parsedTitle.Entities {
 		entity.Offset += offset
 	}
-	formattedText.Text += source.Text
-	formattedText.Entities = append(formattedText.Entities, source.Entities...)
+	formattedText.Text += parsedTitle.Text
+	formattedText.Entities = append(formattedText.Entities, parsedTitle.Entities...)
 	return nil
-}
-
-// addSourceSign добавляет подпись источника к тексту
-func (s *Service) addSourceSign(formattedText *client.FormattedText, title string) error {
-	return s.addSource(formattedText, title)
-}
-
-// addSourceLink добавляет ссылку на источник к тексту
-func (s *Service) addSourceLink(formattedText *client.FormattedText, title string, message *client.Message) error {
-	messageLink, err := s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
-		ChatId:    message.ChatId,
-		MessageId: message.Id,
-		ForAlbum:  message.MediaAlbumId != 0,
-		// ForComment: false, // удалено в новой версии go-tdlib
-	})
-	if err != nil {
-		return fmt.Errorf("GetMessageLink: %w", err)
-	}
-
-	title = fmt.Sprintf("[%s%s](%s)", "\U0001f517", title, messageLink.Link)
-	return s.addSource(formattedText, title)
 }
 
 // AddSources добавляет подпись и ссылку на источник к тексту
 func (s *Service) AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error {
-	if source, ok := config.Engine.Sources[message.ChatId]; ok {
-		if slices.Contains(source.Sign.For, dstChatId) {
-			return s.addSourceSign(formattedText, source.Sign.Title)
-		} else if slices.Contains(source.Link.For, dstChatId) {
-			return s.addSourceLink(formattedText, source.Link.Title, message)
+	source, ok := config.Engine.Sources[message.ChatId]
+	if !ok {
+		return nil
+	}
+	if slices.Contains(source.Sign.For, dstChatId) {
+		title := source.Sign.Title
+		return s.addSource(formattedText, title)
+	}
+	if slices.Contains(source.Link.For, dstChatId) {
+		messageLink, err := s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
+			ChatId:    message.ChatId,
+			MessageId: message.Id,
+			ForAlbum:  message.MediaAlbumId != 0,
+			// ForComment: false, // удалено в новой версии go-tdlib
+		})
+		if err != nil {
+			return fmt.Errorf("GetMessageLink: %w", err)
 		}
+		title := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
+		return s.addSource(formattedText, title)
 	}
 	return nil
 }
