@@ -123,7 +123,7 @@ func addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	}
 }
 
-// НЕТ: перенесено частично - service/transform/service.go (addSourceSign)
+// OK: перенесено - service/transform/service.go (addSourceSign)
 func addSourceSign(formattedText *client.FormattedText, title string) {
 	sourceSign, err := tdlibClient.ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: title,
