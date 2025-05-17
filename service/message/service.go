@@ -48,7 +48,8 @@ func (s *Service) GetContent(message *client.Message) (*client.FormattedText, st
 // IsSystemMessage проверяет, является ли сообщение системным
 func (s *Service) IsSystemMessage(message *client.Message) bool {
 	switch message.Content.(type) {
-	case *client.MessageChatChangeTitle,
+	case
+		*client.MessageChatChangeTitle,
 		*client.MessageChatChangePhoto,
 		*client.MessageChatDeletePhoto,
 		*client.MessageChatAddMembers,
