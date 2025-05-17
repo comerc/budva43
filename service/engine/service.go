@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"regexp"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 
@@ -17,10 +16,7 @@ import (
 	"github.com/comerc/budva43/util"
 )
 
-// TODO: выполнить корректный перенос из budva32 (нужно вернуть функционал старой версии):
-// - Функции пересылки сообщений (`forwardMessages`, `sendCopyMessage`, `sendCopyAlbum`) имеют более формализованный интерфейс, но могут не полностью воспроизводить логику старой версии
-// - Обработка редактированных сообщений (`processSingleEdited`) отличается от старой реализации, что может приводить к различиям в поведении
-// - Функция `matchesMediaContent` для проверки соответствия медиа-контента отсутствовала в старой версии и может быть избыточной
+// TODO: serviceEngine слишком большой, что можно вынести в другие сервисы?
 
 type telegramRepo interface {
 	GetClient() *client.Client
@@ -449,251 +445,254 @@ func (s *Service) processMediaAlbum(forwardKey string, albumId client.JsonInt64)
 
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (s *Service) processMessage(messages []*client.Message, forwardKey string, rule entity.ForwardRule) {
-	src := messages[0]
-	s.log.Debug("Обработка сообщения",
-		"chatId", src.ChatId,
-		"messageId", src.Id,
-		"albumId", src.MediaAlbumId,
-		"forwardKey", forwardKey)
+	// src := messages[0]
+	// s.log.Debug("Обработка сообщения",
+	// 	"chatId", src.ChatId,
+	// 	"messageId", src.Id,
+	// 	"albumId", src.MediaAlbumId,
+	// 	"forwardKey", forwardKey)
 
-	// Начинаем пересылку
-	for _, dstChatId := range rule.To {
-		// Пересылаем сообщения
-		s.forwardMessages(messages, src.ChatId, dstChatId, rule.SendCopy, rule.CopyOnce, forwardKey)
-	}
+	// // Начинаем пересылку
+	// for _, dstChatId := range rule.To {
+	// 	// Пересылаем сообщения
+	// 	s.forwardMessages(messages, src.ChatId, dstChatId, rule.SendCopy, rule.CopyOnce, forwardKey)
+	// }
 }
 
 // forwardMessages пересылает сообщения в целевой чат
 func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy, isCopyOnce bool, forwardKey string) {
-	s.log.Debug("Пересылка сообщений",
-		"srcChatId", srcChatId,
-		"dstChatId", dstChatId,
-		"sendCopy", isSendCopy,
-		"copyOnce", isCopyOnce,
-		"messageCount", len(messages))
+	// s.log.Debug("Пересылка сообщений",
+	// 	"srcChatId", srcChatId,
+	// 	"dstChatId", dstChatId,
+	// 	"sendCopy", isSendCopy,
+	// 	"copyOnce", isCopyOnce,
+	// 	"messageCount", len(messages))
 
-	tdlibClient := s.telegramRepo.GetClient()
+	// tdlibClient := s.telegramRepo.GetClient()
 
-	var (
-		result *client.Messages
-		err    error
-	)
+	// var (
+	// 	result *client.Messages
+	// 	err    error
+	// )
 
-	// Метод пересылки в зависимости от флага SendCopy
-	if isSendCopy {
-		// Пересылка с созданием копии
-		if len(messages) == 1 {
-			// Пересылка одиночного сообщения
-			message, err := s.sendCopyMessage(tdlibClient, messages[0], dstChatId, forwardKey)
-			if err != nil {
-				s.log.Error("Ошибка пересылки сообщения", "err", err)
-				return
-			}
+	// // Метод пересылки в зависимости от флага SendCopy
+	// if isSendCopy {
+	// 	// Пересылка с созданием копии
+	// 	if len(messages) == 1 {
+	// 		// Пересылка одиночного сообщения
+	// 		message, err := s.sendCopyMessage(tdlibClient, messages[0], dstChatId, forwardKey)
+	// 		if err != nil {
+	// 			s.log.Error("Ошибка пересылки сообщения", "err", err)
+	// 			return
+	// 		}
 
-			result = &client.Messages{
-				TotalCount: 1,
-				Messages:   []*client.Message{message},
-			}
-		} else {
-			// Пересылка медиа-альбома
-			result, err = s.sendCopyAlbum(tdlibClient, messages, dstChatId, forwardKey)
-			if err != nil {
-				s.log.Error("Ошибка пересылки медиа-альбома", "err", err)
-				return
-			}
-		}
-	} else {
-		// Прямая пересылка (forward)
-		messageIds := make([]int64, len(messages))
-		for i, message := range messages {
-			messageIds[i] = message.Id
-		}
+	// 		result = &client.Messages{
+	// 			TotalCount: 1,
+	// 			Messages:   []*client.Message{message},
+	// 		}
+	// 	} else {
+	// 		// Пересылка медиа-альбома
+	// 		result, err = s.sendCopyAlbum(tdlibClient, messages, dstChatId, forwardKey)
+	// 		if err != nil {
+	// 			s.log.Error("Ошибка пересылки медиа-альбома", "err", err)
+	// 			return
+	// 		}
+	// 	}
+	// } else {
+	// 	// Прямая пересылка (forward)
+	// 	messageIds := make([]int64, len(messages))
+	// 	for i, message := range messages {
+	// 		messageIds[i] = message.Id
+	// 	}
 
-		result, err = tdlibClient.ForwardMessages(&client.ForwardMessagesRequest{
-			ChatId:     dstChatId,
-			FromChatId: srcChatId,
-			MessageIds: messageIds,
-		})
+	// 	result, err = tdlibClient.ForwardMessages(&client.ForwardMessagesRequest{
+	// 		ChatId:     dstChatId,
+	// 		FromChatId: srcChatId,
+	// 		MessageIds: messageIds,
+	// 	})
 
-		if err != nil {
-			s.log.Error("Ошибка форвардинга сообщений", "err", err)
-			return
-		}
-	}
+	// 	if err != nil {
+	// 		s.log.Error("Ошибка форвардинга сообщений", "err", err)
+	// 		return
+	// 	}
+	// }
 
-	// Сохраняем соответствие между оригинальными и пересланными сообщениями
-	if result != nil && len(result.Messages) > 0 {
-		for i, message := range result.Messages {
-			// В случае форвардинга медиа-альбома, сообщения могут прийти не в том порядке
-			srcMessage := messages[i]
-			if len(messages) > 1 {
-				// Для альбома ищем соответствующее исходное сообщение
-				for _, msg := range messages {
-					if s.matchesMediaContent(msg, message) {
-						srcMessage = msg
-						break
-					}
-				}
-			}
+	// // Сохраняем соответствие между оригинальными и пересланными сообщениями
+	// if result != nil && len(result.Messages) > 0 {
+	// 	for i, message := range result.Messages {
+	// 		// В случае форвардинга медиа-альбома, сообщения могут прийти не в том порядке
+	// 		srcMessage := messages[i]
+	// 		if len(messages) > 1 {
+	// 			// Для альбома ищем соответствующее исходное сообщение
+	// 			for _, msg := range messages {
+	// 				if s.matchesMediaContent(msg, message) {
+	// 					srcMessage = msg
+	// 					break
+	// 				}
+	// 			}
+	// 		}
 
-			// Сохраняем связь между оригинальным и пересланным сообщениями
-			fromChatMessageId := fmt.Sprintf("%d:%d", srcChatId, srcMessage.Id)
-			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, message.Id)
+	// 		// Сохраняем связь между оригинальным и пересланным сообщениями
+	// 		fromChatMessageId := fmt.Sprintf("%d:%d", srcChatId, srcMessage.Id)
+	// 		toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, message.Id)
 
-			// Если это не разовое копирование (CopyOnce), сохраняем связь для последующего синхронизации при редактировании
-			if !isCopyOnce {
-				if err := s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId); err != nil {
-					s.log.Error("Ошибка сохранения связи сообщений", "err", err)
-				}
-			}
+	// 		// Если это не разовое копирование (CopyOnce), сохраняем связь для последующего синхронизации при редактировании
+	// 		if !isCopyOnce {
+	// 			if err := s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId); err != nil {
+	// 				s.log.Error("Ошибка сохранения связи сообщений", "err", err)
+	// 			}
+	// 		}
 
-			// Сохраняем временный Id сообщения для обработки асинхронных обновлений
-			if message.SendingState != nil {
-				if sendingState, ok := message.SendingState.(*client.MessageSendingStatePending); ok {
-					tmpMessageId := sendingState.SendingId
+	// 		// Сохраняем временный Id сообщения для обработки асинхронных обновлений
+	// 		if message.SendingState != nil {
+	// 			if sendingState, ok := message.SendingState.(*client.MessageSendingStatePending); ok {
+	// 				tmpMessageId := sendingState.SendingId
 
-					if err := s.storageService.SetTmpMessageId(dstChatId, message.Id, int64(tmpMessageId)); err != nil {
-						s.log.Error("Ошибка сохранения временного Id", "err", err)
-					}
-				}
-			}
-		}
-	}
+	// 				if err := s.storageService.SetTmpMessageId(dstChatId, message.Id, int64(tmpMessageId)); err != nil {
+	// 					s.log.Error("Ошибка сохранения временного Id", "err", err)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 // sendCopyMessage отправляет копию одиночного сообщения
 func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Message, dstChatId int64, forwardKey string) (*client.Message, error) {
-	// Получаем текст сообщения
-	formattedText, contentType := s.messageService.GetContent(message)
-	if contentType == "" {
-		return nil, fmt.Errorf("неподдерживаемый тип сообщения")
-	}
+	// // Получаем текст сообщения
+	// formattedText, contentType := s.messageService.GetContent(message)
+	// if contentType == "" {
+	// 	return nil, fmt.Errorf("неподдерживаемый тип сообщения")
+	// }
 
-	// Применяем трансформации к тексту
-	if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
-		s.log.Error("Ошибка при замене ссылок", "err", err)
-	}
-	if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
-		s.log.Error("Ошибка при замене фрагментов", "err", err)
-	}
-	if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
-		s.log.Error("Ошибка при добавлении источников", "err", err)
-	}
+	// // Применяем трансформации к тексту
+	// if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
+	// 	s.log.Error("Ошибка при замене ссылок", "err", err)
+	// }
+	// if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
+	// 	s.log.Error("Ошибка при замене фрагментов", "err", err)
+	// }
+	// if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
+	// 	s.log.Error("Ошибка при добавлении источников", "err", err)
+	// }
 
-	// Создаем входной контент для сообщения
-	var inputContent client.InputMessageContent
+	// // Создаем входной контент для сообщения
+	// var inputContent client.InputMessageContent
 
-	switch contentType {
-	case client.TypeMessageText:
-		inputContent = &client.InputMessageText{
-			Text: formattedText,
-		}
-	case client.TypeMessagePhoto:
-		content := message.Content.(*client.MessagePhoto)
-		inputContent = &client.InputMessagePhoto{
-			Photo: &client.InputFileRemote{
-				Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
-			},
-			Caption: formattedText,
-		}
-	case client.TypeMessageVideo:
-		content := message.Content.(*client.MessageVideo)
-		inputContent = &client.InputMessageVideo{
-			Video: &client.InputFileRemote{
-				Id: content.Video.Video.Remote.Id,
-			},
-			Caption: formattedText,
-		}
-	case client.TypeMessageDocument:
-		content := message.Content.(*client.MessageDocument)
-		inputContent = &client.InputMessageDocument{
-			Document: &client.InputFileRemote{
-				Id: content.Document.Document.Remote.Id,
-			},
-			Caption: formattedText,
-		}
-	// TODO: перенести реализацию на остальные поддерживаемые типы
-	default:
-		return nil, fmt.Errorf("неподдерживаемый тип сообщения: %s", contentType)
-	}
+	// switch contentType {
+	// case client.TypeMessageText:
+	// 	inputContent = &client.InputMessageText{
+	// 		Text: formattedText,
+	// 	}
+	// case client.TypeMessagePhoto:
+	// 	content := message.Content.(*client.MessagePhoto)
+	// 	inputContent = &client.InputMessagePhoto{
+	// 		Photo: &client.InputFileRemote{
+	// 			Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
+	// 		},
+	// 		Caption: formattedText,
+	// 	}
+	// case client.TypeMessageVideo:
+	// 	content := message.Content.(*client.MessageVideo)
+	// 	inputContent = &client.InputMessageVideo{
+	// 		Video: &client.InputFileRemote{
+	// 			Id: content.Video.Video.Remote.Id,
+	// 		},
+	// 		Caption: formattedText,
+	// 	}
+	// case client.TypeMessageDocument:
+	// 	content := message.Content.(*client.MessageDocument)
+	// 	inputContent = &client.InputMessageDocument{
+	// 		Document: &client.InputFileRemote{
+	// 			Id: content.Document.Document.Remote.Id,
+	// 		},
+	// 		Caption: formattedText,
+	// 	}
+	// // TODO: перенести реализацию на остальные поддерживаемые типы
+	// default:
+	// 	return nil, fmt.Errorf("неподдерживаемый тип сообщения: %s", contentType)
+	// }
 
-	// Отправляем сообщение
-	return tdlibClient.SendMessage(&client.SendMessageRequest{
-		ChatId:              dstChatId,
-		InputMessageContent: inputContent,
-	})
+	// // Отправляем сообщение
+	// return tdlibClient.SendMessage(&client.SendMessageRequest{
+	// 	ChatId:              dstChatId,
+	// 	InputMessageContent: inputContent,
+	// })
+	return nil, nil
 }
 
 // sendCopyAlbum отправляет копию медиа-альбома
 func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.Message, dstChatId int64, forwardKey string) (*client.Messages, error) {
-	contents := make([]client.InputMessageContent, 0, len(messages))
+	// contents := make([]client.InputMessageContent, 0, len(messages))
 
-	for i, message := range messages {
-		formattedText, contentType := s.messageService.GetContent(message)
-		if contentType == "" {
-			continue
-		}
+	// for i, message := range messages {
+	// 	formattedText, contentType := s.messageService.GetContent(message)
+	// 	if contentType == "" {
+	// 		continue
+	// 	}
 
-		// Применяем трансформации только к первому сообщению
-		if i == 0 {
-			if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
-				s.log.Error("Ошибка при замене ссылок", "err", err)
-			}
-			if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
-				s.log.Error("Ошибка при замене фрагментов", "err", err)
-			}
-			if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
-				s.log.Error("Ошибка при добавлении источников", "err", err)
-			}
-		}
+	// 	// Применяем трансформации только к первому сообщению
+	// 	if i == 0 {
+	// 		if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
+	// 			s.log.Error("Ошибка при замене ссылок", "err", err)
+	// 		}
+	// 		if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
+	// 			s.log.Error("Ошибка при замене фрагментов", "err", err)
+	// 		}
+	// 		if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
+	// 			s.log.Error("Ошибка при добавлении источников", "err", err)
+	// 		}
+	// 	}
 
-		var inputContent client.InputMessageContent
+	// 	var inputContent client.InputMessageContent
 
-		switch contentType {
-		case client.TypeMessagePhoto:
-			content := message.Content.(*client.MessagePhoto)
-			inputContent = &client.InputMessagePhoto{
-				Photo: &client.InputFileRemote{
-					Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
-				},
-				Caption: formattedText,
-			}
-		case client.TypeMessageVideo:
-			content := message.Content.(*client.MessageVideo)
-			inputContent = &client.InputMessageVideo{
-				Video: &client.InputFileRemote{
-					Id: content.Video.Video.Remote.Id,
-				},
-				Caption: formattedText,
-			}
-		default:
-			continue
-		}
+	// 	switch contentType {
+	// 	case client.TypeMessagePhoto:
+	// 		content := message.Content.(*client.MessagePhoto)
+	// 		inputContent = &client.InputMessagePhoto{
+	// 			Photo: &client.InputFileRemote{
+	// 				Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
+	// 			},
+	// 			Caption: formattedText,
+	// 		}
+	// 	case client.TypeMessageVideo:
+	// 		content := message.Content.(*client.MessageVideo)
+	// 		inputContent = &client.InputMessageVideo{
+	// 			Video: &client.InputFileRemote{
+	// 				Id: content.Video.Video.Remote.Id,
+	// 			},
+	// 			Caption: formattedText,
+	// 		}
+	// 	default:
+	// 		continue
+	// 	}
 
-		contents = append(contents, inputContent)
-	}
+	// 	contents = append(contents, inputContent)
+	// }
 
-	if len(contents) == 0 {
-		return nil, fmt.Errorf("нет поддерживаемых типов контента в альбоме")
-	}
+	// if len(contents) == 0 {
+	// 	return nil, fmt.Errorf("нет поддерживаемых типов контента в альбоме")
+	// }
 
-	// Отправляем альбом
-	return tdlibClient.SendMessageAlbum(&client.SendMessageAlbumRequest{
-		ChatId:               dstChatId,
-		InputMessageContents: contents,
-	})
+	// // Отправляем альбом
+	// return tdlibClient.SendMessageAlbum(&client.SendMessageAlbumRequest{
+	// 	ChatId:               dstChatId,
+	// 	InputMessageContents: contents,
+	// })
+	return nil, nil
 }
 
 // matchesMediaContent проверяет, соответствует ли содержимое двух сообщений
 func (s *Service) matchesMediaContent(src, dst *client.Message) bool {
-	srcFormattedText, srcContentType := s.messageService.GetContent(src)
-	dstFormattedText, dstContentType := s.messageService.GetContent(dst)
+	// srcFormattedText, srcContentType := s.messageService.GetContent(src)
+	// dstFormattedText, dstContentType := s.messageService.GetContent(dst)
 
-	if srcContentType == "" || srcContentType != dstContentType {
-		return false
-	}
+	// if srcContentType == "" || srcContentType != dstContentType {
+	// 	return false
+	// }
 
-	return srcFormattedText.Text == dstFormattedText.Text
+	// return srcFormattedText.Text == dstFormattedText.Text
+	return false
 }
 
 // processSingleEdited обрабатывает редактирование сообщения
@@ -929,21 +928,22 @@ func mapFiltersMode(formattedText *client.FormattedText, rule entity.ForwardRule
 
 // parseToChatMessageId разбирает строку toChatMessageId в формате "ruleId:chatId:messageId"
 func parseToChatMessageId(toChatMessageId string) (ruleId string, chatId int64, messageId int64, err error) {
-	parts := strings.Split(toChatMessageId, ":")
-	if len(parts) != 3 {
-		return "", 0, 0, fmt.Errorf("неверный формат toChatMessageId: %s", toChatMessageId)
-	}
+	// parts := strings.Split(toChatMessageId, ":")
+	// if len(parts) != 3 {
+	// 	return "", 0, 0, fmt.Errorf("неверный формат toChatMessageId: %s", toChatMessageId)
+	// }
 
-	ruleId = parts[0]
+	// ruleId = parts[0]
 
-	var chatIdInt, messageIdInt int
-	if _, err := fmt.Sscanf(parts[1], "%d", &chatIdInt); err != nil {
-		return "", 0, 0, fmt.Errorf("ошибка преобразования chatId: %w", err)
-	}
+	// var chatIdInt, messageIdInt int
+	// if _, err := fmt.Sscanf(parts[1], "%d", &chatIdInt); err != nil {
+	// 	return "", 0, 0, fmt.Errorf("ошибка преобразования chatId: %w", err)
+	// }
 
-	if _, err := fmt.Sscanf(parts[2], "%d", &messageIdInt); err != nil {
-		return "", 0, 0, fmt.Errorf("ошибка преобразования messageId: %w", err)
-	}
+	// if _, err := fmt.Sscanf(parts[2], "%d", &messageIdInt); err != nil {
+	// 	return "", 0, 0, fmt.Errorf("ошибка преобразования messageId: %w", err)
+	// }
 
-	return ruleId, int64(chatIdInt), int64(messageIdInt), nil
+	// return ruleId, int64(chatIdInt), int64(messageIdInt), nil
+	return "", 0, 0, nil
 }

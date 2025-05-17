@@ -8,6 +8,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
+// OK: перенесено - service/engine/service.go (handleUpdates)
 func handleUpdate(update *client.Update) {
 	if update.GetClass() == client.ClassUpdate {
 		switch updateType := update.(type) {
@@ -15,7 +16,6 @@ func handleUpdate(update *client.Update) {
 			// НЕТ: перенесено частично - service/engine/service.go (handleUpdateNewMessage)
 			updateNewMessage := updateType
 			src := updateNewMessage.Message
-			// НЕТ: не перенесено - service/engine/service.go (DeleteSystemMessage)
 			go func() {
 				if _, ok := configData.DeleteSystemMessages[src.ChatId]; ok {
 					needDelete := false
