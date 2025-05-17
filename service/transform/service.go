@@ -69,30 +69,6 @@ func (s *Service) ReplaceFragments(formattedText *client.FormattedText, dstChatI
 	return nil
 }
 
-// addText добавляет новый текст в конец форматированного текста
-func (s *Service) addText(formattedText *client.FormattedText, text string) error {
-	parsedText, err := s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
-		Text: text,
-		ParseMode: &client.TextParseModeMarkdown{
-			Version: 2,
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("ParseTextEntities: %w", err)
-	}
-	offset := int32(util.RuneCountForUTF16(formattedText.Text))
-	if offset > 0 {
-		formattedText.Text += "\n\n"
-		offset = offset + 2
-	}
-	for _, entity := range parsedText.Entities {
-		entity.Offset += offset
-	}
-	formattedText.Text += parsedText.Text
-	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
-	return nil
-}
-
 func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client.Message) error {
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
@@ -153,6 +129,30 @@ func (s *Service) AddSources(formattedText *client.FormattedText, src *client.Me
 			return fmt.Errorf("addText for link: %w", err)
 		}
 	}
+	return nil
+}
+
+// addText добавляет новый текст в конец форматированного текста
+func (s *Service) addText(formattedText *client.FormattedText, text string) error {
+	parsedText, err := s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: text,
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("ParseTextEntities: %w", err)
+	}
+	offset := int32(util.RuneCountForUTF16(formattedText.Text))
+	if offset > 0 {
+		formattedText.Text += "\n\n"
+		offset = offset + 2
+	}
+	for _, entity := range parsedText.Entities {
+		entity.Offset += offset
+	}
+	formattedText.Text += parsedText.Text
+	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
 	return nil
 }
 
