@@ -25,6 +25,8 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: проверить весь перенесённый код на early return
+
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
 
