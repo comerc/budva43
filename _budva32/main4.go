@@ -84,7 +84,7 @@ func deleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 	deleteForDB(key)
 }
 
-// OK: перенесено - service/transform/service.go (AddSources)
+// OK: перенесено - service/transform/service.go (AddAutoAnswer)
 func addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	if configAnswer, ok := configData.Answers[src.ChatId]; ok && configAnswer.Auto {
 		if data, ok := getReplyMarkupData(src); ok {

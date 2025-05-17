@@ -18,29 +18,19 @@ type telegramRepo interface {
 	GetClient() *client.Client
 }
 
-// messageService определяет методы для работы с сообщениями
-type messageService interface {
-	GetReplyMarkupData(message *client.Message) ([]byte, bool)
-}
-
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
 	log *slog.Logger
 	//
-	telegramRepo   telegramRepo
-	messageService messageService
+	telegramRepo telegramRepo
 }
 
 // New создает новый экземпляр сервиса для работы с текстовыми трансформациями
-func New(
-	telegramRepo telegramRepo,
-	messageService messageService,
-) *Service {
+func New(telegramRepo telegramRepo) *Service {
 	return &Service{
 		log: slog.With("module", "service.transform"),
 		//
-		telegramRepo:   telegramRepo,
-		messageService: messageService,
+		telegramRepo: telegramRepo,
 	}
 }
 
@@ -93,32 +83,41 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) erro
 	return nil
 }
 
+func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client.Message) error {
+	source, ok := config.Engine.Sources[src.ChatId]
+	if !ok {
+		return nil
+	}
+	if !source.AutoAnswer {
+		return nil
+	}
+	var err error
+	data, ok := getReplyMarkupData(src)
+	if !ok {
+		return nil
+	}
+	answer, err := s.telegramRepo.GetClient().GetCallbackQueryAnswer(
+		&client.GetCallbackQueryAnswerRequest{
+			ChatId:    src.ChatId,
+			MessageId: src.Id,
+			Payload:   &client.CallbackQueryPayloadData{Data: data},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("GetCallbackQueryAnswer: %w", err)
+	}
+	err = s.addText(formattedText, escapeMarkdown(answer.Text))
+	if err != nil {
+		return fmt.Errorf("addText for answer: %w", err)
+	}
+	return nil
+}
+
 // AddSources добавляет подпись и ссылку на источник к тексту
 func (s *Service) AddSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) error {
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		return nil
-	}
-	if source.AutoAnswer {
-		var err error
-		data, ok := s.messageService.GetReplyMarkupData(src)
-		if !ok {
-			return nil
-		}
-		answer, err := s.telegramRepo.GetClient().GetCallbackQueryAnswer(
-			&client.GetCallbackQueryAnswerRequest{
-				ChatId:    src.ChatId,
-				MessageId: src.Id,
-				Payload:   &client.CallbackQueryPayloadData{Data: data},
-			},
-		)
-		if err != nil {
-			return fmt.Errorf("GetCallbackQueryAnswer: %w", err)
-		}
-		err = s.addText(formattedText, escapeMarkdown(answer.Text))
-		if err != nil {
-			return fmt.Errorf("addText for answer: %w", err)
-		}
 	}
 	if slices.Contains(source.Sign.For, dstChatId) {
 		var err error
@@ -178,4 +177,17 @@ func escapeMarkdown(text string) string {
 	return result
 	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
 	// return re.ReplaceAllString(text, `\$0`)
+}
+
+func getReplyMarkupData(message *client.Message) ([]byte, bool) {
+	if message.ReplyMarkup != nil {
+		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
+			row := a.Rows[0]
+			btn := row[0]
+			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
+				return callback.Data, true
+			}
+		}
+	}
+	return nil, false
 }
