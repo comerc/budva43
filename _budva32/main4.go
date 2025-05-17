@@ -280,7 +280,7 @@ func getInputMessageContent(messageContent client.MessageContent, formattedText 
 	return nil
 }
 
-// НЕТ: перенесено частично - service/transform/service.go (ReplaceMyselfLinks)
+// OK: перенесено - service/transform/service.go (ReplaceMyselfLinks)
 func replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) {
 	if data, ok := configData.ReplaceMyselfLinks[dstChatId]; ok {
 		log.Printf("replaceMyselfLinks > srcChatId: %d dstChatId: %d", srcChatId, dstChatId)

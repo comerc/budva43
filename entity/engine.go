@@ -18,6 +18,8 @@ type Destination struct {
 
 // ReplaceMyselfLinks настройки для замены ссылок на текущего бота
 type ReplaceMyselfLinks struct {
+	// Run если true, то замена ссылок включена
+	Run bool
 	// DeleteExternal если true, то внешние ссылки удаляются
 	DeleteExternal bool
 }

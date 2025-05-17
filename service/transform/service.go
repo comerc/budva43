@@ -18,6 +18,12 @@ type telegramRepo interface {
 	GetClient() *client.Client
 }
 
+// storageService определяет методы для работы с хранилищем
+type storageService interface {
+	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
+	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
+}
+
 // messageService определяет методы для работы с сообщениями
 type messageService interface {
 	GetReplyMarkupData(message *client.Message) ([]byte, bool)
@@ -28,25 +34,88 @@ type Service struct {
 	log *slog.Logger
 	//
 	telegramRepo   telegramRepo
+	storageService storageService
 	messageService messageService
 }
 
 // New создает новый экземпляр сервиса для работы с текстовыми трансформациями
 func New(
 	telegramRepo telegramRepo,
+	storageService storageService,
 	messageService messageService,
 ) *Service {
 	return &Service{
 		log: slog.With("module", "service.transform"),
 		//
 		telegramRepo:   telegramRepo,
+		storageService: storageService,
 		messageService: messageService,
 	}
 }
 
 // ReplaceMyselfLinks заменяет ссылки на текущего бота в тексте
 func (s *Service) ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error {
-	// TODO: выполнить корректный перенос из budva32
+	data, ok := config.Engine.Destinations[dstChatId]
+	if !ok {
+		return nil
+	}
+	if !data.ReplaceMyselfLinks.Run {
+		return nil
+	}
+	s.log.Debug("ReplaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
+	for _, entity := range formattedText.Entities {
+		textUrl, ok := entity.Type.(*client.TextEntityTypeTextUrl)
+		if !ok {
+			continue
+		}
+		messageLinkInfo, err := s.telegramRepo.GetClient().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+			Url: textUrl.Url,
+		})
+		if err != nil {
+			s.log.Error("GetMessageLinkInfo", "err", err)
+			return err
+		}
+		src := messageLinkInfo.Message
+		if src == nil || srcChatId != src.ChatId {
+			continue
+		}
+		isReplaced := false
+		fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
+		toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
+		if err != nil {
+			return fmt.Errorf("GetCopiedMessageIds: %w", err)
+		}
+		s.log.Debug("ReplaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
+		var tmpMessageId int64 = 0
+		for _, toChatMessageId := range toChatMessageIds {
+			a := strings.Split(toChatMessageId, ":")
+			if util.ConvertToInt[int64](a[1]) == dstChatId {
+				tmpMessageId = util.ConvertToInt[int64](a[2])
+				break
+			}
+		}
+		if tmpMessageId != 0 {
+			newMessageId, err := s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
+			if err != nil {
+				return fmt.Errorf("GetNewMessageId: %w", err)
+			}
+			messageLink, err := s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
+				ChatId:    dstChatId,
+				MessageId: newMessageId,
+			})
+			if err != nil {
+				s.log.Error("GetMessageLink", "err", err)
+				return err
+			}
+			entity.Type = &client.TextEntityTypeTextUrl{
+				Url: messageLink.Link,
+			}
+			isReplaced = true
+		}
+		if !isReplaced && data.ReplaceMyselfLinks.DeleteExternal {
+			entity.Type = &client.TextEntityTypeStrikethrough{}
+		}
+	}
 	return nil
 }
 

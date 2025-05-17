@@ -160,6 +160,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	mediaAlbumService := mediaAlbumService.New()
 	transformService := transformService.New(
 		telegramRepo,
+		storageService,
 		messageService,
 	)
 	rateLimiterService := rateLimiterService.New()
