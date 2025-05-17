@@ -17,7 +17,7 @@ import (
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
-	messsageService "github.com/comerc/budva43/service/message"
+	messageService "github.com/comerc/budva43/service/message"
 	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
@@ -154,19 +154,22 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("queueRepo запущен")
 
 	// - Инициализация сервисов
-	messageService := messsageService.New()
 	// reportService := reportService.New()
-	transformService := transformService.New()
 	storageService := storageService.New(storageRepo)
+	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
+	transformService := transformService.New(
+		telegramRepo,
+		messageService,
+	)
 	rateLimiterService := rateLimiterService.New()
 	engineService := engineService.New(
 		telegramRepo,
 		queueRepo,
 		storageService,
 		messageService,
-		transformService,
 		mediaAlbumService,
+		transformService,
 		rateLimiterService,
 	)
 	if err := engineService.Start(ctx); err != nil {

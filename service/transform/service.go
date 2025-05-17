@@ -18,19 +18,29 @@ type telegramRepo interface {
 	GetClient() *client.Client
 }
 
+// messageService определяет методы для работы с сообщениями
+type messageService interface {
+	GetReplyMarkupData(message *client.Message) ([]byte, bool)
+}
+
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
 	log *slog.Logger
 	//
-	telegramRepo telegramRepo
+	telegramRepo   telegramRepo
+	messageService messageService
 }
 
 // New создает новый экземпляр сервиса для работы с текстовыми трансформациями
-func New(telegramRepo telegramRepo) *Service {
+func New(
+	telegramRepo telegramRepo,
+	messageService messageService,
+) *Service {
 	return &Service{
 		log: slog.With("module", "service.transform"),
 		//
-		telegramRepo: telegramRepo,
+		telegramRepo:   telegramRepo,
+		messageService: messageService,
 	}
 }
 
@@ -91,8 +101,7 @@ func (s *Service) AddAutoAnswer(formattedText *client.FormattedText, src *client
 	if !source.AutoAnswer {
 		return nil
 	}
-	var err error
-	data, ok := getReplyMarkupData(src)
+	data, ok := s.messageService.GetReplyMarkupData(src)
 	if !ok {
 		return nil
 	}
@@ -177,17 +186,4 @@ func escapeMarkdown(text string) string {
 	return result
 	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
 	// return re.ReplaceAllString(text, `\$0`)
-}
-
-func getReplyMarkupData(message *client.Message) ([]byte, bool) {
-	if message.ReplyMarkup != nil {
-		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
-			row := a.Rows[0]
-			btn := row[0]
-			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
-				return callback.Data, true
-			}
-		}
-	}
-	return nil, false
 }

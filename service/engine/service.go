@@ -62,16 +62,16 @@ type messageService interface {
 	// GetMessage(chatId, messageId int64) (*client.Message, error)
 }
 
-type transformService interface {
-	ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error
-	ReplaceFragments(formattedText *client.FormattedText, dstChatId int64) error
-	AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error
-}
-
 type mediaAlbumService interface {
 	AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
 	GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
 	GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
+}
+
+type transformService interface {
+	ReplaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) error
+	ReplaceFragments(formattedText *client.FormattedText, dstChatId int64) error
+	AddSources(formattedText *client.FormattedText, message *client.Message, dstChatId int64) error
 }
 
 type rateLimiterService interface {
@@ -86,8 +86,8 @@ type Service struct {
 	queueRepo          queueRepo
 	storageService     storageService
 	messageService     messageService
-	transformService   transformService
 	mediaAlbumsService mediaAlbumService
+	transformService   transformService
 	rateLimiterService rateLimiterService
 }
 
@@ -97,8 +97,8 @@ func New(
 	queueRepo queueRepo,
 	storageService storageService,
 	messageService messageService,
-	transformService transformService,
 	mediaAlbumsService mediaAlbumService,
+	transformService transformService,
 	rateLimiterService rateLimiterService,
 ) *Service {
 	return &Service{
@@ -108,8 +108,8 @@ func New(
 		queueRepo:          queueRepo,
 		storageService:     storageService,
 		messageService:     messageService,
-		transformService:   transformService,
 		mediaAlbumsService: mediaAlbumsService,
+		transformService:   transformService,
 		rateLimiterService: rateLimiterService,
 	}
 }
