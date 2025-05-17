@@ -16,6 +16,7 @@ func handleUpdate(update *client.Update) {
 			// НЕТ: перенесено частично - service/engine/service.go (handleUpdateNewMessage)
 			updateNewMessage := updateType
 			src := updateNewMessage.Message
+			// OK: перенесено - service/engine/service.go (deleteSystemMessage)
 			go func() {
 				if _, ok := configData.DeleteSystemMessages[src.ChatId]; ok {
 					needDelete := false

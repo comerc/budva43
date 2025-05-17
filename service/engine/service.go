@@ -423,6 +423,26 @@ func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageS
 	// })
 }
 
+// deleteSystemMessage удаляет системное сообщение
+func (s *Service) deleteSystemMessage(src *client.Message) error {
+	source, ok := config.Engine.Sources[src.ChatId]
+	if !ok {
+		return nil
+	}
+	if !source.DeleteSystemMessages {
+		return nil
+	}
+	if !s.messageService.IsSystemMessage(src) {
+		return nil
+	}
+	_, err := s.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
+		ChatId:     src.ChatId,
+		MessageIds: []int64{src.Id},
+		Revoke:     true,
+	})
+	return err
+}
+
 // isChatSource проверяет, является ли чат источником для какого-либо правила
 func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
 	// rules := make(map[string]entity.ForwardRule)
