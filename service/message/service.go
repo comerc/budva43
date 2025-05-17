@@ -45,32 +45,32 @@ func (s *Service) GetContent(message *client.Message) (*client.FormattedText, st
 	}
 }
 
-// // IsSystemMessage проверяет, является ли сообщение системным
-// func (s *Service) IsSystemMessage(message *client.Message) bool {
-// 	switch message.Content.(type) {
-// 	case *client.MessageChatChangeTitle,
-// 		*client.MessageChatChangePhoto,
-// 		*client.MessageChatDeletePhoto,
-// 		*client.MessageChatAddMembers,
-// 		*client.MessageChatDeleteMember,
-// 		*client.MessageChatJoinByLink,
-// 		*client.MessagePinMessage:
-// 		return true
-// 	default:
-// 		return false
-// 	}
-// }
+// IsSystemMessage проверяет, является ли сообщение системным
+func (s *Service) IsSystemMessage(message *client.Message) bool {
+	switch message.Content.(type) {
+	case *client.MessageChatChangeTitle,
+		*client.MessageChatChangePhoto,
+		*client.MessageChatDeletePhoto,
+		*client.MessageChatAddMembers,
+		*client.MessageChatDeleteMember,
+		*client.MessageChatJoinByLink,
+		*client.MessagePinMessage:
+		return true
+	default:
+		return false
+	}
+}
 
-// // GetReplyMarkupData извлекает данные из replyMarkup
-// func (s *Service) GetReplyMarkupData(message *client.Message) ([]byte, bool) {
-// 	if message.ReplyMarkup != nil {
-// 		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
-// 			row := a.Rows[0]
-// 			btn := row[0]
-// 			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
-// 				return callback.Data, true
-// 			}
-// 		}
-// 	}
-// 	return nil, false
-// }
+// GetReplyMarkupData извлекает данные из replyMarkup
+func (s *Service) GetReplyMarkupData(message *client.Message) ([]byte, bool) {
+	if message.ReplyMarkup != nil {
+		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
+			row := a.Rows[0]
+			btn := row[0]
+			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
+				return callback.Data, true
+			}
+		}
+	}
+	return nil, false
+}
