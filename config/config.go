@@ -131,6 +131,7 @@ type (
 		// 	Template string
 		// 	For      []entity.ChatId
 		// }
+		UniqueFrom map[entity.ChatId]struct{} `mapstructure:"-"`
 	}
 )
 
