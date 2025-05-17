@@ -131,6 +131,7 @@ $ sudo chmod -R 777 ./tdata
 destinations:
 	-321:
 		replace-myself-links:
+		  run: true
 			delete-external: true
 		replace-fragments: # must be equal length
 			- from: "ccc"
