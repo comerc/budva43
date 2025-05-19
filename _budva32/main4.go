@@ -84,7 +84,7 @@ func deleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 	deleteForDB(key)
 }
 
-// OK: перенесено - service/transform/service.go (AddAutoAnswer)
+// OK: перенесено - service/transform/service.go (addAutoAnswer)
 func addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	if configAnswer, ok := configData.Answers[src.ChatId]; ok && configAnswer.Auto {
 		if data, ok := getReplyMarkupData(src); ok {
@@ -123,7 +123,7 @@ func addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	}
 }
 
-// OK: перенесено - service/transform/service.go (AddSources)
+// OK: перенесено - service/transform/service.go (addSources)
 func addSourceSign(formattedText *client.FormattedText, title string) {
 	sourceSign, err := tdlibClient.ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: title,
@@ -148,7 +148,7 @@ func addSourceSign(formattedText *client.FormattedText, title string) {
 	log.Printf("addSourceSign > %#v", formattedText)
 }
 
-// OK: перенесено - service/transform/service.go (AddSources)
+// OK: перенесено - service/transform/service.go (addSources)
 func addSourceLink(message *client.Message, formattedText *client.FormattedText, title string) {
 	messageLink, err := tdlibClient.GetMessageLink(&client.GetMessageLinkRequest{
 		ChatId:     message.ChatId,
@@ -280,7 +280,7 @@ func getInputMessageContent(messageContent client.MessageContent, formattedText 
 	return nil
 }
 
-// OK: перенесено - service/transform/service.go (ReplaceMyselfLinks)
+// OK: перенесено - service/transform/service.go (replaceMyselfLinks)
 func replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) {
 	if data, ok := configData.ReplaceMyselfLinks[dstChatId]; ok {
 		log.Printf("replaceMyselfLinks > srcChatId: %d dstChatId: %d", srcChatId, dstChatId)
@@ -387,7 +387,7 @@ func addSources(formattedText *client.FormattedText, src *client.Message, dstCha
 // 	}
 // }
 
-// OK: перенесено - service/transform/service.go (ReplaceFragments)
+// OK: перенесено - service/transform/service.go (replaceFragments)
 func replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
 	if data, ok := configData.ReplaceFragments[dstChatId]; ok {
 		isReplaced := false
@@ -409,6 +409,7 @@ func replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
 	}
 }
 
+// НЕТ: не перенесено - service/transform/service.go (replaceFragments2)
 // func replaceFragments2(formattedText *client.FormattedText, dstChatId int64) {
 // 	if replaceFragments, ok := configData.ReplaceFragments[dstChatId]; ok {
 // 		// TODO: нужно реализовать свою версию GetMarkdownText,

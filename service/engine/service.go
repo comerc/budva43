@@ -46,7 +46,7 @@ type storageService interface {
 }
 
 type messageService interface {
-	GetContent(message *client.Message) (*client.FormattedText, string)
+	GetContent(message *client.Message) (*client.FormattedText, bool)
 	IsSystemMessage(message *client.Message) bool
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
 	GetReplyMarkupData(message *client.Message) ([]byte, bool)
@@ -486,6 +486,8 @@ func (s *Service) processMessage(messages []*client.Message, forwardKey string, 
 
 // forwardMessages пересылает сообщения в целевой чат
 func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy, isCopyOnce bool, forwardKey string) {
+	// TODO: не возвращается ошибка - это нормально?
+	// TODO: требуется рефакторинг - разбить на функции
 	s.log.Debug("forwardMessages",
 		"srcChatId", srcChatId,
 		"dstChatId", dstChatId,
@@ -570,6 +572,7 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 				},
 			})
 			if err != nil {
+				s.log.Error("Ошибка отправки сообщения", "err", err)
 				// nothing
 			} else {
 				result = &client.Messages{
@@ -609,15 +612,15 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 		})
 	}
 	if err != nil {
-		s.log.Error("forwardNewMessages", "err", err)
+		s.log.Error("forwardMessages", "err", err)
 	} else if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
-		s.log.Error("forwardNewMessages - invalid TotalCount")
+		s.log.Error("forwardMessages - invalid TotalCount")
 	} else if len(result.Messages) != len(messages) {
-		s.log.Error("forwardNewMessages - invalid len(messages)")
+		s.log.Error("forwardMessages - invalid len(messages)")
 	} else if isSendCopy {
 		for i, dst := range result.Messages {
 			if dst == nil {
-				s.log.Error("forwardNewMessages - dst == nil !!", "result", result, "messages", messages)
+				s.log.Error("forwardMessages - dst == nil !!", "result", result, "messages", messages)
 				continue
 			}
 			tmpMessageId := dst.Id
@@ -631,144 +634,6 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 			}
 		}
 	}
-}
-
-// sendCopyMessage отправляет копию одиночного сообщения
-func (s *Service) sendCopyMessage(tdlibClient *client.Client, message *client.Message, dstChatId int64, forwardKey string) (*client.Message, error) {
-	// // Получаем текст сообщения
-	// formattedText, contentType := s.messageService.GetContent(message)
-	// if contentType == "" {
-	// 	return nil, fmt.Errorf("неподдерживаемый тип сообщения")
-	// }
-
-	// // Применяем трансформации к тексту
-	// if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
-	// 	s.log.Error("Ошибка при замене ссылок", "err", err)
-	// }
-	// if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
-	// 	s.log.Error("Ошибка при замене фрагментов", "err", err)
-	// }
-	// if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
-	// 	s.log.Error("Ошибка при добавлении источников", "err", err)
-	// }
-
-	// // Создаем входной контент для сообщения
-	// var inputContent client.InputMessageContent
-
-	// switch contentType {
-	// case client.TypeMessageText:
-	// 	inputContent = &client.InputMessageText{
-	// 		Text: formattedText,
-	// 	}
-	// case client.TypeMessagePhoto:
-	// 	content := message.Content.(*client.MessagePhoto)
-	// 	inputContent = &client.InputMessagePhoto{
-	// 		Photo: &client.InputFileRemote{
-	// 			Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
-	// 		},
-	// 		Caption: formattedText,
-	// 	}
-	// case client.TypeMessageVideo:
-	// 	content := message.Content.(*client.MessageVideo)
-	// 	inputContent = &client.InputMessageVideo{
-	// 		Video: &client.InputFileRemote{
-	// 			Id: content.Video.Video.Remote.Id,
-	// 		},
-	// 		Caption: formattedText,
-	// 	}
-	// case client.TypeMessageDocument:
-	// 	content := message.Content.(*client.MessageDocument)
-	// 	inputContent = &client.InputMessageDocument{
-	// 		Document: &client.InputFileRemote{
-	// 			Id: content.Document.Document.Remote.Id,
-	// 		},
-	// 		Caption: formattedText,
-	// 	}
-	// // TODO: перенести реализацию на остальные поддерживаемые типы
-	// default:
-	// 	return nil, fmt.Errorf("неподдерживаемый тип сообщения: %s", contentType)
-	// }
-
-	// // Отправляем сообщение
-	// return tdlibClient.SendMessage(&client.SendMessageRequest{
-	// 	ChatId:              dstChatId,
-	// 	InputMessageContent: inputContent,
-	// })
-	return nil, nil
-}
-
-// sendCopyAlbum отправляет копию медиа-альбома
-func (s *Service) sendCopyAlbum(tdlibClient *client.Client, messages []*client.Message, dstChatId int64, forwardKey string) (*client.Messages, error) {
-	// contents := make([]client.InputMessageContent, 0, len(messages))
-
-	// for i, message := range messages {
-	// 	formattedText, contentType := s.messageService.GetContent(message)
-	// 	if contentType == "" {
-	// 		continue
-	// 	}
-
-	// 	// Применяем трансформации только к первому сообщению
-	// 	if i == 0 {
-	// 		if err := s.transformService.ReplaceMyselfLinks(formattedText, message.ChatId, dstChatId); err != nil {
-	// 			s.log.Error("Ошибка при замене ссылок", "err", err)
-	// 		}
-	// 		if err := s.transformService.ReplaceFragments(formattedText, dstChatId); err != nil {
-	// 			s.log.Error("Ошибка при замене фрагментов", "err", err)
-	// 		}
-	// 		if err := s.transformService.AddSources(formattedText, message, dstChatId); err != nil {
-	// 			s.log.Error("Ошибка при добавлении источников", "err", err)
-	// 		}
-	// 	}
-
-	// 	var inputContent client.InputMessageContent
-
-	// 	switch contentType {
-	// 	case client.TypeMessagePhoto:
-	// 		content := message.Content.(*client.MessagePhoto)
-	// 		inputContent = &client.InputMessagePhoto{
-	// 			Photo: &client.InputFileRemote{
-	// 				Id: content.Photo.Sizes[len(content.Photo.Sizes)-1].Photo.Remote.Id,
-	// 			},
-	// 			Caption: formattedText,
-	// 		}
-	// 	case client.TypeMessageVideo:
-	// 		content := message.Content.(*client.MessageVideo)
-	// 		inputContent = &client.InputMessageVideo{
-	// 			Video: &client.InputFileRemote{
-	// 				Id: content.Video.Video.Remote.Id,
-	// 			},
-	// 			Caption: formattedText,
-	// 		}
-	// 	default:
-	// 		continue
-	// 	}
-
-	// 	contents = append(contents, inputContent)
-	// }
-
-	// if len(contents) == 0 {
-	// 	return nil, fmt.Errorf("нет поддерживаемых типов контента в альбоме")
-	// }
-
-	// // Отправляем альбом
-	// return tdlibClient.SendMessageAlbum(&client.SendMessageAlbumRequest{
-	// 	ChatId:               dstChatId,
-	// 	InputMessageContents: contents,
-	// })
-	return nil, nil
-}
-
-// matchesMediaContent проверяет, соответствует ли содержимое двух сообщений
-func (s *Service) matchesMediaContent(src, dst *client.Message) bool {
-	// srcFormattedText, srcContentType := s.messageService.GetContent(src)
-	// dstFormattedText, dstContentType := s.messageService.GetContent(dst)
-
-	// if srcContentType == "" || srcContentType != dstContentType {
-	// 	return false
-	// }
-
-	// return srcFormattedText.Text == dstFormattedText.Text
-	return false
 }
 
 // processSingleEdited обрабатывает редактирование сообщения
