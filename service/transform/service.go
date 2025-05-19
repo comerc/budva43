@@ -85,7 +85,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 	if !data.ReplaceMyselfLinks.Run {
 		return nil
 	}
-	s.log.Debug("ReplaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
+	s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
 	for _, entity := range formattedText.Entities {
 		textUrl, ok := entity.Type.(*client.TextEntityTypeTextUrl)
 		if !ok {
@@ -108,7 +108,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		if err != nil {
 			return fmt.Errorf("GetCopiedMessageIds: %w", err)
 		}
-		s.log.Debug("ReplaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
+		s.log.Debug("replaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
 		var tmpMessageId int64 = 0
 		for _, toChatMessageId := range toChatMessageIds {
 			a := strings.Split(toChatMessageId, ":")
@@ -161,6 +161,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 	return nil
 }
 
+// addAutoAnswer добавляет ответ на сообщение
 func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message) error {
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
