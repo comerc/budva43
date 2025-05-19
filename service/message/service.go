@@ -20,28 +20,28 @@ func New() *Service {
 	}
 }
 
-// GetContent извлекает содержимое сообщения для поддерживаемых типов
-func (s *Service) GetContent(message *client.Message) (*client.FormattedText, bool) {
+// GetFormattedText извлекает содержимое сообщения для поддерживаемых типов
+func (s *Service) GetFormattedText(message *client.Message) *client.FormattedText {
 	if message == nil || message.Content == nil {
-		return &client.FormattedText{}, false
+		return nil
 	}
 	switch content := message.Content.(type) {
 	case *client.MessageText:
-		return content.Text, true
+		return content.Text
 	case *client.MessagePhoto:
-		return content.Caption, true
+		return content.Caption
 	case *client.MessageVideo:
-		return content.Caption, true
+		return content.Caption
 	case *client.MessageDocument:
-		return content.Caption, true
+		return content.Caption
 	case *client.MessageAudio:
-		return content.Caption, true
+		return content.Caption
 	case *client.MessageAnimation:
-		return content.Caption, true
+		return content.Caption
 	case *client.MessageVoiceNote:
-		return content.Caption, true
+		return content.Caption
 	default:
-		return &client.FormattedText{}, false
+		return nil
 	}
 }
 
