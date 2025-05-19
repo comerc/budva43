@@ -46,20 +46,10 @@ type storageService interface {
 }
 
 type messageService interface {
-	GetContent(message *client.Message) (*client.FormattedText, bool)
+	GetFormattedText(message *client.Message) *client.FormattedText
 	IsSystemMessage(message *client.Message) bool
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
 	GetReplyMarkupData(message *client.Message) ([]byte, bool)
-	// GetContentType(message *client.Message) string
-	// SendMessage(chatId int64, text string) (*client.Message, error)
-	// ForwardMessage(fromChatId, messageId, toChatId int64) (*client.Message, error)
-	// SendMessageAlbum(chatId int64, contents []client.InputMessageContent) (*client.Messages, error)
-	// ForwardMessages(fromChatId int64, messageIds []int64, toChatId int64) (*client.Messages, error)
-	// EditMessageText(chatId, messageId int64, text *client.FormattedText) (*client.Message, error)
-	// EditMessageMedia(chatId, messageId int64, content client.InputMessageContent) (*client.Message, error)
-	// EditMessageCaption(chatId, messageId int64, caption *client.FormattedText) (*client.Message, error)
-	// DeleteMessages(chatId int64, messageIds []int64) error
-	// GetMessage(chatId, messageId int64) (*client.Message, error)
 }
 
 type mediaAlbumService interface {
@@ -469,19 +459,67 @@ func (s *Service) processMediaAlbum(forwardKey string, albumId client.JsonInt64)
 }
 
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
-func (s *Service) processMessage(messages []*client.Message, forwardKey string, rule entity.ForwardRule) {
-	// src := messages[0]
-	// s.log.Debug("Обработка сообщения",
-	// 	"chatId", src.ChatId,
-	// 	"messageId", src.Id,
-	// 	"albumId", src.MediaAlbumId,
-	// 	"forwardKey", forwardKey)
+func (s *Service) processMessage(messages []*client.Message, forwardKey string,
+	forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
+	checkFns map[int64]func(), otherFns map[int64]func()) error {
+	var (
+		src         = messages[0]
+		filtersMode = ""
+		result      []int64
+		err         error
+	)
+	defer func() {
+		s.log.Info("processMessage",
+			"ChatId", src.ChatId,
+			"Id", src.Id,
+			"MediaAlbumId", src.MediaAlbumId,
+			"mode", filtersMode,
+			"result", result)
+		if err != nil {
+			s.log.Error("processMessage", "err", err)
+		}
+	}()
 
-	// // Начинаем пересылку
-	// for _, dstChatId := range rule.To {
-	// 	// Пересылаем сообщения
-	// 	s.forwardMessages(messages, src.ChatId, dstChatId, rule.SendCopy, rule.CopyOnce, forwardKey)
-	// }
+	formattedText := s.messageService.GetFormattedText(src)
+	if formattedText == nil {
+		err = fmt.Errorf("GetFormattedText return nil")
+		return err
+	}
+
+	filtersMode = mapFiltersMode(formattedText, forwardRule)
+	switch filtersMode {
+	case filtersOK:
+		// checkFns[rule.Check] = nil // !! не надо сбрасывать - хочу проверить сообщение, даже если где-то прошли фильтры
+		otherFns[forwardRule.Other] = nil
+		for _, dstChatId := range forwardRule.To {
+			if isNotForwardedTo(forwardedTo, dstChatId) {
+				err = s.forwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardKey)
+				result = append(result, dstChatId)
+			}
+		}
+	case filtersCheck:
+		if forwardRule.Check != 0 {
+			_, ok := checkFns[forwardRule.Check]
+			if !ok {
+				checkFns[forwardRule.Check] = func() {
+					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
+					err = s.forwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardKey)
+				}
+			}
+		}
+	case filtersOther:
+		if forwardRule.Other != 0 {
+			_, ok := otherFns[forwardRule.Other]
+			if !ok {
+				otherFns[forwardRule.Other] = func() {
+					const isSendCopy = true // обязательно надо копировать, иначе не видно редактирование исходного сообщения
+					err = s.forwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardKey)
+				}
+			}
+		}
+	}
+
+	return err
 }
 
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения
@@ -506,8 +544,8 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	}
 
 	targetMessage := message
-	targetFormattedText, _ := s.messageService.GetContent(targetMessage)
-	originFormattedText, _ := s.messageService.GetContent(originMessage)
+	targetFormattedText := s.messageService.GetFormattedText(targetMessage)
+	originFormattedText := s.messageService.GetFormattedText(originMessage)
 	// workaround for https://github.com/tdlib/td/issues/1572
 	if targetFormattedText.Text != originFormattedText.Text {
 		s.log.Debug("targetMessage != originMessage")
@@ -526,7 +564,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 			messages[i] = originMessage
 		}
 		src := messages[i] // !! for origin message
-		srcFormattedText, _ := s.messageService.GetContent(src)
+		srcFormattedText := s.messageService.GetFormattedText(src)
 		formattedText := util.Copy(srcFormattedText)
 
 		isFirstMessageInAlbum := i == 0
@@ -622,14 +660,12 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 }
 
 // forwardMessages пересылает сообщения в целевой чат
-func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy, isCopyOnce bool, forwardKey string) {
+func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardKey string) error {
 	// TODO: не возвращается ошибка - это нормально?
-	// TODO: требуется рефакторинг - разбить на функции
 	s.log.Debug("forwardMessages",
 		"srcChatId", srcChatId,
 		"dstChatId", dstChatId,
 		"sendCopy", isSendCopy,
-		"copyOnce", isCopyOnce,
 		"forwardKey", forwardKey,
 		"messageCount", len(messages))
 
@@ -639,6 +675,11 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 		result *client.Messages
 		err    error
 	)
+	defer func() {
+		if err != nil {
+			s.log.Error("forwardMessages", "err", err)
+		}
+	}()
 
 	if isSendCopy {
 		contents := s.prepareMessageContents(messages, dstChatId)
@@ -668,39 +709,36 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 	}
 
 	if err != nil {
-		s.log.Error("forwardMessages", "err", err)
-		return
+		return err
 	}
 
 	if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
-		s.log.Error("forwardMessages - invalid TotalCount")
-		return
+		return fmt.Errorf("invalid TotalCount")
 	}
 
 	if len(result.Messages) != len(messages) {
-		s.log.Error("forwardMessages - invalid len(messages)")
-		return
+		return fmt.Errorf("invalid len(messages)")
 	}
 
-	if !isSendCopy {
-		return
+	if isSendCopy {
+		for i, dst := range result.Messages {
+			if dst == nil {
+				s.log.Error("forwardMessages - dst == nil !!", "result", result, "messages", messages)
+				continue
+			}
+			tmpMessageId := dst.Id
+			src := messages[i] // !! for origin message (in prepareMessageContents)
+			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, tmpMessageId)
+			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
+			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
+			// TODO: isAnswer
+			if _, ok := s.messageService.GetReplyMarkupData(src); ok {
+				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+			}
+		}
 	}
 
-	for i, dst := range result.Messages {
-		if dst == nil {
-			s.log.Error("forwardMessages - dst == nil !!", "result", result, "messages", messages)
-			continue
-		}
-		tmpMessageId := dst.Id
-		src := messages[i] // !! for origin message
-		toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, tmpMessageId)
-		fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-		s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
-		// TODO: isAnswer
-		if _, ok := s.messageService.GetReplyMarkupData(src); ok {
-			s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
-		}
-	}
+	return nil
 }
 
 // processSingleEdited обрабатывает редактирование сообщения
