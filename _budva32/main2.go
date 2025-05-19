@@ -474,7 +474,7 @@ const (
 	ContentModeVoiceNote = "voiceNote"
 )
 
-// OK: перенесено - service/message/service.go (GetContent)
+// OK: перенесено - service/message/service.go (GetFormattedText)
 func getFormattedText(messageContent client.MessageContent) (*client.FormattedText, ContentMode) {
 	var (
 		formattedText *client.FormattedText
