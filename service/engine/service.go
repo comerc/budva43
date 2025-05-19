@@ -452,15 +452,9 @@ func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
 	return nil, false
 }
 
-// Обрабатывает медиа-альбом
-func (s *Service) processMediaAlbum(forwardKey string, albumId client.JsonInt64) {
-	// TODO: выполнить корректный перенос из budva32
-	// TODO: правильно было переименовать из handleMediaAlbum?
-}
-
-// processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
-func (s *Service) processMessage(messages []*client.Message, forwardKey string,
-	forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
+// doUpdateNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
+func (s *Service) doUpdateNewMessage(messages []*client.Message,
+	forwardKey string, forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func()) error {
 	var (
 		src         = messages[0]
@@ -469,15 +463,19 @@ func (s *Service) processMessage(messages []*client.Message, forwardKey string,
 		err         error
 	)
 	defer func() {
-		s.log.Info("processMessage",
+		level := slog.LevelInfo
+		fields := []any{
 			"ChatId", src.ChatId,
 			"Id", src.Id,
 			"MediaAlbumId", src.MediaAlbumId,
-			"mode", filtersMode,
-			"result", result)
-		if err != nil {
-			s.log.Error("processMessage", "err", err)
+			"filtersMode", filtersMode,
+			"result", result,
 		}
+		if err != nil {
+			level = slog.LevelError
+			fields = append(fields, "err", err)
+		}
+		s.log.Log(context.Background(), level, "doUpdateNewMessage", fields...)
 	}()
 
 	formattedText := s.messageService.GetFormattedText(src)
