@@ -354,7 +354,7 @@ func handleMediaAlbum(forwardKey string, id client.JsonInt64, cb func(messages [
 	cb(messages)
 }
 
-// НЕТ: перенесено частично - service/engine/service.go (processMessage)
+// НЕТ: перенесено частично - service/engine/service.go (doUpdateNewMessage)
 func doUpdateNewMessage(messages []*client.Message, forwardKey string, forward config.Forward, forwardedTo map[int64]bool, checkFns map[int64]func(), otherFns map[int64]func()) {
 	src := messages[0]
 	formattedText, contentMode := getFormattedText(src.Content)
