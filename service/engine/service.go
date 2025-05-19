@@ -484,6 +484,143 @@ func (s *Service) processMessage(messages []*client.Message, forwardKey string, 
 	// }
 }
 
+// getOriginMessage получает оригинальное сообщение для пересланного сообщения
+func (s *Service) getOriginMessage(message *client.Message) *client.Message {
+	if message.ForwardInfo == nil {
+		return nil
+	}
+
+	origin, ok := message.ForwardInfo.Origin.(*client.MessageOriginChannel)
+	if !ok {
+		return nil
+	}
+
+	originMessage, err := s.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
+		ChatId:    origin.ChatId,
+		MessageId: origin.MessageId,
+	})
+
+	if err != nil {
+		s.log.Error("getOriginMessage", "err", err)
+		return nil
+	}
+
+	targetMessage := message
+	targetFormattedText, _ := s.messageService.GetContent(targetMessage)
+	originFormattedText, _ := s.messageService.GetContent(originMessage)
+	// workaround for https://github.com/tdlib/td/issues/1572
+	if targetFormattedText.Text != originFormattedText.Text {
+		s.log.Debug("targetMessage != originMessage")
+		return nil
+	}
+
+	return originMessage
+}
+
+func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64) []client.InputMessageContent {
+	contents := make([]client.InputMessageContent, 0)
+
+	for i, message := range messages {
+		originMessage := s.getOriginMessage(message)
+		if originMessage != nil {
+			messages[i] = originMessage
+		}
+		src := messages[i] // !! for origin message
+		srcFormattedText, _ := s.messageService.GetContent(src)
+		formattedText := util.Copy(srcFormattedText)
+
+		isFirstMessageInAlbum := i == 0
+		if err := s.transformService.Transform(formattedText, isFirstMessageInAlbum, src, dstChatId); err != nil {
+			s.log.Error("Transform", "err", err)
+		}
+
+		content := s.messageService.GetInputMessageContent(src, formattedText)
+		if content != nil {
+			contents = append(contents, content)
+		}
+	}
+
+	return contents
+}
+
+// getReplyToMessageId получает ID сообщения для ответа
+func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
+	var replyToMessageId int64 = 0
+	var err error
+
+	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)
+	if !ok {
+		return 0
+	}
+
+	replyToMessageId = replyTo.MessageId
+	replyInChatId := replyTo.ChatId
+
+	if replyToMessageId <= 0 || replyInChatId != src.ChatId {
+		return 0
+	}
+
+	fromChatMessageId := fmt.Sprintf("%d:%d", replyInChatId, replyToMessageId)
+	toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
+	if err != nil {
+		s.log.Error("GetCopiedMessageIds", "err", err)
+		return 0
+	}
+
+	if len(toChatMessageIds) == 0 {
+		return 0
+	}
+
+	var tmpMessageId int64 = 0
+	for _, toChatMessageId := range toChatMessageIds {
+		a := strings.Split(toChatMessageId, ":")
+		if util.ConvertToInt[int64](a[1]) == dstChatId {
+			tmpMessageId = util.ConvertToInt[int64](a[2])
+			break
+		}
+	}
+
+	if tmpMessageId == 0 {
+		return 0
+	}
+
+	replyToMessageId, err = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
+	if err != nil {
+		s.log.Error("GetNewMessageId", "err", err)
+		return 0
+	}
+
+	return replyToMessageId
+}
+
+// sendMessages отправляет сообщения в чат
+func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageContent, replyToMessageId int64) (*client.Messages, error) {
+	if len(contents) == 1 {
+		var message *client.Message
+		message, err := s.telegramRepo.GetClient().SendMessage(&client.SendMessageRequest{
+			ChatId:              dstChatId,
+			InputMessageContent: contents[0],
+			ReplyTo: &client.InputMessageReplyToMessage{
+				MessageId: replyToMessageId,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &client.Messages{
+			TotalCount: 1,
+			Messages:   []*client.Message{message},
+		}, nil
+	}
+	return s.telegramRepo.GetClient().SendMessageAlbum(&client.SendMessageAlbumRequest{
+		ChatId:               dstChatId,
+		InputMessageContents: contents,
+		ReplyTo: &client.InputMessageReplyToMessage{
+			MessageId: replyToMessageId,
+		},
+	})
+}
+
 // forwardMessages пересылает сообщения в целевой чат
 func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy, isCopyOnce bool, forwardKey string) {
 	// TODO: не возвращается ошибка - это нормально?
@@ -495,100 +632,18 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 		"copyOnce", isCopyOnce,
 		"forwardKey", forwardKey,
 		"messageCount", len(messages))
+
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
+
 	var (
 		result *client.Messages
 		err    error
 	)
+
 	if isSendCopy {
-		contents := make([]client.InputMessageContent, 0)
-		for i, message := range messages {
-			if message.ForwardInfo != nil {
-				if origin, ok := message.ForwardInfo.Origin.(*client.MessageOriginChannel); ok {
-					if originMessage, err := s.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
-						ChatId:    origin.ChatId,
-						MessageId: origin.MessageId,
-					}); err != nil {
-						s.log.Error("originMessage", "err", err)
-					} else {
-						targetMessage := message
-						targetFormattedText, _ := s.messageService.GetContent(targetMessage)
-						originFormattedText, _ := s.messageService.GetContent(originMessage)
-						// workaround for https://github.com/tdlib/td/issues/1572
-						if targetFormattedText.Text == originFormattedText.Text {
-							messages[i] = originMessage
-						} else {
-							s.log.Debug("targetMessage != originMessage")
-						}
-					}
-				}
-			}
-			src := messages[i] // !! for origin message
-			srcFormattedText, _ := s.messageService.GetContent(src)
-			formattedText := util.Copy(srcFormattedText)
-			isFirstMessageInAlbum := i == 0
-			if err := s.transformService.Transform(formattedText, isFirstMessageInAlbum, src, dstChatId); err != nil {
-				s.log.Error("Transform", "err", err)
-			}
-			content := s.messageService.GetInputMessageContent(src, formattedText)
-			if content != nil {
-				contents = append(contents, content)
-			}
-		}
-		var replyToMessageId int64 = 0
-		src := messages[0]
-		if replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage); ok {
-			replyToMessageId = replyTo.MessageId
-			replyInChatId := replyTo.ChatId
-			if replyToMessageId > 0 && replyInChatId == src.ChatId {
-				fromChatMessageId := fmt.Sprintf("%d:%d", replyInChatId, replyToMessageId)
-				toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
-				if err != nil {
-					s.log.Error("GetCopiedMessageIds", "err", err)
-				}
-				var tmpMessageId int64 = 0
-				for _, toChatMessageId := range toChatMessageIds {
-					a := strings.Split(toChatMessageId, ":")
-					if util.ConvertToInt[int64](a[1]) == dstChatId {
-						tmpMessageId = util.ConvertToInt[int64](a[2])
-						break
-					}
-				}
-				if tmpMessageId != 0 {
-					replyToMessageId, err = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
-					if err != nil {
-						s.log.Error("GetNewMessageId", "err", err)
-					}
-				}
-			}
-		}
-		if len(contents) == 1 {
-			var message *client.Message
-			message, err = s.telegramRepo.GetClient().SendMessage(&client.SendMessageRequest{
-				ChatId:              dstChatId,
-				InputMessageContent: contents[0],
-				ReplyTo: &client.InputMessageReplyToMessage{
-					MessageId: replyToMessageId,
-				},
-			})
-			if err != nil {
-				s.log.Error("Ошибка отправки сообщения", "err", err)
-				// nothing
-			} else {
-				result = &client.Messages{
-					TotalCount: 1,
-					Messages:   []*client.Message{message},
-				}
-			}
-		} else {
-			result, err = s.telegramRepo.GetClient().SendMessageAlbum(&client.SendMessageAlbumRequest{
-				ChatId:               dstChatId,
-				InputMessageContents: contents,
-				ReplyTo: &client.InputMessageReplyToMessage{
-					MessageId: replyToMessageId,
-				},
-			})
-		}
+		contents := s.prepareMessageContents(messages, dstChatId)
+		replyToMessageId := s.getReplyToMessageId(messages[0], dstChatId)
+		result, err = s.sendMessages(dstChatId, contents, replyToMessageId)
 	} else {
 		result, err = s.telegramRepo.GetClient().ForwardMessages(&client.ForwardMessagesRequest{
 			ChatId:     dstChatId,
@@ -611,27 +666,39 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 			RemoveCaption: false,
 		})
 	}
+
 	if err != nil {
 		s.log.Error("forwardMessages", "err", err)
-	} else if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
+		return
+	}
+
+	if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
 		s.log.Error("forwardMessages - invalid TotalCount")
-	} else if len(result.Messages) != len(messages) {
+		return
+	}
+
+	if len(result.Messages) != len(messages) {
 		s.log.Error("forwardMessages - invalid len(messages)")
-	} else if isSendCopy {
-		for i, dst := range result.Messages {
-			if dst == nil {
-				s.log.Error("forwardMessages - dst == nil !!", "result", result, "messages", messages)
-				continue
-			}
-			tmpMessageId := dst.Id
-			src := messages[i] // !! for origin message
-			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, tmpMessageId)
-			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
-			// TODO: isAnswer
-			if _, ok := s.messageService.GetReplyMarkupData(src); ok {
-				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
-			}
+		return
+	}
+
+	if !isSendCopy {
+		return
+	}
+
+	for i, dst := range result.Messages {
+		if dst == nil {
+			s.log.Error("forwardMessages - dst == nil !!", "result", result, "messages", messages)
+			continue
+		}
+		tmpMessageId := dst.Id
+		src := messages[i] // !! for origin message
+		toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, tmpMessageId)
+		fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
+		s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
+		// TODO: isAnswer
+		if _, ok := s.messageService.GetReplyMarkupData(src); ok {
+			s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
 		}
 	}
 }
