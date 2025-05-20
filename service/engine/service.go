@@ -160,7 +160,8 @@ func (s *Service) validateConfig() error {
 
 // enrichConfig обогащает конфигурацию
 func (s *Service) enrichConfig() error {
-	config.Engine.UniqueFrom = make(map[entity.ChatId]struct{})
+	config.Engine.UniqueSources = make(map[entity.ChatId]struct{})
+	tmpOrderedForwardRules := make([]entity.ForwardRuleId, 0)
 	for key, destination := range config.Engine.Destinations {
 		destination.ChatId = key
 	}
@@ -174,8 +175,11 @@ func (s *Service) enrichConfig() error {
 				ChatId: forwardRule.From,
 			}
 		}
-		config.Engine.UniqueFrom[forwardRule.From] = struct{}{}
+		config.Engine.UniqueSources[forwardRule.From] = struct{}{}
+		tmpOrderedForwardRules = append(tmpOrderedForwardRules, forwardRule.Id)
 	}
+	slices.Sort(tmpOrderedForwardRules)
+	config.Engine.OrderedForwardRules = slices.Compact(tmpOrderedForwardRules)
 	return nil
 }
 
@@ -224,8 +228,14 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 // handleUpdateNewMessage обрабатывает обновление о новом сообщении
 func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	src := update.Message
-	go s.deleteSystemMessage(src)
-	if _, ok := config.Engine.UniqueFrom[src.ChatId]; !ok {
+	if s.messageService.IsSystemMessage(src) {
+		fn := func() {
+			_ = s.deleteSystemMessage(src)
+		}
+		s.queueRepo.Add(fn)
+		return
+	}
+	if _, ok := config.Engine.UniqueSources[src.ChatId]; !ok {
 		return
 	}
 	formattedText := s.messageService.GetFormattedText(src)
@@ -236,63 +246,59 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	forwardedTo := make(map[int64]bool)
 	checkFns := make(map[int64]func())
 	otherFns := make(map[int64]func())
-	for _, forwardRule := range config.Engine.ForwardRules {
-		if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
-			isExist = true
-			for _, dstChatId := range forwardRule.To {
-				_, isPresent := forwardedTo[dstChatId]
-				if !isPresent {
-					forwardedTo[dstChatId] = false
-				}
+	for _, forwardRuleId := range config.Engine.OrderedForwardRules {
+		forwardRule := config.Engine.ForwardRules[forwardRuleId]
+		if src.ChatId != forwardRule.From {
+			continue
+		}
+		if !forwardRule.SendCopy && !src.CanBeSaved {
+			continue
+		}
+		isExist = true // как минимум, собираем статистику просмотренных сообщений
+		initForwardedTo(forwardedTo, forwardRule.To)
+		if src.MediaAlbumId == 0 {
+			fn := func() {
+				_ = s.doUpdateNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
 			}
-			if src.MediaAlbumId == 0 {
-				fn := func() {
-					_ = s.doUpdateNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
-				}
-				s.queueRepo.Add(fn)
-			} else {
-				key := s.mediaAlbumsService.GetKey(forwardRule.Id, src.MediaAlbumId)
-				isFirstMessage := s.mediaAlbumsService.AddMessage(key, src)
-				if isFirstMessage {
-					cb := func(messages []*client.Message) {
-						_ = s.doUpdateNewMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
-					}
-					fn := func() {
-						s.processMediaAlbum(key, cb)
-					}
-					s.queueRepo.Add(fn)
-				}
+			s.queueRepo.Add(fn)
+		} else {
+			key := s.mediaAlbumsService.GetKey(forwardRule.Id, src.MediaAlbumId)
+			isFirstMessage := s.mediaAlbumsService.AddMessage(key, src)
+			if !isFirstMessage {
+				continue
 			}
+			cb := func(messages []*client.Message) {
+				_ = s.doUpdateNewMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
+			}
+			fn := func() {
+				s.processMediaAlbum(key, cb)
+			}
+			s.queueRepo.Add(fn)
 		}
 	}
-	if isExist {
-		fn := func() {
-			date := util.GetCurrentDate()
-			for dstChatId, isForwarded := range forwardedTo {
-				if isForwarded {
-					s.storageService.IncrementForwardedMessages(dstChatId, date)
-				}
-				s.storageService.IncrementViewedMessages(dstChatId, date)
-			}
-			for check, fn := range checkFns {
-				if fn == nil {
-					s.log.Error("check is nil", "check", check)
-					continue
-				}
-				s.log.Info("check is fn()", "check", check)
-				fn()
-			}
-			for other, fn := range otherFns {
-				if fn == nil {
-					s.log.Error("other is nil", "other", other)
-					continue
-				}
-				s.log.Info("other is fn()", "other", other)
-				fn()
-			}
-		}
-		s.queueRepo.Add(fn)
+	if !isExist {
+		return
 	}
+	fn := func() {
+		s.addStatistics(forwardedTo)
+		for check, fn := range checkFns {
+			if fn == nil {
+				s.log.Error("check is nil", "check", check)
+				continue
+			}
+			s.log.Info("check is fn()", "check", check)
+			fn()
+		}
+		for other, fn := range otherFns {
+			if fn == nil {
+				s.log.Error("other is nil", "other", other)
+				continue
+			}
+			s.log.Info("other is fn()", "other", other)
+			fn()
+		}
+	}
+	s.queueRepo.Add(fn)
 }
 
 // handleUpdateMessageEdited обрабатывает обновление о редактировании сообщения
@@ -415,6 +421,12 @@ func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageS
 
 // deleteSystemMessage удаляет системное сообщение
 func (s *Service) deleteSystemMessage(src *client.Message) error {
+	var err error
+	defer func() {
+		if err != nil {
+			s.log.Error("deleteSystemMessage", "err", err)
+		}
+	}()
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		return nil
@@ -422,10 +434,7 @@ func (s *Service) deleteSystemMessage(src *client.Message) error {
 	if !source.DeleteSystemMessages {
 		return nil
 	}
-	if !s.messageService.IsSystemMessage(src) {
-		return nil
-	}
-	_, err := s.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
+	_, err = s.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
 		ChatId:     src.ChatId,
 		MessageIds: []int64{src.Id},
 		Revoke:     true,
@@ -908,7 +917,30 @@ func (s *Service) processSingleDeleted(fromChatMessageId, toChatMessageId string
 	// }
 }
 
+// addStatistics добавляет статистику пересылаемых и просмотренных сообщений
+func (s *Service) addStatistics(forwardedTo map[int64]bool) {
+	date := util.GetCurrentDate()
+	for dstChatId, isForwarded := range forwardedTo {
+		if isForwarded {
+			s.storageService.IncrementForwardedMessages(dstChatId, date)
+		}
+		s.storageService.IncrementViewedMessages(dstChatId, date)
+	}
+}
+
 var forwardedToMu sync.Mutex
+
+// initForwardedTo инициализирует forwardedTo для новых чатов
+func initForwardedTo(forwardedTo map[int64]bool, dstChatIds []int64) {
+	forwardedToMu.Lock()
+	defer forwardedToMu.Unlock()
+	for _, dstChatId := range dstChatIds {
+		_, ok := forwardedTo[dstChatId]
+		if !ok {
+			forwardedTo[dstChatId] = false
+		}
+	}
+}
 
 // isNotForwardedTo проверяет, было ли сообщение уже отправлено в данный чат
 func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
