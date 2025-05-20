@@ -53,9 +53,10 @@ type messageService interface {
 }
 
 type mediaAlbumService interface {
-	// AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
-	// GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
-	// GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
+	AddMessage(key entity.MediaAlbumKey, message *client.Message) bool
+	GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration
+	GetMessages(key entity.MediaAlbumKey) []*client.Message
+	GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey
 }
 
 type transformService interface {
@@ -222,82 +223,91 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 
 // handleUpdateNewMessage обрабатывает обновление о новом сообщении
 func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
-	// message := update.Message
-	// chatId := message.ChatId
+	src := update.Message
+	go s.deleteSystemMessage(src)
+	if _, ok := config.Engine.UniqueFrom[src.ChatId]; !ok {
+		return
+	}
+	formattedText := s.messageService.GetFormattedText(src)
+	if formattedText == nil {
+		return
+	}
+	isExist := false
+	forwardedTo := make(map[int64]bool)
+	checkFns := make(map[int64]func())
+	otherFns := make(map[int64]func())
+	for _, forwardRule := range config.Engine.ForwardRules {
+		if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
+			isExist = true
+			for _, dstChatId := range forwardRule.To {
+				_, isPresent := forwardedTo[dstChatId]
+				if !isPresent {
+					forwardedTo[dstChatId] = false
+				}
+			}
+			if src.MediaAlbumId == 0 {
+				fn := func() {
+					_ = s.doUpdateNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
+				}
+				s.queueRepo.Add(fn)
+			} else {
+				key := s.mediaAlbumsService.GetKey(forwardRule.Id, src.MediaAlbumId)
+				isFirstMessage := s.mediaAlbumsService.AddMessage(key, src)
+				if isFirstMessage {
+					cb := func(messages []*client.Message) {
+						_ = s.doUpdateNewMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
+					}
+					fn := func() {
+						s.processMediaAlbum(key, cb)
+					}
+					s.queueRepo.Add(fn)
+				}
+			}
+		}
+	}
+	if isExist {
+		fn := func() {
+			date := util.GetCurrentDate()
+			for dstChatId, isForwarded := range forwardedTo {
+				if isForwarded {
+					s.storageService.IncrementForwardedMessages(dstChatId, date)
+				}
+				s.storageService.IncrementViewedMessages(dstChatId, date)
+			}
+			for check, fn := range checkFns {
+				if fn == nil {
+					s.log.Error("check is nil", "check", check)
+					continue
+				}
+				s.log.Info("check is fn()", "check", check)
+				fn()
+			}
+			for other, fn := range otherFns {
+				if fn == nil {
+					s.log.Error("other is nil", "other", other)
+					continue
+				}
+				s.log.Info("other is fn()", "other", other)
+				fn()
+			}
+		}
+		s.queueRepo.Add(fn)
+	}
+}
 
-	// // Проверяем, является ли чат источником для какого-либо правила
-	// isSourceChat := false
-	// var forwardRules []struct {
-	// 	ruleId string
-	// 	rule   entity.ForwardRule
-	// }
+const waitForMediaAlbum = 3 * time.Second
 
-	// for ruleId, rule := range config.Engine.Forwards {
-	// 	if rule.From == chatId && rule.Status == entity.RuleStatusActive {
-	// 		isSourceChat = true
-	// 		forwardRules = append(forwardRules, struct {
-	// 			ruleId string
-	// 			rule   entity.ForwardRule
-	// 		}{ruleId, rule})
-	// 	}
-	// }
-
-	// if !isSourceChat {
-	// 	return
-	// }
-
-	// // Проверяем удаление системных сообщений
-	// if shouldDelete := config.Engine.DeleteSystemMessages[chatId]; shouldDelete {
-	// 	if s.messageService.IsSystemMessage(message) {
-	// 		go func() {
-	// 			tdlibClient := s.telegramRepo.GetClient()
-	// 			_, err := tdlibClient.DeleteMessages(&client.DeleteMessagesRequest{
-	// 				ChatId:     chatId,
-	// 				MessageIds: []int64{message.Id},
-	// 				Revoke:     true, // Удаляем для всех участников, а не только для себя
-	// 			})
-	// 			if err != nil {
-	// 				s.log.Error("Ошибка удаления системного сообщения", "err", err)
-	// 			}
-	// 		}()
-	// 	}
-	// }
-
-	// formattedText, _ := s.messageService.GetContent(message)
-
-	// // Обрабатываем каждое правило
-	// for _, ruleData := range forwardRules {
-	// 	// Проверяем правило
-	// 	rule := ruleData.rule
-
-	// 	// Проверяем, должно ли сообщение быть переслано согласно фильтрам
-	// 	shouldForward, err := s.filterService.ShouldForward(formattedText.Text, &rule)
-	// 	if err != nil {
-	// 		s.log.Error("Ошибка проверки фильтров", "err", err)
-	// 		continue
-	// 	}
-
-	// 	if !shouldForward {
-	// 		s.log.Debug("Сообщение не проходит фильтры", "ruleId", ruleData.ruleId)
-	// 		continue
-	// 	}
-
-	// 	// Обрабатываем сообщение в зависимости от типа
-	// 	if message.MediaAlbumId == 0 {
-	// 		// Одиночное сообщение
-	// 		s.queueService.Add(func() {
-	// 			s.processMessage([]*client.Message{message}, ruleData.ruleId, rule)
-	// 		})
-	// 	} else {
-	// 		// Медиа-альбом
-	// 		isFirstMessage := s.mediaAlbumsService.AddMessage(ruleData.ruleId, message)
-	// 		if isFirstMessage {
-	// 			s.queueService.Add(func() {
-	// 				s.processMediaAlbum(ruleData.ruleId, message.MediaAlbumId)
-	// 			})
-	// 		}
-	// 	}
-	// }
+// processMediaAlbum обрабатывает медиа-альбом
+func (s *Service) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.Message)) {
+	// TODO: не возвращается error ?
+	diff := s.mediaAlbumsService.GetLastReceivedDiff(key)
+	if diff < waitForMediaAlbum {
+		time.Sleep(waitForMediaAlbum - diff)
+		s.processMediaAlbum(key, cb)
+		return
+	}
+	messages := s.mediaAlbumsService.GetMessages(key)
+	cb(messages)
 }
 
 // handleUpdateMessageEdited обрабатывает обновление о редактировании сообщения
@@ -454,7 +464,7 @@ func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
 
 // doUpdateNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (s *Service) doUpdateNewMessage(messages []*client.Message,
-	forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
+	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func()) error {
 	var (
 		src         = messages[0]
@@ -920,7 +930,7 @@ const (
 )
 
 // mapFiltersMode определяет, какой режим фильтрации применим
-func mapFiltersMode(formattedText *client.FormattedText, rule entity.ForwardRule) filtersMode {
+func mapFiltersMode(formattedText *client.FormattedText, rule *entity.ForwardRule) filtersMode {
 	if formattedText.Text == "" {
 		hasInclude := false
 		if rule.Include != "" {
