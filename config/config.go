@@ -131,7 +131,10 @@ type (
 		// 	Template string
 		// 	For      []entity.ChatId
 		// }
-		UniqueFrom map[entity.ChatId]struct{} `mapstructure:"-"`
+		// Уникальные источники
+		UniqueSources map[entity.ChatId]struct{} `mapstructure:"-"`
+		// Порядок форвардинга
+		OrderedForwardRules []entity.ForwardRuleId `mapstructure:"-"`
 	}
 )
 
