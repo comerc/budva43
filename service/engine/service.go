@@ -53,9 +53,9 @@ type messageService interface {
 }
 
 type mediaAlbumService interface {
-	AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
-	GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
-	GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
+	// AddMessage(forwardRuleId entity.ForwardRuleId, message *client.Message) bool
+	// GetLastReceivedDiff(key entity.MediaAlbumForwardKey) time.Duration
+	// GetMessages(key entity.MediaAlbumForwardKey) []*client.Message
 }
 
 type transformService interface {
@@ -142,16 +142,16 @@ func (s *Service) validateConfig() error {
 	}
 
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
-	for ruleId, rule := range config.Engine.ForwardRules {
-		if re.FindString(ruleId) != "" {
-			return fmt.Errorf("нельзя использовать [:,] в идентификаторе правила: %s", ruleId)
+	for forwardRuleId, forwardRule := range config.Engine.ForwardRules {
+		if re.FindString(forwardRuleId) != "" {
+			return fmt.Errorf("нельзя использовать [:,] в идентификаторе правила: %s", forwardRuleId)
 		}
-		for _, dstChatId := range rule.To {
-			if rule.From == dstChatId {
+		for _, dstChatId := range forwardRule.To {
+			if forwardRule.From == dstChatId {
 				return fmt.Errorf("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
 			}
 		}
-		s.log.Info("Валидировано правило пересылки", "ruleId", ruleId, "from", rule.From, "to", rule.To)
+		s.log.Info("Валидировано правило пересылки", "forwardRuleId", forwardRuleId, "from", forwardRule.From, "to", forwardRule.To)
 	}
 
 	return nil
@@ -160,20 +160,20 @@ func (s *Service) validateConfig() error {
 // enrichConfig обогащает конфигурацию
 func (s *Service) enrichConfig() error {
 	config.Engine.UniqueFrom = make(map[entity.ChatId]struct{})
-	for key, val := range config.Engine.Destinations {
-		val.ChatId = key
+	for key, destination := range config.Engine.Destinations {
+		destination.ChatId = key
 	}
-	for key, val := range config.Engine.Sources {
-		val.ChatId = key
+	for key, source := range config.Engine.Sources {
+		source.ChatId = key
 	}
-	for key, rule := range config.Engine.ForwardRules {
-		rule.Id = key
-		if _, ok := config.Engine.Sources[rule.From]; !ok {
-			config.Engine.Sources[rule.From] = &entity.Source{
-				ChatId: rule.From,
+	for key, forwardRule := range config.Engine.ForwardRules {
+		forwardRule.Id = key
+		if _, ok := config.Engine.Sources[forwardRule.From]; !ok {
+			config.Engine.Sources[forwardRule.From] = &entity.Source{
+				ChatId: forwardRule.From,
 			}
 		}
-		config.Engine.UniqueFrom[rule.From] = struct{}{}
+		config.Engine.UniqueFrom[forwardRule.From] = struct{}{}
 	}
 	return nil
 }
@@ -454,7 +454,7 @@ func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
 
 // doUpdateNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (s *Service) doUpdateNewMessage(messages []*client.Message,
-	forwardKey string, forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
+	forwardRule entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func()) error {
 	var (
 		src         = messages[0]
@@ -491,7 +491,7 @@ func (s *Service) doUpdateNewMessage(messages []*client.Message,
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
 			if isNotForwardedTo(forwardedTo, dstChatId) {
-				err = s.forwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardKey)
+				err = s.forwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id)
 				result = append(result, dstChatId)
 			}
 		}
@@ -501,7 +501,7 @@ func (s *Service) doUpdateNewMessage(messages []*client.Message,
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					err = s.forwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardKey)
+					err = s.forwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id)
 				}
 			}
 		}
@@ -511,7 +511,7 @@ func (s *Service) doUpdateNewMessage(messages []*client.Message,
 			if !ok {
 				otherFns[forwardRule.Other] = func() {
 					const isSendCopy = true // обязательно надо копировать, иначе не видно редактирование исходного сообщения
-					err = s.forwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardKey)
+					err = s.forwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id)
 				}
 			}
 		}
@@ -658,13 +658,13 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 }
 
 // forwardMessages пересылает сообщения в целевой чат
-func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardKey string) error {
+func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) error {
 	// TODO: не возвращается ошибка - это нормально?
 	s.log.Debug("forwardMessages",
 		"srcChatId", srcChatId,
 		"dstChatId", dstChatId,
 		"sendCopy", isSendCopy,
-		"forwardKey", forwardKey,
+		"forwardRuleId", forwardRuleId,
 		"messageCount", len(messages))
 
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
@@ -726,7 +726,7 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 			}
 			tmpMessageId := dst.Id
 			src := messages[i] // !! for origin message (in prepareMessageContents)
-			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardKey, dstChatId, tmpMessageId)
+			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardRuleId, dstChatId, tmpMessageId)
 			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
 			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
 			// TODO: isAnswer
