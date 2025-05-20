@@ -4,6 +4,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"time"
 	"unicode/utf16"
 
 	"github.com/vmihailenco/msgpack/v5"
@@ -43,4 +44,9 @@ func Copy[T any](from *T) *T {
 		log.Panic("Copy: ", err)
 	}
 	return to
+}
+
+// GetCurrentDate возвращает текущую дату в формате YYYY-MM-DD
+func GetCurrentDate() string {
+	return time.Now().Format("2006-01-02")
 }

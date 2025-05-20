@@ -341,7 +341,7 @@ func getMediaAlbumMessages(key string) []*client.Message {
 
 const waitForMediaAlbum = 3 * time.Second
 
-// НЕТ: не перенесено, предлагаю - service/engine/service.go (handleMediaAlbum)
+// НЕТ: не перенесено, предлагаю - service/engine/service.go (processMediaAlbum)
 func handleMediaAlbum(forwardKey string, id client.JsonInt64, cb func(messages []*client.Message)) {
 	key := fmt.Sprintf("%s:%d", forwardKey, id)
 	diff := getMediaAlbumLastReceivedDiff(key)

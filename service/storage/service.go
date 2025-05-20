@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/comerc/budva43/util"
 )
@@ -217,7 +216,7 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) error {
 // IncrementViewedMessages увеличивает счетчик просмотренных сообщений
 func (s *Service) IncrementViewedMessages(toChatId int64, date string) error {
 	if date == "" { // внешняя date нужна для тестирования
-		date = time.Now().UTC().Format("2006-01-02")
+		date = util.GetCurrentDate()
 	}
 	key := fmt.Sprintf("%s:%d:%s", viewedMessagesPrefix, toChatId, date)
 	val, err := s.repo.Increment(key)
@@ -260,7 +259,7 @@ func (s *Service) GetViewedMessages(toChatId int64, date string) (int64, error) 
 // IncrementForwardedMessages увеличивает счетчик пересланных сообщений
 func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error {
 	if date == "" { // внешняя date нужна для тестирования
-		date = time.Now().UTC().Format("2006-01-02")
+		date = util.GetCurrentDate()
 	}
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
 	val, err := s.repo.Increment(key)
@@ -280,7 +279,7 @@ func (s *Service) IncrementForwardedMessages(toChatId int64, date string) error 
 // GetForwardedMessages получает количество пересланных сообщений
 func (s *Service) GetForwardedMessages(toChatId int64, date string) (int64, error) {
 	if date == "" { // внешняя date нужна для тестирования
-		date = time.Now().UTC().Format("2006-01-02")
+		date = util.GetCurrentDate()
 	}
 	key := fmt.Sprintf("%s:%d:%s", forwardedMessagesPrefix, toChatId, date)
 	val, err := s.repo.Get(key)
