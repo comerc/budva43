@@ -55,7 +55,7 @@ type messageService interface {
 type mediaAlbumService interface {
 	AddMessage(key entity.MediaAlbumKey, message *client.Message) bool
 	GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration
-	GetMessages(key entity.MediaAlbumKey) []*client.Message
+	PopMessages(key entity.MediaAlbumKey) []*client.Message
 	GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey
 }
 
@@ -293,21 +293,6 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 		}
 		s.queueRepo.Add(fn)
 	}
-}
-
-const waitForMediaAlbum = 3 * time.Second
-
-// processMediaAlbum обрабатывает медиа-альбом
-func (s *Service) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.Message)) {
-	// TODO: не возвращается error ?
-	diff := s.mediaAlbumsService.GetLastReceivedDiff(key)
-	if diff < waitForMediaAlbum {
-		time.Sleep(waitForMediaAlbum - diff)
-		s.processMediaAlbum(key, cb)
-		return
-	}
-	messages := s.mediaAlbumsService.GetMessages(key)
-	cb(messages)
 }
 
 // handleUpdateMessageEdited обрабатывает обновление о редактировании сообщения
@@ -747,6 +732,21 @@ func (s *Service) forwardMessages(messages []*client.Message, srcChatId, dstChat
 	}
 
 	return nil
+}
+
+const waitForMediaAlbum = 3 * time.Second
+
+// processMediaAlbum обрабатывает медиа-альбом
+func (s *Service) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.Message)) {
+	// TODO: не возвращается error ?
+	diff := s.mediaAlbumsService.GetLastReceivedDiff(key)
+	if diff < waitForMediaAlbum {
+		time.Sleep(waitForMediaAlbum - diff)
+		s.processMediaAlbum(key, cb)
+		return
+	}
+	messages := s.mediaAlbumsService.PopMessages(key)
+	cb(messages)
 }
 
 // processSingleEdited обрабатывает редактирование сообщения
