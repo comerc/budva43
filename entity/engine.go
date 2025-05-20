@@ -102,5 +102,5 @@ type SubmatchRule struct {
 	Match []string
 }
 
-// MediaAlbumForwardKey ключ для пересылаемого медиа-альбома
-type MediaAlbumForwardKey = string
+// MediaAlbumKey ключ для пересылаемого медиа-альбома
+type MediaAlbumKey = string
