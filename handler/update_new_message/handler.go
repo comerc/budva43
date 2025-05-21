@@ -56,7 +56,6 @@ type rateLimiterService interface {
 	WaitForForward(ctx context.Context, dstChatId int64)
 }
 
-// Service предоставляет функциональность движка пересылки сообщений
 type Handler struct {
 	log *slog.Logger
 	ctx context.Context
@@ -92,7 +91,7 @@ func New(
 	}
 }
 
-// Run обрабатывает обновление о новом сообщении
+// Run выполняет обрабатку обновления о новом сообщении
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	h.ctx = ctx
 	src := update.Message
@@ -293,6 +292,7 @@ func (h *Handler) getOriginMessage(message *client.Message) *client.Message {
 	return originMessage
 }
 
+// prepareMessageContents подготавливает сообщения для отправки
 func (h *Handler) prepareMessageContents(messages []*client.Message, dstChatId int64) []client.InputMessageContent {
 	contents := make([]client.InputMessageContent, 0)
 

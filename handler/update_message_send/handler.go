@@ -34,7 +34,7 @@ func New(
 	}
 }
 
-// Run обрабатывает обновление об успешной отправке сообщения
+// Run выполняет обрабатку обновления об успешной отправке сообщения
 func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
 	tmpMessageId := update.OldMessageId
