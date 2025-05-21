@@ -28,6 +28,10 @@ type updateDeleteMessagesHandler interface {
 	Run(update *client.UpdateDeleteMessages)
 }
 
+type updateMessageSendHandler interface {
+	Run(update *client.UpdateMessageSendSucceeded)
+}
+
 type queueRepo interface {
 	Add(task func())
 }
@@ -85,6 +89,7 @@ type Service struct {
 	rateLimiterService          rateLimiterService
 	updateNewMessageHandler     updateNewMessageHandler
 	updateDeleteMessagesHandler updateDeleteMessagesHandler
+	updateMessageSendHandler    updateMessageSendHandler
 }
 
 // New создает новый экземпляр сервиса engine
@@ -98,6 +103,7 @@ func New(
 	rateLimiterService rateLimiterService,
 	updateNewMessageHandler updateNewMessageHandler,
 	updateDeleteMessagesHandler updateDeleteMessagesHandler,
+	updateMessageSendHandler updateMessageSendHandler,
 ) *Service {
 	return &Service{
 		log: slog.With("module", "service.engine"),
@@ -111,6 +117,7 @@ func New(
 		rateLimiterService:          rateLimiterService,
 		updateNewMessageHandler:     updateNewMessageHandler,
 		updateDeleteMessagesHandler: updateDeleteMessagesHandler,
+		updateMessageSendHandler:    updateMessageSendHandler,
 	}
 }
 
@@ -229,7 +236,7 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 			case *client.UpdateDeleteMessages:
 				s.updateDeleteMessagesHandler.Run(updateByType)
 			case *client.UpdateMessageSendSucceeded:
-				s.handleUpdateMessageSendSucceeded(updateByType)
+				s.updateMessageSendHandler.Run(updateByType)
 			}
 		}
 	}
@@ -281,16 +288,4 @@ func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) 
 	// 		s.processSingleEdited(src, toChatMessageId)
 	// 	}
 	// })
-}
-
-// handleUpdateMessageSendSucceeded обрабатывает обновление об успешной отправке сообщения
-func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageSendSucceeded) {
-	message := update.Message
-	tmpMessageId := update.OldMessageId
-	fn := func() {
-		_ = s.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
-		_ = s.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
-		s.log.Info("handleUpdateMessageSendSucceeded")
-	}
-	s.queueRepo.Add(fn)
 }
