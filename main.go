@@ -12,6 +12,7 @@ import (
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
+	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
 	updateNewMessageHandler "github.com/comerc/budva43/handler/update_new_message"
 	queueRepo "github.com/comerc/budva43/repo/queue"
 	storageRepo "github.com/comerc/budva43/repo/storage"
@@ -189,6 +190,10 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		queueRepo,
 		storageService,
 	)
+	updateMessageSendHandler := updateMessageSendHandler.New(
+		queueRepo,
+		storageService,
+	)
 	engineService := engineService.New(
 		telegramRepo,
 		queueRepo,
@@ -199,6 +204,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		rateLimiterService,
 		updateNewMessageHandler,
 		updateDeleteMessagesHandler,
+		updateMessageSendHandler,
 	)
 	if err := engineService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)
