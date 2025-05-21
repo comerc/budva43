@@ -1,4 +1,4 @@
-package engine
+package update_delete_messages
 
 import (
 	"fmt"
@@ -42,7 +42,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: slog.With("module", "handler.delete"),
+		log: slog.With("module", "handler.update_delete_messages"),
 		//
 		telegramRepo:   telegramRepo,
 		queueRepo:      queueRepo,
@@ -50,7 +50,7 @@ func New(
 	}
 }
 
-func (s *Handler) Handle(update *client.UpdateDeleteMessages) {
+func (s *Handler) Run(update *client.UpdateDeleteMessages) {
 	if !update.IsPermanent {
 		return
 	}

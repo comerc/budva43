@@ -11,7 +11,7 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
-	deleteHandler "github.com/comerc/budva43/handler/delete"
+	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	queueRepo "github.com/comerc/budva43/repo/queue"
 	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
@@ -174,7 +174,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	slog.Info("authService запущен")
 
 	// - Инициализация основного сервиса и его обработчиков
-	deleteHandler := deleteHandler.New(
+	updateDeleteMessagesHandler := updateDeleteMessagesHandler.New(
 		telegramRepo,
 		queueRepo,
 		storageService,
@@ -187,7 +187,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		mediaAlbumService,
 		transformService,
 		rateLimiterService,
-		deleteHandler,
+		updateDeleteMessagesHandler,
 	)
 	if err := engineService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)

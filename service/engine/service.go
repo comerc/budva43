@@ -22,8 +22,8 @@ type telegramRepo interface {
 	GetClientDone() <-chan any
 }
 
-type deleteHandler interface {
-	Handle(update *client.UpdateDeleteMessages)
+type updateDeleteMessagesHandler interface {
+	Run(update *client.UpdateDeleteMessages)
 }
 
 type queueRepo interface {
@@ -74,14 +74,14 @@ type Service struct {
 	log *slog.Logger
 	ctx context.Context
 	//
-	telegramRepo       telegramRepo
-	queueRepo          queueRepo
-	storageService     storageService
-	messageService     messageService
-	mediaAlbumsService mediaAlbumService
-	transformService   transformService
-	rateLimiterService rateLimiterService
-	deleteHandler      deleteHandler
+	telegramRepo                telegramRepo
+	queueRepo                   queueRepo
+	storageService              storageService
+	messageService              messageService
+	mediaAlbumsService          mediaAlbumService
+	transformService            transformService
+	rateLimiterService          rateLimiterService
+	updateDeleteMessagesHandler updateDeleteMessagesHandler
 }
 
 // New создает новый экземпляр сервиса engine
@@ -93,19 +93,19 @@ func New(
 	mediaAlbumsService mediaAlbumService,
 	transformService transformService,
 	rateLimiterService rateLimiterService,
-	deleteHandler deleteHandler,
+	updateDeleteMessagesHandler updateDeleteMessagesHandler,
 ) *Service {
 	return &Service{
 		log: slog.With("module", "service.engine"),
 		//
-		telegramRepo:       telegramRepo,
-		queueRepo:          queueRepo,
-		storageService:     storageService,
-		messageService:     messageService,
-		mediaAlbumsService: mediaAlbumsService,
-		transformService:   transformService,
-		rateLimiterService: rateLimiterService,
-		deleteHandler:      deleteHandler,
+		telegramRepo:                telegramRepo,
+		queueRepo:                   queueRepo,
+		storageService:              storageService,
+		messageService:              messageService,
+		mediaAlbumsService:          mediaAlbumsService,
+		transformService:            transformService,
+		rateLimiterService:          rateLimiterService,
+		updateDeleteMessagesHandler: updateDeleteMessagesHandler,
 	}
 }
 
@@ -222,7 +222,7 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 			case *client.UpdateMessageEdited:
 				s.handleUpdateMessageEdited(updateByType)
 			case *client.UpdateDeleteMessages:
-				s.deleteHandler.Handle(updateByType)
+				s.updateDeleteMessagesHandler.Run(updateByType)
 			case *client.UpdateMessageSendSucceeded:
 				s.handleUpdateMessageSendSucceeded(updateByType)
 			}
