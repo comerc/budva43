@@ -327,7 +327,7 @@ func handleUpdate(update *client.Update) {
 			}
 			queue.PushBack(fn)
 		case *client.UpdateDeleteMessages:
-			// НЕТ: перенесено частично - service/engine/service.go (handleUpdateDeleteMessages)
+			// OK: перенесено - service/engine/service.go (handleUpdateDeleteMessages)
 			updateDeleteMessages := updateType
 			if !updateDeleteMessages.IsPermanent {
 				continue

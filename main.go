@@ -11,6 +11,7 @@ import (
 
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
+	deleteHandler "github.com/comerc/budva43/handler/delete"
 	queueRepo "github.com/comerc/budva43/repo/queue"
 	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
@@ -25,6 +26,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: требуется чёткая стратегия обработки ошибок на разных уровнях
 // TODO: перепроверить применение s.log.* на избыточность
 // TODO: проверить весь перенесённый код на early return
 
@@ -153,7 +155,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	defer gracefulShutdown("queueRepo", errSet, queueRepo)
 	slog.Info("queueRepo запущен")
 
-	// - Инициализация сервисов
+	// - Инициализация вспомогательных сервисов
 	// reportService := reportService.New()
 	storageService := storageService.New(storageRepo)
 	messageService := messageService.New()
@@ -164,6 +166,19 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		messageService,
 	)
 	rateLimiterService := rateLimiterService.New()
+	authService := authService.New(telegramRepo)
+	if err := authService.Start(ctx); err != nil {
+		return fmt.Errorf("ошибка запуска authService: %w", err)
+	}
+	defer gracefulShutdown("authService", errSet, authService)
+	slog.Info("authService запущен")
+
+	// - Инициализация основного сервиса и его обработчиков
+	deleteHandler := deleteHandler.New(
+		telegramRepo,
+		queueRepo,
+		storageService,
+	)
 	engineService := engineService.New(
 		telegramRepo,
 		queueRepo,
@@ -172,18 +187,13 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		mediaAlbumService,
 		transformService,
 		rateLimiterService,
+		deleteHandler,
 	)
 	if err := engineService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)
 	}
 	defer gracefulShutdown("engineService", errSet, engineService)
 	slog.Info("engineService запущен")
-	authService := authService.New(telegramRepo)
-	if err := authService.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска authService: %w", err)
-	}
-	defer gracefulShutdown("authService", errSet, authService)
-	slog.Info("authService запущен")
 
 	// - Инициализация контроллеров
 	// reportController := reportController.New(
