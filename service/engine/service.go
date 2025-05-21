@@ -17,11 +17,13 @@ import (
 	"github.com/comerc/budva43/util"
 )
 
-// TODO: serviceEngine слишком большой, что можно вынести в другие сервисы?
-
 type telegramRepo interface {
 	GetClient() *client.Client
 	GetClientDone() <-chan any
+}
+
+type deleteHandler interface {
+	Handle(update *client.UpdateDeleteMessages)
 }
 
 type queueRepo interface {
@@ -79,6 +81,7 @@ type Service struct {
 	mediaAlbumsService mediaAlbumService
 	transformService   transformService
 	rateLimiterService rateLimiterService
+	deleteHandler      deleteHandler
 }
 
 // New создает новый экземпляр сервиса engine
@@ -90,6 +93,7 @@ func New(
 	mediaAlbumsService mediaAlbumService,
 	transformService transformService,
 	rateLimiterService rateLimiterService,
+	deleteHandler deleteHandler,
 ) *Service {
 	return &Service{
 		log: slog.With("module", "service.engine"),
@@ -101,6 +105,7 @@ func New(
 		mediaAlbumsService: mediaAlbumsService,
 		transformService:   transformService,
 		rateLimiterService: rateLimiterService,
+		deleteHandler:      deleteHandler,
 	}
 }
 
@@ -217,7 +222,7 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 			case *client.UpdateMessageEdited:
 				s.handleUpdateMessageEdited(updateByType)
 			case *client.UpdateDeleteMessages:
-				s.handleUpdateDeleteMessages(updateByType)
+				s.deleteHandler.Handle(updateByType)
 			case *client.UpdateMessageSendSucceeded:
 				s.handleUpdateMessageSendSucceeded(updateByType)
 			}
@@ -349,55 +354,6 @@ func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) 
 	// })
 }
 
-// handleUpdateDeleteMessages обрабатывает обновление об удалении сообщений
-func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages) {
-	// // Обрабатываем только постоянное удаление сообщений
-	// if !update.IsPermanent {
-	// 	return
-	// }
-
-	// chatId := update.ChatId
-	// messageIds := update.MessageIds
-
-	// // Проверяем, является ли чат источником для какого-либо правила
-	// if _, ok := isChatSource(chatId); !ok {
-	// 	return
-	// }
-
-	// s.log.Debug("Обработка удаления сообщений", "chatId", chatId, "messageIds", messageIds)
-
-	// // Отправляем задачу в очередь
-	// s.queueService.Add(func() {
-	// 	// Обрабатываем каждое удаленное сообщение
-	// 	for _, messageId := range messageIds {
-	// 		// Формируем ключ для поиска скопированных сообщений
-	// 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-
-	// 		// Получаем идентификаторы скопированных сообщений
-	// 		toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
-	// 		if err != nil {
-	// 			s.log.Error("Ошибка получения скопированных сообщений", "err", err)
-	// 			continue
-	// 		}
-
-	// 		if len(toChatMessageIds) == 0 {
-	// 			continue
-	// 		}
-
-	// 		// Обрабатываем каждое скопированное сообщение
-	// 		for _, toChatMessageId := range toChatMessageIds {
-	// 			s.processSingleDeleted(fromChatMessageId, toChatMessageId)
-	// 		}
-
-	// 		// Удаляем соответствие между оригинальным и скопированными сообщениями
-	// 		err = s.storageService.DeleteCopiedMessageIds(fromChatMessageId)
-	// 		if err != nil {
-	// 			s.log.Error("Ошибка удаления скопированных сообщений", "err", err)
-	// 		}
-	// 	}
-	// })
-}
-
 // handleUpdateMessageSendSucceeded обрабатывает обновление об успешной отправке сообщения
 func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
@@ -431,20 +387,6 @@ func (s *Service) deleteSystemMessage(src *client.Message) error {
 		Revoke:     true,
 	})
 	return err
-}
-
-// isChatSource проверяет, является ли чат источником для какого-либо правила
-func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
-	// rules := make(map[string]entity.ForwardRule)
-
-	// for ruleId, rule := range config.Engine.Forwards {
-	// 	if rule.From == chatId && rule.Status == entity.RuleStatusActive {
-	// 		rules[ruleId] = rule
-	// 	}
-	// }
-
-	// return rules, len(rules) > 0
-	return nil, false
 }
 
 // processNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
