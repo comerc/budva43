@@ -498,8 +498,15 @@ func (h *Handler) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.
 	// TODO: не возвращается error ?
 	diff := h.mediaAlbumsService.GetLastReceivedDiff(key)
 	if diff < waitForMediaAlbum {
-		time.Sleep(waitForMediaAlbum - diff)
-		h.processMediaAlbum(key, cb)
+		timer := time.NewTimer(waitForMediaAlbum - diff)
+		defer timer.Stop()
+
+		select {
+		case <-h.ctx.Done():
+			return
+		case <-timer.C:
+			h.processMediaAlbum(key, cb)
+		}
 		return
 	}
 	messages := h.mediaAlbumsService.PopMessages(key)
