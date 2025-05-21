@@ -25,21 +25,21 @@ func (s *Service) GetFormattedText(message *client.Message) *client.FormattedTex
 	if message == nil || message.Content == nil {
 		return nil
 	}
-	switch content := message.Content.(type) {
+	switch contentByType := message.Content.(type) {
 	case *client.MessageText:
-		return content.Text
+		return contentByType.Text
 	case *client.MessagePhoto:
-		return content.Caption
+		return contentByType.Caption
 	case *client.MessageVideo:
-		return content.Caption
+		return contentByType.Caption
 	case *client.MessageDocument:
-		return content.Caption
+		return contentByType.Caption
 	case *client.MessageAudio:
-		return content.Caption
+		return contentByType.Caption
 	case *client.MessageAnimation:
-		return content.Caption
+		return contentByType.Caption
 	case *client.MessageVoiceNote:
-		return content.Caption
+		return contentByType.Caption
 	default:
 		return nil
 	}
