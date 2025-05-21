@@ -4,10 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"regexp"
-	"slices"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -56,6 +53,15 @@ type rateLimiterService interface {
 	WaitForForward(ctx context.Context, dstChatId int64)
 }
 
+type filtersModeService interface {
+	Map(formattedText *client.FormattedText, rule *entity.ForwardRule) entity.FiltersMode
+}
+
+type forwardedToService interface {
+	Init(forwardedTo map[int64]bool, dstChatIds []int64)
+	Add(forwardedTo map[int64]bool, dstChatId int64) bool
+}
+
 type Handler struct {
 	log *slog.Logger
 	ctx context.Context
@@ -67,6 +73,8 @@ type Handler struct {
 	mediaAlbumsService mediaAlbumService
 	transformService   transformService
 	rateLimiterService rateLimiterService
+	filtersModeService filtersModeService
+	forwardedToService forwardedToService
 }
 
 func New(
@@ -77,6 +85,8 @@ func New(
 	mediaAlbumsService mediaAlbumService,
 	transformService transformService,
 	rateLimiterService rateLimiterService,
+	filtersModeService filtersModeService,
+	forwardedToService forwardedToService,
 ) *Handler {
 	return &Handler{
 		log: slog.With("module", "handler.update_new_message"),
@@ -88,6 +98,8 @@ func New(
 		mediaAlbumsService: mediaAlbumsService,
 		transformService:   transformService,
 		rateLimiterService: rateLimiterService,
+		filtersModeService: filtersModeService,
+		forwardedToService: forwardedToService,
 	}
 }
 
@@ -122,7 +134,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 			continue
 		}
 		isExist = true // как минимум, собираем статистику просмотренных сообщений
-		initForwardedTo(forwardedTo, forwardRule.To)
+		h.forwardedToService.Init(forwardedTo, forwardRule.To)
 		if src.MediaAlbumId == 0 {
 			fn := func() {
 				_ = h.processNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
@@ -223,18 +235,18 @@ func (h *Handler) processNewMessage(messages []*client.Message,
 		return err
 	}
 
-	filtersMode = mapFiltersMode(formattedText, forwardRule)
+	filtersMode = h.filtersModeService.Map(formattedText, forwardRule)
 	switch filtersMode {
-	case filtersOK:
+	case entity.FiltersOK:
 		// checkFns[rule.Check] = nil // !! не надо сбрасывать - хочу проверить сообщение, даже если где-то прошли фильтры
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
-			if isNotForwardedTo(forwardedTo, dstChatId) {
+			if h.forwardedToService.Add(forwardedTo, dstChatId) {
 				err = h.forwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id)
 				result = append(result, dstChatId)
 			}
 		}
-	case filtersCheck:
+	case entity.FiltersCheck:
 		if forwardRule.Check != 0 {
 			_, ok := checkFns[forwardRule.Check]
 			if !ok {
@@ -244,7 +256,7 @@ func (h *Handler) processNewMessage(messages []*client.Message,
 				}
 			}
 		}
-	case filtersOther:
+	case entity.FiltersOther:
 		if forwardRule.Other != 0 {
 			_, ok := otherFns[forwardRule.Other]
 			if !ok {
@@ -497,94 +509,10 @@ func (h *Handler) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.
 // addStatistics добавляет статистику пересылаемых и просмотренных сообщений
 func (h *Handler) addStatistics(forwardedTo map[int64]bool) {
 	date := util.GetCurrentDate()
-	for dstChatId, isForwarded := range forwardedTo {
-		if isForwarded {
+	for dstChatId, ok := range forwardedTo {
+		if ok {
 			h.storageService.IncrementForwardedMessages(dstChatId, date)
 		}
 		h.storageService.IncrementViewedMessages(dstChatId, date)
 	}
-}
-
-var forwardedToMu sync.Mutex
-
-// initForwardedTo инициализирует forwardedTo для новых чатов
-func initForwardedTo(forwardedTo map[int64]bool, dstChatIds []int64) {
-	forwardedToMu.Lock()
-	defer forwardedToMu.Unlock()
-	for _, dstChatId := range dstChatIds {
-		_, ok := forwardedTo[dstChatId]
-		if !ok {
-			forwardedTo[dstChatId] = false
-		}
-	}
-}
-
-// isNotForwardedTo проверяет, было ли сообщение уже отправлено в данный чат
-func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
-	forwardedToMu.Lock()
-	defer forwardedToMu.Unlock()
-	if !forwardedTo[dstChatId] {
-		forwardedTo[dstChatId] = true
-		return true
-	}
-	return false
-}
-
-type filtersMode = string
-
-const (
-	filtersOK    filtersMode = "ok"
-	filtersCheck filtersMode = "check"
-	filtersOther filtersMode = "other"
-)
-
-// mapFiltersMode определяет, какой режим фильтрации применим
-func mapFiltersMode(formattedText *client.FormattedText, rule *entity.ForwardRule) filtersMode {
-	if formattedText.Text == "" {
-		hasInclude := false
-		if rule.Include != "" {
-			hasInclude = true
-		}
-		for _, includeSubmatch := range rule.IncludeSubmatch {
-			if includeSubmatch.Regexp != "" {
-				hasInclude = true
-				break
-			}
-		}
-		if hasInclude {
-			return filtersOther
-		}
-	} else {
-		if rule.Exclude != "" {
-			re := regexp.MustCompile("(?i)" + rule.Exclude)
-			if re.FindString(formattedText.Text) != "" {
-				return filtersCheck
-			}
-		}
-		hasInclude := false
-		if rule.Include != "" {
-			hasInclude = true
-			re := regexp.MustCompile("(?i)" + rule.Include)
-			if re.FindString(formattedText.Text) != "" {
-				return filtersOK
-			}
-		}
-		for _, includeSubmatch := range rule.IncludeSubmatch {
-			if includeSubmatch.Regexp != "" {
-				hasInclude = true
-				re := regexp.MustCompile("(?i)" + includeSubmatch.Regexp)
-				matches := re.FindAllStringSubmatch(formattedText.Text, -1)
-				for _, match := range matches {
-					s := match[includeSubmatch.Group]
-					if slices.Contains(includeSubmatch.Match, s) {
-						return filtersOK
-					}
-				}
-			}
-		}
-		if hasInclude {
-			return filtersOther
-		}
-	}
-	return filtersOK
 }
