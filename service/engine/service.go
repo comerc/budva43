@@ -258,7 +258,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 		initForwardedTo(forwardedTo, forwardRule.To)
 		if src.MediaAlbumId == 0 {
 			fn := func() {
-				_ = s.doUpdateNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
+				_ = s.processNewMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
 			}
 			s.queueRepo.Add(fn)
 		} else {
@@ -268,7 +268,7 @@ func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 				continue
 			}
 			cb := func(messages []*client.Message) {
-				_ = s.doUpdateNewMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
+				_ = s.processNewMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
 			}
 			fn := func() {
 				s.processMediaAlbum(key, cb)
@@ -447,8 +447,8 @@ func isChatSource(chatId int64) (map[string]entity.ForwardRule, bool) {
 	return nil, false
 }
 
-// doUpdateNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
-func (s *Service) doUpdateNewMessage(messages []*client.Message,
+// processNewMessage обрабатывает сообщения и выполняет пересылку согласно правилам
+func (s *Service) processNewMessage(messages []*client.Message,
 	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func()) error {
 	var (
@@ -470,7 +470,7 @@ func (s *Service) doUpdateNewMessage(messages []*client.Message,
 			level = slog.LevelError
 			fields = append(fields, "err", err)
 		}
-		s.log.Log(context.Background(), level, "doUpdateNewMessage", fields...)
+		s.log.Log(context.Background(), level, "processNewMessage", fields...)
 	}()
 
 	formattedText := s.messageService.GetFormattedText(src)
