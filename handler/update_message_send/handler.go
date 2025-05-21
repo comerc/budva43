@@ -34,6 +34,8 @@ func New(
 	}
 }
 
+// TODO: можно сделать адаптеры для UpdateMessageSendFailed и UpdateMessageSendAcknowledged
+
 // Run выполняет обрабатку обновления об успешной отправке сообщения
 func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
