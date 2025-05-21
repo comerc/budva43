@@ -50,6 +50,7 @@ func New(
 	}
 }
 
+// Run выполняет обрабатку обновления об удалении сообщений
 func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 	if !update.IsPermanent {
 		return
@@ -62,6 +63,7 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 	h.process(update.ChatId, update.MessageIds)
 }
 
+// process обрабатывает удаление сообщений
 func (h *Handler) process(chatId int64, messageIds []int64) {
 	const maxRetries = 3
 	retryCount := 0
@@ -103,6 +105,7 @@ type data struct {
 	newMessageIds    map[string]int64    // tmpChatMessageId -> newMessageId
 }
 
+// collectData собирает данные для удаления сообщений
 func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 	data := &data{
 		copiedMessageIds: make(map[string][]string),
@@ -133,6 +136,7 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 	return data, nil
 }
 
+// deleteMessages удаляет сообщения
 func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) []string {
 	result := make([]string, 0)
 

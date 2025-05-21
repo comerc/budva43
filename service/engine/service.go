@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"regexp"
 	"slices"
-	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -24,6 +23,10 @@ type updateNewMessageHandler interface {
 	Run(ctx context.Context, update *client.UpdateNewMessage)
 }
 
+type updateMessageEditedHandler interface {
+	Run(update *client.UpdateMessageEdited)
+}
+
 type updateDeleteMessagesHandler interface {
 	Run(update *client.UpdateDeleteMessages)
 }
@@ -32,62 +35,14 @@ type updateMessageSendHandler interface {
 	Run(update *client.UpdateMessageSendSucceeded)
 }
 
-type queueRepo interface {
-	Add(task func())
-}
-
-type storageService interface {
-	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error
-	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
-	DeleteCopiedMessageIds(fromChatMessageId string) error
-	SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error
-	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
-	DeleteNewMessageId(chatId, tmpMessageId int64) error
-	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error
-	GetTmpMessageId(chatId, newMessageId int64) (int64, error)
-	DeleteTmpMessageId(chatId, newMessageId int64) error
-	IncrementViewedMessages(toChatId int64, date string) error
-	// GetViewedMessages(toChatId int64, date string) (int64, error)
-	IncrementForwardedMessages(toChatId int64, date string) error
-	// GetForwardedMessages(toChatId int64, date string) (int64, error)
-	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) error
-}
-
-type messageService interface {
-	GetFormattedText(message *client.Message) *client.FormattedText
-	IsSystemMessage(message *client.Message) bool
-	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
-	GetReplyMarkupData(message *client.Message) ([]byte, bool)
-}
-
-type mediaAlbumService interface {
-	AddMessage(key entity.MediaAlbumKey, message *client.Message) bool
-	GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration
-	PopMessages(key entity.MediaAlbumKey) []*client.Message
-	GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey
-}
-
-type transformService interface {
-	Transform(formattedText *client.FormattedText, isFirstMessageInAlbum bool, src *client.Message, dstChatId int64) error
-}
-
-type rateLimiterService interface {
-	WaitForForward(ctx context.Context, dstChatId int64)
-}
-
 // Service предоставляет функциональность движка пересылки сообщений
 type Service struct {
 	log *slog.Logger
 	ctx context.Context
 	//
 	telegramRepo                telegramRepo
-	queueRepo                   queueRepo
-	storageService              storageService
-	messageService              messageService
-	mediaAlbumsService          mediaAlbumService
-	transformService            transformService
-	rateLimiterService          rateLimiterService
 	updateNewMessageHandler     updateNewMessageHandler
+	updateMessageEditedHandler  updateMessageEditedHandler
 	updateDeleteMessagesHandler updateDeleteMessagesHandler
 	updateMessageSendHandler    updateMessageSendHandler
 }
@@ -95,13 +50,8 @@ type Service struct {
 // New создает новый экземпляр сервиса engine
 func New(
 	telegramRepo telegramRepo,
-	queueRepo queueRepo,
-	storageService storageService,
-	messageService messageService,
-	mediaAlbumsService mediaAlbumService,
-	transformService transformService,
-	rateLimiterService rateLimiterService,
 	updateNewMessageHandler updateNewMessageHandler,
+	updateMessageEditedHandler updateMessageEditedHandler,
 	updateDeleteMessagesHandler updateDeleteMessagesHandler,
 	updateMessageSendHandler updateMessageSendHandler,
 ) *Service {
@@ -109,13 +59,8 @@ func New(
 		log: slog.With("module", "service.engine"),
 		//
 		telegramRepo:                telegramRepo,
-		queueRepo:                   queueRepo,
-		storageService:              storageService,
-		messageService:              messageService,
-		mediaAlbumsService:          mediaAlbumsService,
-		transformService:            transformService,
-		rateLimiterService:          rateLimiterService,
 		updateNewMessageHandler:     updateNewMessageHandler,
+		updateMessageEditedHandler:  updateMessageEditedHandler,
 		updateDeleteMessagesHandler: updateDeleteMessagesHandler,
 		updateMessageSendHandler:    updateMessageSendHandler,
 	}
@@ -232,7 +177,7 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 			case *client.UpdateNewMessage:
 				s.updateNewMessageHandler.Run(s.ctx, updateByType)
 			case *client.UpdateMessageEdited:
-				s.handleUpdateMessageEdited(updateByType)
+				s.updateMessageEditedHandler.Run(updateByType)
 			case *client.UpdateDeleteMessages:
 				s.updateDeleteMessagesHandler.Run(updateByType)
 			case *client.UpdateMessageSendSucceeded:
@@ -240,52 +185,4 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 			}
 		}
 	}
-}
-
-// handleUpdateMessageEdited обрабатывает обновление о редактировании сообщения
-func (s *Service) handleUpdateMessageEdited(update *client.UpdateMessageEdited) {
-	// chatId := update.ChatId
-	// messageId := update.MessageId
-
-	// // Проверяем, является ли чат источником для какого-либо правила
-	// if _, ok := isChatSource(chatId); !ok {
-	// 	return
-	// }
-
-	// s.log.Debug("Обработка редактирования сообщения", "chatId", chatId, "messageId", messageId)
-
-	// // Отправляем задачу в очередь
-	// s.queueService.Add(func() {
-	// 	// Формируем ключ для поиска скопированных сообщений
-	// 	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-
-	// 	// Получаем идентификаторы скопированных сообщений
-	// 	toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
-	// 	if err != nil {
-	// 		s.log.Error("Ошибка получения скопированных сообщений", "err", err)
-	// 		return
-	// 	}
-
-	// 	if len(toChatMessageIds) == 0 {
-	// 		s.log.Debug("Скопированные сообщения не найдены", "fromChatMessageId", fromChatMessageId)
-	// 		return
-	// 	}
-
-	// 	tdlibClient := s.telegramRepo.GetClient()
-
-	// 	// Получаем исходное сообщение
-	// 	src, err := tdlibClient.GetMessage(&client.GetMessageRequest{
-	// 		ChatId:    chatId,
-	// 		MessageId: messageId,
-	// 	})
-	// 	if err != nil {
-	// 		s.log.Error("Ошибка получения исходного сообщения", "err", err)
-	// 		return
-	// 	}
-
-	// 	// Обрабатываем каждое скопированное сообщение
-	// 	for _, toChatMessageId := range toChatMessageIds {
-	// 		s.processSingleEdited(src, toChatMessageId)
-	// 	}
-	// })
 }

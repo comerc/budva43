@@ -13,10 +13,10 @@ func handleUpdate(update *client.Update) {
 	if update.GetClass() == client.ClassUpdate {
 		switch updateType := update.(type) {
 		case *client.UpdateNewMessage:
-			// OK: перенесено - service/engine/service.go (handleUpdateNewMessage)
+			// OK: перенесено - handler/update_new_message/handler.go (Run)
 			updateNewMessage := updateType
 			src := updateNewMessage.Message
-			// OK: перенесено - service/engine/service.go (deleteSystemMessage)
+			// OK: перенесено - handler/update_new_message/handler.go (deleteSystemMessage)
 			go func() {
 				if _, ok := configData.DeleteSystemMessages[src.ChatId]; ok {
 					needDelete := false
@@ -140,7 +140,7 @@ func handleUpdate(update *client.Update) {
 				queue.PushBack(fn)
 			}
 		case *client.UpdateMessageEdited:
-			// НЕТ: перенесено частично - service/engine/service.go (handleUpdateMessageEdited)
+			// НЕТ: перенесено частично - handler/update_message_edited/handler.go (Run)
 			updateMessageEdited := updateType
 			chatId := updateMessageEdited.ChatId
 			if _, ok := uniqueFrom[chatId]; !ok {
@@ -315,7 +315,7 @@ func handleUpdate(update *client.Update) {
 			}
 			queue.PushBack(fn)
 		case *client.UpdateMessageSendSucceeded:
-			// OK: перенесено - service/engine/service.go (handleUpdateMessageSendSucceeded)
+			// OK: перенесено - handler/update_message_send/handler.go (Run)
 			updateMessageSendSucceeded := updateType
 			message := updateMessageSendSucceeded.Message
 			tmpMessageId := updateMessageSendSucceeded.OldMessageId
@@ -327,7 +327,7 @@ func handleUpdate(update *client.Update) {
 			}
 			queue.PushBack(fn)
 		case *client.UpdateDeleteMessages:
-			// OK: перенесено - service/engine/service.go (handleUpdateDeleteMessages)
+			// OK: перенесено - handler/update_delete_messages/handler.go (Run)
 			updateDeleteMessages := updateType
 			if !updateDeleteMessages.IsPermanent {
 				continue

@@ -241,7 +241,7 @@ func main() {
 		log.Printf("Me: %s %s [@%s]", me.FirstName, me.LastName, me.Username)
 	}
 
-	// OK: перенесено - service/engine/service.go (runHandler)
+	// OK: перенесено - service/engine/service.go (run)
 	listener := tdlibClient.GetListener()
 	defer listener.Close()
 

@@ -48,7 +48,7 @@ func distinct(a []string) []string {
 
 const waitForForward = 3 * time.Second // чтобы бот успел отреагировать на сообщение
 
-// OK: перенесено - service/engine/service.go (getInputThumbnail)
+// OK: перенесено - service/message/service.go (getInputThumbnail)
 func getInputThumbnail(thumbnail *client.Thumbnail) *client.InputThumbnail {
 	if thumbnail == nil || thumbnail.File == nil && thumbnail.File.Remote == nil {
 		return nil

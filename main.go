@@ -12,6 +12,7 @@ import (
 	config "github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
+	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
 	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
 	updateNewMessageHandler "github.com/comerc/budva43/handler/update_new_message"
 	queueRepo "github.com/comerc/budva43/repo/queue"
@@ -185,6 +186,13 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		transformService,
 		rateLimiterService,
 	)
+	updateMessageEditedHandler := updateMessageEditedHandler.New(
+		telegramRepo,
+		queueRepo,
+		storageService,
+		messageService,
+		mediaAlbumService,
+	)
 	updateDeleteMessagesHandler := updateDeleteMessagesHandler.New(
 		telegramRepo,
 		queueRepo,
@@ -196,13 +204,8 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	)
 	engineService := engineService.New(
 		telegramRepo,
-		queueRepo,
-		storageService,
-		messageService,
-		mediaAlbumService,
-		transformService,
-		rateLimiterService,
 		updateNewMessageHandler,
+		updateMessageEditedHandler,
 		updateDeleteMessagesHandler,
 		updateMessageSendHandler,
 	)
