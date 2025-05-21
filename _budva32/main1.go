@@ -13,7 +13,7 @@ func handleUpdate(update *client.Update) {
 	if update.GetClass() == client.ClassUpdate {
 		switch updateType := update.(type) {
 		case *client.UpdateNewMessage:
-			// НЕТ: перенесено частично - service/engine/service.go (handleUpdateNewMessage)
+			// OK: перенесено - service/engine/service.go (handleUpdateNewMessage)
 			updateNewMessage := updateType
 			src := updateNewMessage.Message
 			// OK: перенесено - service/engine/service.go (deleteSystemMessage)
@@ -315,7 +315,7 @@ func handleUpdate(update *client.Update) {
 			}
 			queue.PushBack(fn)
 		case *client.UpdateMessageSendSucceeded:
-			// ДА: перенесено - service/engine/service.go (handleUpdateMessageSendSucceeded)
+			// OK: перенесено - service/engine/service.go (handleUpdateMessageSendSucceeded)
 			updateMessageSendSucceeded := updateType
 			message := updateMessageSendSucceeded.Message
 			tmpMessageId := updateMessageSendSucceeded.OldMessageId

@@ -211,15 +211,15 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 				continue
 			}
 
-			switch updateType := update.(type) {
+			switch updateByType := update.(type) {
 			case *client.UpdateNewMessage:
-				s.handleUpdateNewMessage(updateType)
+				s.handleUpdateNewMessage(updateByType)
 			case *client.UpdateMessageEdited:
-				s.handleUpdateMessageEdited(updateType)
+				s.handleUpdateMessageEdited(updateByType)
 			case *client.UpdateDeleteMessages:
-				s.handleUpdateDeleteMessages(updateType)
+				s.handleUpdateDeleteMessages(updateByType)
 			case *client.UpdateMessageSendSucceeded:
-				s.handleUpdateMessageSendSucceeded(updateType)
+				s.handleUpdateMessageSendSucceeded(updateByType)
 			}
 		}
 	}
@@ -228,14 +228,14 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 // handleUpdateNewMessage обрабатывает обновление о новом сообщении
 func (s *Service) handleUpdateNewMessage(update *client.UpdateNewMessage) {
 	src := update.Message
+	if _, ok := config.Engine.UniqueSources[src.ChatId]; !ok {
+		return
+	}
 	if s.messageService.IsSystemMessage(src) {
 		fn := func() {
 			_ = s.deleteSystemMessage(src)
 		}
 		s.queueRepo.Add(fn)
-		return
-	}
-	if _, ok := config.Engine.UniqueSources[src.ChatId]; !ok {
 		return
 	}
 	formattedText := s.messageService.GetFormattedText(src)
@@ -400,23 +400,14 @@ func (s *Service) handleUpdateDeleteMessages(update *client.UpdateDeleteMessages
 
 // handleUpdateMessageSendSucceeded обрабатывает обновление об успешной отправке сообщения
 func (s *Service) handleUpdateMessageSendSucceeded(update *client.UpdateMessageSendSucceeded) {
-	// message := update.Message
-	// chatId := message.ChatId
-	// messageId := message.Id
-	// oldMessageId := update.OldMessageId
-
-	// s.log.Debug("Обработка успешной отправки сообщения",
-	// 	"chatId", chatId,
-	// 	"messageId", messageId,
-	// 	"oldMessageId", oldMessageId)
-
-	// // Отправляем задачу в очередь
-	// s.queueService.Add(func() {
-	// 	// Сохраняем соответствие между временным и постоянным Id сообщения
-	// 	if err := s.storageService.SetNewMessageId(chatId, oldMessageId, messageId); err != nil {
-	// 		s.log.Error("Ошибка сохранения нового Id сообщения", "err", err)
-	// 	}
-	// })
+	message := update.Message
+	tmpMessageId := update.OldMessageId
+	fn := func() {
+		_ = s.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
+		_ = s.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
+		s.log.Info("handleUpdateMessageSendSucceeded")
+	}
+	s.queueRepo.Add(fn)
 }
 
 // deleteSystemMessage удаляет системное сообщение
