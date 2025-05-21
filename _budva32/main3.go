@@ -29,7 +29,7 @@ const (
 	FiltersOther FiltersMode = "other"
 )
 
-// OK: перенесено - service/engine/service.go (mapFiltersMode)
+// OK: перенесено - service/filters_mode/service.go (Map)
 func checkFilters(formattedText *client.FormattedText, forward config.Forward) FiltersMode {
 	if formattedText.Text == "" {
 		hasInclude := false
@@ -443,7 +443,7 @@ func incrementForwardedMessages(toChatId int64) {
 
 var forwardedToMu sync.Mutex
 
-// OK: перенесено - service/engine/service.go (isNotForwardedTo)
+// OK: перенесено - service/forwarded_to/service.go (Add)
 func isNotForwardedTo(forwardedTo map[int64]bool, dstChatId int64) bool {
 	forwardedToMu.Lock()
 	defer forwardedToMu.Unlock()

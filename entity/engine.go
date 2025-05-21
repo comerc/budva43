@@ -104,3 +104,12 @@ type SubmatchRule struct {
 
 // MediaAlbumKey ключ для пересылаемого медиа-альбома
 type MediaAlbumKey = string
+
+// FiltersMode режим фильтрации
+type FiltersMode = string
+
+const (
+	FiltersOK    FiltersMode = "ok"
+	FiltersCheck FiltersMode = "check"
+	FiltersOther FiltersMode = "other"
+)

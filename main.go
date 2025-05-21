@@ -20,6 +20,8 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
+	filtersModeService "github.com/comerc/budva43/service/filters_mode"
+	forwardedToService "github.com/comerc/budva43/service/forwarded_to"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messageService "github.com/comerc/budva43/service/message"
 	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
@@ -169,6 +171,8 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		messageService,
 	)
 	rateLimiterService := rateLimiterService.New()
+	filtersModeService := filtersModeService.New()
+	forwardedToService := forwardedToService.New()
 	authService := authService.New(telegramRepo)
 	if err := authService.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска authService: %w", err)
@@ -185,6 +189,8 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		mediaAlbumService,
 		transformService,
 		rateLimiterService,
+		filtersModeService,
+		forwardedToService,
 	)
 	updateMessageEditedHandler := updateMessageEditedHandler.New(
 		telegramRepo,

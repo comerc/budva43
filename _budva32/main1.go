@@ -73,6 +73,7 @@ func handleUpdate(update *client.Update) {
 				)
 				if src.ChatId == forward.From && (forward.SendCopy || src.CanBeForwarded) {
 					isExist = true
+					// OK: перенесено - service/forwarded_to/service.go (Init)
 					for _, dstChatId := range forward.To {
 						_, isPresent := forwardedTo[dstChatId]
 						if !isPresent {
