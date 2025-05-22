@@ -73,6 +73,7 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 }
 
 // GetCopiedMessageIds получает идентификаторы скопированных сообщений по Id оригинала
+// TODO: входные параметры: сhatId, messageId (по аналогии с остальными методами)
 func (s *Service) GetCopiedMessageIds(fromChatMessageId string) ([]string, error) {
 	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
 	val, err := s.repo.Get(key)
