@@ -54,7 +54,7 @@ func New(
 }
 
 // Transform преобразует содержимое сообщения
-
+// TODO: withSources - переставить в конец
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) error {
 	if err := s.addAutoAnswer(formattedText, src); err != nil {
 		return fmt.Errorf("addAutoAnswer: %w", err)
