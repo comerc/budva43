@@ -56,15 +56,12 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 		return
 	}
 
+	chatId := update.ChatId
 	if _, ok := config.Engine.UniqueSources[update.ChatId]; !ok {
 		return
 	}
+	messageIds := update.MessageIds
 
-	h.process(update.ChatId, update.MessageIds)
-}
-
-// process обрабатывает удаление сообщений
-func (h *Handler) process(chatId int64, messageIds []int64) {
 	const maxRetries = 3
 	retryCount := 0
 
@@ -72,6 +69,10 @@ func (h *Handler) process(chatId int64, messageIds []int64) {
 	fn = func() {
 		data, err := h.collectData(chatId, messageIds)
 		if err != nil {
+			h.log.Error("collectData", "err", err)
+			return
+		}
+		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
 				h.log.Error("max retries reached for message deletion",
@@ -89,7 +90,7 @@ func (h *Handler) process(chatId int64, messageIds []int64) {
 			return
 		}
 
-		result := h.deleteMessages(chatId, messageIds, data)
+		result, _ := h.deleteMessages(chatId, messageIds, data)
 		h.log.Info("deleteMessages",
 			"chatId", chatId,
 			"messageIds", messageIds,
@@ -101,21 +102,23 @@ func (h *Handler) process(chatId int64, messageIds []int64) {
 }
 
 type data struct {
+	needRepeat       bool
 	copiedMessageIds map[string][]string // fromChatMessageId -> []toChatMessageId
 	newMessageIds    map[string]int64    // tmpChatMessageId -> newMessageId
 }
 
 // collectData собирает данные для удаления сообщений
 func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
-	data := &data{
+	result := &data{
 		copiedMessageIds: make(map[string][]string),
 		newMessageIds:    make(map[string]int64),
 	}
+	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 		toChatMessageIds, _ := h.storageService.GetCopiedMessageIds(fromChatMessageId)
-		data.copiedMessageIds[fromChatMessageId] = toChatMessageIds
+		result.copiedMessageIds[fromChatMessageId] = toChatMessageIds
 
 		for _, toChatMessageId := range toChatMessageIds {
 			a := strings.Split(toChatMessageId, ":")
@@ -125,21 +128,22 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 
 			newMessageId, _ := h.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 			if newMessageId == 0 {
-				return nil, fmt.Errorf("newMessageId не найден")
+				result = &data{needRepeat: true}
+				return result, nil
 			}
 
 			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
-			data.newMessageIds[tmpChatMessageId] = newMessageId
+			result.newMessageIds[tmpChatMessageId] = newMessageId
 		}
 	}
 
-	return data, nil
+	return result, nil
 }
 
 // deleteMessages удаляет сообщения
-func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) []string {
-	result := make([]string, 0)
-
+func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) ([]string, error) {
+	result := []string{}
+	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 		toChatMessageIds := data.copiedMessageIds[fromChatMessageId]
@@ -168,7 +172,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) [
 			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
 			newMessageId := data.newMessageIds[tmpChatMessageId]
 
-			// TODO: может лучше удалять индексы после удаления сообщения?
+			// TODO: может лучше удалять индексы _после_ удаления сообщения?
 			_ = h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
 			_ = h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
 
@@ -191,5 +195,5 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) [
 		}
 	}
 
-	return result
+	return result, nil
 }
