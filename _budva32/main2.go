@@ -311,7 +311,7 @@ func setLastForwarded(chatId int64) {
 	lastForwarded[chatId] = time.Now()
 }
 
-// НЕТ: перенесено частично - handler/update_new_message/handler.go (forwardMessages)
+// OK: перенесено - service/forwarder/service.go (ForwardMessages)
 func forwardNewMessages(tdlibClient *client.Client, messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardKey string) {
 	log.Printf("forwardNewMessages > srcChatId: %d dstChatId: %d", srcChatId, dstChatId)
 	diff := getLastForwardedDiff(dstChatId)

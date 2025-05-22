@@ -141,7 +141,7 @@ func handleUpdate(update *client.Update) {
 				queue.PushBack(fn)
 			}
 		case *client.UpdateMessageEdited:
-			// НЕТ: перенесено частично - handler/update_message_edited/handler.go (Run)
+			// OK: перенесено - handler/update_message_edited/handler.go (Run)
 			updateMessageEdited := updateType
 			chatId := updateMessageEdited.ChatId
 			if _, ok := uniqueFrom[chatId]; !ok {

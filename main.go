@@ -204,7 +204,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		queueRepo,
 		storageService,
 		messageService,
-		mediaAlbumService,
+		transformService,
 		filtersModeService,
 		forwarderService,
 	)
