@@ -64,7 +64,7 @@ func TestAuth(t *testing.T) {
 	t.Cleanup(func() {
 		automator.Close()
 	})
-	go automator.Run()
+	go automator.Run(ctx)
 
 	telegramRepo := telegramRepo.New()
 	err = telegramRepo.Start(ctx)

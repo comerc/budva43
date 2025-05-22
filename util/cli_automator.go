@@ -17,6 +17,7 @@ import (
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
 	log *slog.Logger
+	ctx context.Context
 	//
 	originalStdin  *os.File
 	originalStdout *os.File
@@ -64,51 +65,52 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	return automator, nil
 }
 
-// Start запускает обработку вывода CLI
-func (c *CLIAutomator) Run() {
-	scanner := bufio.NewScanner(c.stdoutReader)
+// Run запускает обработку вывода CLI
+func (a *CLIAutomator) Run(ctx context.Context) {
+	a.ctx = ctx
+	scanner := bufio.NewScanner(a.stdoutReader)
 	for scanner.Scan() {
 		line := scanner.Text()
 		// Безопасно добавляем строку в канал с расширением буфера при необходимости
 		select {
-		case c.outputLines <- line:
+		case a.outputLines <- line:
 			// Строка добавлена в канал
 		default:
 			// Канал заполнен, расширяем буфер
-			newBuffer := make(chan string, cap(c.outputLines)*2)
-			close(c.outputLines) // Закрываем старый канал
+			newBuffer := make(chan string, cap(a.outputLines)*2)
+			close(a.outputLines) // Закрываем старый канал
 
 			// Копируем все из старого канала в новый
-			for oldLine := range c.outputLines {
+			for oldLine := range a.outputLines {
 				newBuffer <- oldLine
 			}
 
 			// Добавляем текущую строку
 			newBuffer <- line
-			c.outputLines = newBuffer
+			a.outputLines = newBuffer
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
 		if err != io.EOF && !errors.Is(err, os.ErrClosed) {
-			c.log.Error("Ошибка чтения stdout", "err", err)
+			a.log.Error("Ошибка чтения stdout", "err", err)
 		}
 	}
 
 	// Закрываем канал после завершения чтения
-	close(c.outputLines)
+	close(a.outputLines)
 }
 
 // SendInput отправляет ввод в stdin CLI
-func (c *CLIAutomator) SendInput(input string) error {
-	_, err := fmt.Fprintln(c.stdinWriter, input)
+func (a *CLIAutomator) SendInput(input string) error {
+	_, err := fmt.Fprintln(a.stdinWriter, input)
 	return err
 }
 
 // WaitForOutput ожидает указанный вывод в течение таймаута
-func (c *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool {
+func (a *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool {
 	// Создаем контекст с таймаутом
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(a.ctx, timeout)
 	defer cancel()
 
 	for {
@@ -116,7 +118,7 @@ func (c *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool
 		case <-ctx.Done():
 			// Таймаут истек
 			return false
-		case line, ok := <-c.outputLines:
+		case line, ok := <-a.outputLines:
 			if !ok {
 				// Канал закрыт, значит чтение завершено
 				return false
@@ -136,14 +138,14 @@ func (c *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool
 }
 
 // Close останавливает работу CLIAutomator и восстанавливает стандартные потоки ввода-вывода
-func (c *CLIAutomator) Close() {
+func (a *CLIAutomator) Close() {
 	// Восстанавливаем оригинальные стандартные потоки ввода-вывода
-	os.Stdin = c.originalStdin
-	os.Stdout = c.originalStdout
+	os.Stdin = a.originalStdin
+	os.Stdout = a.originalStdout
 
 	// Закрываем потоки ввода-вывода
-	c.stdinReader.Close()
-	c.stdinWriter.Close()
-	c.stdoutWriter.Close()
-	c.stdoutReader.Close()
+	a.stdinReader.Close()
+	a.stdinWriter.Close()
+	a.stdoutWriter.Close()
+	a.stdoutReader.Close()
 }

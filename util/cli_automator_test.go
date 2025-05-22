@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -69,6 +70,11 @@ func TestNewCLIAutomator(t *testing.T) {
 func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	// t.Parallel()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
+
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
 	origStdout := os.Stdout
@@ -102,7 +108,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	})
 
 	// Запускаем обработку вывода в отдельной горутине
-	go automator.Run()
+	go automator.Run(ctx)
 
 	// Ждем немного, чтобы обработчик успел запуститься
 	time.Sleep(200 * time.Millisecond)
@@ -130,6 +136,11 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	// t.Parallel()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
+
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
 	origStdout := os.Stdout
@@ -152,6 +163,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         slog.With("module", "util.cli_automator.test"),
+			ctx:         ctx,
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -180,6 +192,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         slog.With("module", "util.cli_automator.test"),
+			ctx:         ctx,
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -217,6 +230,11 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 // TestCLIAutomatorClose проверяет корректность метода Close
 func TestCLIAutomatorClose(t *testing.T) {
 	// t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -256,7 +274,7 @@ func TestCLIAutomatorClose(t *testing.T) {
 	stdoutAfterCreate := os.Stdout
 
 	// Запускаем и останавливаем автоматор
-	go automator.Run()
+	go automator.Run(ctx)
 	time.Sleep(100 * time.Millisecond) // Даем автоматору время запуститься
 	automator.Close()
 
@@ -288,6 +306,11 @@ func TestCLIAutomatorClose(t *testing.T) {
 // TestCLIAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
 func TestCLIAutomatorBufferResize(t *testing.T) {
 	// t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -321,7 +344,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	})
 
 	// Запускаем обработку вывода
-	go automator.Run()
+	go automator.Run(ctx)
 
 	// Даем немного времени, чтобы Run запустился
 	time.Sleep(100 * time.Millisecond)
@@ -337,6 +360,11 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 // TestCLIAutomatorErrorHandling проверяет корректность обработки ошибок
 func TestCLIAutomatorErrorHandling(t *testing.T) {
 	// t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -385,7 +413,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		})
 
 		// Запускаем обработку вывода
-		go automator.Run()
+		go automator.Run(ctx)
 
 		// Даем время на запуск Run()
 		time.Sleep(50 * time.Millisecond)
@@ -409,6 +437,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		// Создаем мок для ручного контроля канала вывода
 		mockAutomator := &CLIAutomator{
 			log:         automator.log,
+			ctx:         ctx,
 			outputLines: make(chan string),
 			// Остальные поля не используются в этом тесте
 		}
@@ -476,12 +505,18 @@ func (m *mockReadWriter) Close() error {
 func TestCLIAutomatorWithMocks(t *testing.T) {
 	// t.Parallel()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	t.Cleanup(func() {
+		cancel()
+	})
+
 	// Этот тест не использует реальные stdin/stdout, а создает моки
 	// В реальной ситуации мы бы использовали gomock или testify/mock для более сложных моков
 
 	// Создаем экземпляр CLIAutomator вручную для тестирования с моками
 	automator := &CLIAutomator{
 		log:         slog.With("module", "util.cli_automator.test"),
+		ctx:         ctx,
 		outputLines: make(chan string, 10),
 	}
 
