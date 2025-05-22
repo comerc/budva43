@@ -175,7 +175,7 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 				_, ok := checkFns[forwardRule.Check]
 				if !ok {
 					checkFns[forwardRule.Check] = func() {
-						const isSendCopy = false // обязательно надо форвардить, иначе невидно текущего сообщения
+						const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
 						h.forwarderService.ForwardMessages([]*client.Message{src}, src.ChatId, forwardRule.Check, isSendCopy, forwardRuleId)
 					}
 				}
@@ -192,7 +192,7 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 			// 					_, ok := checkFns[forward.Check]
 			// 					if !ok {
 			// 						checkFns[forward.Check] = func() {
-			// 							const isSendCopy = false // обязательно надо форвардить, иначе невидно текущего сообщения
+			// 							const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
 			// 							forwardNewMessages(tdlibClient, []*client.Message{src}, src.ChatId, forward.Check, isSendCopy)
 			// 						}
 			// 					}

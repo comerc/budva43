@@ -64,7 +64,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
 - [ ] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
 - [ ] CQRS
-- [ ] [samber/lo](https://github.com/samber/lo)
+- [x] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)
 - [ ] [gqlgen](https://gqlgen.com/)
 - [ ] Grafana + Prometheus
@@ -74,7 +74,6 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] [Code Style](https://github.com/quickwit-oss/quickwit/blob/206ebf791af78f11c562835a449df449b3a17e81/CODE_STYLE.md
 )
 - [ ] samber/mo
-- [ ] samber/lo
 - [ ] samber/do
 - [ ] samber/oops
 - [ ] samber/slog-*
