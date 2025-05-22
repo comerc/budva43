@@ -30,7 +30,7 @@ type messageService interface {
 }
 
 type transformService interface {
-	Transform(formattedText *client.FormattedText, isFirstMessageInAlbum bool, src *client.Message, dstChatId int64) error
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) error
 }
 
 type rateLimiterService interface {
@@ -193,8 +193,8 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 		srcFormattedText := s.messageService.GetFormattedText(src)
 		formattedText := util.Copy(srcFormattedText)
 
-		isFirstMessageInAlbum := i == 0
-		if err := s.transformService.Transform(formattedText, isFirstMessageInAlbum, src, dstChatId); err != nil {
+		withSources := i == 0
+		if err := s.transformService.Transform(formattedText, withSources, src, dstChatId); err != nil {
 			s.log.Error("Transform", "err", err)
 		}
 
