@@ -54,7 +54,8 @@ func New(
 }
 
 // Transform преобразует содержимое сообщения
-func (s *Service) Transform(formattedText *client.FormattedText, isFirstMessageInAlbum bool, src *client.Message, dstChatId int64) error {
+
+func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) error {
 	if err := s.addAutoAnswer(formattedText, src); err != nil {
 		return fmt.Errorf("addAutoAnswer: %w", err)
 	}
@@ -68,7 +69,7 @@ func (s *Service) Transform(formattedText *client.FormattedText, isFirstMessageI
 	// 	return fmt.Errorf("resetEntities: %w", err)
 	// }
 	// TODO: только addSources() нужно ограничивать для первого сообщения в альбоме?
-	if isFirstMessageInAlbum {
+	if withSources {
 		if err := s.addSources(formattedText, src, dstChatId); err != nil {
 			return fmt.Errorf("addSources: %w", err)
 		}
