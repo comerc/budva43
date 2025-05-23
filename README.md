@@ -80,12 +80,13 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] тестирование Time & Concurrency https://danp.net/posts/synctest-experiment/
 - [ ] spf13/cobra
 - [x] go.mod replace
-- [ ] comerc/slog-module
+- [x] [comerc/spylog](https://github.com/comerc/spylog)
 - [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
 - [x] voidint/g
 - [x] go mod vendor
 - [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
 - [ ] temporal
+- [ ] anycable
 
 ## .env
 
