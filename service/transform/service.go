@@ -237,7 +237,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) erro
 	if err != nil {
 		return fmt.Errorf("ParseTextEntities: %w", err)
 	}
-	offset := int32(util.RuneCountForUTF16(formattedText.Text))
+	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec
 	if offset > 0 {
 		formattedText.Text += "\n\n"
 		offset = offset + 2

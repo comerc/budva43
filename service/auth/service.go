@@ -5,8 +5,9 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/comerc/budva43/config"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/config"
 )
 
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
