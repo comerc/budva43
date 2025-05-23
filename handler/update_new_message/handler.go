@@ -284,8 +284,8 @@ func (h *Handler) addStatistics(forwardedTo map[int64]bool) {
 	date := util.GetCurrentDate()
 	for dstChatId, ok := range forwardedTo {
 		if ok {
-			h.storageService.IncrementForwardedMessages(dstChatId, date)
+			_ = h.storageService.IncrementForwardedMessages(dstChatId, date)
 		}
-		h.storageService.IncrementViewedMessages(dstChatId, date)
+		_ = h.storageService.IncrementViewedMessages(dstChatId, date)
 	}
 }

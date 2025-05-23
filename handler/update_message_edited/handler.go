@@ -5,10 +5,11 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/zelenin/go-tdlib/client"
+
 	"github.com/comerc/budva43/config"
 	"github.com/comerc/budva43/entity"
 	"github.com/comerc/budva43/util"
-	"github.com/zelenin/go-tdlib/client"
 )
 
 type telegramRepo interface {
@@ -216,7 +217,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
+					_ = h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
 				}
 			}
 			continue
@@ -296,9 +297,9 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 		}
 		// TODO: isAnswer
 		if hasReplyMarkupData {
-			h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+			_ = h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
 		} else {
-			h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
+			_ = h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 		}
 	}
 

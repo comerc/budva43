@@ -106,7 +106,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 				DisableNotification: false,
 				FromBackground:      false,
 				SchedulingState: &client.MessageSchedulingStateSendAtDate{
-					SendDate: int32(time.Now().Unix()),
+					SendDate: int32(time.Now().Unix()), // nolint:gosec
 				},
 			},
 			SendCopy:      false,
@@ -136,10 +136,10 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 			src := messages[i] // !! for origin message (in prepareMessageContents)
 			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardRuleId, dstChatId, tmpMessageId)
 			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
+			_ = s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
 			// TODO: isAnswer
 			if _, ok := s.messageService.GetReplyMarkupData(src); ok {
-				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+				_ = s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
 			}
 		}
 	}
@@ -209,7 +209,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 
 // getReplyToMessageId получает ID сообщения для ответа
 func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
-	var replyToMessageId int64 = 0
+	var replyToMessageId int64
 	var err error
 
 	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)
