@@ -8,11 +8,16 @@ linters:
     - copyloopvar # reports loop variables that are copied
     - gosec # inspects source code for security problems
     - prealloc # reports slice declarations that could be preallocated
+    - gocritic # the most opinionated Go source code linter
     - revive # drop-in replacement of golint
     - unconvert # detects unneeded conversions in if statements
   disable:
     - unused # отключение предупреждений о неиспользуемых функциях
   settings:
+    gocritic:
+      enabled-checks:
+        - unnamedResult
+        - hugeParam
     revive:
       severity: error
       rules:
