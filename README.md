@@ -87,6 +87,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
 - [ ] temporal
 - [ ] anycable
+- [x] [gocritic](https://habr.com/ru/articles/414739/)
 
 ## .env
 
