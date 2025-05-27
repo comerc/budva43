@@ -19,9 +19,9 @@ import (
 // TODO: не нравится, что нужно вводить auth для каждого последующего шага
 
 // type reportController interface {
-// 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
-// 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
-// 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
+// 	GenerateActivityReport(startDate, endDate time.Time) *entity.ActivityReport
+// 	GenerateForwardingReport(startDate, endDate time.Time) *entity.ForwardingReport
+// 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
 // }
 
 type authController interface {
@@ -39,13 +39,14 @@ type Transport struct {
 	scanner        *bufio.Scanner
 	commands       []command
 	commandMap     map[string]*command
+	shutdown       func()
 }
 
 // command представляет команду CLI
 type command struct {
 	name        string
 	description string
-	handler     func(args []string) error
+	handler     func(args []string)
 }
 
 // New создает новый экземпляр CLI
@@ -126,15 +127,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 				input := t.scanner.Text()
 
-				if err := t.processCommand(input); err != nil {
-					if err.Error() == "exit" {
-						shutdown()
-						// t.log.Info("Exit command processed")
-						return
-					}
-					// t.log.Error("Command execution failed", "err", err)
-					fmt.Printf("Ошибка: %v\n", err)
-				}
+				t.processCommand(input)
 			}
 		}
 	}()
@@ -147,10 +140,11 @@ func (t *Transport) Close() error {
 }
 
 // processCommand обрабатывает введенную команду
-func (t *Transport) processCommand(input string) error {
+func (t *Transport) processCommand(input string) {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
-		return nil
+		// t.log.Warn("processCommand", "input", input)
+		return
 	}
 
 	cmd := parts[0]
@@ -160,31 +154,30 @@ func (t *Transport) processCommand(input string) error {
 	}
 
 	if command, ok := t.commandMap[cmd]; ok {
-		return command.handler(args)
+		command.handler(args)
+		return
 	}
 
 	// t.log.Info("Unknown command", "command", cmd)
 	fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
-	return nil
 }
 
 // handleHelp обрабатывает команду help
-func (t *Transport) handleHelp(args []string) error {
+func (t *Transport) handleHelp(args []string) {
 	fmt.Println("Доступные команды:")
 	for _, cmd := range t.commands {
 		fmt.Printf("  %-15s - %s\n", cmd.name, cmd.description)
 	}
-	return nil
 }
 
 // handleExit обрабатывает команду exit
-func (t *Transport) handleExit(args []string) error {
+func (t *Transport) handleExit(args []string) {
 	fmt.Println("Выход из программы...")
-	return fmt.Errorf("exit")
+	t.shutdown()
 }
 
 // // handleReport обрабатывает команду report
-// func (t *Transport) handleReport(args []string) error {
+// func (t *Transport) handleReport(args []string) {
 // 	if len(args) == 0 {
 // 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
 // 		return nil
@@ -226,13 +219,18 @@ func (t *Transport) handleExit(args []string) error {
 // }
 
 // handleAuth обрабатывает команду auth
-func (t *Transport) handleAuth(args []string) error {
+func (t *Transport) handleAuth(args []string) {
 	var err error
+	defer func() {
+		if err != nil {
+			// t.log.Error("handleAuth", "err", err)
+		}
+	}()
 
 	state := t.authController.GetState()
 	if state == nil {
-		// t.log.Info("GetState вернул nil")
-		return nil
+		// t.log.Warn("GetState вернул nil")
+		return
 	}
 
 	stateType := state.AuthorizationStateType()
@@ -250,7 +248,8 @@ func (t *Transport) handleAuth(args []string) error {
 			fmt.Println("Введите номер телефона: ")
 			phoneNumber, err = t.hiddenReadLine()
 			if err != nil {
-				return fmt.Errorf("ошибка при чтении телефона: %w", err)
+				// return fmt.Errorf("ошибка при чтении телефона: %w", err)
+				return
 			}
 		}
 		t.authController.GetInputChan() <- phoneNumber
@@ -259,7 +258,8 @@ func (t *Transport) handleAuth(args []string) error {
 		fmt.Println("Введите код подтверждения: ")
 		code, err := t.hiddenReadLine()
 		if err != nil {
-			return fmt.Errorf("ошибка при чтении кода: %w", err)
+			// return fmt.Errorf("ошибка при чтении кода: %w", err)
+			return
 		}
 		t.authController.GetInputChan() <- code
 
@@ -267,13 +267,12 @@ func (t *Transport) handleAuth(args []string) error {
 		fmt.Println("Введите пароль: ")
 		password, err := t.hiddenReadLine()
 		if err != nil {
-			return fmt.Errorf("ошибка при чтении пароля: %w", err)
+			// return fmt.Errorf("ошибка при чтении пароля: %w", err)
+			return
 		}
 		t.authController.GetInputChan() <- password
 
 	}
-
-	return nil
 }
 
 func (t *Transport) hiddenReadLine() (string, error) {

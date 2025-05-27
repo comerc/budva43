@@ -14,9 +14,9 @@ import (
 )
 
 // type reportController interface {
-// 	GenerateActivityReport(startDate, endDate time.Time) (*entity.ActivityReport, error)
-// 	GenerateForwardingReport(startDate, endDate time.Time) (*entity.ForwardingReport, error)
-// 	GenerateErrorReport(startDate, endDate time.Time) (*entity.ErrorReport, error)
+// 	GenerateActivityReport(startDate, endDate time.Time) *entity.ActivityReport
+// 	GenerateForwardingReport(startDate, endDate time.Time) *entity.ForwardingReport
+// 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
 // }
 
 type authController interface {

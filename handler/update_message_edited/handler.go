@@ -21,20 +21,20 @@ type queueRepo interface {
 }
 
 type storageService interface {
-	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
-	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
-	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) error
-	DeleteAnswerMessageId(dstChatId, tmpMessageId int64) error
+	GetCopiedMessageIds(fromChatMessageId string) []string
+	GetNewMessageId(chatId, tmpMessageId int64) int64
+	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string)
+	DeleteAnswerMessageId(dstChatId, tmpMessageId int64)
 }
 
 type messageService interface {
 	GetFormattedText(message *client.Message) *client.FormattedText
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
-	GetReplyMarkupData(message *client.Message) ([]byte, bool)
+	GetReplyMarkupData(message *client.Message) []byte
 }
 
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) error
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
 }
 
 type filtersModeService interface {
@@ -92,11 +92,7 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 
 	var fn func()
 	fn = func() {
-		data, err := h.collectData(chatId, messageId)
-		if err != nil {
-			// h.log.Error("collectData", "err", err)
-			return
-		}
+		data := h.collectData(chatId, messageId)
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
@@ -115,13 +111,7 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 			return
 		}
 
-		result, _ := h.editMessages(chatId, messageId, data)
-		_ = result // TODO: костыль
-		// h.log.Info("editMessages",
-		// 	"chatId", chatId,
-		// 	"messageId", messageId,
-		// 	"result", result,
-		// )
+		h.editMessages(chatId, messageId, data)
 	}
 
 	h.queueRepo.Add(fn)
@@ -134,12 +124,12 @@ type data struct {
 }
 
 // collectData собирает данные для редактирования сообщений
-func (h *Handler) collectData(chatId, messageId int64) (*data, error) {
+func (h *Handler) collectData(chatId, messageId int64) *data {
 	result := &data{}
 	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 
 	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-	toChatMessageIds, _ := h.storageService.GetCopiedMessageIds(fromChatMessageId)
+	toChatMessageIds := h.storageService.GetCopiedMessageIds(fromChatMessageId)
 	result.copiedMessageIds = toChatMessageIds
 
 	result.newMessageIds = make(map[string]int64)
@@ -150,37 +140,39 @@ func (h *Handler) collectData(chatId, messageId int64) (*data, error) {
 		dstChatId := util.ConvertToInt[int64](a[1])
 		tmpMessageId := util.ConvertToInt[int64](a[2])
 
-		newMessageId, err := h.storageService.GetNewMessageId(dstChatId, tmpMessageId)
-		if err != nil {
+		newMessageId := h.storageService.GetNewMessageId(dstChatId, tmpMessageId)
+		if newMessageId == 0 {
 			result = &data{needRepeat: true}
-			return result, nil
+			return result
 		}
 
 		tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
 		result.newMessageIds[tmpChatMessageId] = newMessageId
 	}
 
-	return result, nil
+	return result
 }
 
 // editMessages редактирует сообщения
-func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, error) {
+func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 	result := []string{}
 	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 
-	var err error
 	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 	toChatMessageIds := data.copiedMessageIds
+	defer func() {
+		_ = result // TODO: костыль
+	}()
 
 	src, err := h.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
 		ChatId:    chatId,
 		MessageId: messageId,
 	})
 	if err != nil {
-		return nil, err
+		return
 	}
 	// TODO: isAnswer
-	_, hasReplyMarkupData := h.messageService.GetReplyMarkupData(src)
+	replyMarkupData := h.messageService.GetReplyMarkupData(src)
 	srcFormattedText := h.messageService.GetFormattedText(src)
 	// h.log.Info("editMessages",
 	// 	"chatId", src.ChatId,
@@ -251,9 +243,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 		// }
 
 		withSources := true
-		if err := h.transformService.Transform(formattedText, withSources, src, dstChatId); err != nil {
-			// h.log.Error("Transform", "err", err)
-		}
+		h.transformService.Transform(formattedText, withSources, src, dstChatId)
 
 		tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
 		newMessageId := data.newMessageIds[tmpChatMessageId]
@@ -299,16 +289,14 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 			continue
 		}
 		// TODO: isAnswer
-		if hasReplyMarkupData {
-			_ = h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+		if len(replyMarkupData) > 0 {
+			h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
 		} else {
-			_ = h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
+			h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 		}
 	}
 
 	for _, fn := range checkFns {
 		fn()
 	}
-
-	return result, nil
 }
