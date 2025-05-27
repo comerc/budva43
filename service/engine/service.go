@@ -68,7 +68,7 @@ func New(
 
 // Start запускает обработчик обновлений от Telegram
 func (s *Service) Start(ctx context.Context) error {
-	s.log.Info("Запуск сервиса engine")
+	// s.log.Info("Запуск сервиса engine")
 	s.ctx = ctx
 
 	return nil
@@ -96,12 +96,13 @@ func (s *Service) Close() error {
 // validateConfig проверяет корректность конфигурации
 func (s *Service) validateConfig() error {
 	for chatId, dsc := range config.Engine.Destinations {
+		_ = chatId // TODO: костыль
 		for _, replaceFragment := range dsc.ReplaceFragments {
 			if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
 				return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
 			}
 		}
-		s.log.Info("Валидированы настройки замены фрагментов", "chatId", chatId, "replacements", len(dsc.ReplaceFragments))
+		// s.log.Info("Валидированы настройки замены фрагментов", "chatId", chatId, "replacements", len(dsc.ReplaceFragments))
 	}
 
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
@@ -114,7 +115,7 @@ func (s *Service) validateConfig() error {
 				return fmt.Errorf("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
 			}
 		}
-		s.log.Info("Валидировано правило пересылки", "forwardRuleId", forwardRuleId, "from", forwardRule.From, "to", forwardRule.To)
+		// s.log.Info("Валидировано правило пересылки", "forwardRuleId", forwardRuleId, "from", forwardRule.From, "to", forwardRule.To)
 	}
 
 	return nil

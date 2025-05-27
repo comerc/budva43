@@ -94,33 +94,34 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 	fn = func() {
 		data, err := h.collectData(chatId, messageId)
 		if err != nil {
-			h.log.Error("collectData", "err", err)
+			// h.log.Error("collectData", "err", err)
 			return
 		}
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
-				h.log.Error("max retries reached for message edit",
-					"chatId", chatId,
-					"messageId", messageId,
-				)
+				// h.log.Error("max retries reached for message edit",
+				// 	"chatId", chatId,
+				// 	"messageId", messageId,
+				// )
 				return
 			}
-			h.log.Info("retrying message edit",
-				"retryCount", retryCount,
-				"chatId", chatId,
-				"messageId", messageId,
-			)
+			// h.log.Info("retrying message edit",
+			// 	"retryCount", retryCount,
+			// 	"chatId", chatId,
+			// 	"messageId", messageId,
+			// )
 			h.queueRepo.Add(fn)
 			return
 		}
 
 		result, _ := h.editMessages(chatId, messageId, data)
-		h.log.Info("editMessages",
-			"chatId", chatId,
-			"messageId", messageId,
-			"result", result,
-		)
+		_ = result // TODO: костыль
+		// h.log.Info("editMessages",
+		// 	"chatId", chatId,
+		// 	"messageId", messageId,
+		// 	"result", result,
+		// )
 	}
 
 	h.queueRepo.Add(fn)
@@ -181,12 +182,12 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 	// TODO: isAnswer
 	_, hasReplyMarkupData := h.messageService.GetReplyMarkupData(src)
 	srcFormattedText := h.messageService.GetFormattedText(src)
-	h.log.Info("editMessages",
-		"chatId", src.ChatId,
-		"messageId", src.Id,
-		"hasText", srcFormattedText.Text != "",
-		"mediaAlbumId", src.MediaAlbumId,
-	)
+	// h.log.Info("editMessages",
+	// 	"chatId", src.ChatId,
+	// 	"messageId", src.Id,
+	// 	"hasText", srcFormattedText.Text != "",
+	// 	"mediaAlbumId", src.MediaAlbumId,
+	// )
 
 	checkFns := make(map[int64]func())
 
@@ -198,11 +199,11 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 
 		forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
 		if !ok {
-			h.log.Error("forwardRule not found",
-				"forwardRuleId", forwardRuleId,
-				// "fromChatMessageId", fromChatMessageId,
-				"toChatMessageId", toChatMessageId,
-			)
+			// h.log.Error("forwardRule not found",
+			// 	"forwardRuleId", forwardRuleId,
+			// 	// "fromChatMessageId", fromChatMessageId,
+			// 	"toChatMessageId", toChatMessageId,
+			// )
 			continue
 		}
 
@@ -251,7 +252,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 
 		withSources := true
 		if err := h.transformService.Transform(formattedText, withSources, src, dstChatId); err != nil {
-			h.log.Error("Transform", "err", err)
+			// h.log.Error("Transform", "err", err)
 		}
 
 		tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
@@ -279,19 +280,21 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) ([]string, e
 				// }(),
 			})
 			if err != nil {
-				h.log.Error("EditMessageText", "err", err)
+				// h.log.Error("EditMessageText", "err", err)
 			}
-			h.log.Info("EditMessageText", "dst", dst)
+			_ = dst // TODO: костыль
+			// h.log.Info("EditMessageText", "dst", dst)
 		case *client.MessageVoiceNote:
 			dst, err := h.telegramRepo.GetClient().EditMessageCaption(&client.EditMessageCaptionRequest{
 				ChatId:    dstChatId,
 				MessageId: newMessageId,
 				Caption:   formattedText,
 			})
+			_ = dst // TODO: костыль
 			if err != nil {
-				h.log.Error("EditMessageCaption", "err", err)
+				// h.log.Error("EditMessageCaption", "err", err)
 			}
-			h.log.Info("EditMessageCaption", "dst", dst)
+			// h.log.Info("EditMessageCaption", "dst", dst)
 		default:
 			continue
 		}

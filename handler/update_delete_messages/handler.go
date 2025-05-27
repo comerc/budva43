@@ -69,33 +69,34 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 	fn = func() {
 		data, err := h.collectData(chatId, messageIds)
 		if err != nil {
-			h.log.Error("collectData", "err", err)
+			// h.log.Error("collectData", "err", err)
 			return
 		}
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
-				h.log.Error("max retries reached for message deletion",
-					"chatId", chatId,
-					"messageIds", messageIds,
-				)
+				// h.log.Error("max retries reached for message deletion",
+				// 	"chatId", chatId,
+				// 	"messageIds", messageIds,
+				// )
 				return
 			}
-			h.log.Info("retrying message deletion",
-				"retryCount", retryCount,
-				"chatId", chatId,
-				"messageIds", messageIds,
-			)
+			// h.log.Info("retrying message deletion",
+			// 	"retryCount", retryCount,
+			// 	"chatId", chatId,
+			// 	"messageIds", messageIds,
+			// )
 			h.queueRepo.Add(fn) // переставляем в конец очереди
 			return
 		}
 
 		result, _ := h.deleteMessages(chatId, messageIds, data)
-		h.log.Info("deleteMessages",
-			"chatId", chatId,
-			"messageIds", messageIds,
-			"result", result,
-		)
+		_ = result // TODO: костыль
+		// h.log.Info("deleteMessages",
+		// 	"chatId", chatId,
+		// 	"messageIds", messageIds,
+		// 	"result", result,
+		// )
 	}
 
 	h.queueRepo.Add(fn)

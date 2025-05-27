@@ -147,19 +147,21 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	fn := func() {
 		h.addStatistics(forwardedTo)
 		for check, fn := range checkFns {
+			_ = check // TODO: костыль
 			if fn == nil {
-				h.log.Error("check is nil", "check", check)
+				// h.log.Error("check is nil", "check", check)
 				continue
 			}
-			h.log.Info("check is fn()", "check", check)
+			// h.log.Info("check is fn()", "check", check)
 			fn()
 		}
 		for other, fn := range otherFns {
+			_ = other // TODO: костыль
 			if fn == nil {
-				h.log.Error("other is nil", "other", other)
+				// h.log.Error("other is nil", "other", other)
 				continue
 			}
-			h.log.Info("other is fn()", "other", other)
+			// h.log.Info("other is fn()", "other", other)
 			fn()
 		}
 	}
@@ -171,7 +173,7 @@ func (h *Handler) deleteSystemMessage(src *client.Message) error {
 	var err error
 	defer func() {
 		if err != nil {
-			h.log.Error("deleteSystemMessage", "err", err)
+			// h.log.Error("deleteSystemMessage", "err", err)
 		}
 	}()
 	source, ok := config.Engine.Sources[src.ChatId]
@@ -212,7 +214,8 @@ func (h *Handler) processMessage(messages []*client.Message,
 			level = slog.LevelError
 			fields = append(fields, "err", err)
 		}
-		h.log.Log(context.Background(), level, "processMessage", fields...)
+		_ = level // TODO: костыль
+		// h.log.Log(context.Background(), level, "processMessage", fields...)
 	}()
 
 	formattedText := h.messageService.GetFormattedText(src)

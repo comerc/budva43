@@ -174,12 +174,12 @@ func (r *Repo) logOperation(errPointer *error, name string, key string, val *str
 	err := *errPointer
 	if err == nil {
 		if val != nil {
-			r.log.Info(name, "key", key, "val", *val)
+			// r.log.Info(name, "key", key, "val", *val)
 		} else {
-			r.log.Info(name, "key", key)
+			// r.log.Info(name, "key", key)
 		}
 	} else {
-		r.log.Error(name, "key", key, "err", err)
+		// r.log.Error(name, "key", key, "err", err)
 	}
 }
 

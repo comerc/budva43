@@ -40,7 +40,7 @@ func New(telegramRepo telegramRepo) *Service {
 
 // Start запускает процесс авторизации
 func (s *Service) Start(ctx context.Context) error {
-	s.log.Info("Запуск процесса авторизации")
+	// s.log.Info("Запуск процесса авторизации")
 
 	go s.telegramRepo.CreateClient(s.runAuthorizationStateHandler(ctx))
 
@@ -85,7 +85,7 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() clien
 					return
 				case state, ok := <-authorizer.State:
 					s.state = state
-					s.log.Info("authorizer.State", "state", s.state, "ok", ok)
+					// s.log.Info("authorizer.State", "state", s.state, "ok", ok)
 					if !ok {
 						return
 					}

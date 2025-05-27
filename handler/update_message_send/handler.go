@@ -43,7 +43,7 @@ func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	fn := func() {
 		_ = h.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
 		_ = h.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
-		h.log.Info("Run")
+		// h.log.Info("Run")
 	}
 	h.queueRepo.Add(fn)
 }

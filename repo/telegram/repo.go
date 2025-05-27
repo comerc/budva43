@@ -38,7 +38,7 @@ func New() *Repo {
 func (r *Repo) Start(_ context.Context) error {
 	err := r.setupClientLog()
 	if err != nil {
-		r.log.Error("setupClientLog", "err", err)
+		// r.log.Error("setupClientLog", "err", err)
 		return err
 	}
 
@@ -48,33 +48,35 @@ func (r *Repo) Start(_ context.Context) error {
 // CreateClient создает клиент TDLib после успешной авторизации
 func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler) {
 	for {
-		r.log.Info("Creating TDLib client")
+		// r.log.Info("Creating TDLib client")
 		authorizationStateHandler := runAuthorizationStateHandler()
 		tdlibClient, err := client.NewClient(authorizationStateHandler)
 		if err != nil {
-			r.log.Error("client.NewClient", "err", err)
+			// r.log.Error("client.NewClient", "err", err)
 			continue
 		}
 		r.client = tdlibClient
 		close(r.clientDone)
-		r.log.Info("TDLib client authorized")
+		// r.log.Info("TDLib client authorized")
 		break
 	}
 
 	version := r.GetVersion()
-	r.log.Info("TDLib", "version", version)
+	_ = version // TODO: костыль
+	// r.log.Info("TDLib", "version", version)
 
 	me := r.GetMe()
-	r.log.Info("Me",
-		"FirstName", me.FirstName,
-		// "LastName", me.LastName,
-		// "Username", func() string {
-		// 	if me.Usernames != nil {
-		// 		return me.Usernames.EditableUsername
-		// 	}
-		// 	return ""
-		// }(),
-	)
+	_ = me // TODO: костыль
+	// r.log.Info("Me",
+	// 	"FirstName", me.FirstName,
+	// 	// "LastName", me.LastName,
+	// 	// "Username", func() string {
+	// 	// 	if me.Usernames != nil {
+	// 	// 		return me.Usernames.EditableUsername
+	// 	// 	}
+	// 	// 	return ""
+	// 	// }(),
+	// )
 }
 
 // Close закрывает клиент TDLib
@@ -104,7 +106,7 @@ func (r *Repo) GetVersion() string {
 		Name: "version",
 	})
 	if err != nil {
-		r.log.Error("GetOption", "err", err)
+		// r.log.Error("GetOption", "err", err)
 		return ""
 	}
 	return versionOption.(*client.OptionValueString).Value
@@ -114,7 +116,7 @@ func (r *Repo) GetVersion() string {
 func (r *Repo) GetMe() *client.User {
 	me, err := r.GetClient().GetMe()
 	if err != nil {
-		r.log.Error("GetMe", "err", err)
+		// r.log.Error("GetMe", "err", err)
 		return nil
 	}
 	return me

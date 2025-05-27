@@ -74,21 +74,21 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	_, err := w.Write([]byte("Budva43 API Server"))
 	if err != nil {
-		t.log.Error("Failed to write response", "err", err)
+		// t.log.Error("Failed to write response", "err", err)
 	}
 }
 
 func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
 	err := *errPointer
 	if err == nil {
-		t.log.Info(name,
-			"took", time.Since(now),
-		)
+		// t.log.Info(name,
+		// 	"took", time.Since(now),
+		// )
 	} else {
-		t.log.Error(name,
-			"took", time.Since(now),
-			"err", err,
-		)
+		// t.log.Error(name,
+		// 	"took", time.Since(now),
+		// 	"err", err,
+		// )
 	}
 }
 
@@ -185,7 +185,7 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		"state_type": stateType,
 	})
 	if err != nil {
-		t.log.Error("Failed to encode auth state", "err", err)
+		// t.log.Error("Failed to encode auth state", "err", err)
 	}
 }
 
@@ -217,7 +217,7 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 		"status": "accepted",
 	})
 	if err != nil {
-		t.log.Error("Failed to encode auth state", "err", err)
+		// t.log.Error("Failed to encode auth state", "err", err)
 	}
 }
 
@@ -249,7 +249,7 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 		"status": "accepted",
 	})
 	if err != nil {
-		t.log.Error("Failed to encode auth state", "err", err)
+		// t.log.Error("Failed to encode auth state", "err", err)
 	}
 }
 
@@ -281,7 +281,7 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 		"status": "accepted",
 	})
 	if err != nil {
-		t.log.Error("Failed to encode auth state", "err", err)
+		// t.log.Error("Failed to encode auth state", "err", err)
 	}
 }
 
@@ -369,11 +369,11 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		case <-ctx.Done():
 			return
 		case <-t.authController.GetInitDone():
-			t.log.Info("TDLib клиент готов к выполнению авторизации")
+			// t.log.Info("TDLib клиент готов к выполнению авторизации")
 		}
-		t.log.Info("Start HTTP server", "addr", t.server.Addr)
+		// t.log.Info("Start HTTP server", "addr", t.server.Addr)
 		if err := t.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			t.log.Error("HTTP server terminated with error", "err", err)
+			// t.log.Error("HTTP server terminated with error", "err", err)
 		}
 	}()
 
@@ -382,7 +382,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 // Close останавливает HTTP-сервер
 func (t *Transport) Close() error {
-	t.log.Info("Stopping HTTP server")
+	// t.log.Info("Stopping HTTP server")
 
 	// Создаем контекст с таймаутом для graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
@@ -392,23 +392,24 @@ func (t *Transport) Close() error {
 		return fmt.Errorf("error shutting down HTTP server: %w", err)
 	}
 
-	t.log.Info("HTTP server stopped")
+	// t.log.Info("HTTP server stopped")
 	return nil
 }
 
 // TODO: under construction
 // OnAuthStateChanged обработчик изменения состояния авторизации
 func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
-	t.log.Debug("Web транспорт получил обновление состояния авторизации",
-		"stateType", state.AuthorizationStateType())
+	// t.log.Debug("Web транспорт получил обновление состояния авторизации",
+	// 	"stateType", state.AuthorizationStateType())
 
 	// Отправляем обновление всем подключенным клиентам
 	for clientId, clientChan := range t.authClients {
 		select {
 		case clientChan <- state:
-			t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
+			_ = clientId // TODO: костыль
+			// t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
 		default:
-			t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
+			// t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
 		}
 	}
 }
