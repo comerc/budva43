@@ -17,20 +17,20 @@ type telegramRepo interface {
 }
 
 type storageService interface {
-	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) error
-	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
-	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
-	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) error
+	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string)
+	GetCopiedMessageIds(fromChatMessageId string) []string
+	GetNewMessageId(chatId, tmpMessageId int64) int64
+	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string)
 }
 
 type messageService interface {
 	GetFormattedText(message *client.Message) *client.FormattedText
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
-	GetReplyMarkupData(message *client.Message) ([]byte, bool)
+	GetReplyMarkupData(message *client.Message) []byte
 }
 
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) error
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
 }
 
 type rateLimiterService interface {
@@ -136,10 +136,10 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 			src := messages[i] // !! for origin message (in prepareMessageContents)
 			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardRuleId, dstChatId, tmpMessageId)
 			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-			_ = s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
+			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
 			// TODO: isAnswer
-			if _, ok := s.messageService.GetReplyMarkupData(src); ok {
-				_ = s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+			if replyMarkupData := s.messageService.GetReplyMarkupData(src); len(replyMarkupData) > 0 {
+				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
 			}
 		}
 	}
@@ -194,9 +194,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 		formattedText := util.Copy(srcFormattedText)
 
 		withSources := i == 0
-		if err := s.transformService.Transform(formattedText, withSources, src, dstChatId); err != nil {
-			// s.log.Error("Transform", "err", err)
-		}
+		s.transformService.Transform(formattedText, withSources, src, dstChatId)
 
 		content := s.messageService.GetInputMessageContent(src, formattedText)
 		if content != nil {
@@ -210,7 +208,6 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 // getReplyToMessageId получает ID сообщения для ответа
 func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
 	var replyToMessageId int64
-	var err error
 
 	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)
 	if !ok {
@@ -225,11 +222,7 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 	}
 
 	fromChatMessageId := fmt.Sprintf("%d:%d", replyInChatId, replyToMessageId)
-	toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
-	if err != nil {
-		// s.log.Error("GetCopiedMessageIds", "err", err)
-		return 0
-	}
+	toChatMessageIds := s.storageService.GetCopiedMessageIds(fromChatMessageId)
 
 	if len(toChatMessageIds) == 0 {
 		return 0
@@ -248,11 +241,7 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 		return 0
 	}
 
-	replyToMessageId, err = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
-	if err != nil {
-		// s.log.Error("GetNewMessageId", "err", err)
-		return 0
-	}
+	replyToMessageId = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 
 	return replyToMessageId
 }

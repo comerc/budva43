@@ -11,8 +11,8 @@ type queueRepo interface {
 }
 
 type storageService interface {
-	SetNewMessageId(chatId, tmpMessageId, newMessageId int64) error
-	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) error
+	SetNewMessageId(chatId, tmpMessageId, newMessageId int64)
+	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64)
 }
 
 type Handler struct {
@@ -41,8 +41,8 @@ func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
 	tmpMessageId := update.OldMessageId
 	fn := func() {
-		_ = h.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
-		_ = h.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
+		h.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
+		h.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
 		// h.log.Info("Run")
 	}
 	h.queueRepo.Add(fn)

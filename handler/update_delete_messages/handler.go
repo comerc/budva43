@@ -20,12 +20,12 @@ type queueRepo interface {
 }
 
 type storageService interface {
-	GetCopiedMessageIds(fromChatMessageId string) ([]string, error)
-	DeleteCopiedMessageIds(fromChatMessageId string) error
-	GetNewMessageId(chatId, tmpMessageId int64) (int64, error)
-	DeleteNewMessageId(chatId, tmpMessageId int64) error
-	DeleteTmpMessageId(chatId, newMessageId int64) error
-	DeleteAnswerMessageId(dstChatId, tmpMessageId int64) error
+	GetCopiedMessageIds(fromChatMessageId string) []string
+	DeleteCopiedMessageIds(fromChatMessageId string)
+	GetNewMessageId(chatId, tmpMessageId int64) int64
+	DeleteNewMessageId(chatId, tmpMessageId int64)
+	DeleteTmpMessageId(chatId, newMessageId int64)
+	DeleteAnswerMessageId(dstChatId, tmpMessageId int64)
 }
 
 type Handler struct {
@@ -67,11 +67,7 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 
 	var fn func()
 	fn = func() {
-		data, err := h.collectData(chatId, messageIds)
-		if err != nil {
-			// h.log.Error("collectData", "err", err)
-			return
-		}
+		data := h.collectData(chatId, messageIds)
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
@@ -90,13 +86,7 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 			return
 		}
 
-		result, _ := h.deleteMessages(chatId, messageIds, data)
-		_ = result // TODO: костыль
-		// h.log.Info("deleteMessages",
-		// 	"chatId", chatId,
-		// 	"messageIds", messageIds,
-		// 	"result", result,
-		// )
+		h.deleteMessages(chatId, messageIds, data)
 	}
 
 	h.queueRepo.Add(fn)
@@ -109,7 +99,7 @@ type data struct {
 }
 
 // collectData собирает данные для удаления сообщений
-func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
+func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 	result := &data{
 		copiedMessageIds: make(map[string][]string),
 		newMessageIds:    make(map[string]int64),
@@ -118,7 +108,7 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-		toChatMessageIds, _ := h.storageService.GetCopiedMessageIds(fromChatMessageId)
+		toChatMessageIds := h.storageService.GetCopiedMessageIds(fromChatMessageId)
 		result.copiedMessageIds[fromChatMessageId] = toChatMessageIds
 
 		for _, toChatMessageId := range toChatMessageIds {
@@ -127,10 +117,10 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 			dstChatId := util.ConvertToInt[int64](a[1])
 			tmpMessageId := util.ConvertToInt[int64](a[2])
 
-			newMessageId, _ := h.storageService.GetNewMessageId(dstChatId, tmpMessageId)
+			newMessageId := h.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 			if newMessageId == 0 {
 				result = &data{needRepeat: true}
-				return result, nil
+				return result
 			}
 
 			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
@@ -138,13 +128,17 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) (*data, error) {
 		}
 	}
 
-	return result, nil
+	return result
 }
 
 // deleteMessages удаляет сообщения
-func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) ([]string, error) {
+func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
 	result := []string{}
 	// errs := []error{} // TODO: собирать все ошибки (для тестов)
+	defer func() {
+		_ = result // TODO: костыль
+	}()
+
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 		toChatMessageIds := data.copiedMessageIds[fromChatMessageId]
@@ -168,14 +162,14 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) (
 				continue
 			}
 
-			_ = h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
+			h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 
 			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
 			newMessageId := data.newMessageIds[tmpChatMessageId]
 
 			// TODO: может лучше удалять индексы _после_ удаления сообщения?
-			_ = h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
-			_ = h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
+			h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
+			h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
 
 			_, err := h.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
 				ChatId:     dstChatId,
@@ -192,9 +186,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) (
 		}
 
 		if len(toChatMessageIds) > 0 {
-			_ = h.storageService.DeleteCopiedMessageIds(fromChatMessageId)
+			h.storageService.DeleteCopiedMessageIds(fromChatMessageId)
 		}
 	}
-
-	return result, nil
 }

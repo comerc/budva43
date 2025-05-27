@@ -63,17 +63,17 @@ func (s *Service) IsSystemMessage(message *client.Message) bool {
 }
 
 // GetReplyMarkupData извлекает данные из replyMarkup
-func (s *Service) GetReplyMarkupData(message *client.Message) ([]byte, bool) {
+func (s *Service) GetReplyMarkupData(message *client.Message) []byte {
 	if message.ReplyMarkup != nil {
 		if a, ok := message.ReplyMarkup.(*client.ReplyMarkupInlineKeyboard); ok {
 			row := a.Rows[0]
 			btn := row[0]
 			if callback, ok := btn.Type.(*client.InlineKeyboardButtonTypeCallback); ok {
-				return callback.Data, true
+				return callback.Data
 			}
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // GetInputMessageContent преобразует содержимое сообщения во входной контент

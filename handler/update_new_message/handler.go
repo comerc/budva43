@@ -22,8 +22,8 @@ type queueRepo interface {
 }
 
 type storageService interface {
-	IncrementViewedMessages(toChatId int64, date string) error
-	IncrementForwardedMessages(toChatId int64, date string) error
+	IncrementViewedMessages(toChatId int64, date string)
+	IncrementForwardedMessages(toChatId int64, date string)
 }
 
 type messageService interface {
@@ -98,7 +98,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	}
 	if h.messageService.IsSystemMessage(src) {
 		fn := func() {
-			_ = h.deleteSystemMessage(src)
+			h.deleteSystemMessage(src)
 		}
 		h.queueRepo.Add(fn)
 		return
@@ -123,7 +123,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		h.forwardedToService.Init(forwardedTo, forwardRule.To)
 		if src.MediaAlbumId == 0 {
 			fn := func() {
-				_ = h.processMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
+				h.processMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
 			}
 			h.queueRepo.Add(fn)
 		} else {
@@ -133,7 +133,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 				continue
 			}
 			cb := func(messages []*client.Message) {
-				_ = h.processMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
+				h.processMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
 			}
 			fn := func() {
 				h.processMediaAlbum(key, cb)
@@ -169,7 +169,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 }
 
 // deleteSystemMessage удаляет системное сообщение
-func (h *Handler) deleteSystemMessage(src *client.Message) error {
+func (h *Handler) deleteSystemMessage(src *client.Message) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -178,23 +178,22 @@ func (h *Handler) deleteSystemMessage(src *client.Message) error {
 	}()
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
-		return nil
+		return
 	}
 	if !source.DeleteSystemMessages {
-		return nil
+		return
 	}
 	_, err = h.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
 		ChatId:     src.ChatId,
 		MessageIds: []int64{src.Id},
 		Revoke:     true,
 	})
-	return err
 }
 
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (h *Handler) processMessage(messages []*client.Message,
 	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
-	checkFns map[int64]func(), otherFns map[int64]func()) error {
+	checkFns map[int64]func(), otherFns map[int64]func()) {
 	var (
 		src         = messages[0]
 		filtersMode = ""
@@ -221,7 +220,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 	formattedText := h.messageService.GetFormattedText(src)
 	if formattedText == nil {
 		err = fmt.Errorf("GetFormattedText return nil")
-		return err
+		return
 	}
 
 	filtersMode = h.filtersModeService.Map(formattedText, forwardRule)
@@ -256,15 +255,12 @@ func (h *Handler) processMessage(messages []*client.Message,
 			}
 		}
 	}
-
-	return err
 }
 
 const waitForMediaAlbum = 3 * time.Second
 
 // processMediaAlbum обрабатывает медиа-альбом
 func (h *Handler) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.Message)) {
-	// TODO: не возвращается error ?
 	diff := h.mediaAlbumsService.GetLastReceivedDiff(key)
 	if diff < waitForMediaAlbum {
 		timer := time.NewTimer(waitForMediaAlbum - diff)
@@ -287,8 +283,8 @@ func (h *Handler) addStatistics(forwardedTo map[int64]bool) {
 	date := util.GetCurrentDate()
 	for dstChatId, ok := range forwardedTo {
 		if ok {
-			_ = h.storageService.IncrementForwardedMessages(dstChatId, date)
+			h.storageService.IncrementForwardedMessages(dstChatId, date)
 		}
-		_ = h.storageService.IncrementViewedMessages(dstChatId, date)
+		h.storageService.IncrementViewedMessages(dstChatId, date)
 	}
 }
