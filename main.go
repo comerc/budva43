@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	config "github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/config"
 	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
@@ -37,14 +37,24 @@ import (
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
 
+type App struct {
+	log *slog.Logger
+}
+
+var app *App
+
 // Основная функция приложения
 func main() {
 	setupLogger()
 
-	slog.Info("Запуск приложения Budva43")
+	app = &App{
+		log: slog.With("module", "main"),
+	}
+
+	app.log.Info("Запуск приложения Budva43")
 
 	// go config.Watch(func(e fsnotify.Event) {
-	// 	slog.Info("Config file changed", "file", e.Name)
+	// 	app.log.Info("Config file changed", "file", e.Name)
 	// }) // TODO: перезагрузка приложения при изменении конфигурации
 
 	// Создаем контекст, который будет отменен при сигнале остановки
@@ -59,16 +69,16 @@ func main() {
 
 	// Запускаем приложение и обрабатываем ошибки
 	if err := runApp(ctx, errSet); err != nil {
-		slog.Error("Ошибка при запуске приложения", "err", err)
+		app.log.Error("Ошибка при запуске приложения", "err", err)
 		os.Exit(1)
 	}
 
 	// Выводим накопленные ошибки при завершении
 	if errMsg := errSet.Error(); errMsg != "" {
-		slog.Warn(errMsg)
+		app.log.Warn(errMsg)
 	}
 
-	slog.Info("Приложение успешно завершило работу")
+	app.log.Info("Приложение успешно завершило работу")
 }
 
 // errSet представляет собой коллекцию ошибок, которые могут возникнуть при shutdown
@@ -98,9 +108,9 @@ func (e *errSet) Error() string {
 
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
 func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
-	slog.Info("Останавливаем", "componentName", componentName)
+	app.log.Info("Останавливаем", "componentName", componentName)
 	if err := closer.Close(); err != nil {
-		slog.Error(
+		app.log.Error(
 			"Ошибка при остановке",
 			"componentName", componentName,
 			"err", err,
@@ -126,7 +136,7 @@ func setupSignalHandler(shutdown func()) {
 
 	go func() {
 		sig := <-sigs
-		slog.Info("Получен сигнал остановки", "сигнал", sig)
+		app.log.Info("Получен сигнал остановки", "сигнал", sig)
 		shutdown()
 	}()
 }
@@ -143,21 +153,21 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		return fmt.Errorf("ошибка запуска storageRepo: %w", err)
 	}
 	defer gracefulShutdown("storageRepo", errSet, storageRepo)
-	slog.Info("storageRepo запущен")
+	app.log.Info("storageRepo запущен")
 
 	telegramRepo := telegramRepo.New()
 	if err := telegramRepo.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
 	}
 	defer gracefulShutdown("telegramRepo", errSet, telegramRepo)
-	slog.Info("telegramRepo запущен")
+	app.log.Info("telegramRepo запущен")
 
 	queueRepo := queueRepo.New()
 	if err := queueRepo.Start(ctx); err != nil {
 		return fmt.Errorf("ошибка запуска queueRepo: %w", err)
 	}
 	defer gracefulShutdown("queueRepo", errSet, queueRepo)
-	slog.Info("queueRepo запущен")
+	app.log.Info("queueRepo запущен")
 
 	// - Инициализация вспомогательных сервисов
 	// reportService := reportService.New()
@@ -184,7 +194,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		return fmt.Errorf("ошибка запуска authService: %w", err)
 	}
 	defer gracefulShutdown("authService", errSet, authService)
-	slog.Info("authService запущен")
+	app.log.Info("authService запущен")
 
 	// - Инициализация основного сервиса и его обработчиков
 	updateNewMessageHandler := updateNewMessageHandler.New(
@@ -226,7 +236,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		return fmt.Errorf("ошибка запуска engineService: %w", err)
 	}
 	defer gracefulShutdown("engineService", errSet, engineService)
-	slog.Info("engineService запущен")
+	app.log.Info("engineService запущен")
 
 	// - Инициализация контроллеров
 	// reportController := reportController.New(
@@ -246,7 +256,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
 	// }
 	// defer gracefulShutdown("botTransport", errSet, botTransport)
-	// slog.Info("botTransport запущен")
+	// app.log.Info("botTransport запущен")
 
 	cliTransport := cliTransport.New(
 		// reportController,
@@ -256,7 +266,7 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
 	}
 	defer gracefulShutdown("cliTransport", errSet, cliTransport)
-	slog.Info("cliTransport запущен")
+	app.log.Info("cliTransport запущен")
 
 	webTransport := webTransport.New(
 		// reportController,
@@ -266,11 +276,11 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		return fmt.Errorf("ошибка запуска webTransport: %w", err)
 	}
 	defer gracefulShutdown("webTransport", errSet, webTransport)
-	slog.Info("webTransport запущен")
+	app.log.Info("webTransport запущен")
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
-	slog.Info("Получен сигнал завершения, начинаем graceful shutdown")
+	app.log.Info("Получен сигнал завершения, начинаем graceful shutdown")
 
 	return nil
 }
