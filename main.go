@@ -32,8 +32,6 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
-// TODO: требуется чёткая стратегия обработки ошибок на разных уровнях
-// TODO: перепроверить применение s.log.* на избыточность
 // TODO: проверить весь перенесённый код на early return
 
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker

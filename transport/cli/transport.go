@@ -109,7 +109,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		case <-ctx.Done():
 			return
 		case <-t.authController.GetInitDone():
-			t.log.Info("TDLib клиент готов к выполнению авторизации")
+			// t.log.Info("TDLib клиент готов к выполнению авторизации")
 		}
 
 		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
@@ -129,10 +129,10 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 				if err := t.processCommand(input); err != nil {
 					if err.Error() == "exit" {
 						shutdown()
-						t.log.Info("Exit command processed")
+						// t.log.Info("Exit command processed")
 						return
 					}
-					t.log.Error("Command execution failed", "err", err)
+					// t.log.Error("Command execution failed", "err", err)
 					fmt.Printf("Ошибка: %v\n", err)
 				}
 			}
@@ -163,7 +163,7 @@ func (t *Transport) processCommand(input string) error {
 		return command.handler(args)
 	}
 
-	t.log.Info("Unknown command", "command", cmd)
+	// t.log.Info("Unknown command", "command", cmd)
 	fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 	return nil
 }
@@ -231,12 +231,12 @@ func (t *Transport) handleAuth(args []string) error {
 
 	state := t.authController.GetState()
 	if state == nil {
-		t.log.Info("GetState вернул nil")
+		// t.log.Info("GetState вернул nil")
 		return nil
 	}
 
 	stateType := state.AuthorizationStateType()
-	t.log.Debug("GetState", "stateType", stateType)
+	// t.log.Debug("GetState", "stateType", stateType)
 
 	switch stateType {
 	case client.TypeAuthorizationStateWaitPhoneNumber:

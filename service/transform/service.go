@@ -86,7 +86,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 	if !data.ReplaceMyselfLinks.Run {
 		return nil
 	}
-	s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
+	// s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
 	for _, entity := range formattedText.Entities {
 		textUrl, ok := entity.Type.(*client.TextEntityTypeTextUrl)
 		if !ok {
@@ -96,7 +96,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			Url: textUrl.Url,
 		})
 		if err != nil {
-			s.log.Error("GetMessageLinkInfo", "err", err)
+			// s.log.Error("GetMessageLinkInfo", "err", err)
 			return err
 		}
 		src := messageLinkInfo.Message
@@ -109,7 +109,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		if err != nil {
 			return fmt.Errorf("GetCopiedMessageIds: %w", err)
 		}
-		s.log.Debug("replaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
+		// s.log.Debug("replaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
 		var tmpMessageId int64 = 0
 		for _, toChatMessageId := range toChatMessageIds {
 			a := strings.Split(toChatMessageId, ":")
@@ -128,7 +128,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 				MessageId: newMessageId,
 			})
 			if err != nil {
-				s.log.Error("GetMessageLink", "err", err)
+				// s.log.Error("GetMessageLink", "err", err)
 				return err
 			}
 			entity.Type = &client.TextEntityTypeTextUrl{

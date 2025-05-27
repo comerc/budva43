@@ -93,7 +93,7 @@ func (a *CLIAutomator) Run(ctx context.Context) {
 
 	if err := scanner.Err(); err != nil {
 		if err != io.EOF && !errors.Is(err, os.ErrClosed) {
-			a.log.Error("Ошибка чтения stdout", "err", err)
+			// a.log.Error("Ошибка чтения stdout", "err", err)
 		}
 	}
 

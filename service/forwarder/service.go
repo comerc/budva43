@@ -68,12 +68,12 @@ func New(
 
 // ForwardMessages пересылает сообщения в целевой чат
 func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) error {
-	s.log.Debug("ForwardMessages",
-		"srcChatId", srcChatId,
-		"dstChatId", dstChatId,
-		"sendCopy", isSendCopy,
-		"forwardRuleId", forwardRuleId,
-		"messageCount", len(messages))
+	// s.log.Debug("ForwardMessages",
+	// 	"srcChatId", srcChatId,
+	// 	"dstChatId", dstChatId,
+	// 	"sendCopy", isSendCopy,
+	// 	"forwardRuleId", forwardRuleId,
+	// 	"messageCount", len(messages))
 
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
 
@@ -83,7 +83,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 	)
 	defer func() {
 		if err != nil {
-			s.log.Error("ForwardMessages", "err", err)
+			// s.log.Error("ForwardMessages", "err", err)
 		}
 	}()
 
@@ -129,7 +129,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 	if isSendCopy {
 		for i, dst := range result.Messages {
 			if dst == nil {
-				s.log.Error("ForwardMessages - dst == nil !!", "result", result, "messages", messages)
+				// s.log.Error("ForwardMessages - dst == nil !!", "result", result, "messages", messages)
 				continue
 			}
 			tmpMessageId := dst.Id
@@ -164,7 +164,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	})
 
 	if err != nil {
-		s.log.Error("getOriginMessage", "err", err)
+		// s.log.Error("getOriginMessage", "err", err)
 		return nil
 	}
 
@@ -173,7 +173,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	originFormattedText := s.messageService.GetFormattedText(originMessage)
 	// workaround for https://github.com/tdlib/td/issues/1572
 	if targetFormattedText.Text != originFormattedText.Text {
-		s.log.Debug("targetMessage != originMessage")
+		// s.log.Debug("targetMessage != originMessage")
 		return nil
 	}
 
@@ -195,7 +195,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 
 		withSources := i == 0
 		if err := s.transformService.Transform(formattedText, withSources, src, dstChatId); err != nil {
-			s.log.Error("Transform", "err", err)
+			// s.log.Error("Transform", "err", err)
 		}
 
 		content := s.messageService.GetInputMessageContent(src, formattedText)
@@ -227,7 +227,7 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 	fromChatMessageId := fmt.Sprintf("%d:%d", replyInChatId, replyToMessageId)
 	toChatMessageIds, err := s.storageService.GetCopiedMessageIds(fromChatMessageId)
 	if err != nil {
-		s.log.Error("GetCopiedMessageIds", "err", err)
+		// s.log.Error("GetCopiedMessageIds", "err", err)
 		return 0
 	}
 
@@ -250,7 +250,7 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 
 	replyToMessageId, err = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 	if err != nil {
-		s.log.Error("GetNewMessageId", "err", err)
+		// s.log.Error("GetNewMessageId", "err", err)
 		return 0
 	}
 
