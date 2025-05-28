@@ -16,7 +16,7 @@ func NewLogger(moduleName string) *Logger {
 	}
 }
 
-func (l *Logger) send(level slog.Level, message string, errPtr *error, argsPtr *[]any) {
+func (l *Logger) log(level slog.Level, message string, errPtr *error, argsPtr *[]any) {
 	args := []any{}
 	err := *errPtr
 	if err != nil {
@@ -31,13 +31,13 @@ func (l *Logger) send(level slog.Level, message string, errPtr *error, argsPtr *
 }
 
 func (l *Logger) DebugOrError(message string, errPtr *error, argsPtr *[]any) {
-	l.send(slog.LevelDebug, message, errPtr, argsPtr)
+	l.log(slog.LevelDebug, message, errPtr, argsPtr)
 }
 
 func (l *Logger) InfoOrError(message string, errPtr *error, argsPtr *[]any) {
-	l.send(slog.LevelInfo, message, errPtr, argsPtr)
+	l.log(slog.LevelInfo, message, errPtr, argsPtr)
 }
 
 func (l *Logger) WarnOrError(message string, errPtr *error, argsPtr *[]any) {
-	l.send(slog.LevelWarn, message, errPtr, argsPtr)
+	l.log(slog.LevelWarn, message, errPtr, argsPtr)
 }
