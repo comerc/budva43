@@ -2,7 +2,6 @@ package update_delete_messages
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -29,7 +28,7 @@ type storageService interface {
 }
 
 type Handler struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	telegramRepo   telegramRepo
 	queueRepo      queueRepo
@@ -42,7 +41,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: slog.With("module", "handler.update_delete_messages"),
+		log: util.NewLogger("handler.update_delete_messages"),
 		//
 		telegramRepo:   telegramRepo,
 		queueRepo:      queueRepo,

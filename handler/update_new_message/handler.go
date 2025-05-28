@@ -52,7 +52,7 @@ type forwarderService interface {
 }
 
 type Handler struct {
-	log *slog.Logger
+	log *util.Logger
 	ctx context.Context
 	//
 	telegramRepo       telegramRepo
@@ -76,7 +76,7 @@ func New(
 	forwarderService forwarderService,
 ) *Handler {
 	return &Handler{
-		log: slog.With("module", "handler.update_new_message"),
+		log: util.NewLogger("handler.update_new_message"),
 		//
 		telegramRepo:       telegramRepo,
 		queueRepo:          queueRepo,

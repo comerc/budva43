@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/util"
 )
 
 // type reportController interface {
@@ -27,7 +27,7 @@ type authController interface {
 
 // Transport представляет HTTP маршрутизатор для API
 type Transport struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	// reportController reportController
 	authController authController
@@ -41,7 +41,7 @@ func New(
 	authController authController,
 ) *Transport {
 	return &Transport{
-		log: slog.With("module", "transport.web"),
+		log: util.NewLogger("transport.web"),
 		//
 		// reportController: reportController,
 		authController: authController,

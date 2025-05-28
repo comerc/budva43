@@ -1,22 +1,22 @@
 package filters_mode
 
 import (
-	"log/slog"
 	"regexp"
 	"slices"
 
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/entity"
+	"github.com/comerc/budva43/util"
 )
 
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 }
 
 func New() *Service {
 	return &Service{
-		log: slog.With("module", "service.filters_mode"),
+		log: util.NewLogger("service.filters_mode"),
 	}
 }
 

@@ -3,7 +3,6 @@ package forwarder
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -38,7 +37,7 @@ type rateLimiterService interface {
 }
 
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	ctx context.Context
 	//
 	telegramRepo       telegramRepo
@@ -56,7 +55,7 @@ func New(
 	rateLimiterService rateLimiterService,
 ) *Service {
 	return &Service{
-		log: slog.With("module", "service.forwarder"),
+		log: util.NewLogger("service.forwarder"),
 		//
 		telegramRepo:       telegramRepo,
 		storageService:     storageService,

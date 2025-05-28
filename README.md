@@ -88,6 +88,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] temporal
 - [ ] anycable
 - [x] [gocritic](https://habr.com/ru/articles/414739/)
+- [ ] [OpenTelemetry](https://pkg.go.dev/go.opentelemetry.io/otel#section-readme)
+- [ ] [gostackparse](https://github.com/DataDog/gostackparse)
 
 ## .env
 

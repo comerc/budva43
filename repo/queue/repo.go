@@ -3,13 +3,14 @@ package queue
 import (
 	"container/list"
 	"context"
-	"log/slog"
 	"time"
+
+	"github.com/comerc/budva43/util"
 )
 
 // Repo предоставляет функциональность асинхронной очереди задач
 type Repo struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	queue *list.List
 }
@@ -17,7 +18,7 @@ type Repo struct {
 // New создает новый экземпляр сервиса очереди
 func New() *Repo {
 	return &Repo{
-		log: slog.With("module", "repo.queue"),
+		log: util.NewLogger("repo.queue"),
 		//
 		queue: list.New(),
 	}
