@@ -64,7 +64,7 @@ func TestAuth(t *testing.T) {
 	t.Cleanup(func() {
 		automator.Close()
 	})
-	go automator.Run(ctx)
+	go automator.Run()
 
 	telegramRepo := telegramRepo.New()
 	err = telegramRepo.Start(ctx)
@@ -117,15 +117,15 @@ func TestAuth(t *testing.T) {
 
 	var found bool
 
-	found = automator.WaitForOutput("Запуск CLI интерфейса", 3*time.Second)
+	found = automator.WaitForOutput(ctx, "Запуск CLI интерфейса", 3*time.Second)
 	require.True(t, found, "CLI транспорт не запустился")
-	result := automator.WaitForOutput("> ", 3*time.Second)
+	result := automator.WaitForOutput(ctx, "> ", 3*time.Second)
 	require.True(t, result, "CLI транспорт не выдал запрос на ввод команды")
 
 	// Проверяем команду help
 	err = automator.SendInput("help")
 	require.NoError(t, err)
-	found = automator.WaitForOutput("Доступные команды:", 2*time.Second)
+	found = automator.WaitForOutput(ctx, "Доступные команды:", 2*time.Second)
 	assert.True(t, found, "Команда help не выдала список команд")
 
 	// Проверяем команду auth
@@ -137,7 +137,7 @@ func TestAuth(t *testing.T) {
 
 	err = automator.SendInput("auth")
 	require.NoError(t, err)
-	found = automator.WaitForOutput("Введите номер телефона:", 3*time.Second)
+	found = automator.WaitForOutput(ctx, "Введите номер телефона:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод номера телефона")
 
 	delimiter := strings.Repeat("*", len(phoneNumber))
@@ -151,7 +151,7 @@ func TestAuth(t *testing.T) {
 
 	err = automator.SendInput("auth")
 	require.NoError(t, err)
-	found = automator.WaitForOutput("Введите код подтверждения:", 3*time.Second)
+	found = automator.WaitForOutput(ctx, "Введите код подтверждения:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
 	err = automator.SendInput("xxx")
@@ -184,7 +184,7 @@ func TestAuth(t *testing.T) {
 	// Проверяем команду exit
 	err = automator.SendInput("exit")
 	require.NoError(t, err)
-	found = automator.WaitForOutput("Выход из программы", 3*time.Second)
+	found = automator.WaitForOutput(ctx, "Выход из программы", 3*time.Second)
 	assert.True(t, found, "Команда exit не сработала")
 
 	// Проверяем, что контекст был отменен (CLI завершился)
