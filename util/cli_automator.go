@@ -17,7 +17,6 @@ import (
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
 	log *slog.Logger
-	ctx context.Context
 	//
 	originalStdin  *os.File
 	originalStdout *os.File
@@ -66,8 +65,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 }
 
 // Run запускает обработку вывода CLI
-func (a *CLIAutomator) Run(ctx context.Context) {
-	a.ctx = ctx
+func (a *CLIAutomator) Run() {
 	scanner := bufio.NewScanner(a.stdoutReader)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -108,9 +106,9 @@ func (a *CLIAutomator) SendInput(input string) error {
 }
 
 // WaitForOutput ожидает указанный вывод в течение таймаута
-func (a *CLIAutomator) WaitForOutput(pattern string, timeout time.Duration) bool {
+func (a *CLIAutomator) WaitForOutput(ctx context.Context, pattern string, timeout time.Duration) bool {
 	// Создаем контекст с таймаутом
-	ctx, cancel := context.WithTimeout(a.ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	for {

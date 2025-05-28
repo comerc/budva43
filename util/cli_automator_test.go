@@ -108,7 +108,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	})
 
 	// Запускаем обработку вывода в отдельной горутине
-	go automator.Run(ctx)
+	go automator.Run()
 
 	// Ждем немного, чтобы обработчик успел запуститься
 	time.Sleep(200 * time.Millisecond)
@@ -117,7 +117,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	testMessage := "Проверка канала отдельно от ввода-вывода"
 	automator.outputLines <- testMessage
 
-	found := automator.WaitForOutput("Проверка канала", 500*time.Millisecond)
+	found := automator.WaitForOutput(ctx, "Проверка канала", 500*time.Millisecond)
 	assert.True(t, found, "Должен найти тестовое сообщение в канале")
 
 	// Тестируем метод SendInput, но не будем использовать его вывод напрямую
@@ -128,7 +128,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	// Это позволяет надежно протестировать функциональность без зависимости от stdout
 	automator.outputLines <- "Результат отправки ввода"
 
-	found = automator.WaitForOutput("Результат отправки", 1*time.Second)
+	found = automator.WaitForOutput(ctx, "Результат отправки", 1*time.Second)
 	assert.True(t, found, "WaitForOutput должен обнаружить вывод")
 }
 
@@ -163,7 +163,6 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         slog.With("module", "util.cli_automator.test"),
-			ctx:         ctx,
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -184,7 +183,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		automator.outputLines <- "Ожидаемый вывод"
 
 		// Проверяем обнаружение
-		found := automator.WaitForOutput("Ожидаемый", 1*time.Second)
+		found := automator.WaitForOutput(ctx, "Ожидаемый", 1*time.Second)
 		assert.True(t, found, "WaitForOutput должен обнаружить вывод по префиксу")
 	})
 
@@ -192,7 +191,6 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         slog.With("module", "util.cli_automator.test"),
-			ctx:         ctx,
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -222,7 +220,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		}()
 
 		// Проверяем таймаут
-		found := automator.WaitForOutput("Этого текста не будет", 500*time.Millisecond)
+		found := automator.WaitForOutput(ctx, "Этого текста не будет", 500*time.Millisecond)
 		assert.False(t, found, "WaitForOutput должен вернуть false по таймауту")
 	})
 }
@@ -230,11 +228,6 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 // TestCLIAutomatorClose проверяет корректность метода Close
 func TestCLIAutomatorClose(t *testing.T) {
 	// t.Parallel()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -274,7 +267,7 @@ func TestCLIAutomatorClose(t *testing.T) {
 	stdoutAfterCreate := os.Stdout
 
 	// Запускаем и останавливаем автоматор
-	go automator.Run(ctx)
+	go automator.Run()
 	time.Sleep(100 * time.Millisecond) // Даем автоматору время запуститься
 	automator.Close()
 
@@ -344,7 +337,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	})
 
 	// Запускаем обработку вывода
-	go automator.Run(ctx)
+	go automator.Run()
 
 	// Даем немного времени, чтобы Run запустился
 	time.Sleep(100 * time.Millisecond)
@@ -353,7 +346,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	automator.outputLines <- "Тестовая строка для проверки"
 
 	// Проверяем, что строка найдена
-	found := automator.WaitForOutput("Тестовая строка", 500*time.Millisecond)
+	found := automator.WaitForOutput(ctx, "Тестовая строка", 500*time.Millisecond)
 	assert.True(t, found, "Должна быть найдена тестовая строка")
 }
 
@@ -400,7 +393,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		})
 
 		// Проверяем ситуацию, когда Run не запущен и WaitForOutput вызван с очень малым таймаутом
-		found := automator.WaitForOutput("этого не будет", 1*time.Millisecond)
+		found := automator.WaitForOutput(ctx, "этого не будет", 1*time.Millisecond)
 		assert.False(t, found, "WaitForOutput должен вернуть false при малом таймауте и отсутствии вывода")
 	})
 
@@ -413,7 +406,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		})
 
 		// Запускаем обработку вывода
-		go automator.Run(ctx)
+		go automator.Run()
 
 		// Даем время на запуск Run()
 		time.Sleep(50 * time.Millisecond)
@@ -422,7 +415,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		automator.outputLines <- "Тестовая строка для проверки пустого шаблона"
 
 		// Проверяем с пустым шаблоном
-		found := automator.WaitForOutput("", 200*time.Millisecond)
+		found := automator.WaitForOutput(ctx, "", 200*time.Millisecond)
 		assert.True(t, found, "WaitForOutput должен вернуть true при пустом шаблоне")
 	})
 
@@ -437,7 +430,6 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		// Создаем мок для ручного контроля канала вывода
 		mockAutomator := &CLIAutomator{
 			log:         automator.log,
-			ctx:         ctx,
 			outputLines: make(chan string),
 			// Остальные поля не используются в этом тесте
 		}
@@ -447,7 +439,7 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 
 		// Проверяем поведение WaitForOutput при закрытом канале
 		timeStart := time.Now()
-		found := mockAutomator.WaitForOutput("что-то", 1*time.Second)
+		found := mockAutomator.WaitForOutput(ctx, "что-то", 1*time.Second)
 		timeElapsed := time.Since(timeStart)
 
 		assert.False(t, found, "WaitForOutput должен вернуть false при закрытом канале")
@@ -516,7 +508,6 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 	// Создаем экземпляр CLIAutomator вручную для тестирования с моками
 	automator := &CLIAutomator{
 		log:         slog.With("module", "util.cli_automator.test"),
-		ctx:         ctx,
 		outputLines: make(chan string, 10),
 	}
 
@@ -582,7 +573,7 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 	<-nextCheck
 
 	// Проверяем обнаружение первого сообщения
-	found := automator.WaitForOutput("Сообщение 1", 100*time.Millisecond)
+	found := automator.WaitForOutput(ctx, "Сообщение 1", 100*time.Millisecond)
 	assert.True(t, found, "Должно найти первое сообщение")
 
 	// Сигнализируем о завершении проверки первого сообщения
@@ -592,7 +583,7 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 	<-nextCheck
 
 	// Проверяем обнаружение второго сообщения
-	found = automator.WaitForOutput("Сообщение 2", 100*time.Millisecond)
+	found = automator.WaitForOutput(ctx, "Сообщение 2", 100*time.Millisecond)
 	assert.True(t, found, "Должно найти второе сообщение")
 
 	// Сигнализируем о завершении проверки второго сообщения
@@ -602,7 +593,7 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 	<-nextCheck
 
 	// Проверяем обнаружение финального сообщения
-	found = automator.WaitForOutput("Финальное", 100*time.Millisecond)
+	found = automator.WaitForOutput(ctx, "Финальное", 100*time.Millisecond)
 	assert.True(t, found, "Должно найти финальное сообщение")
 
 	// Сигнализируем о завершении проверки третьего сообщения
