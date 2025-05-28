@@ -2,9 +2,10 @@ package rate_limiter
 
 import (
 	"context"
-	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/comerc/budva43/util"
 )
 
 // TODO: зочем? у нас уже есть таймер в service/queue/service.go, который отвечает за задержку между сообщениями
@@ -13,7 +14,7 @@ const waitForForward = 3 * time.Second // чтобы бот успел отре�
 
 // Service управляет скоростью пересылки сообщений
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	mu            sync.Mutex
 	lastForwarded map[int64]time.Time
@@ -22,7 +23,7 @@ type Service struct {
 // New создает новый сервис для управления скоростью пересылки сообщений
 func New() *Service {
 	return &Service{
-		log: slog.With("module", "service.rate_limiter"),
+		log: util.NewLogger("service.rate_limiter"),
 		//
 		lastForwarded: make(map[int64]time.Time),
 	}

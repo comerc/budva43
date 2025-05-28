@@ -30,6 +30,7 @@ import (
 	transformService "github.com/comerc/budva43/service/transform"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
+	"github.com/comerc/budva43/util"
 )
 
 // TODO: проверить весь перенесённый код на early return
@@ -38,7 +39,7 @@ import (
 // TODO: прикрутить готовый образ tdlib в докере для make build
 
 type App struct {
-	log *slog.Logger
+	log *util.Logger
 }
 
 var app *App
@@ -48,7 +49,7 @@ func main() {
 	setupLogger()
 
 	app = &App{
-		log: slog.With("module", "main"),
+		log: util.NewLogger("main"),
 	}
 
 	app.log.Info("Запуск приложения Budva43")

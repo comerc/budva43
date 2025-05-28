@@ -2,12 +2,12 @@ package auth
 
 import (
 	"context"
-	"log/slog"
 	"sync"
 
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/util"
 )
 
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
@@ -17,7 +17,7 @@ type telegramRepo interface {
 
 // Service управляет процессом авторизации в Telegram
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	telegramRepo telegramRepo
 	initFlag     bool
@@ -30,7 +30,7 @@ type Service struct {
 // New создает новый экземпляр сервиса авторизации
 func New(telegramRepo telegramRepo) *Service {
 	return &Service{
-		log: slog.With("module", "service.auth"),
+		log: util.NewLogger("service.auth"),
 		//
 		telegramRepo: telegramRepo,
 		initDone:     make(chan any), // закроется, когда авторизатор запущен

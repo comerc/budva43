@@ -7,6 +7,31 @@ import (
 	"testing"
 )
 
+// GetCaller возвращает информацию о вызывающем
+func GetCaller() string {
+	callStack := GetCallStack(2, 1) // Пропускаем GetCaller и getCallStack
+	if len(callStack) > 0 {
+		return callStack[0].String()
+	}
+	return ""
+}
+
+// GetCallers возвращает информацию о вызывающих
+func GetCallers(depth int) []string {
+	callStack := GetCallStack(2, depth) // Пропускаем GetCallers и getCallStack
+
+	if len(callStack) == 0 {
+		return []string{}
+	}
+
+	var result []string
+	for _, call := range callStack {
+		result = append(result, call.String())
+	}
+
+	return result
+}
+
 // Тестовые функции для демонстрации стека вызовов
 func testFunction1() string {
 	return testFunction2()
@@ -32,8 +57,8 @@ func testFunction3() string {
 
 func TestCallInfo(t *testing.T) {
 	info := CallInfo{
-		Function: "TestFunction",
-		File:     "test/file.go",
+		FuncName: "TestFunction",
+		FileName: "test/file.go",
 		Line:     42,
 	}
 
@@ -195,25 +220,29 @@ func demonstrateSlogUsage() {
 	// Пример 1: Простое логирование с информацией о вызывающем
 	logger.Info("User request started", "caller", GetCaller())
 
-	// Пример 2: Логирование с полным стеком вызовов до 5-й глубины
+	// Пример 2: Логирование с полным стеком вызовов
 	logger.Error("Database connection failed",
-		"callers", GetCallers(5))
+		"callers", GetCallers(0))
 
 	// Пример 3: Структурированное логирование в функции
 	processUserRequest(logger, "invalid")
 	processUserRequest(logger, "user123")
 }
 
+type User struct{}
+
 func processUserRequest(logger *slog.Logger, userID string) {
 	logger.Info("Processing user request",
 		"user_id", userID,
 		"caller", GetCaller())
 
-	if err := validateUser(logger, userID); err != nil {
+	u := &User{}
+
+	if err := u.validateUser(logger, userID); err != nil {
 		logger.Error("User validation failed",
 			"user_id", userID,
 			"error", err.Error(),
-			"callers", GetCallers(5))
+			"callers", GetCallers(0))
 		return
 	}
 
@@ -222,7 +251,7 @@ func processUserRequest(logger *slog.Logger, userID string) {
 		"caller", GetCaller())
 }
 
-func validateUser(logger *slog.Logger, userID string) error {
+func (u *User) validateUser(logger *slog.Logger, userID string) error {
 	logger.Debug("Validating user",
 		"user_id", userID,
 		"caller", GetCaller())

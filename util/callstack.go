@@ -19,14 +19,14 @@ var (
 
 // CallInfo представляет информацию о вызове функции
 type CallInfo struct {
-	Function string // Название функции
-	File     string // Относительный путь к файлу
+	FuncName string // Название функции
+	FileName string // Относительный путь к файлу
 	Line     int    // Номер строки
 }
 
 // String возвращает компактное строковое представление информации о вызове
 func (c CallInfo) String() string {
-	return fmt.Sprintf("%s:%d %s", c.File, c.Line, c.Function)
+	return fmt.Sprintf("%s:%d %s", c.FileName, c.Line, c.FuncName)
 }
 
 // findProjectRootAndModule ищет корень проекта и читает имя модуля из go.mod
@@ -98,13 +98,33 @@ func getProjectModule() string {
 	return projectModule
 }
 
+// getFuncName извлекает короткое имя функции, убирая путь модуля
+func getFuncName(fullFnName string) string {
+	module := getProjectModule()
+	if module == "" {
+		return fullFnName
+	}
+
+	// Убираем префикс модуля (например, "github.com/comerc/budva43/")
+	if strings.HasPrefix(fullFnName, module+"/") {
+		return strings.TrimPrefix(fullFnName, module+"/")
+	}
+
+	// Если это прямо модуль без подпакетов
+	if strings.HasPrefix(fullFnName, module+".") {
+		return strings.TrimPrefix(fullFnName, module+".")
+	}
+
+	return fullFnName
+}
+
 // isProjectPath проверяет, принадлежит ли путь к текущему проекту
-func isProjectPath(funcName string) bool {
+func isProjectPath(fullFnName string) bool {
 	module := getProjectModule()
 	if module == "" {
 		return false
 	}
-	return strings.HasPrefix(funcName, module)
+	return strings.HasPrefix(fullFnName, module)
 }
 
 // getRelativePath возвращает относительный путь к файлу относительно корня проекта
@@ -127,8 +147,8 @@ func getRelativePath(fullPath string) string {
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
 // depth - количество фреймов для сбора после пропуска (0 = все доступные фреймы проекта)
-func getCallStack(skip int, depth int) []CallInfo {
-	var callStack []CallInfo
+func GetCallStack(skip int, depth int) []CallInfo {
+	var result []CallInfo
 
 	// Если depth не указан, возвращаем максимум 10 фреймов
 	if depth <= 0 {
@@ -136,7 +156,7 @@ func getCallStack(skip int, depth int) []CallInfo {
 	}
 
 	for i := skip; i < skip+depth; i++ {
-		pc, file, line, ok := runtime.Caller(i)
+		pc, fullPath, line, ok := runtime.Caller(i)
 		if !ok {
 			break
 		}
@@ -147,58 +167,26 @@ func getCallStack(skip int, depth int) []CallInfo {
 			continue
 		}
 
-		funcName := fn.Name()
-		isProject := isProjectPath(funcName)
+		fullFnName := fn.Name()
+		isProject := isProjectPath(fullFnName)
 
 		// Если это не код проекта, прерываем поиск
 		if !isProject {
 			break
 		}
 
-		// Разделяем название функции на пакет и имя функции
-		parts := strings.Split(funcName, ".")
-		var functionName string
-
-		if len(parts) >= 2 {
-			functionName = parts[len(parts)-1]
-		} else {
-			functionName = funcName
-		}
+		// Получаем короткое имя функции без полного пути модуля
+		funcName := getFuncName(fullFnName)
 
 		// Получаем относительный путь к файлу от корня проекта
-		fileName := getRelativePath(file)
+		fileName := getRelativePath(fullPath)
 
-		callStack = append(callStack, CallInfo{
-			Function: functionName,
-			File:     fileName,
+		result = append(result, CallInfo{
+			FuncName: funcName,
+			FileName: fileName,
 			Line:     line,
 		})
 	}
 
-	return callStack
-}
-
-// GetCaller возвращает информацию о вызывающем
-func GetCaller() string {
-	stack := getCallStack(2, 1) // Пропускаем GetCaller и getCallStack
-	if len(stack) > 0 {
-		return stack[0].String()
-	}
-	return ""
-}
-
-// GetCallers возвращает информацию о вызывающих
-func GetCallers(stackDepth int) []string {
-	stack := getCallStack(2, stackDepth) // Пропускаем GetCallers и getCallStack
-
-	if len(stack) == 0 {
-		return []string{}
-	}
-
-	var stackInfo []string
-	for _, call := range stack {
-		stackInfo = append(stackInfo, call.String())
-	}
-
-	return stackInfo
+	return result
 }

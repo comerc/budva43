@@ -2,7 +2,6 @@ package update_message_edited
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -46,7 +45,7 @@ type forwarderService interface {
 }
 
 type Handler struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	telegramRepo       telegramRepo
 	queueRepo          queueRepo
@@ -67,7 +66,7 @@ func New(
 	forwarderService forwarderService,
 ) *Handler {
 	return &Handler{
-		log: slog.With("module", "handler.update_message_edited"),
+		log: util.NewLogger("handler.update_message_edited"),
 		//
 		telegramRepo:       telegramRepo,
 		queueRepo:          queueRepo,

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -32,7 +31,7 @@ type authController interface {
 
 // Transport представляет интерфейс командной строки
 type Transport struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	// reportController reportController
 	authController authController
@@ -55,7 +54,7 @@ func New(
 	authController authController,
 ) *Transport {
 	cli := &Transport{
-		log: slog.With("module", "transport.cli"),
+		log: util.NewLogger("transport.cli"),
 		//
 		// reportController: reportController,
 		authController: authController,

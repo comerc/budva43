@@ -3,17 +3,17 @@ package storage
 import (
 	"context"
 	"encoding/binary"
-	"log/slog"
 	"time"
 
 	badger "github.com/dgraph-io/badger/v4"
 
 	"github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/util"
 )
 
 // Repo определяет интерфейс для работы с хранилищем BadgerDB
 type Repo struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	db *badger.DB
 }
@@ -21,7 +21,7 @@ type Repo struct {
 // New создает новый экземпляр репозитория для BadgerDB
 func New() *Repo {
 	return &Repo{
-		log: slog.With("module", "repo.storage"),
+		log: util.NewLogger("repo.storage"),
 		//
 		db: nil,
 	}

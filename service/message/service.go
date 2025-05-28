@@ -1,21 +1,20 @@
 package message
 
 import (
-	"log/slog"
-
+	"github.com/comerc/budva43/util"
 	"github.com/zelenin/go-tdlib/client"
 )
 
 // Service предоставляет методы для обработки и преобразования сообщений
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 }
 
 // New создает новый экземпляр сервиса для работы с сообщениями
 func New() *Service {
 	return &Service{
-		log: slog.With("module", "service.message"),
+		log: util.NewLogger("service.message"),
 		//
 	}
 }

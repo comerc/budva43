@@ -3,7 +3,6 @@ package engine
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"regexp"
 	"slices"
 
@@ -37,7 +36,7 @@ type updateMessageSendHandler interface {
 
 // Service предоставляет функциональность движка пересылки сообщений
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	ctx context.Context
 	//
 	telegramRepo                telegramRepo
@@ -56,7 +55,7 @@ func New(
 	updateMessageSendHandler updateMessageSendHandler,
 ) *Service {
 	return &Service{
-		log: slog.With("module", "service.engine"),
+		log: util.NewLogger("service.engine"),
 		//
 		telegramRepo:                telegramRepo,
 		updateNewMessageHandler:     updateNewMessageHandler,

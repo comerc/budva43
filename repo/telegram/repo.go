@@ -3,20 +3,20 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"path"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/config"
+	"github.com/comerc/budva43/util"
 )
 
 // TODO: logout
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	client     *client.Client
 	clientDone chan any
@@ -25,7 +25,7 @@ type Repo struct {
 // New создает новый экземпляр репозитория Telegram
 func New() *Repo {
 	r := &Repo{
-		log: slog.With("module", "repo.telegram"),
+		log: util.NewLogger("repo.telegram"),
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
 		clientDone: make(chan any), // закроется, когда клиент авторизован

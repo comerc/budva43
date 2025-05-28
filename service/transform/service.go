@@ -2,7 +2,6 @@ package transform
 
 import (
 	"fmt"
-	"log/slog"
 	"regexp"
 	"slices"
 	"strings"
@@ -31,7 +30,7 @@ type messageService interface {
 
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
-	log *slog.Logger
+	log *util.Logger
 	//
 	telegramRepo   telegramRepo
 	storageService storageService
@@ -45,7 +44,7 @@ func New(
 	messageService messageService,
 ) *Service {
 	return &Service{
-		log: slog.With("module", "service.transform"),
+		log: util.NewLogger("service.transform"),
 		//
 		telegramRepo:   telegramRepo,
 		storageService: storageService,
@@ -237,6 +236,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
 	defer func() {
 		if err != nil {
+			// TODO: записывать из стека - где вызвана, т.к. вызывается в разных местах
 			// s.log.Error("addText", "err", err)
 		}
 	}()

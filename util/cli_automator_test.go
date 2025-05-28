@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"strings"
 	"testing"
@@ -162,7 +161,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	t.Run("Успешное обнаружение префикса", func(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
-			log:         slog.With("module", "util.cli_automator.test"),
+			log:         NewLogger("util.cli_automator.test"),
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -190,7 +189,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	t.Run("Таймаут при отсутствии строки", func(t *testing.T) {
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
-			log:         slog.With("module", "util.cli_automator.test"),
+			log:         NewLogger("util.cli_automator.test"),
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -507,7 +506,7 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 
 	// Создаем экземпляр CLIAutomator вручную для тестирования с моками
 	automator := &CLIAutomator{
-		log:         slog.With("module", "util.cli_automator.test"),
+		log:         NewLogger("util.cli_automator.test"),
 		outputLines: make(chan string, 10),
 	}
 

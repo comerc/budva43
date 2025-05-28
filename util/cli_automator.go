@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -16,7 +15,7 @@ import (
 
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
-	log *slog.Logger
+	log *Logger
 	//
 	originalStdin  *os.File
 	originalStdout *os.File
@@ -46,7 +45,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	}
 
 	automator := &CLIAutomator{
-		log: slog.With("module", "util.cli_automator"),
+		log: NewLogger("util.cli_automator"),
 		//
 		originalStdin:  originalStdin,
 		originalStdout: originalStdout,
