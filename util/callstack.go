@@ -213,7 +213,7 @@ type ErrorWithCall struct {
 	Call CallInfo
 }
 
-func WithCall(errPtr *error) {
+func AddCall(errPtr *error) {
 	if errPtr == nil || *errPtr == nil {
 		return
 	}
@@ -229,7 +229,7 @@ func WithCall(errPtr *error) {
 	}
 }
 
-func WrapCall(err error) error {
-	WithCall(&err)
+func WithCall(err error) error {
+	AddCall(&err)
 	return err
 }
