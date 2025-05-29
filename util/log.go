@@ -18,17 +18,20 @@ func NewLogger(moduleName string) *Logger {
 
 func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, argsPtr *[]any) {
 	args := []any{}
-	err := *errPtr
-	if err != nil {
+	var err error
+	if errPtr != nil && *errPtr != nil {
+		err = *errPtr
 		level = slog.LevelError
 		args = append(args, "err", err)
 	}
-	if argsPtr != nil {
+	if argsPtr != nil && *argsPtr != nil {
 		args = append(args, (*argsPtr)...)
 	}
-	var errorWithCall *ErrorWithCall
-	if errors.As(err, &errorWithCall) {
-		args = append(args, "call", errorWithCall.Call)
+	if err != nil {
+		var errorWithCall *ErrorWithCall
+		if errors.As(err, &errorWithCall) {
+			args = append(args, "call", errorWithCall.Call)
+		}
 	}
 	l.Log(context.Background(), level, message, args...)
 }

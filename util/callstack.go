@@ -213,14 +213,23 @@ type ErrorWithCall struct {
 	Call CallInfo
 }
 
-func WithCall(err error) error {
+func WithCall(errPtr *error) {
+	if errPtr == nil || *errPtr == nil {
+		return
+	}
+	err := *errPtr
 	stack := GetCallStack(2, 0)
 	var call CallInfo
 	if len(stack) > 0 {
 		call = stack[0]
 	}
-	return &ErrorWithCall{
+	*errPtr = &ErrorWithCall{
 		error: err,
 		Call:  call,
 	}
+}
+
+func WrapCall(err error) error {
+	WithCall(&err)
+	return err
 }
