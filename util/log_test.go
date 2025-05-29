@@ -36,13 +36,13 @@ func (s *SomeObject) NestedMethod() {
 
 func TestSomeMethod(t *testing.T) {
 	var o *SomeObject
-	logHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
 		o = NewSomeObject() // вызываем функцию-конструктор в обёртке logHandler
 	})
 	o.SomeMethod() // вызываем тестируемый метод
 
-	require.True(t, len(logHandler.Records) == 1)
-	record0 := logHandler.Records[0]
+	require.True(t, len(spylogHandler.Records) == 1)
+	record0 := spylogHandler.Records[0]
 
 	assert.Equal(t, "message", record0.Message)
 	assert.Equal(t, "error", spylog.GetAttrValue(record0, "err"))
