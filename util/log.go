@@ -2,7 +2,7 @@ package util
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 )
 
@@ -26,20 +26,21 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 	if argsPtr != nil {
 		args = append(args, (*argsPtr)...)
 	}
-	for i, call := range GetCallStack(3, 0) {
-		args = append(args, fmt.Sprintf("stack[%d]", i), call)
+	var errorWithCall *ErrorWithCall
+	if errors.As(err, &errorWithCall) {
+		args = append(args, "call", errorWithCall.Call)
 	}
 	l.Log(context.Background(), level, message, args...)
 }
 
-// func (l *Logger) DebugOrError(message string, errPtr *error, argsPtr *[]any) {
-// 	l.logOrError(slog.LevelDebug, message, errPtr, argsPtr)
-// }
+func (l *Logger) DebugOrError(message string, errPtr *error, argsPtr *[]any) {
+	l.logOrError(slog.LevelDebug, message, errPtr, argsPtr)
+}
 
 func (l *Logger) InfoOrError(message string, errPtr *error, argsPtr *[]any) {
 	l.logOrError(slog.LevelInfo, message, errPtr, argsPtr)
 }
 
-// func (l *Logger) WarnOrError(message string, errPtr *error, argsPtr *[]any) {
-// 	l.logOrError(slog.LevelWarn, message, errPtr, argsPtr)
-// }
+func (l *Logger) WarnOrError(message string, errPtr *error, argsPtr *[]any) {
+	l.logOrError(slog.LevelWarn, message, errPtr, argsPtr)
+}

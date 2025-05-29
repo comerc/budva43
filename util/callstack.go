@@ -115,17 +115,33 @@ func getFuncName(fullFnName string) string {
 		return strings.TrimPrefix(fullFnName, module+".")
 	}
 
+	// Для функций main пакета возвращаем как есть
+	if strings.HasPrefix(fullFnName, "main.") {
+		return fullFnName
+	}
+
 	return fullFnName
 }
 
-// isProjectPath проверяет, принадлежит ли путь к текущему проекту
-func isProjectPath(fullFnName string) bool {
-	module := getProjectModule()
-	if module == "" {
-		return false
-	}
-	return strings.HasPrefix(fullFnName, module)
-}
+// // isProjectPath проверяет, принадлежит ли путь к текущему проекту
+// func isProjectPath(fullFnName string) bool {
+// 	module := getProjectModule()
+// 	if module == "" {
+// 		return false
+// 	}
+
+// 	// Проверяем функции из подпакетов модуля
+// 	if strings.HasPrefix(fullFnName, module) {
+// 		return true
+// 	}
+
+// 	// Проверяем функции из main пакета (они имеют вид "main.FuncName")
+// 	if strings.HasPrefix(fullFnName, "main.") {
+// 		return true
+// 	}
+
+// 	return false
+// }
 
 // getRelativePath возвращает относительный путь к файлу относительно корня проекта
 func getRelativePath(fullPath string) string {
@@ -168,12 +184,13 @@ func GetCallStack(skip int, depth int) []CallInfo {
 		}
 
 		fullFnName := fn.Name()
-		isProject := isProjectPath(fullFnName)
+		// TODO: а нужна ли проверка на принадлежность к проекту?
+		// isProject := isProjectPath(fullFnName)
 
-		// Если это не код проекта, прерываем поиск
-		if !isProject {
-			break
-		}
+		// // Если это не код проекта, прерываем поиск
+		// if !isProject {
+		// 	break
+		// }
 
 		// Получаем короткое имя функции без полного пути модуля
 		funcName := getFuncName(fullFnName)
@@ -189,4 +206,21 @@ func GetCallStack(skip int, depth int) []CallInfo {
 	}
 
 	return result
+}
+
+type ErrorWithCall struct {
+	error
+	Call CallInfo
+}
+
+func WithCall(err error) error {
+	stack := GetCallStack(2, 0)
+	var call CallInfo
+	if len(stack) > 0 {
+		call = stack[0]
+	}
+	return &ErrorWithCall{
+		error: err,
+		Call:  call,
+	}
 }
