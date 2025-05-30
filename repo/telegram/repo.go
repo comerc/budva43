@@ -2,21 +2,20 @@ package telegram
 
 import (
 	"context"
-	"fmt"
 	"path"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
 )
 
 // TODO: logout
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	client     *client.Client
 	clientDone chan any
@@ -25,7 +24,7 @@ type Repo struct {
 // New создает новый экземпляр репозитория Telegram
 func New() *Repo {
 	r := &Repo{
-		log: util.NewLogger("repo.telegram"),
+		log: log.NewLogger("repo.telegram"),
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
 		clientDone: make(chan any), // закроется, когда клиент авторизован
@@ -36,7 +35,10 @@ func New() *Repo {
 
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(_ context.Context) error {
-	err := r.setupClientLog()
+	var err error
+	defer r.log.InfoOrError("defer", &err)
+
+	err = r.setupClientLog()
 	if err != nil {
 		// r.log.Error("setupClientLog", "err", err)
 		return err
@@ -81,12 +83,14 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 
 // Close закрывает клиент TDLib
 func (r *Repo) Close() error {
+	var err error
+
 	if r.client == nil {
 		return nil
 	}
-	_, err := r.client.Close()
+	_, err = r.client.Close()
 	if err != nil {
-		return fmt.Errorf("ошибка закрытия TDLib клиента: %w", err)
+		return err
 	}
 	r.client = nil
 	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
@@ -144,13 +148,13 @@ func (r *Repo) setupClientLog() error {
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("ошибка настройки потока логов TDLib: %w", err)
+		return log.WithCall(err)
 	}
 	_, err = client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 		NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
 	})
 	if err != nil {
-		return fmt.Errorf("ошибка настройки уровня логирования TDLib: %w", err)
+		return log.WithCall(err)
 	}
 	return nil
 }

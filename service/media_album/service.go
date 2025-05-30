@@ -7,8 +7,8 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/entity"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
 )
 
 // mediaAlbum представляет группу сообщений, составляющих медиа-альбом
@@ -19,7 +19,7 @@ type mediaAlbum struct {
 
 // Service управляет медиа-альбомами
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	mu          sync.Mutex
 	mediaAlbums map[entity.MediaAlbumKey]*mediaAlbum
@@ -28,7 +28,7 @@ type Service struct {
 // New создает новый сервис для управления медиа-альбомами
 func New() *Service {
 	return &Service{
-		log: util.NewLogger("service.media_album"),
+		log: log.NewLogger("service.media_album"),
 		//
 		mediaAlbums: make(map[entity.MediaAlbumKey]*mediaAlbum),
 	}

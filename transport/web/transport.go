@@ -9,8 +9,8 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
 )
 
 // type reportController interface {
@@ -27,7 +27,7 @@ type authController interface {
 
 // Transport представляет HTTP маршрутизатор для API
 type Transport struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	// reportController reportController
 	authController authController
@@ -41,7 +41,7 @@ func New(
 	authController authController,
 ) *Transport {
 	return &Transport{
-		log: util.NewLogger("transport.web"),
+		log: log.NewLogger("transport.web"),
 		//
 		// reportController: reportController,
 		authController: authController,
@@ -66,7 +66,7 @@ func (t *Transport) setupRoutes(mux *http.ServeMux) {
 
 // handleFavicon обрабатывает запросы к favicon
 func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "static/favicon.ico")
+	http.ServeFile(w, r, "app/static/favicon.ico")
 }
 
 // handleRoot обрабатывает запросы к корневому маршруту
@@ -382,14 +382,17 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 // Close останавливает HTTP-сервер
 func (t *Transport) Close() error {
+	var err error
+
 	// t.log.Info("Stopping HTTP server")
 
 	// Создаем контекст с таймаутом для graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
 	defer cancel()
 
-	if err := t.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("error shutting down HTTP server: %w", err)
+	err = t.server.Shutdown(ctx)
+	if err != nil {
+		return err
 	}
 
 	// t.log.Info("HTTP server stopped")

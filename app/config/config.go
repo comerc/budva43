@@ -12,7 +12,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"github.com/comerc/budva43/entity"
+	"github.com/comerc/budva43/app/entity"
 )
 
 type (

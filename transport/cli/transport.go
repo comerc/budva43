@@ -11,8 +11,9 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 	"golang.org/x/term"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 // TODO: не нравится, что нужно вводить auth для каждого последующего шага
@@ -31,7 +32,7 @@ type authController interface {
 
 // Transport представляет интерфейс командной строки
 type Transport struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	// reportController reportController
 	authController authController
@@ -54,7 +55,7 @@ func New(
 	authController authController,
 ) *Transport {
 	cli := &Transport{
-		log: util.NewLogger("transport.cli"),
+		log: log.NewLogger("transport.cli"),
 		//
 		// reportController: reportController,
 		authController: authController,
@@ -177,9 +178,12 @@ func (t *Transport) handleExit(args []string) {
 
 // // handleReport обрабатывает команду report
 // func (t *Transport) handleReport(args []string) {
+// 	var err error
+// 	defer t.log.DebugOrError("handleReport", &err)
+
 // 	if len(args) == 0 {
 // 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
-// 		return nil
+// 		return
 // 	}
 
 // 	reportType := args[0]
@@ -197,7 +201,6 @@ func (t *Transport) handleExit(args []string) {
 // 	fmt.Printf("Генерация отчета '%s' за период %s - %s...\n",
 // 		reportType, startDate.Format("02.01.2006"), endDate.Format("02.01.2006"))
 
-// 	var err error
 // 	switch reportType {
 // 	case "activity":
 // 		_, err = t.reportController.GenerateActivityReport(startDate, endDate)
@@ -206,25 +209,20 @@ func (t *Transport) handleExit(args []string) {
 // 	case "error":
 // 		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
 // 	default:
-// 		return fmt.Errorf("неизвестный тип отчета: %s. Доступные: activity, forwarding, error", reportType)
+// 		err = fmt.Errorf("неизвестный тип отчета: %s; доступные: activity, forwarding, error", reportType)
 // 	}
 
 // 	if err != nil {
-// 		return fmt.Errorf("ошибка при генерации отчета: %w", err)
+// 		return
 // 	}
 
 // 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
-// 	return nil
 // }
 
 // handleAuth обрабатывает команду auth
 func (t *Transport) handleAuth(args []string) {
 	var err error
-	defer func() {
-		if err != nil {
-			// t.log.Error("handleAuth", "err", err)
-		}
-	}()
+	defer t.log.DebugOrError("handleAuth", &err)
 
 	state := t.authController.GetState()
 	if state == nil {
@@ -247,7 +245,6 @@ func (t *Transport) handleAuth(args []string) {
 			fmt.Println("Введите номер телефона: ")
 			phoneNumber, err = t.hiddenReadLine()
 			if err != nil {
-				// return fmt.Errorf("ошибка при чтении телефона: %w", err)
 				return
 			}
 		}
@@ -255,18 +252,18 @@ func (t *Transport) handleAuth(args []string) {
 
 	case client.TypeAuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
-		code, err := t.hiddenReadLine()
+		var code string
+		code, err = t.hiddenReadLine()
 		if err != nil {
-			// return fmt.Errorf("ошибка при чтении кода: %w", err)
 			return
 		}
 		t.authController.GetInputChan() <- code
 
 	case client.TypeAuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
-		password, err := t.hiddenReadLine()
+		var password string
+		password, err = t.hiddenReadLine()
 		if err != nil {
-			// return fmt.Errorf("ошибка при чтении пароля: %w", err)
 			return
 		}
 		t.authController.GetInputChan() <- password
@@ -277,5 +274,5 @@ func (t *Transport) handleAuth(args []string) {
 func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
-	return string(password), err
+	return string(password), log.WithCall(err)
 }

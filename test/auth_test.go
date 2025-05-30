@@ -15,13 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zelenin/go-tdlib/client"
 
-	config "github.com/comerc/budva43/config"
+	config "github.com/comerc/budva43/app/config"
+	util "github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
-	util "github.com/comerc/budva43/util"
 )
 
 func initTelegramDirs(t *testing.T) {

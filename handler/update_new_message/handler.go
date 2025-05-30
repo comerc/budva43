@@ -3,14 +3,14 @@ package update_new_message
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/entity"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 type telegramRepo interface {
@@ -48,11 +48,11 @@ type forwardedToService interface {
 }
 
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) error
+	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
 }
 
 type Handler struct {
-	log *util.Logger
+	log *log.Logger
 	ctx context.Context
 	//
 	telegramRepo       telegramRepo
@@ -76,7 +76,7 @@ func New(
 	forwarderService forwarderService,
 ) *Handler {
 	return &Handler{
-		log: util.NewLogger("handler.update_new_message"),
+		log: log.NewLogger("handler.update_new_message"),
 		//
 		telegramRepo:       telegramRepo,
 		queueRepo:          queueRepo,
@@ -201,20 +201,14 @@ func (h *Handler) processMessage(messages []*client.Message,
 		err         error
 	)
 	defer func() {
-		level := slog.LevelInfo
-		fields := []any{
+		args := []any{
 			"ChatId", src.ChatId,
 			"Id", src.Id,
 			"MediaAlbumId", src.MediaAlbumId,
 			"filtersMode", filtersMode,
 			"result", result,
 		}
-		if err != nil {
-			level = slog.LevelError
-			fields = append(fields, "err", err)
-		}
-		_ = level // TODO: костыль
-		// h.log.Log(context.Background(), level, "processMessage", fields...)
+		h.log.InfoOrError("processMessage", &err, args...)
 	}()
 
 	formattedText := h.messageService.GetFormattedText(src)
@@ -230,7 +224,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
 			if h.forwardedToService.Add(forwardedTo, dstChatId) {
-				err = h.forwarderService.ForwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id)
+				h.forwarderService.ForwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id)
 				result = append(result, dstChatId)
 			}
 		}
@@ -240,7 +234,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					err = h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id)
+					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id)
 				}
 			}
 		}
@@ -250,7 +244,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				otherFns[forwardRule.Other] = func() {
 					const isSendCopy = true // обязательно надо копировать, иначе не видно редактирование исходного сообщения
-					err = h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id)
+					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id)
 				}
 			}
 		}

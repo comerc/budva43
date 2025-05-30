@@ -1,4 +1,4 @@
-package util
+package log
 
 import (
 	"bufio"
@@ -123,25 +123,25 @@ func getFuncName(fullFnName string) string {
 	return fullFnName
 }
 
-// // isProjectPath проверяет, принадлежит ли путь к текущему проекту
-// func isProjectPath(fullFnName string) bool {
-// 	module := getProjectModule()
-// 	if module == "" {
-// 		return false
-// 	}
+// isProjectPath проверяет, принадлежит ли путь к текущему проекту
+func isProjectPath(fullFnName string) bool {
+	module := getProjectModule()
+	if module == "" {
+		return false
+	}
 
-// 	// Проверяем функции из подпакетов модуля
-// 	if strings.HasPrefix(fullFnName, module) {
-// 		return true
-// 	}
+	// Проверяем функции из подпакетов модуля
+	if strings.HasPrefix(fullFnName, module) {
+		return true
+	}
 
-// 	// Проверяем функции из main пакета (они имеют вид "main.FuncName")
-// 	if strings.HasPrefix(fullFnName, "main.") {
-// 		return true
-// 	}
+	// Проверяем функции из main пакета (они имеют вид "main.FuncName")
+	if strings.HasPrefix(fullFnName, "main.") {
+		return true
+	}
 
-// 	return false
-// }
+	return false
+}
 
 // getRelativePath возвращает относительный путь к файлу относительно корня проекта
 func getRelativePath(fullPath string) string {
@@ -184,13 +184,12 @@ func GetCallStack(skip int, depth int) []CallInfo {
 		}
 
 		fullFnName := fn.Name()
-		// TODO: а нужна ли проверка на принадлежность к проекту?
-		// isProject := isProjectPath(fullFnName)
+		isProject := isProjectPath(fullFnName)
 
-		// // Если это не код проекта, прерываем поиск
-		// if !isProject {
-		// 	break
-		// }
+		// Если это не код проекта, прерываем поиск
+		if !isProject {
+			break
+		}
 
 		// Получаем короткое имя функции без полного пути модуля
 		funcName := getFuncName(fullFnName)
@@ -206,30 +205,4 @@ func GetCallStack(skip int, depth int) []CallInfo {
 	}
 
 	return result
-}
-
-type ErrorWithCall struct {
-	error
-	Call CallInfo
-}
-
-func AddCall(errPtr *error) {
-	if errPtr == nil || *errPtr == nil {
-		return
-	}
-	err := *errPtr
-	stack := GetCallStack(2, 0)
-	var call CallInfo
-	if len(stack) > 0 {
-		call = stack[0]
-	}
-	*errPtr = &ErrorWithCall{
-		error: err,
-		Call:  call,
-	}
-}
-
-func WithCall(err error) error {
-	AddCall(&err)
-	return err
 }

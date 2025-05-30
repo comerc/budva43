@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/creack/pty"
+
+	"github.com/comerc/budva43/app/log"
 )
 
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
-	log *Logger
+	log *log.Logger
 	//
 	originalStdin  *os.File
 	originalStdout *os.File
@@ -45,7 +47,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	}
 
 	automator := &CLIAutomator{
-		log: NewLogger("util.cli_automator"),
+		log: log.NewLogger("app.util.cli_automator"),
 		//
 		originalStdin:  originalStdin,
 		originalStdout: originalStdout,

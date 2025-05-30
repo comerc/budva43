@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/comerc/budva43/config"
+	log "github.com/comerc/budva43/app/log"
+	util "github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
@@ -30,7 +30,6 @@ import (
 	transformService "github.com/comerc/budva43/service/transform"
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
-	"github.com/comerc/budva43/util"
 )
 
 // TODO: проверить весь перенесённый код на early return
@@ -38,137 +37,72 @@ import (
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
 // TODO: прикрутить готовый образ tdlib в докере для make build
 
-type App struct {
-	log *util.Logger
-}
-
-var app *App
-
 // Основная функция приложения
 func main() {
-	setupLogger()
-
-	app = &App{
-		log: util.NewLogger("main"),
+	// Запускаем приложение и обрабатываем ошибки
+	if err := NewApp().Run(); err != nil {
+		os.Exit(1)
 	}
+}
 
-	app.log.Info("Запуск приложения Budva43")
+type App struct {
+	log *log.Logger
+}
 
-	// go config.Watch(func(e fsnotify.Event) {
-	// 	app.log.Info("Config file changed", "file", e.Name)
-	// }) // TODO: перезагрузка приложения при изменении конфигурации
+func NewApp() *App {
+
+	return &App{
+		log: log.NewLogger("main"),
+	}
+}
+
+// Run запускает основные компоненты приложения
+func (a *App) Run() error {
+	var err error
+	// Исключение: логируем ошибку на этом уровне, но передаём выше
+	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
+	defer a.log.InfoOrError("Приложение завершило работу", &err)
+
+	a.log.Info("Запуск приложения")
 
 	// Создаем контекст, который будет отменен при сигнале остановки
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Набор ошибок для graceful shutdown
-	errSet := &errSet{}
-
 	// Настраиваем обработку сигналов остановки
-	setupSignalHandler(cancel)
+	a.setupSignalHandler(cancel)
 
-	// Запускаем приложение и обрабатываем ошибки
-	if err := runApp(ctx, errSet); err != nil {
-		app.log.Error("Ошибка при запуске приложения", "err", err)
-		os.Exit(1)
-	}
-
-	// Выводим накопленные ошибки при завершении
-	if errMsg := errSet.Error(); errMsg != "" {
-		app.log.Warn(errMsg)
-	}
-
-	app.log.Info("Приложение успешно завершило работу")
-}
-
-// errSet представляет собой коллекцию ошибок, которые могут возникнуть при shutdown
-type errSet struct {
-	errors []error
-}
-
-// add добавляет ошибку в набор ошибок, если она не nil
-func (e *errSet) add(err error) {
-	if err != nil {
-		e.errors = append(e.errors, err)
-	}
-}
-
-// Error возвращает строковое представление всех ошибок
-func (e *errSet) Error() string {
-	if len(e.errors) == 0 {
-		return ""
-	}
-
-	result := "Ошибки при завершении работы:\n"
-	for i, err := range e.errors {
-		result += fmt.Sprintf("  %d. %v\n", i+1, err)
-	}
-	return result
-}
-
-// gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
-func gracefulShutdown(componentName string, errSet *errSet, closer io.Closer) {
-	app.log.Info("Останавливаем", "componentName", componentName)
-	if err := closer.Close(); err != nil {
-		app.log.Error(
-			"Ошибка при остановке",
-			"componentName", componentName,
-			"err", err,
-		)
-		errSet.add(fmt.Errorf("ошибка при остановке %s: %w", componentName, err))
-	}
-}
-
-// setupLogger настраивает логгер
-func setupLogger() {
-	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     config.LogOptions.Level,
-		AddSource: config.LogOptions.AddSource,
-	})
-	logger := slog.New(logHandler)
-	slog.SetDefault(logger)
-}
-
-// setupSignalHandler настраивает обработку сигналов остановки
-func setupSignalHandler(shutdown func()) {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		sig := <-sigs
-		app.log.Info("Получен сигнал остановки", "сигнал", sig)
-		shutdown()
+	// Набор ошибок для graceful shutdown
+	errSet := &util.ErrSet{}
+	defer func() {
+		// Выводим накопленные ошибки при завершении
+		for i, err := range errSet.GetErrors() {
+			// Выводим по одной ошибке, преследуя атомарность сообщений
+			a.log.InfoOrError(fmt.Sprintf("Ошибки при завершении работы [%d]", i), &err)
+		}
 	}()
-}
 
-// runApp запускает основные компоненты приложения
-func runApp(ctx context.Context, errSet *errSet) error {
 	// - Инициализация репозиториев
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	storageRepo := storageRepo.New()
-	if err := storageRepo.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска storageRepo: %w", err)
+	err = storageRepo.Start(ctx)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("storageRepo", errSet, storageRepo)
-	app.log.Info("storageRepo запущен")
+	defer gracefulShutdown(errSet, storageRepo)
 
 	telegramRepo := telegramRepo.New()
-	if err := telegramRepo.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска telegramRepo: %w", err)
+	err = telegramRepo.Start(ctx)
+	if err != nil {
+		return (err)
 	}
-	defer gracefulShutdown("telegramRepo", errSet, telegramRepo)
-	app.log.Info("telegramRepo запущен")
+	defer gracefulShutdown(errSet, telegramRepo)
 
 	queueRepo := queueRepo.New()
-	if err := queueRepo.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска queueRepo: %w", err)
+	err = queueRepo.Start(ctx)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("queueRepo", errSet, queueRepo)
-	app.log.Info("queueRepo запущен")
+	defer gracefulShutdown(errSet, queueRepo)
 
 	// - Инициализация вспомогательных сервисов
 	// reportService := reportService.New()
@@ -191,11 +125,11 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		rateLimiterService,
 	)
 	authService := authService.New(telegramRepo)
-	if err := authService.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска authService: %w", err)
+	err = authService.Start(ctx)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("authService", errSet, authService)
-	app.log.Info("authService запущен")
+	defer gracefulShutdown(errSet, authService)
 
 	// - Инициализация основного сервиса и его обработчиков
 	updateNewMessageHandler := updateNewMessageHandler.New(
@@ -233,11 +167,11 @@ func runApp(ctx context.Context, errSet *errSet) error {
 		updateDeleteMessagesHandler,
 		updateMessageSendHandler,
 	)
-	if err := engineService.Start(ctx); err != nil {
-		return fmt.Errorf("ошибка запуска engineService: %w", err)
+	err = engineService.Start(ctx)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("engineService", errSet, engineService)
-	app.log.Info("engineService запущен")
+	defer gracefulShutdown(errSet, engineService)
 
 	// - Инициализация контроллеров
 	// reportController := reportController.New(
@@ -253,35 +187,54 @@ func runApp(ctx context.Context, errSet *errSet) error {
 	// 	reportController,
 	//  authController,
 	// )
-	// if err := botTransport.Start(ctx, cancel); err != nil {
-	// 	return fmt.Errorf("ошибка запуска botTransport: %w", err)
+	// err = botTransport.Start(ctx, cancel)
+	// if err != nil {
+	// 	return err
 	// }
-	// defer gracefulShutdown("botTransport", errSet, botTransport)
-	// app.log.Info("botTransport запущен")
+	// defer gracefulShutdown(errSet, botTransport)
 
 	cliTransport := cliTransport.New(
 		// reportController,
 		authController,
 	)
-	if err := cliTransport.Start(ctx, cancel); err != nil {
-		return fmt.Errorf("ошибка запуска cliTransport: %w", err)
+	err = cliTransport.Start(ctx, cancel)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("cliTransport", errSet, cliTransport)
-	app.log.Info("cliTransport запущен")
+	defer gracefulShutdown(errSet, cliTransport)
 
 	webTransport := webTransport.New(
 		// reportController,
 		authController,
 	)
-	if err := webTransport.Start(ctx, cancel); err != nil {
-		return fmt.Errorf("ошибка запуска webTransport: %w", err)
+	err = webTransport.Start(ctx, cancel)
+	if err != nil {
+		return err
 	}
-	defer gracefulShutdown("webTransport", errSet, webTransport)
-	app.log.Info("webTransport запущен")
+	defer gracefulShutdown(errSet, webTransport)
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
-	app.log.Info("Получен сигнал завершения, начинаем graceful shutdown")
+	a.log.Info("Получен сигнал завершения, начинаем graceful shutdown")
 
 	return nil
+}
+
+// SetupSignalHandler настраивает обработку сигналов остановки
+func (a *App) setupSignalHandler(shutdown func()) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		a.log.Info("Получен сигнал остановки", "sig", sig)
+		shutdown()
+	}()
+}
+
+// gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
+func gracefulShutdown(errSet *util.ErrSet, closer io.Closer) {
+	if err := closer.Close(); err != nil {
+		errSet.Add(err)
+	}
 }

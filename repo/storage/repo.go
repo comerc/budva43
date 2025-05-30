@@ -5,15 +5,15 @@ import (
 	"encoding/binary"
 	"time"
 
-	badger "github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v4"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
 )
 
 // Repo определяет интерфейс для работы с хранилищем BadgerDB
 type Repo struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	db *badger.DB
 }
@@ -21,7 +21,7 @@ type Repo struct {
 // New создает новый экземпляр репозитория для BadgerDB
 func New() *Repo {
 	return &Repo{
-		log: util.NewLogger("repo.storage"),
+		log: log.NewLogger("repo.storage"),
 		//
 		db: nil,
 	}
@@ -29,6 +29,8 @@ func New() *Repo {
 
 // Start устанавливает соединение с базой данных
 func (r *Repo) Start(ctx context.Context) error {
+	var err error
+
 	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
 	db, err := badger.Open(opts)
 	if err != nil {

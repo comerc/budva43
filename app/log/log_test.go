@@ -1,7 +1,7 @@
-package util
+package log
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/comerc/spylog"
@@ -24,14 +24,16 @@ func (s *SomeObject) SomeMethod() {
 }
 
 func (s *SomeObject) NestedMethod() {
-	var (
-		err  error
-		args []any
-	)
-	defer s.log.InfoOrError("message", &err, &args)
+	var err error
+	defer func() {
+		args := []any{
+			"arg1", "val1",
+			"arg2", "val2",
+		}
+		s.log.InfoOrError("message", &err, args...)
+	}()
 
-	err = WithCall(errors.New("error"))
-	args = append(args, "arg1", "val1", "arg2", "val2")
+	err = WithCall(fmt.Errorf("error"))
 }
 
 func TestSomeMethod(t *testing.T) {
@@ -48,6 +50,6 @@ func TestSomeMethod(t *testing.T) {
 	assert.Equal(t, "error", spylog.GetAttrValue(record0, "err"))
 	assert.Equal(t, "val1", spylog.GetAttrValue(record0, "arg1"))
 	assert.Equal(t, "val2", spylog.GetAttrValue(record0, "arg2"))
-	assert.Equal(t, "util/log_test.go:33 util.(*SomeObject).NestedMethod",
-		spylog.GetAttrValue(record0, "call"), "WithCall() не работает")
+	assert.Equal(t, "util/log_test.go:37 util.(*SomeObject).NestedMethod",
+		spylog.GetAttrValue(record0, "add"), "WithCall() не работает")
 }
