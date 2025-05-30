@@ -6,9 +6,10 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/entity"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 type telegramRepo interface {
@@ -41,11 +42,11 @@ type filtersModeService interface {
 }
 
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) error
+	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
 }
 
 type Handler struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	telegramRepo       telegramRepo
 	queueRepo          queueRepo
@@ -66,7 +67,7 @@ func New(
 	forwarderService forwarderService,
 ) *Handler {
 	return &Handler{
-		log: util.NewLogger("handler.update_message_edited"),
+		log: log.NewLogger("handler.update_message_edited"),
 		//
 		telegramRepo:       telegramRepo,
 		queueRepo:          queueRepo,
@@ -154,6 +155,9 @@ func (h *Handler) collectData(chatId, messageId int64) *data {
 
 // editMessages редактирует сообщения
 func (h *Handler) editMessages(chatId, messageId int64, data *data) {
+	var err error
+	defer h.log.DebugOrError("editMessages", &err)
+
 	result := []string{}
 	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 
@@ -163,7 +167,8 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 		_ = result // TODO: костыль
 	}()
 
-	src, err := h.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
+	var src *client.Message
+	src, err = h.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
 		ChatId:    chatId,
 		MessageId: messageId,
 	})
@@ -209,7 +214,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					_ = h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
+					h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
 				}
 			}
 			continue

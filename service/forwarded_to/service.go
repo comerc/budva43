@@ -3,18 +3,18 @@ package forwarded_to
 import (
 	"sync"
 
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/log"
 )
 
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	mu sync.Mutex
 }
 
 func New() *Service {
 	return &Service{
-		log: util.NewLogger("service.forwarded_to"),
+		log: log.NewLogger("service.forwarded_to"),
 	}
 }
 

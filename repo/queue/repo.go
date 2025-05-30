@@ -5,12 +5,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/log"
 )
 
 // Repo предоставляет функциональность асинхронной очереди задач
 type Repo struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	queue *list.List
 }
@@ -18,7 +18,7 @@ type Repo struct {
 // New создает новый экземпляр сервиса очереди
 func New() *Repo {
 	return &Repo{
-		log: util.NewLogger("repo.queue"),
+		log: log.NewLogger("repo.queue"),
 		//
 		queue: list.New(),
 	}
@@ -26,6 +26,7 @@ func New() *Repo {
 
 // Start запускает обработчик очереди
 func (s *Repo) Start(ctx context.Context) error {
+
 	go s.run(ctx)
 
 	return nil

@@ -8,7 +8,8 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 type telegramRepo interface {
@@ -37,7 +38,7 @@ type rateLimiterService interface {
 }
 
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 	ctx context.Context
 	//
 	telegramRepo       telegramRepo
@@ -55,7 +56,7 @@ func New(
 	rateLimiterService rateLimiterService,
 ) *Service {
 	return &Service{
-		log: util.NewLogger("service.forwarder"),
+		log: log.NewLogger("service.forwarder"),
 		//
 		telegramRepo:       telegramRepo,
 		storageService:     storageService,
@@ -66,25 +67,22 @@ func New(
 }
 
 // ForwardMessages пересылает сообщения в целевой чат
-func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) error {
-	// s.log.Debug("ForwardMessages",
-	// 	"srcChatId", srcChatId,
-	// 	"dstChatId", dstChatId,
-	// 	"sendCopy", isSendCopy,
-	// 	"forwardRuleId", forwardRuleId,
-	// 	"messageCount", len(messages))
+func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) {
+	var err error
+	defer func() {
+		args := []any{
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+			"isSendCopy", isSendCopy,
+			"forwardRuleId", forwardRuleId,
+			"len(messages)", len(messages),
+		}
+		s.log.DebugOrError("ForwardMessages", &err, args...)
+	}()
 
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
 
-	var (
-		result *client.Messages
-		err    error
-	)
-	defer func() {
-		if err != nil {
-			// s.log.Error("ForwardMessages", "err", err)
-		}
-	}()
+	var result *client.Messages
 
 	if isSendCopy {
 		contents := s.prepareMessageContents(messages, dstChatId)
@@ -114,15 +112,17 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 	}
 
 	if err != nil {
-		return err
+		return
 	}
 
 	if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
-		return fmt.Errorf("invalid TotalCount")
+		err = fmt.Errorf("invalid TotalCount")
+		return
 	}
 
 	if len(result.Messages) != len(messages) {
-		return fmt.Errorf("invalid len(messages)")
+		err = fmt.Errorf("invalid len(messages)")
+		return
 	}
 
 	if isSendCopy {
@@ -142,8 +142,6 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 			}
 		}
 	}
-
-	return nil
 }
 
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения

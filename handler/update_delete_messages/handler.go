@@ -6,8 +6,9 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 type telegramRepo interface {
@@ -28,7 +29,7 @@ type storageService interface {
 }
 
 type Handler struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	telegramRepo   telegramRepo
 	queueRepo      queueRepo
@@ -41,7 +42,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: util.NewLogger("handler.update_delete_messages"),
+		log: log.NewLogger("handler.update_delete_messages"),
 		//
 		telegramRepo:   telegramRepo,
 		queueRepo:      queueRepo,

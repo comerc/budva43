@@ -1,8 +1,9 @@
 package update_message_send
 
 import (
-	"github.com/comerc/budva43/util"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/app/log"
 )
 
 type queueRepo interface {
@@ -15,7 +16,7 @@ type storageService interface {
 }
 
 type Handler struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	queueRepo      queueRepo
 	storageService storageService
@@ -26,7 +27,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: util.NewLogger("handler.update_message_send"),
+		log: log.NewLogger("handler.update_message_send"),
 		//
 		queueRepo:      queueRepo,
 		storageService: storageService,

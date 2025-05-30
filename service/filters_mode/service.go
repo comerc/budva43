@@ -6,17 +6,17 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/entity"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
 )
 
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 }
 
 func New() *Service {
 	return &Service{
-		log: util.NewLogger("service.filters_mode"),
+		log: log.NewLogger("service.filters_mode"),
 	}
 }
 

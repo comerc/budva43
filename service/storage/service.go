@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 const (
@@ -28,7 +29,7 @@ type storageRepo interface {
 
 // Service предоставляет методы для хранения данных, специфичных для engine
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	repo storageRepo
 }
@@ -36,7 +37,7 @@ type Service struct {
 // New создает новый экземпляр сервиса хранения данных
 func New(repo storageRepo) *Service {
 	return &Service{
-		log: util.NewLogger("service.storage"),
+		log: log.NewLogger("service.storage"),
 		//
 		repo: repo,
 	}

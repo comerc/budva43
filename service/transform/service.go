@@ -8,8 +8,9 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/config"
-	"github.com/comerc/budva43/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 // telegramRepo определяет методы для работы с Telegram API
@@ -30,7 +31,7 @@ type messageService interface {
 
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
-	log *util.Logger
+	log *log.Logger
 	//
 	telegramRepo   telegramRepo
 	storageService storageService
@@ -44,7 +45,7 @@ func New(
 	messageService messageService,
 ) *Service {
 	return &Service{
-		log: util.NewLogger("service.transform"),
+		log: log.NewLogger("service.transform"),
 		//
 		telegramRepo:   telegramRepo,
 		storageService: storageService,
@@ -68,18 +69,15 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 // replaceMyselfLinks заменяет ссылки на текущего бота в тексте
 func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) {
 	var err error
-	defer func() {
-		if err != nil {
-			// s.log.Error("replaceMyselfLinks", "err", err)
-		}
-	}()
+	defer s.log.DebugOrError("replaceMyselfLinks", &err)
+
 	data, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
 		err = fmt.Errorf("destination not found")
 		return
 	}
 	if !data.ReplaceMyselfLinks.Run {
-		err = fmt.Errorf("replaceMyselfLinks is disabled")
+		err = fmt.Errorf("Run is disabled")
 		return
 	}
 	// s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
@@ -93,7 +91,6 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			Url: textUrl.Url,
 		})
 		if err != nil {
-			// s.log.Error("GetMessageLinkInfo", "err", err)
 			return
 		}
 		src := messageLinkInfo.Message
@@ -124,7 +121,6 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 				MessageId: newMessageId,
 			})
 			if err != nil {
-				// s.log.Error("GetMessageLink", "err", err)
 				return
 			}
 			entity.Type = &client.TextEntityTypeTextUrl{
@@ -141,11 +137,8 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 // replaceFragments заменяет фрагменты текста согласно настройкам
 func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
 	var err error
-	defer func() {
-		if err != nil {
-			// s.log.Error("replaceFragments", "err", err)
-		}
-	}()
+	defer s.log.DebugOrError("replaceFragments", &err)
+
 	destination, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
 		err = fmt.Errorf("destination not found")
@@ -156,7 +149,8 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 		if re.FindString(formattedText.Text) != "" {
 			// вынесено в engineService.validateConfig()
 			// if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-			// 	return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+			// 	err = fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+			// 	return
 			// }
 			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
 		}
@@ -166,11 +160,8 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 // addAutoAnswer добавляет ответ на сообщение
 func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	var err error
-	defer func() {
-		if err != nil {
-			// s.log.Error("addAutoAnswer", "err", err)
-		}
-	}()
+	defer s.log.DebugOrError("addAutoAnswer", &err)
+
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		err = fmt.Errorf("source not found")
@@ -195,17 +186,14 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 	if err != nil {
 		return
 	}
-	s.addText(formattedText, escapeMarkdown(answer.Text))
+	err = s.addText(formattedText, escapeMarkdown(answer.Text))
 }
 
 // addSources добавляет подпись и ссылку на источник к тексту
 func (s *Service) addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) {
 	var err error
-	defer func() {
-		if err != nil {
-			// s.log.Error("addSources", "err", err)
-		}
-	}()
+	defer s.log.DebugOrError("addSources", &err)
+
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		err = fmt.Errorf("source not found")
@@ -213,11 +201,11 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 	}
 	if slices.Contains(source.Sign.For, dstChatId) {
 		text := source.Sign.Title
-		s.addText(formattedText, text)
+		err = s.addText(formattedText, text)
 	}
 	if slices.Contains(source.Link.For, dstChatId) {
-		// var err error
-		messageLink, err := s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
+		var messageLink *client.MessageLink
+		messageLink, err = s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
 			ChatId:    src.ChatId,
 			MessageId: src.Id,
 			ForAlbum:  src.MediaAlbumId != 0,
@@ -227,27 +215,24 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 			return
 		}
 		text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
-		s.addText(formattedText, text)
+		err = s.addText(formattedText, text)
 	}
 }
 
 // addText добавляет новый текст в конец форматированного текста
-func (s *Service) addText(formattedText *client.FormattedText, text string) {
+func (s *Service) addText(formattedText *client.FormattedText, text string) error {
+	// Исключение: ошибка возвращается не для ветвления, а для стека вызовов addText
 	var err error
-	defer func() {
-		if err != nil {
-			// TODO: записывать из стека - где вызвана, т.к. вызывается в разных местах
-			// s.log.Error("addText", "err", err)
-		}
-	}()
-	parsedText, err := s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
+
+	var parsedText *client.FormattedText
+	parsedText, err = s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: text,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,
 		},
 	})
 	if err != nil {
-		return
+		return log.WithCall(err)
 	}
 	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec
 	if offset > 0 {
@@ -259,6 +244,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	}
 	formattedText.Text += parsedText.Text
 	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
+	return nil
 }
 
 // escapeMarkdown экранирует специальные символы Markdown в тексте
