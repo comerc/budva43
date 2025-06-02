@@ -107,7 +107,16 @@ func getFuncName(fullFnName string) string {
 
 	// Убираем префикс модуля (например, "github.com/comerc/budva43/")
 	if strings.HasPrefix(fullFnName, module+"/") {
-		return strings.TrimPrefix(fullFnName, module+"/")
+		funcName := strings.TrimPrefix(fullFnName, module+"/")
+
+		// Убираем путь до пакета, оставляя только пакет.функция
+		// Например: "app/log.(*SomeObject).NestedMethod" -> "log.(*SomeObject).NestedMethod"
+		lastSlashIndex := strings.LastIndex(funcName, "/")
+		if lastSlashIndex != -1 {
+			funcName = funcName[lastSlashIndex+1:]
+		}
+
+		return funcName
 	}
 
 	// Если это прямо модуль без подпакетов
@@ -163,8 +172,8 @@ func getRelativePath(fullPath string) string {
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
 // depth - количество фреймов для сбора после пропуска (0 = все доступные фреймы проекта)
-func GetCallStack(skip int, depth int) []CallInfo {
-	var result []CallInfo
+func GetCallStack(skip int, depth int) []*CallInfo {
+	var result []*CallInfo
 
 	// Если depth не указан, возвращаем максимум 10 фреймов
 	if depth <= 0 {
@@ -197,7 +206,7 @@ func GetCallStack(skip int, depth int) []CallInfo {
 		// Получаем относительный путь к файлу от корня проекта
 		fileName := getRelativePath(fullPath)
 
-		result = append(result, CallInfo{
+		result = append(result, &CallInfo{
 			FuncName: funcName,
 			FileName: fileName,
 			Line:     line,
