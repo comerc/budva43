@@ -61,7 +61,7 @@ func (l *Logger) WarnOrError(message string, errPtr *error, args ...any) {
 
 type ErrorWithCall struct {
 	error
-	Stack []CallInfo
+	Stack []*CallInfo
 }
 
 func AddCall(errPtr *error) {
@@ -89,7 +89,6 @@ func withCall(err error) error {
 	}
 }
 
-// setupLogger настраивает логгер
 func setupLogger() {
 	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     config.LogOptions.Level,

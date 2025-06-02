@@ -3,7 +3,7 @@ module github.com/comerc/budva43
 go 1.24.2
 
 require (
-	github.com/comerc/spylog v0.0.0-20250523171318-85f5323e492d
+	github.com/comerc/spylog v0.0.0-20250601090440-7426f413ac1b
 	github.com/creack/pty v1.1.24
 	github.com/dgraph-io/badger/v4 v4.7.0
 	github.com/fsnotify/fsnotify v1.8.0

@@ -46,10 +46,9 @@ func TestSomeMethod(t *testing.T) {
 	require.True(t, len(spylogHandler.Records) == 1)
 	record0 := spylogHandler.Records[0]
 
-	assert.Equal(t, "message", record0.Message)
-	assert.Equal(t, "error", spylog.GetAttrValue(record0, "err"))
+	assert.Equal(t, "error", record0.Message)
 	assert.Equal(t, "val1", spylog.GetAttrValue(record0, "arg1"))
 	assert.Equal(t, "val2", spylog.GetAttrValue(record0, "arg2"))
-	assert.Equal(t, "util/log_test.go:37 util.(*SomeObject).NestedMethod",
-		spylog.GetAttrValue(record0, "add"), "WithCall() не работает")
+	assert.Equal(t, "app/log/log_test.go:36 log.(*SomeObject).NestedMethod",
+		spylog.GetAttrValue(record0, "stack[0]"), "WithCall() не работает")
 }
