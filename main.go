@@ -32,6 +32,10 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: пересмотреть луковичную архитектуру
+// TODO: применить гексагональную архитектуру для handlers?
+// TODO: проверить на Race Condition
+// TODO: заменить примитивы синхронизации на [CSP](../go-secrets/README_V2/Communicating Sequential Processes (CSP) и потокобезопасный счетчик.md)
 // TODO: проверить весь перенесённый код на early return
 
 // TODO: сделать образ tdlib для ubuntu в докере подобно ghcr.io/zelenin/tdlib-docker
