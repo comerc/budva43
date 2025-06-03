@@ -92,21 +92,22 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 
 	var fn func()
 	fn = func() {
+		var err error
+		defer func() {
+			h.log.DebugOrError("Run", &err,
+				"retryCount", retryCount,
+				"chatId", chatId,
+				"messageId", messageId,
+			)
+		}()
+
 		data := h.collectData(chatId, messageId)
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
-				// h.log.Error("max retries reached for message edit",
-				// 	"chatId", chatId,
-				// 	"messageId", messageId,
-				// )
+				err = log.NewError("max retries reached for message edit")
 				return
 			}
-			// h.log.Info("retrying message edit",
-			// 	"retryCount", retryCount,
-			// 	"chatId", chatId,
-			// 	"messageId", messageId,
-			// )
 			h.queueRepo.Add(fn)
 			return
 		}
@@ -125,14 +126,12 @@ type data struct {
 
 // collectData собирает данные для редактирования сообщений
 func (h *Handler) collectData(chatId, messageId int64) *data {
-	result := &data{}
-	// errs := []error{} // TODO: собирать все ошибки (для тестов)
-
 	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 	toChatMessageIds := h.storageService.GetCopiedMessageIds(fromChatMessageId)
-	result.copiedMessageIds = toChatMessageIds
-
-	result.newMessageIds = make(map[string]int64)
+	result := &data{
+		copiedMessageIds: toChatMessageIds,
+		newMessageIds:    make(map[string]int64),
+	}
 
 	for _, toChatMessageId := range toChatMessageIds {
 		a := strings.Split(toChatMessageId, ":")
@@ -156,16 +155,19 @@ func (h *Handler) collectData(chatId, messageId int64) *data {
 // editMessages редактирует сообщения
 func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 	var err error
-	defer h.log.DebugOrError("editMessages", &err)
-
+	mediaAlbumId := int64(0)
 	result := []string{}
-	// errs := []error{} // TODO: собирать все ошибки (для тестов)
+	defer func() {
+		h.log.DebugOrError("editMessages", &err,
+			"chatId", chatId,
+			"messageId", messageId,
+			"mediaAlbumId", mediaAlbumId,
+			"result", result,
+		)
+	}()
 
 	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 	toChatMessageIds := data.copiedMessageIds
-	defer func() {
-		_ = result // TODO: костыль
-	}()
 
 	var src *client.Message
 	src, err = h.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
@@ -173,131 +175,130 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 		MessageId: messageId,
 	})
 	if err != nil {
+		err = log.NewError("%w", err)
 		return
 	}
 	// TODO: isAnswer
 	replyMarkupData := h.messageService.GetReplyMarkupData(src)
 	srcFormattedText := h.messageService.GetFormattedText(src)
-	// h.log.Info("editMessages",
-	// 	"chatId", src.ChatId,
-	// 	"messageId", src.Id,
-	// 	"hasText", srcFormattedText.Text != "",
-	// 	"mediaAlbumId", src.MediaAlbumId,
-	// )
+	mediaAlbumId = int64(src.MediaAlbumId)
 
 	checkFns := make(map[int64]func())
 
 	for _, toChatMessageId := range toChatMessageIds {
-		a := strings.Split(toChatMessageId, ":")
-		forwardRuleId := a[0]
-		dstChatId := util.ConvertToInt[int64](a[1])
-		tmpMessageId := util.ConvertToInt[int64](a[2])
+		func() {
+			var err error
+			forwardRuleId := ""
+			defer func() {
+				h.log.DebugOrError("editMessages", &err,
+					"fromChatMessageId", fromChatMessageId,
+					"toChatMessageId", toChatMessageId,
+					"forwardRuleId", forwardRuleId,
+				)
+			}()
 
-		forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
-		if !ok {
-			// h.log.Error("forwardRule not found",
-			// 	"forwardRuleId", forwardRuleId,
-			// 	// "fromChatMessageId", fromChatMessageId,
-			// 	"toChatMessageId", toChatMessageId,
-			// )
-			continue
-		}
+			a := strings.Split(toChatMessageId, ":")
+			forwardRuleId = a[0]
+			dstChatId := util.ConvertToInt[int64](a[1])
+			tmpMessageId := util.ConvertToInt[int64](a[2])
 
-		if forwardRule.CopyOnce {
-			continue
-		}
-
-		formattedText := util.Copy(srcFormattedText)
-		if (forwardRule.SendCopy || src.CanBeSaved) &&
-			h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
-			_, ok := checkFns[forwardRule.Check]
+			forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
 			if !ok {
-				checkFns[forwardRule.Check] = func() {
-					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
+				err = log.NewError("forwardRule not found")
+				return
+			}
+			if forwardRule.CopyOnce {
+				return
+			}
+
+			formattedText := util.Copy(srcFormattedText)
+			if (forwardRule.SendCopy || src.CanBeSaved) &&
+				h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
+				_, ok := checkFns[forwardRule.Check]
+				if !ok {
+					checkFns[forwardRule.Check] = func() {
+						const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
+						h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
+					}
 				}
+				return
 			}
-			continue
-		}
 
-		// TODO: почему не используется?
-		// hasFiltersCheck := false
-		// testChatId := dstChatId
-		// var src *client.Message
-		// for _, forwardRule := range config.Engine.ForwardRules {
-		// 	if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
-		// 		for _, dstChatId := range forwardRule.To {
-		// 			if testChatId == dstChatId {
-		// 				if h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
-		// 					hasFiltersCheck = true
-		// 					_, ok := checkFns[forwardRule.Check]
-		// 					if !ok {
-		// 						checkFns[forwardRule.Check] = func() {
-		// 							const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-		// 							h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRule.Id)
-		// 						}
-		// 					}
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// if hasFiltersCheck {
-		// 	continue
-		// }
+			// TODO: почему не используется?
+			// hasFiltersCheck := false
+			// testChatId := dstChatId
+			// var src *client.Message
+			// for _, forwardRule := range config.Engine.ForwardRules {
+			// 	if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
+			// 		for _, dstChatId := range forwardRule.To {
+			// 			if testChatId == dstChatId {
+			// 				if h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
+			// 					hasFiltersCheck = true
+			// 					_, ok := checkFns[forwardRule.Check]
+			// 					if !ok {
+			// 						checkFns[forwardRule.Check] = func() {
+			// 							const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
+			// 							h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRule.Id)
+			// 						}
+			// 					}
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
+			// if hasFiltersCheck {
+			// 	return
+			// }
 
-		withSources := true
-		h.transformService.Transform(formattedText, withSources, src, dstChatId)
+			withSources := true
+			h.transformService.Transform(formattedText, withSources, src, dstChatId)
 
-		tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
-		newMessageId := data.newMessageIds[tmpChatMessageId]
-		result = append(result, fmt.Sprintf("toChatMessageId: %s, newMessageId: %d", toChatMessageId, newMessageId))
+			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
+			newMessageId := data.newMessageIds[tmpChatMessageId]
+			result = append(result, fmt.Sprintf("toChatMessageId: %s, newMessageId: %d", toChatMessageId, newMessageId))
 
-		switch src.Content.(type) {
-		case
-			*client.MessageText,
-			*client.MessageAnimation,
-			*client.MessageDocument,
-			*client.MessageAudio,
-			*client.MessageVideo,
-			*client.MessagePhoto:
-			content := h.messageService.GetInputMessageContent(src, formattedText)
-			dst, err := h.telegramRepo.GetClient().EditMessageText(&client.EditMessageTextRequest{
-				ChatId:              dstChatId,
-				MessageId:           newMessageId,
-				InputMessageContent: content,
-				// ReplyMarkup: func() client.ReplyMarkup {
-				// 	if src.Content.(type).MessageContentType() == client.TypeMessageText {
-				// 		return src.ReplyMarkup // это не надо, юзер-бот игнорит изменение
-				// 	}
-				// 	return nil
-				// }(),
-			})
-			if err != nil {
-				// h.log.Error("EditMessageText", "err", err)
+			switch src.Content.(type) {
+			case
+				*client.MessageText,
+				*client.MessageAnimation,
+				*client.MessageDocument,
+				*client.MessageAudio,
+				*client.MessageVideo,
+				*client.MessagePhoto:
+				content := h.messageService.GetInputMessageContent(src, formattedText)
+				_, err = h.telegramRepo.GetClient().EditMessageText(&client.EditMessageTextRequest{
+					ChatId:              dstChatId,
+					MessageId:           newMessageId,
+					InputMessageContent: content,
+					// ReplyMarkup: func() client.ReplyMarkup {
+					// 	if src.Content.(type).MessageContentType() == client.TypeMessageText {
+					// 		return src.ReplyMarkup // это не надо, юзер-бот игнорит изменение
+					// 	}
+					// 	return nil
+					// }(),
+				})
+				if err != nil {
+					err = log.NewError("%w", err)
+				}
+			case *client.MessageVoiceNote:
+				_, err = h.telegramRepo.GetClient().EditMessageCaption(&client.EditMessageCaptionRequest{
+					ChatId:    dstChatId,
+					MessageId: newMessageId,
+					Caption:   formattedText,
+				})
+				if err != nil {
+					err = log.NewError("%w", err)
+				}
+			default:
+				return
 			}
-			_ = dst // TODO: костыль
-			// h.log.Info("EditMessageText", "dst", dst)
-		case *client.MessageVoiceNote:
-			dst, err := h.telegramRepo.GetClient().EditMessageCaption(&client.EditMessageCaptionRequest{
-				ChatId:    dstChatId,
-				MessageId: newMessageId,
-				Caption:   formattedText,
-			})
-			_ = dst // TODO: костыль
-			if err != nil {
-				// h.log.Error("EditMessageCaption", "err", err)
+			// TODO: isAnswer
+			if len(replyMarkupData) > 0 {
+				h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+			} else {
+				h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 			}
-			// h.log.Info("EditMessageCaption", "dst", dst)
-		default:
-			continue
-		}
-		// TODO: isAnswer
-		if len(replyMarkupData) > 0 {
-			h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
-		} else {
-			h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
-		}
+		}()
 	}
 
 	for _, fn := range checkFns {

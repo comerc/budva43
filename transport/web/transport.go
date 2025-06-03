@@ -69,33 +69,26 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "app/static/favicon.ico")
 }
 
-// handleRoot обрабатывает запросы к корневому маршруту
-func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	_, err := w.Write([]byte("Budva43 API Server"))
-	if err != nil {
-		// t.log.Error("Failed to write response", "err", err)
-	}
+// logHandler логирует ошибку и время выполнения функции
+func (t *Transport) logHandler(message string, errPtr *error, now time.Time) {
+	t.log.DebugOrError(message, errPtr,
+		"took", time.Since(now),
+	)
 }
 
-func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
-	err := *errPointer
-	if err == nil {
-		// t.log.Info(name,
-		// 	"took", time.Since(now),
-		// )
-	} else {
-		// t.log.Error(name,
-		// 	"took", time.Since(now),
-		// 	"err", err,
-		// )
-	}
+// handleRoot обрабатывает запросы к корневому маршруту
+func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
+	var err error
+	defer t.logHandler("handleRoot", &err, time.Now())
+
+	w.Header().Set("Content-Type", "text/plain")
+	_, err = w.Write([]byte("Budva43 API Server"))
 }
 
 // // handleReports обрабатывает запросы для работы с отчетами
 // func (t *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
 // 	var err error
-// 	defer t.logHandler(&err, time.Now(), "handleMessages")
+// 	defer t.logHandler("handleMessages", &err, time.Now())
 
 // 	if req.Method != http.MethodGet {
 // 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -167,7 +160,7 @@ func (t *Transport) logHandler(errPointer *error, now time.Time, name string) {
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleAuthState")
+	defer t.logHandler("handleAuthState", &err, time.Now())
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -184,15 +177,12 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"state_type": stateType,
 	})
-	if err != nil {
-		// t.log.Error("Failed to encode auth state", "err", err)
-	}
 }
 
 // handleSubmitPhone обработчик для отправки номера телефона
 func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+	defer t.logHandler("handleSubmitPhone", &err, time.Now())
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -216,15 +206,12 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
-	if err != nil {
-		// t.log.Error("Failed to encode auth state", "err", err)
-	}
 }
 
 // handleSubmitCode обработчик для отправки кода подтверждения
 func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+	defer t.logHandler("handleSubmitCode", &err, time.Now())
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -248,15 +235,12 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
-	if err != nil {
-		// t.log.Error("Failed to encode auth state", "err", err)
-	}
 }
 
 // handleSubmitPassword обработчик для отправки пароля
 func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+	defer t.logHandler("handleSubmitPassword", &err, time.Now())
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -280,16 +264,13 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
-	if err != nil {
-		// t.log.Error("Failed to encode auth state", "err", err)
-	}
 }
 
 // TODO: under construction
 // handleAuthEvents устанавливает SSE соединение для получения обновлений состояния авторизации
 func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler(&err, time.Now(), "handleMessages")
+	defer t.logHandler("handleAuthEvents", &err, time.Now())
 
 	// Настройка SSE
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -365,16 +346,18 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
+		var err error
+		defer t.log.DebugOrError("ListenAndServe", &err)
+
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.authController.GetInitDone():
-			// t.log.Info("TDLib клиент готов к выполнению авторизации")
+			// TDLib клиент готов к выполнению авторизации
 		}
-		// t.log.Info("Start HTTP server", "addr", t.server.Addr)
-		if err := t.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			// t.log.Error("HTTP server terminated with error", "err", err)
-		}
+		fmt.Println("Start HTTP server", t.server.Addr)
+		err = t.server.ListenAndServe()
+		// TODO: обрабатывать http.ErrServerClosed
 	}()
 
 	return nil
@@ -383,8 +366,6 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 // Close останавливает HTTP-сервер
 func (t *Transport) Close() error {
 	var err error
-
-	// t.log.Info("Stopping HTTP server")
 
 	// Создаем контекст с таймаутом для graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
@@ -395,24 +376,22 @@ func (t *Transport) Close() error {
 		return err
 	}
 
-	// t.log.Info("HTTP server stopped")
 	return nil
 }
 
 // TODO: under construction
 // OnAuthStateChanged обработчик изменения состояния авторизации
-func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
-	// t.log.Debug("Web транспорт получил обновление состояния авторизации",
-	// 	"stateType", state.AuthorizationStateType())
+// func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
+// 	t.log.Debug("Web транспорт получил обновление состояния авторизации",
+// 		"stateType", state.AuthorizationStateType())
 
-	// Отправляем обновление всем подключенным клиентам
-	for clientId, clientChan := range t.authClients {
-		select {
-		case clientChan <- state:
-			_ = clientId // TODO: костыль
-			// t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
-		default:
-			// t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
-		}
-	}
-}
+// 	// Отправляем обновление всем подключенным клиентам
+// 	for clientId, clientChan := range t.authClients {
+// 		select {
+// 		case clientChan <- state:
+// 			t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
+// 		default:
+// 			t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
+// 		}
+// 	}
+// }

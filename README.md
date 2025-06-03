@@ -1,6 +1,6 @@
 # budva43
 
-Telegram-Forwarder (UNIX-way)
+Telegram-Forwarder (UNIX-way) - пересылает сообщения из наблюдаемых каналов и групп в целевые по заданным правилам, получая дайджест.
 
 [PLAN](./docs/PLAN.md)
 
@@ -90,6 +90,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [gocritic](https://habr.com/ru/articles/414739/)
 - [ ] [OpenTelemetry](https://pkg.go.dev/go.opentelemetry.io/otel#section-readme)
 - [ ] [gostackparse](https://github.com/DataDog/gostackparse)
+- [ ] grafana-loki
+- [ ] pprof
 
 ## .env
 

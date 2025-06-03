@@ -67,21 +67,22 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 
 	var fn func()
 	fn = func() {
+		var err error
+		defer func() {
+			h.log.DebugOrError("Run", &err,
+				"retryCount", retryCount,
+				"chatId", chatId,
+				"messageIds", messageIds,
+			)
+		}()
+
 		data := h.collectData(chatId, messageIds)
 		if data.needRepeat {
 			retryCount++
 			if retryCount >= maxRetries {
-				// h.log.Error("max retries reached for message deletion",
-				// 	"chatId", chatId,
-				// 	"messageIds", messageIds,
-				// )
+				err = log.NewError("max retries reached for message deletion")
 				return
 			}
-			// h.log.Info("retrying message deletion",
-			// 	"retryCount", retryCount,
-			// 	"chatId", chatId,
-			// 	"messageIds", messageIds,
-			// )
 			h.queueRepo.Add(fn) // переставляем в конец очереди
 			return
 		}
@@ -104,7 +105,6 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 		copiedMessageIds: make(map[string][]string),
 		newMessageIds:    make(map[string]int64),
 	}
-	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
@@ -133,10 +133,14 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 
 // deleteMessages удаляет сообщения
 func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
+	var err error
 	result := []string{}
-	// errs := []error{} // TODO: собирать все ошибки (для тестов)
 	defer func() {
-		_ = result // TODO: костыль
+		h.log.DebugOrError("deleteMessages", &err,
+			"chatId", chatId,
+			"messageIds", messageIds,
+			"result", result,
+		)
 	}()
 
 	for _, messageId := range messageIds {
@@ -144,45 +148,53 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
 		toChatMessageIds := data.copiedMessageIds[fromChatMessageId]
 
 		for _, toChatMessageId := range toChatMessageIds {
-			a := strings.Split(toChatMessageId, ":")
-			forwardRuleId := a[0]
-			dstChatId := util.ConvertToInt[int64](a[1])
-			tmpMessageId := util.ConvertToInt[int64](a[2])
+			func() {
+				var err error
+				forwardRuleId := ""
+				defer func() {
+					h.log.DebugOrError("deleteMessages", &err,
+						"fromChatMessageId", fromChatMessageId,
+						"toChatMessageId", toChatMessageId,
+						"forwardRuleId", forwardRuleId,
+					)
+				}()
 
-			forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
-			if !ok {
-				h.log.Error("forwardRule not found",
-					"forwardRuleId", forwardRuleId,
-					"fromChatMessageId", fromChatMessageId,
-					"toChatMessageId", toChatMessageId,
-				)
-				continue
-			}
-			if !forwardRule.Indelible {
-				continue
-			}
+				a := strings.Split(toChatMessageId, ":")
+				forwardRuleId = a[0]
+				dstChatId := util.ConvertToInt[int64](a[1])
+				tmpMessageId := util.ConvertToInt[int64](a[2])
 
-			h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
+				forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
+				if !ok {
+					err = log.NewError("forwardRule not found")
+					return
+				}
+				if !forwardRule.Indelible {
+					return
+				}
 
-			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
-			newMessageId := data.newMessageIds[tmpChatMessageId]
+				h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 
-			// TODO: может лучше удалять индексы _после_ удаления сообщения?
-			h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
-			h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
+				tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
+				newMessageId := data.newMessageIds[tmpChatMessageId]
 
-			_, err := h.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
-				ChatId:     dstChatId,
-				MessageIds: []int64{newMessageId},
-				Revoke:     true,
-			})
-			if err != nil {
-				h.log.Error("DeleteMessages", "err", err)
-				continue
-			}
+				// TODO: может лучше удалять индексы _после_ удаления сообщения?
+				h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
+				h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
 
-			result = append(result,
-				fmt.Sprintf("%d:%d:%d", dstChatId, tmpMessageId, newMessageId))
+				_, err = h.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
+					ChatId:     dstChatId,
+					MessageIds: []int64{newMessageId},
+					Revoke:     true,
+				})
+				if err != nil {
+					err = log.NewError("%w", err)
+					return
+				}
+
+				result = append(result,
+					fmt.Sprintf("%d:%d:%d", dstChatId, tmpMessageId, newMessageId))
+			}()
 		}
 
 		if len(toChatMessageIds) > 0 {

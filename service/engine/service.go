@@ -2,9 +2,7 @@ package engine
 
 import (
 	"context"
-	"fmt"
 	"regexp"
-	"slices"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -94,14 +92,11 @@ func (s *Service) Close() error {
 }
 
 // validateConfig проверяет корректность конфигурации
-func (s *Service) validateConfig() (err error) {
-	defer log.AddCall(&err)
-
-	for chatId, dsc := range config.Engine.Destinations {
-		_ = chatId // TODO: костыль
+func (s *Service) validateConfig() error {
+	for _, dsc := range config.Engine.Destinations {
 		for _, replaceFragment := range dsc.ReplaceFragments {
 			if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-				return fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+				return log.NewError("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
 			}
 		}
 	}
@@ -109,11 +104,11 @@ func (s *Service) validateConfig() (err error) {
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
 	for forwardRuleId, forwardRule := range config.Engine.ForwardRules {
 		if re.FindString(forwardRuleId) != "" {
-			return fmt.Errorf("нельзя использовать [:,] в идентификаторе правила: %s", forwardRuleId)
+			return log.NewError("нельзя использовать [:,] в идентификаторе правила: %s", forwardRuleId)
 		}
 		for _, dstChatId := range forwardRule.To {
 			if forwardRule.From == dstChatId {
-				return fmt.Errorf("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
+				return log.NewError("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
 			}
 		}
 	}
@@ -122,17 +117,15 @@ func (s *Service) validateConfig() (err error) {
 }
 
 // enrichConfig обогащает конфигурацию
-func (s *Service) enrichConfig() (err error) {
-	defer log.AddCall(&err)
-
+func (s *Service) enrichConfig() error {
 	if len(config.Engine.Destinations) == 0 {
-		return fmt.Errorf("отсутствуют настройки получателей")
+		return log.NewError("отсутствуют настройки получателей")
 	}
 	if len(config.Engine.Sources) == 0 {
-		return fmt.Errorf("отсутствуют настройки источников")
+		return log.NewError("отсутствуют настройки источников")
 	}
 	if len(config.Engine.ForwardRules) == 0 {
-		return fmt.Errorf("отсутствуют настройки пересылки")
+		return log.NewError("отсутствуют настройки пересылки")
 	}
 
 	config.Engine.UniqueSources = make(map[entity.ChatId]struct{})
@@ -153,8 +146,7 @@ func (s *Service) enrichConfig() (err error) {
 		config.Engine.UniqueSources[forwardRule.From] = struct{}{}
 		tmpOrderedForwardRules = append(tmpOrderedForwardRules, forwardRule.Id)
 	}
-	slices.Sort(tmpOrderedForwardRules)
-	config.Engine.OrderedForwardRules = slices.Compact(tmpOrderedForwardRules)
+	config.Engine.OrderedForwardRules = util.Distinct(tmpOrderedForwardRules)
 	return nil
 }
 

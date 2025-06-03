@@ -56,6 +56,13 @@ func New(
 // Transform преобразует содержимое сообщения
 // TODO: withSources - переставить в конец
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) {
+	defer s.log.DebugOrError("Transform", nil,
+		"withSources", withSources,
+		"srcChatId", src.ChatId,
+		"srcId", src.Id,
+		"dstChatId", dstChatId,
+	)
+
 	s.addAutoAnswer(formattedText, src)
 	s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId)
 	s.replaceFragments(formattedText, dstChatId)
@@ -73,11 +80,11 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 
 	data, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
-		err = fmt.Errorf("destination not found")
+		err = log.NewError("dstChatId not found")
 		return
 	}
 	if !data.ReplaceMyselfLinks.Run {
-		err = fmt.Errorf("Run is disabled")
+		err = log.NewError("Run is disabled")
 		return
 	}
 	// s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
@@ -112,7 +119,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		if tmpMessageId != 0 {
 			newMessageId := s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 			if newMessageId == 0 {
-				err = fmt.Errorf("GetNewMessageId return 0")
+				err = log.NewError("GetNewMessageId return 0")
 				return
 			}
 			var messageLink *client.MessageLink
@@ -121,6 +128,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 				MessageId: newMessageId,
 			})
 			if err != nil {
+				err = log.NewError("%w", err)
 				return
 			}
 			entity.Type = &client.TextEntityTypeTextUrl{
@@ -141,7 +149,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 
 	destination, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
-		err = fmt.Errorf("destination not found")
+		err = log.NewError("destination not found")
 		return
 	}
 	for _, replaceFragment := range destination.ReplaceFragments {
@@ -149,7 +157,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 		if re.FindString(formattedText.Text) != "" {
 			// вынесено в engineService.validateConfig()
 			// if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-			// 	err = fmt.Errorf("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+			// 	err = log.NewError("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
 			// 	return
 			// }
 			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
@@ -164,19 +172,20 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
-		err = fmt.Errorf("source not found")
+		err = log.NewError("source not found")
 		return
 	}
 	if !source.AutoAnswer {
-		err = fmt.Errorf("source.AutoAnswer is false")
+		err = log.NewError("source.AutoAnswer is false")
 		return
 	}
 	replyMarkupData := s.messageService.GetReplyMarkupData(src)
 	if len(replyMarkupData) == 0 {
-		err = fmt.Errorf("reply markup data is empty")
+		err = log.NewError("reply markup data is empty")
 		return
 	}
-	answer, err := s.telegramRepo.GetClient().GetCallbackQueryAnswer(
+	var answer *client.CallbackQueryAnswer
+	answer, err = s.telegramRepo.GetClient().GetCallbackQueryAnswer(
 		&client.GetCallbackQueryAnswerRequest{
 			ChatId:    src.ChatId,
 			MessageId: src.Id,
@@ -184,9 +193,10 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 		},
 	)
 	if err != nil {
+		err = log.NewError("%w", err)
 		return
 	}
-	err = s.addText(formattedText, escapeMarkdown(answer.Text))
+	s.addText(formattedText, escapeMarkdown(answer.Text))
 }
 
 // addSources добавляет подпись и ссылку на источник к тексту
@@ -196,12 +206,12 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
-		err = fmt.Errorf("source not found")
+		err = log.NewError("source not found")
 		return
 	}
 	if slices.Contains(source.Sign.For, dstChatId) {
 		text := source.Sign.Title
-		err = s.addText(formattedText, text)
+		s.addText(formattedText, text)
 	}
 	if slices.Contains(source.Link.For, dstChatId) {
 		var messageLink *client.MessageLink
@@ -212,17 +222,18 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 			// ForComment: false, // удалено в новой версии go-tdlib
 		})
 		if err != nil {
+			err = log.NewError("%w", err)
 			return
 		}
 		text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
-		err = s.addText(formattedText, text)
+		s.addText(formattedText, text)
 	}
 }
 
 // addText добавляет новый текст в конец форматированного текста
-func (s *Service) addText(formattedText *client.FormattedText, text string) error {
-	// Исключение: ошибка возвращается не для ветвления, а для стека вызовов addText
+func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
+	defer s.log.DebugOrError("addText", &err)
 
 	var parsedText *client.FormattedText
 	parsedText, err = s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
@@ -232,7 +243,8 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) erro
 		},
 	})
 	if err != nil {
-		return log.WithCall(err)
+		err = log.NewError("%w", err)
+		return
 	}
 	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec
 	if offset > 0 {
@@ -244,7 +256,6 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) erro
 	}
 	formattedText.Text += parsedText.Text
 	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
-	return nil
 }
 
 // escapeMarkdown экранирует специальные символы Markdown в тексте

@@ -13,12 +13,12 @@ import (
 )
 
 type Logger struct {
-	slog.Logger
+	log *slog.Logger
 }
 
 func NewLogger(moduleName string) *Logger {
 	return &Logger{
-		Logger: *slog.With("module", moduleName),
+		log: slog.With("module", moduleName),
 	}
 }
 
@@ -44,7 +44,7 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 	if strings.Contains(message, " ") {
 		message = fmt.Sprintf("\"%s\"", message)
 	}
-	l.Log(context.Background(), level, message, args...)
+	l.log.Log(context.Background(), level, message, args...)
 }
 
 func (l *Logger) DebugOrError(message string, errPtr *error, args ...any) {
@@ -59,24 +59,34 @@ func (l *Logger) WarnOrError(message string, errPtr *error, args ...any) {
 	l.logOrError(slog.LevelWarn, message, errPtr, args...)
 }
 
+func NewError(format string, args ...any) error {
+	var err error
+	if len(args) == 0 {
+		err = errors.New(format)
+	} else {
+		err = fmt.Errorf(format, args...)
+	}
+	return withCall(err)
+}
+
 type ErrorWithCall struct {
 	error
 	Stack []*CallInfo
 }
 
-func AddCall(errPtr *error) {
-	if errPtr == nil || *errPtr == nil {
-		return
-	}
-	*errPtr = withCall(*errPtr)
-}
+// func AddCall(errPtr *error) {
+// 	if errPtr == nil || *errPtr == nil {
+// 		return
+// 	}
+// 	*errPtr = withCall(*errPtr)
+// }
 
-func WithCall(err error) error {
-	if err == nil {
-		return nil
-	}
-	return withCall(err)
-}
+// func WithCall(err error) error {
+// 	if err == nil {
+// 		return nil
+// 	}
+// 	return withCall(err)
+// }
 
 func withCall(err error) error {
 	var errWithCall *ErrorWithCall

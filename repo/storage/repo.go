@@ -60,10 +60,21 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-		again:
-			err := r.db.RunValueLogGC(0.7)
-			if err == nil {
-				goto again
+			// Агрессивная сборка мусора - продолжаем пока есть что чистить
+			for {
+				err := r.db.RunValueLogGC(0.7)
+				if err == nil {
+					// Успешно очистили, пытаемся еще раз
+					continue
+				}
+				if err == badger.ErrNoRewrite {
+					err = nil
+					// Нет файлов для перезаписи - это нормально, выходим
+				} else {
+					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
+				}
+				r.log.DebugOrError("GC completed: no files to rewrite", &err)
+				break // Выходим из внутреннего цикла, ждем следующего тика
 			}
 		}
 	}
@@ -75,7 +86,6 @@ func (r *Repo) Increment(key string) (string, error) {
 		val string
 		err error
 	)
-	// defer r.logOperation(&err, "Increment", key, &val)
 	// Merge function to add two uint64 numbers
 	add := func(existing, _new []byte) []byte {
 		return convertUint64ToBytes(ConvertBytesToUint64(existing) + ConvertBytesToUint64(_new))
@@ -101,7 +111,6 @@ func (r *Repo) GetSet(key string, fn func(val string) (string, error)) (string, 
 		val string
 		err error
 	)
-	// defer r.logOperation(&err, "GetSet", key, &val)
 	err = r.db.Update(func(txn *badger.Txn) error {
 		var item *badger.Item
 		item, err = txn.Get([]byte(key))
@@ -133,7 +142,6 @@ func (r *Repo) Get(key string) (string, error) {
 		val string
 		err error
 	)
-	// defer r.logOperation(&err, "Get", key, &val)
 	err = r.db.View(func(txn *badger.Txn) error {
 		var item *badger.Item
 		item, err = txn.Get([]byte(key))
@@ -154,7 +162,6 @@ func (r *Repo) Get(key string) (string, error) {
 // Set устанавливает значение по ключу
 func (r *Repo) Set(key, val string) error {
 	var err error
-	// defer r.logOperation(&err, "Set", key, &val)
 	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), []byte(val))
 	})
@@ -164,26 +171,11 @@ func (r *Repo) Set(key, val string) error {
 // Delete удаляет значение по ключу
 func (r *Repo) Delete(key string) error {
 	var err error
-	// defer r.logOperation(&err, "Delete", key, nil)
 	err = r.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(key))
 	})
 	return err
 }
-
-// // logOperation логирует операцию
-// func (r *Repo) logOperation(errPointer *error, name string, key string, val *string) {
-// 	err := *errPointer
-// 	if err == nil {
-// 		if val != nil {
-// 			// r.log.Info(name, "key", key, "val", *val)
-// 		} else {
-// 			// r.log.Info(name, "key", key)
-// 		}
-// 	} else {
-// 		// r.log.Error(name, "key", key, "err", err)
-// 	}
-// }
 
 // convertUint64ToBytes преобразует uint64 в байтовый массив
 func convertUint64ToBytes(i uint64) []byte {

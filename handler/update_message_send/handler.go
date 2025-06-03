@@ -41,9 +41,14 @@ func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	message := update.Message
 	tmpMessageId := update.OldMessageId
 	fn := func() {
+		defer h.log.DebugOrError("Run", nil,
+			"chatId", message.ChatId,
+			"messageId", message.Id,
+			"tmpMessageId", tmpMessageId,
+		)
+
 		h.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
 		h.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)
-		// h.log.Info("Run")
 	}
 	h.queueRepo.Add(fn)
 }
