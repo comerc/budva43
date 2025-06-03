@@ -152,9 +152,6 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 
 // 	w.Header().Set("Content-Type", "application/json")
 // 	err = json.NewEncoder(w).Encode(report)
-// 	if err != nil {
-// 		t.log.Error("Failed to encode report", "err", err)
-// 	}
 // }
 
 // handleAuthState обработчик для получения текущего состояния авторизации

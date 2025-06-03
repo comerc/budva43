@@ -67,6 +67,9 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 
 // Run запускает обработку вывода CLI
 func (a *CLIAutomator) Run() {
+	var err error
+	defer a.log.DebugOrError("Run", &err)
+
 	scanner := bufio.NewScanner(a.stdoutReader)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -90,9 +93,9 @@ func (a *CLIAutomator) Run() {
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		if err != io.EOF && !errors.Is(err, os.ErrClosed) {
-			// a.log.Error("Ошибка чтения stdout", "err", err)
+			err = log.NewError("%w", err)
 		}
 	}
 
