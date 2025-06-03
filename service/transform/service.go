@@ -87,7 +87,6 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		err = log.NewError("Run is disabled")
 		return
 	}
-	// s.log.Debug("replaceMyselfLinks", "srcChatId", srcChatId, "dstChatId", dstChatId)
 	for _, entity := range formattedText.Entities {
 		textUrl, ok := entity.Type.(*client.TextEntityTypeTextUrl)
 		if !ok {
@@ -98,6 +97,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			Url: textUrl.Url,
 		})
 		if err != nil {
+			err = log.NewError("%w", err)
 			return
 		}
 		src := messageLinkInfo.Message
@@ -107,7 +107,6 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		isReplaced := false
 		fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
 		toChatMessageIds := s.storageService.GetCopiedMessageIds(fromChatMessageId)
-		// s.log.Debug("replaceMyselfLinks", "fromChatMessageId", fromChatMessageId, "toChatMessageIds", toChatMessageIds)
 		var tmpMessageId int64 = 0
 		for _, toChatMessageId := range toChatMessageIds {
 			a := strings.Split(toChatMessageId, ":")
