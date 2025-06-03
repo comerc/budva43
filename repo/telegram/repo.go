@@ -36,11 +36,9 @@ func New() *Repo {
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(_ context.Context) error {
 	var err error
-	defer r.log.InfoOrError("defer", &err)
 
 	err = r.setupClientLog()
 	if err != nil {
-		// r.log.Error("setupClientLog", "err", err)
 		return err
 	}
 
@@ -50,35 +48,42 @@ func (r *Repo) Start(_ context.Context) error {
 // CreateClient создает клиент TDLib после успешной авторизации
 func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler) {
 	for {
-		// r.log.Info("Creating TDLib client")
-		authorizationStateHandler := runAuthorizationStateHandler()
-		tdlibClient, err := client.NewClient(authorizationStateHandler)
-		if err != nil {
-			// r.log.Error("client.NewClient", "err", err)
-			continue
+		ok := func() bool {
+			var err error
+			defer r.log.DebugOrError("client.NewClient", &err)
+
+			authorizationStateHandler := runAuthorizationStateHandler()
+			var tdlibClient *client.Client
+			tdlibClient, err = client.NewClient(authorizationStateHandler)
+			if err != nil {
+				return false
+			}
+
+			r.client = tdlibClient
+			close(r.clientDone)
+
+			return true
+		}()
+
+		if ok {
+			break
 		}
-		r.client = tdlibClient
-		close(r.clientDone)
-		// r.log.Info("TDLib client authorized")
-		break
 	}
 
 	version := r.GetVersion()
-	_ = version // TODO: костыль
-	// r.log.Info("TDLib", "version", version)
+	r.log.DebugOrError("TDLib", nil, "version", version)
 
 	me := r.GetMe()
-	_ = me // TODO: костыль
-	// r.log.Info("Me",
-	// 	"FirstName", me.FirstName,
-	// 	// "LastName", me.LastName,
-	// 	// "Username", func() string {
-	// 	// 	if me.Usernames != nil {
-	// 	// 		return me.Usernames.EditableUsername
-	// 	// 	}
-	// 	// 	return ""
-	// 	// }(),
-	// )
+	r.log.DebugOrError("Me", nil,
+		"FirstName", me.FirstName,
+		// "LastName", me.LastName,
+		// "Username", func() string {
+		// 	if me.Usernames != nil {
+		// 		return me.Usernames.EditableUsername
+		// 	}
+		// 	return ""
+		// }(),
+	)
 }
 
 // Close закрывает клиент TDLib
@@ -106,11 +111,14 @@ func (r *Repo) Close() error {
 
 // GetVersion выводит информацию о версии TDLib
 func (r *Repo) GetVersion() string {
-	versionOption, err := r.GetClient().GetOption(&client.GetOptionRequest{
+	var err error
+	defer r.log.DebugOrError("GetVersion", &err)
+
+	var versionOption client.OptionValue
+	versionOption, err = r.GetClient().GetOption(&client.GetOptionRequest{
 		Name: "version",
 	})
 	if err != nil {
-		// r.log.Error("GetOption", "err", err)
 		return ""
 	}
 	return versionOption.(*client.OptionValueString).Value
@@ -118,9 +126,12 @@ func (r *Repo) GetVersion() string {
 
 // GetMe выводит информацию о пользователе
 func (r *Repo) GetMe() *client.User {
-	me, err := r.GetClient().GetMe()
+	var err error
+	defer r.log.DebugOrError("GetMe", &err)
+
+	var me *client.User
+	me, err = r.GetClient().GetMe()
 	if err != nil {
-		// r.log.Error("GetMe", "err", err)
 		return nil
 	}
 	return me
@@ -148,13 +159,13 @@ func (r *Repo) setupClientLog() error {
 		},
 	})
 	if err != nil {
-		return log.WithCall(err)
+		return log.NewError("%w", err)
 	}
 	_, err = client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 		NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
 	})
 	if err != nil {
-		return log.WithCall(err)
+		return log.NewError("%w", err)
 	}
 	return nil
 }

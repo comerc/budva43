@@ -1,7 +1,7 @@
 package log
 
 import (
-	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/comerc/spylog"
@@ -30,10 +30,10 @@ func (s *SomeObject) NestedMethod() {
 			"arg1", "val1",
 			"arg2", "val2",
 		}
-		s.log.InfoOrError("message", &err, args...)
+		s.log.DebugOrError("message", &err, args...)
 	}()
 
-	err = WithCall(fmt.Errorf("error"))
+	err = NewError("error")
 }
 
 func TestSomeMethod(t *testing.T) {
@@ -46,6 +46,7 @@ func TestSomeMethod(t *testing.T) {
 	require.True(t, len(spylogHandler.Records) == 1)
 	record0 := spylogHandler.Records[0]
 
+	assert.Equal(t, slog.LevelError, record0.Level)
 	assert.Equal(t, "error", record0.Message)
 	assert.Equal(t, "val1", spylog.GetAttrValue(record0, "arg1"))
 	assert.Equal(t, "val2", spylog.GetAttrValue(record0, "arg2"))

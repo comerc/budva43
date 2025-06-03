@@ -110,7 +110,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		case <-ctx.Done():
 			return
 		case <-t.authController.GetInitDone():
-			// t.log.Info("TDLib клиент готов к выполнению авторизации")
+			// TDLib клиент готов к выполнению авторизации
 		}
 
 		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
@@ -141,9 +141,12 @@ func (t *Transport) Close() error {
 
 // processCommand обрабатывает введенную команду
 func (t *Transport) processCommand(input string) {
+	var err error
+	defer t.log.DebugOrError("processCommand", &err)
+
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
-		// t.log.Warn("processCommand", "input", input)
+		err = log.NewError("input is empty")
 		return
 	}
 
@@ -153,13 +156,15 @@ func (t *Transport) processCommand(input string) {
 		args = parts[1:]
 	}
 
-	if command, ok := t.commandMap[cmd]; ok {
-		command.handler(args)
+	var command *command
+	command, ok := t.commandMap[cmd]
+	if !ok {
+		err = log.NewError("unknown command: %s", cmd)
+		fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 		return
 	}
 
-	// t.log.Info("Unknown command", "command", cmd)
-	fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
+	command.handler(args)
 }
 
 // handleHelp обрабатывает команду help
@@ -189,7 +194,7 @@ func (t *Transport) handleExit(args []string) {
 // 	reportType := args[0]
 // 	days := 7
 // 	if len(args) > 1 {
-// 		if _, err := fmt.Sscanf(args[1], "%d", &days); err != nil {
+// 		if _, err = fmt.Sscanf(args[1], "%d", &days); err != nil {
 // 			fmt.Println("Используется период по умолчанию (7 дней)")
 // 		}
 // 	}
@@ -209,7 +214,7 @@ func (t *Transport) handleExit(args []string) {
 // 	case "error":
 // 		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
 // 	default:
-// 		err = fmt.Errorf("неизвестный тип отчета: %s; доступные: activity, forwarding, error", reportType)
+// 		err = log.NewError("неизвестный тип отчета: %s; доступные: activity, forwarding, error", reportType)
 // 	}
 
 // 	if err != nil {
@@ -226,12 +231,11 @@ func (t *Transport) handleAuth(args []string) {
 
 	state := t.authController.GetState()
 	if state == nil {
-		// t.log.Warn("GetState вернул nil")
+		err = log.NewError("state is nil")
 		return
 	}
 
 	stateType := state.AuthorizationStateType()
-	// t.log.Debug("GetState", "stateType", stateType)
 
 	switch stateType {
 	case client.TypeAuthorizationStateWaitPhoneNumber:
@@ -274,5 +278,5 @@ func (t *Transport) handleAuth(args []string) {
 func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
-	return string(password), log.WithCall(err)
+	return string(password), log.NewError("%w", err)
 }

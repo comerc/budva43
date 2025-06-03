@@ -2,7 +2,6 @@ package update_new_message
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -93,6 +92,11 @@ func New(
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	h.ctx = ctx
 	src := update.Message
+	defer h.log.DebugOrError("Run", nil,
+		"chatId", src.ChatId,
+		"messageId", src.Id,
+	)
+
 	if _, ok := config.Engine.UniqueSources[src.ChatId]; !ok {
 		return
 	}
@@ -147,22 +151,30 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	fn := func() {
 		h.addStatistics(forwardedTo)
 		for check, fn := range checkFns {
-			_ = check // TODO: костыль
-			if fn == nil {
-				// h.log.Error("check is nil", "check", check)
-				continue
-			}
-			// h.log.Info("check is fn()", "check", check)
-			fn()
+			func() {
+				var err error
+				defer h.log.DebugOrError("has fn", &err,
+					"check", check,
+				)
+				if fn == nil {
+					err = log.NewError("fn is nil")
+					return
+				}
+				fn()
+			}()
 		}
 		for other, fn := range otherFns {
-			_ = other // TODO: костыль
-			if fn == nil {
-				// h.log.Error("other is nil", "other", other)
-				continue
-			}
-			// h.log.Info("other is fn()", "other", other)
-			fn()
+			func() {
+				var err error
+				defer h.log.DebugOrError("has fn", &err,
+					"other", other,
+				)
+				if fn == nil {
+					err = log.NewError("fn is nil")
+					return
+				}
+				fn()
+			}()
 		}
 	}
 	h.queueRepo.Add(fn)
@@ -171,11 +183,11 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 // deleteSystemMessage удаляет системное сообщение
 func (h *Handler) deleteSystemMessage(src *client.Message) {
 	var err error
-	defer func() {
-		if err != nil {
-			// h.log.Error("deleteSystemMessage", "err", err)
-		}
-	}()
+	defer h.log.DebugOrError("deleteSystemMessage", &err,
+		"chatId", src.ChatId,
+		"messageId", src.Id,
+	)
+
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
 		return
@@ -194,26 +206,23 @@ func (h *Handler) deleteSystemMessage(src *client.Message) {
 func (h *Handler) processMessage(messages []*client.Message,
 	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func()) {
-	var (
-		src         = messages[0]
-		filtersMode = ""
-		result      []int64
-		err         error
-	)
+	var err error
+	src := messages[0]
+	filtersMode := ""
+	result := []int64{}
 	defer func() {
-		args := []any{
-			"ChatId", src.ChatId,
-			"Id", src.Id,
-			"MediaAlbumId", src.MediaAlbumId,
+		h.log.DebugOrError("processMessage", &err,
+			"chatId", src.ChatId,
+			"messageId", src.Id,
+			"mediaAlbumId", src.MediaAlbumId,
 			"filtersMode", filtersMode,
 			"result", result,
-		}
-		h.log.InfoOrError("processMessage", &err, args...)
+		)
 	}()
 
 	formattedText := h.messageService.GetFormattedText(src)
 	if formattedText == nil {
-		err = fmt.Errorf("GetFormattedText return nil")
+		err = log.NewError("GetFormattedText return nil")
 		return
 	}
 
