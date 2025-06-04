@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 	"sync"
 
 	"github.com/comerc/budva43/app/config"
@@ -30,19 +29,18 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 		level = slog.LevelError
 	}
 	if err != nil {
-		var errorWithCall *ErrorWithCall
-		if !errors.As(err, &errorWithCall) {
-			errorWithCall = &ErrorWithCall{
-				error: err,
-				Stack: GetCallStack(3, 0),
-			}
+		var stack []*CallInfo
+		var customError *CustomError
+		if errors.As(err, &customError) {
+			args = append(args, customError.Args...)
+			stack = customError.Stack
 		}
-		for i, item := range errorWithCall.Stack {
+		if stack == nil {
+			stack = GetCallStack(3, 0)
+		}
+		for i, item := range stack {
 			args = append(args, fmt.Sprintf("stack[%d]", i), item)
 		}
-	}
-	if strings.Contains(message, " ") {
-		message = fmt.Sprintf("\"%s\"", message)
 	}
 	l.log.Log(context.Background(), level, message, args...)
 }
@@ -59,44 +57,35 @@ func (l *Logger) WarnOrError(message string, errPtr *error, args ...any) {
 	l.logOrError(slog.LevelWarn, message, errPtr, args...)
 }
 
-func NewError(format string, args ...any) error {
-	var err error
-	if len(args) == 0 {
-		err = errors.New(format)
+func WrapError(err error, args ...any) error {
+	if err == nil {
+		err = errors.New("err is nil")
 	} else {
-		err = fmt.Errorf(format, args...)
+		var customError *CustomError
+		if errors.As(err, &customError) {
+			customError.Args = append(customError.Args, args...)
+			return customError
+		}
 	}
-	return withCall(err)
-}
-
-type ErrorWithCall struct {
-	error
-	Stack []*CallInfo
-}
-
-// func AddCall(errPtr *error) {
-// 	if errPtr == nil || *errPtr == nil {
-// 		return
-// 	}
-// 	*errPtr = withCall(*errPtr)
-// }
-
-// func WithCall(err error) error {
-// 	if err == nil {
-// 		return nil
-// 	}
-// 	return withCall(err)
-// }
-
-func withCall(err error) error {
-	var errWithCall *ErrorWithCall
-	if errors.As(err, &errWithCall) {
-		return err // повторная обёртка не нужна
-	}
-	return &ErrorWithCall{
+	return &CustomError{
 		error: err,
-		Stack: GetCallStack(3, 0),
+		Args:  args,
+		Stack: GetCallStack(2, 0),
 	}
+}
+
+func NewError(text string, args ...any) error {
+	return &CustomError{
+		error: errors.New(text),
+		Args:  args,
+		Stack: GetCallStack(2, 0),
+	}
+}
+
+type CustomError struct {
+	error
+	Args  []any
+	Stack []*CallInfo
 }
 
 func setupLogger() {

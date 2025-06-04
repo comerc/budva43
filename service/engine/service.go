@@ -96,7 +96,10 @@ func (s *Service) validateConfig() error {
 	for _, dsc := range config.Engine.Destinations {
 		for _, replaceFragment := range dsc.ReplaceFragments {
 			if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-				return log.NewError("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+				return log.NewError("длина исходного и заменяемого текста должна быть одинаковой",
+					"from", replaceFragment.From,
+					"to", replaceFragment.To,
+				)
 			}
 		}
 	}
@@ -104,11 +107,14 @@ func (s *Service) validateConfig() error {
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
 	for forwardRuleId, forwardRule := range config.Engine.ForwardRules {
 		if re.FindString(forwardRuleId) != "" {
-			return log.NewError("нельзя использовать [:,] в идентификаторе правила: %s", forwardRuleId)
+			return log.NewError("нельзя использовать [:,] в идентификаторе правила",
+				"forwardRuleId", forwardRuleId,
+			)
 		}
 		for _, dstChatId := range forwardRule.To {
 			if forwardRule.From == dstChatId {
-				return log.NewError("идентификатор получателя не может совпадать с идентификатором источника: %d", dstChatId)
+				return log.NewError("идентификатор получателя не может совпадать с идентификатором источника",
+					"dstChatId", dstChatId)
 			}
 		}
 	}

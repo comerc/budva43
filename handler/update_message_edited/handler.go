@@ -175,7 +175,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 		MessageId: messageId,
 	})
 	if err != nil {
-		err = log.NewError("%w", err)
+		err = log.WrapError(err)
 		return
 	}
 	// TODO: isAnswer
@@ -278,7 +278,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 					// }(),
 				})
 				if err != nil {
-					err = log.NewError("%w", err)
+					err = log.WrapError(err)
 				}
 			case *client.MessageVoiceNote:
 				_, err = h.telegramRepo.GetClient().EditMessageCaption(&client.EditMessageCaptionRequest{
@@ -287,7 +287,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 					Caption:   formattedText,
 				})
 				if err != nil {
-					err = log.NewError("%w", err)
+					err = log.WrapError(err)
 				}
 			default:
 				return

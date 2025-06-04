@@ -159,7 +159,7 @@ func (t *Transport) processCommand(input string) {
 	var command *command
 	command, ok := t.commandMap[cmd]
 	if !ok {
-		err = log.NewError("unknown command: %s", cmd)
+		err = log.NewError("unknown command", "cmd", cmd)
 		fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 		return
 	}
@@ -214,7 +214,10 @@ func (t *Transport) handleExit(args []string) {
 // 	case "error":
 // 		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
 // 	default:
-// 		err = log.NewError("неизвестный тип отчета: %s; доступные: activity, forwarding, error", reportType)
+//    // доступные: activity, forwarding, error
+//    err = log.NewError("неизвестный тип отчета",
+// 	   "reportType", reportType,
+//    )
 // 	}
 
 // 	if err != nil {
@@ -278,5 +281,5 @@ func (t *Transport) handleAuth(args []string) {
 func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
-	return string(password), log.NewError("%w", err)
+	return string(password), log.WrapError(err)
 }

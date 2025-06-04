@@ -95,7 +95,7 @@ func (a *CLIAutomator) Run() {
 
 	if err = scanner.Err(); err != nil {
 		if err != io.EOF && !errors.Is(err, os.ErrClosed) {
-			err = log.NewError("%w", err)
+			err = log.WrapError(err)
 		}
 	}
 
