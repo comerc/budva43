@@ -23,7 +23,7 @@ func TestWrapError(t *testing.T) {
 			expectedArgs:  []any{"arg1", "val1"},
 		},
 		{
-			name:          "simple error",
+			name:          "unwrapped error",
 			err:           errors.New("error"),
 			args:          []any{"arg1", "val1"},
 			expectedError: "error",

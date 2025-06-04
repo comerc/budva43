@@ -56,7 +56,7 @@ func TestSomeMethod(t *testing.T) {
 		spylog.GetAttrValue(record0, "stack[0]"))
 }
 
-func TestSimpleError(t *testing.T) {
+func TestUnwrappedError(t *testing.T) {
 	type OtherObject struct {
 		log *Logger
 	}
@@ -68,15 +68,15 @@ func TestSimpleError(t *testing.T) {
 		}
 	})
 
-	err := errors.New("simple error")
+	err := errors.New("unwrapped error")
 	o.log.InfoOrError("message", &err, "arg", "val")
 
 	require.True(t, len(spylogHandler.Records) == 1)
 	record0 := spylogHandler.Records[0]
 
 	assert.Equal(t, slog.LevelError, record0.Level)
-	assert.Equal(t, "simple error", record0.Message)
+	assert.Equal(t, "unwrapped error", record0.Message)
 	assert.Equal(t, "val", spylog.GetAttrValue(record0, "arg"))
-	assert.Equal(t, "app/log/log_test.go:72 log.TestSimpleError",
+	assert.Equal(t, "app/log/log_test.go:72 log.TestUnwrappedError",
 		spylog.GetAttrValue(record0, "stack[0]"))
 }
