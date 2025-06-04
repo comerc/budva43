@@ -41,7 +41,7 @@ func (s *SomeObject) NestedMethod() {
 func TestSomeMethod(t *testing.T) {
 	var o *SomeObject
 	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
-		o = NewSomeObject() // вызываем функцию-конструктор в обёртке logHandler
+		o = NewSomeObject() // вызываем функцию-конструктор в обёртке spylogHandler
 	})
 	o.SomeMethod() // вызываем тестируемый метод
 
@@ -69,6 +69,7 @@ func TestSimpleError(t *testing.T) {
 			log: NewLogger("module_name"),
 		}
 	})
+
 	err := errors.New("simple error")
 	o.log.InfoOrError("message", &err)
 
@@ -76,9 +77,9 @@ func TestSimpleError(t *testing.T) {
 	record0 := spylogHandler.Records[0]
 
 	assert.Equal(t, slog.LevelError, record0.Level)
-	assert.Equal(t, "app/log/log_test.go:73 log.TestSimpleError",
+	assert.Equal(t, "simple error", record0.Message)
+	assert.Equal(t, "app/log/log_test.go:74 log.TestSimpleError",
 		spylog.GetAttrValue(record0, "stack[0]"))
-
 }
 
 func TestWrapError(t *testing.T) {
