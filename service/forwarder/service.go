@@ -115,12 +115,12 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 	}
 
 	if len(result.Messages) != int(result.TotalCount) || result.TotalCount == 0 {
-		err = log.NewError("invalid result.TotalCount - %d", result.TotalCount)
+		err = log.NewError("invalid value", "result.TotalCount", result.TotalCount)
 		return
 	}
 
 	if len(result.Messages) != len(messages) {
-		err = log.NewError("invalid len(result.Messages) - %d", len(result.Messages))
+		err = log.NewError("invalid value", "len(result.Messages)", len(result.Messages))
 		return
 	}
 
@@ -161,7 +161,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 		MessageId: origin.MessageId,
 	})
 	if err != nil {
-		err = log.NewError("%w", err)
+		err = log.WrapError(err)
 		return nil
 	}
 
@@ -275,7 +275,7 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 			},
 		})
 		if err != nil {
-			return nil, log.NewError("%w", err)
+			return nil, log.WrapError(err)
 		}
 		return &client.Messages{
 			TotalCount: 1,
@@ -291,7 +291,7 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 		},
 	})
 	if err != nil {
-		return nil, log.NewError("%w", err)
+		return nil, log.WrapError(err)
 	}
 	return messages, nil
 }

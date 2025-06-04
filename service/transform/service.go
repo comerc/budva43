@@ -97,7 +97,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			Url: textUrl.Url,
 		})
 		if err != nil {
-			err = log.NewError("%w", err)
+			err = log.WrapError(err)
 			return
 		}
 		src := messageLinkInfo.Message
@@ -127,7 +127,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 				MessageId: newMessageId,
 			})
 			if err != nil {
-				err = log.NewError("%w", err)
+				err = log.WrapError(err)
 				return
 			}
 			entity.Type = &client.TextEntityTypeTextUrl{
@@ -156,7 +156,10 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 		if re.FindString(formattedText.Text) != "" {
 			// вынесено в engineService.validateConfig()
 			// if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-			// 	err = log.NewError("длина исходного и заменяемого текста должна быть одинаковой: %s -> %s", replaceFragment.From, replaceFragment.To)
+			// err = log.NewError("длина исходного и заменяемого текста должна быть одинаковой",
+			// 	"from", replaceFragment.From,
+			// 	"to", replaceFragment.To,
+			// )
 			// 	return
 			// }
 			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
@@ -192,7 +195,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 		},
 	)
 	if err != nil {
-		err = log.NewError("%w", err)
+		err = log.WrapError(err)
 		return
 	}
 	s.addText(formattedText, escapeMarkdown(answer.Text))
@@ -221,7 +224,7 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 			// ForComment: false, // удалено в новой версии go-tdlib
 		})
 		if err != nil {
-			err = log.NewError("%w", err)
+			err = log.WrapError(err)
 			return
 		}
 		text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
@@ -242,7 +245,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 		},
 	})
 	if err != nil {
-		err = log.NewError("%w", err)
+		err = log.WrapError(err)
 		return
 	}
 	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec

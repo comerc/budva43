@@ -159,13 +159,13 @@ func (r *Repo) setupClientLog() error {
 		},
 	})
 	if err != nil {
-		return log.NewError("%w", err)
+		return log.WrapError(err)
 	}
 	_, err = client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 		NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
 	})
 	if err != nil {
-		return log.NewError("%w", err)
+		return log.WrapError(err)
 	}
 	return nil
 }
