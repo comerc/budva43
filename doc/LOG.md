@@ -5,7 +5,7 @@
 Каждый Go-разработчик знаком с этим паттерном - создание обёрток для ошибок с дублированием метаданных:
 
 ```go
-func (*SomeObject).SomeMethod(val any) error {
+func (*SomeObject) SomeMethod(val any) error {
   if err := otherMethod(val); err != nil {
     return fmt.Errorf("otherMethod %w with val %v", err, val)
   }
@@ -28,7 +28,7 @@ func (*SomeObject).SomeMethod(val any) error {
 
 **Было:**
 ```go
-func (*SomeObject).SomeMethod(val any) error {
+func (*SomeObject) SomeMethod(val any) error {
   if err := otherMethod(val); err != nil {
     slog.Error(err, "val", val) // дублирование
     return fmt.Errorf("someMethod %w with val %v", err, val)
@@ -39,10 +39,10 @@ func (*SomeObject).SomeMethod(val any) error {
 
 **Стало:**
 ```go
-func (*SomeObject).SomeMethod(val any) (err error) {
-  defer log.DebugOrError("debug description", &err)
+func (*SomeObject) SomeMethod(val any) (err error) {
+  defer logger.DebugOrError("debug description", &err)
    
-  if err = otherMethod(val); err != nil {
+  if err := otherMethod(val); err != nil {
     return log.WrapError(err, "val", val)
   }
   return nil
@@ -65,8 +65,8 @@ stack[0]="lib.go:26" stack[1]="lib.go:22"
 При нескольких возможных местах возникновения ошибки:
 
 ```go
-func (*SomeObject).SomeMethod() (err error) {
-  defer log.DebugOrError("debug description", &err)
+func (*SomeObject) SomeMethod() (err error) {
+  defer logger.DebugOrError("debug description", &err)
 
   if err := otherMethod1(); err != nil {
     return log.WrapError(err)  // line 25
@@ -109,9 +109,9 @@ err = log.WrapError(err, "arg2", "val2") // стек сохраняется
 Если забыли обернуть ошибку, `DebugOrError` всё равно добавит стек:
 
 ```go
-func (*SomeObject).SomeMethod() (err error) {
+func (*SomeObject) SomeMethod() (err error) {
   // стек всё равно добавится, но только на этот вызов
-  defer log.DebugOrError("debug description", &err) 
+  defer logger.DebugOrError("debug description", &err) 
 
   return errors.New("unwrapped error") 
 }
@@ -122,8 +122,8 @@ func (*SomeObject).SomeMethod() (err error) {
 Аргументы из всех уровней обёртывания объединяются:
 
 ```go
-func (*SomeObject).SomeMethod() (err error) {
-  defer log.DebugOrError("debug description", &err, "arg3", "val3")
+func (*SomeObject) SomeMethod() (err error) {
+  defer logger.DebugOrError("debug description", &err, "arg3", "val3")
 
   err = log.NewError("my error", "arg1", "val1")
   // ...
