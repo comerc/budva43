@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Synctest",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}",
+      "env": {
+        "GOEXPERIMENT": "synctest"
+      },
+      "args": [
+        "-test.run",
+        ".*Synctest.*",
+        "-test.v"
+      ],
+      "buildFlags": "-tags=goexperiment.synctest"
+    },
+    {
+      "name": "Debug Current Synctest",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "env": {
+        "GOEXPERIMENT": "synctest"
+      },
+      "buildFlags": "-tags=goexperiment.synctest"
+    }
+  ]
+}

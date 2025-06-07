@@ -4,7 +4,7 @@ lint:
 	golangci-lint run
 
 check:
-	go test -short -failfast -v -race -count=1 ./...
+	GOEXPERIMENT=synctest go test -short -failfast -v -race -count=1 ./...
 
 build:
 	rm -f bin/app && go build -o bin/app main.go
