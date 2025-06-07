@@ -12,8 +12,8 @@ github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UF
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/comerc/go-tdlib v0.7.6-fix1 h1:NQ5hN/NuvEwwrfY1zuVRVI2yulWGSe0bI1WGbjbnnMk=
 github.com/comerc/go-tdlib v0.7.6-fix1/go.mod h1:yqNbNZenZtXPKgf9hDuyZbsRz7qlxOxdfKOc+sAxxIE=
-github.com/comerc/spylog v0.0.0-20250601090440-7426f413ac1b h1:3YS3o5U6JqanwvIq1mBFnbvBWrjYXoprRLJHt7kzMHo=
-github.com/comerc/spylog v0.0.0-20250601090440-7426f413ac1b/go.mod h1:/fKniU6Nc9qUippW+BPOGTMuqpduCYXyr2S0AE6HGqk=
+github.com/comerc/spylog v0.0.0-20250607060534-2a655dad7af7 h1:tOyNDl5kPagfqxnDoVQso5HSvhSwD4TuSVoURJ054c4=
+github.com/comerc/spylog v0.0.0-20250607060534-2a655dad7af7/go.mod h1:/fKniU6Nc9qUippW+BPOGTMuqpduCYXyr2S0AE6HGqk=
 github.com/containerd/log v0.1.0 h1:TCJt7ioM2cr/tfR8GPbGf9/VRAX8D2B4PjzCpfX540I=
 github.com/containerd/log v0.1.0/go.mod h1:VRRf09a7mHDIRezVKTRCrOq78v577GXq3bSa3EhrzVo=
 github.com/containerd/platforms v0.2.1 h1:zvwtM3rz2YHPQsF2CHYM8+KtB5dvhISiXh5ZpSBQv6A=

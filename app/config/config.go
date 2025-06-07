@@ -2,17 +2,25 @@ package config
 
 import (
 	"log/slog"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
 	"github.com/comerc/budva43/app/entity"
+)
+
+var (
+	cfg = &config{}
+	// General     = &cfg.General
+	LogOptions = &cfg.LogOptions
+	Storage    = &cfg.Storage
+	Telegram   = &cfg.Telegram
+	Bot        = &cfg.Bot
+	Web        = &cfg.Web
+	// Forwarding = &cfg.Forwarding
+	// Reports = &cfg.Reports
+	Engine = &cfg.Engine
 )
 
 type (
@@ -39,8 +47,7 @@ type (
 
 	// Настройки логгера
 	logOptions struct {
-		Level     slog.Level
-		AddSource bool
+		Level slog.Level
 	}
 
 	// Настройки хранилища данных
@@ -137,57 +144,6 @@ type (
 		OrderedForwardRules []entity.ForwardRuleId `mapstructure:"-"`
 	}
 )
-
-var (
-	once        sync.Once
-	cfg         = &config{}
-	projectRoot string
-	// General     = &cfg.General
-	LogOptions = &cfg.LogOptions
-	Storage    = &cfg.Storage
-	Telegram   = &cfg.Telegram
-	Bot        = &cfg.Bot
-	Web        = &cfg.Web
-	// Forwarding = &cfg.Forwarding
-	// Reports = &cfg.Reports
-	Engine = &cfg.Engine
-)
-
-// не используем slog, т.к. он инициализируется в main.go
-
-// findProjectRoot находит корень проекта на основе файла go.mod
-func findProjectRoot() string {
-	// Запускаем команду "go env GOMOD" чтобы найти путь к go.mod
-	cmd := exec.Command("go", "env", "GOMOD")
-	output, err := cmd.Output()
-	if err != nil {
-		// log.Print("Не удалось определить путь к go.mod: %w", err)
-		// Если не удалось, пробуем взять текущую директорию
-		currentDir, err := os.Getwd()
-		if err != nil {
-			// log.Print("Не удалось получить текущую директорию: %w", err)
-			return "."
-		}
-		return currentDir
-	}
-
-	// Удаляем символ новой строки из вывода
-	goModPath := strings.TrimSpace(string(output))
-	// Получаем директорию go.mod - это и есть корень проекта
-	projectRoot := filepath.Dir(goModPath)
-
-	return projectRoot
-}
-
-// init - это зло https://habr.com/ru/articles/771858/
-// но подходит для реализации синглтона
-func init() {
-	once.Do(func() {
-		projectRoot = findProjectRoot()
-		*cfg = *load()
-		MakeDirs()
-	})
-}
 
 func Watch(cb func(e fsnotify.Event)) {
 	viper.OnConfigChange(cb)

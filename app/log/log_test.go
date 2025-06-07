@@ -3,12 +3,21 @@ package log
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"testing"
 
+	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/spylog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	config.Init()
+	Init()
+	spylog.Init(slog.Default().Handler())
+	os.Exit(m.Run())
+}
 
 type SomeObject struct {
 	log *Logger
@@ -52,8 +61,12 @@ func TestSomeMethod(t *testing.T) {
 	assert.Equal(t, "val0", spylog.GetAttrValue(record0, "arg0"))
 	assert.Equal(t, "val1", spylog.GetAttrValue(record0, "arg1"))
 	assert.Equal(t, "val2", spylog.GetAttrValue(record0, "arg2"))
-	assert.Equal(t, "app/log/log_test.go:36 log.(*SomeObject).NestedMethod",
-		spylog.GetAttrValue(record0, "stack[0]"))
+	assert.Equal(t, "app/log/log_test.go:45 log.(*SomeObject).NestedMethod",
+		spylog.GetAttrValue(record0, "source"))
+}
+
+type SomeError struct {
+	error
 }
 
 func TestUnwrappedError(t *testing.T) {
@@ -68,7 +81,10 @@ func TestUnwrappedError(t *testing.T) {
 		}
 	})
 
-	err := errors.New("unwrapped error")
+	var err error
+	err = &SomeError{
+		error: errors.New("unwrapped error"),
+	}
 	o.log.InfoOrError("message", &err, "arg", "val")
 
 	require.True(t, len(spylogHandler.Records) == 1)
@@ -77,6 +93,7 @@ func TestUnwrappedError(t *testing.T) {
 	assert.Equal(t, slog.LevelError, record0.Level)
 	assert.Equal(t, "unwrapped error", record0.Message)
 	assert.Equal(t, "val", spylog.GetAttrValue(record0, "arg"))
-	assert.Equal(t, "app/log/log_test.go:72 log.TestUnwrappedError",
-		spylog.GetAttrValue(record0, "stack[0]"))
+	assert.Equal(t, "log.SomeError", spylog.GetAttrValue(record0, "type"))
+	assert.Equal(t, "app/log/log_test.go:88 log.TestUnwrappedError",
+		spylog.GetAttrValue(record0, "source"))
 }

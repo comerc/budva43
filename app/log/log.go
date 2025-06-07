@@ -5,19 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
-	"sync"
-
-	"github.com/comerc/budva43/app/config"
+	"strings"
 )
 
 type Logger struct {
-	log *slog.Logger
+	slog.Logger
 }
 
 func NewLogger(moduleName string) *Logger {
 	return &Logger{
-		log: slog.With("module", moduleName),
+		Logger: *slog.With("module", moduleName),
 	}
 }
 
@@ -37,41 +34,27 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 	var err error
 	if errPtr != nil && *errPtr != nil {
 		err = *errPtr
-		message = err.Error()
 		level = slog.LevelError
-	}
-	if err != nil {
+		message = err.Error()
 		var stack []*CallInfo
 		var customError *CustomError
 		if errors.As(err, &customError) {
 			args = append(customError.Args, args...)
 			stack = customError.Stack
+			err = customError.Unwrap()
 		}
+		typeName := strings.TrimPrefix(fmt.Sprintf("%T", err), "*")
+		args = append(args, "type", typeName)
 		if stack == nil {
-			stack = GetCallStack(3, 0)
+			stack = GetCallStack(3, 1)
 		}
-		for i, item := range stack {
-			args = append(args, fmt.Sprintf("stack[%d]", i), item)
-		}
+		args = append(args, "source", stack[0].String())
+		// TODO: вынести в конфиг?
+		// group := []any{}
+		// for i, item := range stack {
+		// 	group = append(group, fmt.Sprintf("%d", i), item)
+		// }
+		// args = append(args, slog.Group("source", group...))
 	}
-	l.log.Log(context.Background(), level, message, args...)
-}
-
-func setupLogger() {
-	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     config.LogOptions.Level,
-		AddSource: config.LogOptions.AddSource,
-	})
-	logger := slog.New(logHandler)
-	slog.SetDefault(logger)
-}
-
-var once sync.Once
-
-// init - это зло https://habr.com/ru/articles/771858/
-// но подходит для реализации синглтона
-func init() {
-	once.Do(func() {
-		setupLogger()
-	})
+	l.Logger.Log(context.Background(), level, message, args...)
 }

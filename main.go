@@ -7,8 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/comerc/budva43/app/log"
-	util "github.com/comerc/budva43/app/util"
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
@@ -53,7 +54,8 @@ type App struct {
 }
 
 func NewApp() *App {
-
+	config.Init()
+	log.Init()
 	return &App{
 		log: log.NewLogger("main"),
 	}

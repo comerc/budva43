@@ -15,6 +15,77 @@ import (
 	"github.com/spf13/viper"
 )
 
+func load() *config {
+	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами - cobra?
+
+	envPath := filepath.Join(projectRoot, ".env")
+	if err := godotenv.Load(envPath); err != nil {
+		log.Panic("не удалось загрузить .env файл: ", err)
+	}
+
+	// Настройка Viper для чтения конфигурации из файла
+	viper.SetConfigName("config") // имя конфигурационного файла без расширения
+	viper.SetConfigType("yml")    // расширение файла конфигурации
+	viper.AddConfigPath(projectRoot)
+
+	// Настраиваем Viper для правильной обработки имен полей и секций
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))
+	viper.SetEnvPrefix("BUDVA43_") // Префикс для переменных окружения
+	// одинаково работает:
+	// - BUDVA43__GENERAL__TELEGRAM__API_ID - из переменной окружения
+	// - viper.GetString("general.telegram.api-id") - из конфигурационного файла
+
+	// Автоматическое чтение из переменных окружения
+	viper.AutomaticEnv()
+
+	// Читаем конфигурацию из файла
+	if err := viper.ReadInConfig(); err != nil {
+		log.Panic("ошибка чтения конфигурации: ", err)
+	}
+
+	// Создаем конфигурацию со значениями по умолчанию
+	config := &config{}
+	setDefaultConfig(config)
+
+	// Настраиваем декодирование
+	options := viper.DecodeHook(
+		mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeDurationHookFunc(),
+			mapstructure.StringToSliceHookFunc(","),
+			kebabCaseKeyHookFunc(),
+		),
+	)
+
+	// Переопределяем значения из конфигурационного файла и переменных окружения
+	if err := viper.Unmarshal(config, options); err != nil {
+		log.Panic("ошибка разбора конфигурации: ", err)
+	}
+
+	return config
+}
+
+func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
+	return func(from reflect.Type, _ reflect.Type, data any) (any, error) {
+		if from.Kind() != reflect.Map {
+			return data, nil
+		}
+
+		m, ok := data.(map[string]any)
+		if !ok {
+			return data, nil
+		}
+
+		// Создаем новую карту с преобразованными ключами
+		out := make(map[string]any)
+		for k, v := range m {
+			// Преобразуем ключ из kebab-case в PascalCase
+			pascalKey := lo.PascalCase(k)
+			out[pascalKey] = v
+		}
+		return out, nil
+	}
+}
+
 func setDefaultConfig(config *config) {
 	// config.General.AutoStart = true
 	// config.General.NotifyOnStart = true
@@ -22,7 +93,6 @@ func setDefaultConfig(config *config) {
 	// config.General.Theme = "light"
 
 	config.LogOptions.Level = slog.LevelDebug
-	config.LogOptions.AddSource = false
 
 	config.Telegram.UseTestDc = testing.Testing()
 	config.Telegram.UseFileDatabase = true
@@ -71,74 +141,4 @@ func setDefaultConfig(config *config) {
 	// config.Web.EnableTLS = false
 	// config.Web.RequireAuth = true
 	// config.Web.SessionTimeout = 60 * time.Minute
-}
-
-func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
-	return func(from reflect.Type, _ reflect.Type, data any) (any, error) {
-		if from.Kind() != reflect.Map {
-			return data, nil
-		}
-
-		m, ok := data.(map[string]any)
-		if !ok {
-			return data, nil
-		}
-
-		// Создаем новую карту с преобразованными ключами
-		out := make(map[string]any)
-		for k, v := range m {
-			// Преобразуем ключ из kebab-case в PascalCase
-			pascalKey := lo.PascalCase(k)
-			out[pascalKey] = v
-		}
-		return out, nil
-	}
-}
-
-func load() *config {
-	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами - cobra?
-
-	envPath := filepath.Join(projectRoot, ".env")
-	if err := godotenv.Load(envPath); err != nil {
-		log.Panic("не удалось загрузить .env файл: ", err)
-	}
-
-	// Настройка Viper для чтения конфигурации из файла
-	viper.SetConfigName("config") // имя конфигурационного файла без расширения
-	viper.SetConfigType("yml")    // расширение файла конфигурации
-	viper.AddConfigPath(projectRoot)
-
-	// Настраиваем Viper для правильной обработки имен полей и секций
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))
-	viper.SetEnvPrefix("BUDVA43_") // Префикс для переменных окружения
-	// одинаково работает:
-	// - BUDVA43__GENERAL__TELEGRAM__API_ID - из переменной окружения
-	// - viper.GetString("general.telegram.api-id") - из конфигурационного файла
-
-	// Автоматическое чтение из переменных окружения
-	viper.AutomaticEnv()
-
-	// Читаем конфигурацию из файла
-	if err := viper.ReadInConfig(); err != nil {
-		log.Panic("ошибка чтения конфигурации: ", err)
-	}
-
-	options := viper.DecodeHook(
-		mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeDurationHookFunc(),
-			mapstructure.StringToSliceHookFunc(","),
-			kebabCaseKeyHookFunc(),
-		),
-	)
-
-	// Создаем конфигурацию со значениями по умолчанию
-	config := &config{}
-	setDefaultConfig(config)
-
-	// Переопределяем значения из конфигурационного файла и переменных окружения
-	if err := viper.Unmarshal(config, options); err != nil {
-		log.Panic("ошибка разбора конфигурации: ", err)
-	}
-
-	return config
 }
