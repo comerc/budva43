@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // GetCaller возвращает информацию о вызывающем
@@ -88,10 +90,8 @@ func TestGetCaller(t *testing.T) {
 		t.Errorf("Expected format 'file:line function', got: %s", caller)
 	}
 
-	// Проверяем, что содержит относительный путь
-	if !strings.Contains(caller, "util/") {
-		t.Errorf("Expected relative path to contain 'util/', got: %s", caller)
-	}
+	// Проверяем, что путь содержит app/log/callstack_test.go
+	assert.True(t, strings.HasPrefix(caller, "app/log/callstack_test.go"))
 
 	t.Logf("Caller: %s", caller)
 }
@@ -195,10 +195,8 @@ func TestRelativePaths(t *testing.T) {
 		t.Errorf("Path should be relative, got: %s", caller)
 	}
 
-	// Проверяем, что путь содержит util/ (поскольку мы в util пакете)
-	if !strings.Contains(caller, "util/") {
-		t.Errorf("Expected path to contain 'util/', got: %s", caller)
-	}
+	// Проверяем, что путь содержит app/log/callstack_test.go
+	assert.True(t, strings.HasPrefix(caller, "app/log/callstack_test.go"))
 
 	// Проверяем, что путь заканчивается на .go
 	parts := strings.Split(caller, " ")

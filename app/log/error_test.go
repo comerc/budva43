@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWrapError(t *testing.T) {
@@ -16,11 +17,9 @@ func TestWrapError(t *testing.T) {
 		expectedArgs  []any
 	}{
 		{
-			name:          "nil error",
-			err:           nil,
-			args:          []any{"arg1", "val1"},
-			expectedError: "err is nil",
-			expectedArgs:  []any{"arg1", "val1"},
+			name: "nil error",
+			err:  nil,
+			args: []any{"arg1", "val1"},
 		},
 		{
 			name:          "unwrapped error",
@@ -39,11 +38,17 @@ func TestWrapError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err, ok := WrapError(test.err, test.args...).(*CustomError)
-			assert.True(t, ok)
-			assert.Equal(t, test.expectedError, err.Error())
-			assert.Equal(t, test.expectedArgs, err.Args)
-			assert.NotNil(t, err.Stack)
+			err := WrapError(test.err, test.args...)
+			if err == nil {
+				assert.Nil(t, test.err)
+				return
+			}
+			require.NotNil(t, err)
+			customError, ok := err.(*CustomError)
+			require.True(t, ok)
+			assert.Equal(t, test.expectedError, customError.Error())
+			assert.Equal(t, test.expectedArgs, customError.Args)
+			assert.NotNil(t, customError.Stack)
 		})
 	}
 }
