@@ -1,0 +1,9 @@
+{
+  "go.testEnvVars": {
+    "GOEXPERIMENT": "synctest"
+  },
+  "go.testFlags": [
+    "-v"
+  ],
+  "go.buildTags": "goexperiment.synctest"
+}
