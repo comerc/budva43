@@ -15,7 +15,7 @@ import (
 func TestMain(m *testing.M) {
 	config.Init()
 	Init()
-	spylog.Init(slog.Default().Handler())
+	spylog.Init(slog.Default())
 	os.Exit(m.Run())
 }
 
