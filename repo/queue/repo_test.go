@@ -8,11 +8,12 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/spylog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
 )
 
 func TestMain(m *testing.M) {
@@ -30,30 +31,30 @@ func TestQueueRepo(t *testing.T) {
 
 	synctest.Run(func() {
 		// Создаем репозиторий очереди
-		var queue *Repo
+		var queueRepo *Repo
 		spylogHandler := spylog.GetModuleLogHandler("repo.queue", t.Name(), func() {
-			queue = New() // вызываем функцию-конструктор в обёртке spylogHandler
+			queueRepo = New() // вызываем функцию-конструктор в обёртке spylogHandler
 		})
 
-		err := queue.Start(ctx)
+		err := queueRepo.Start(ctx)
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			queue.Close()
+			queueRepo.Close()
 		})
 
 		// Счетчик выполненных задач
 		executed := 0
 
 		// Добавляем задачи, одна из которых вызывает панику
-		queue.Add(func() { executed++ })
-		queue.Add(func() {
+		queueRepo.Add(func() { executed++ })
+		queueRepo.Add(func() {
 			executed++
 			panic("Alarm!")
 		})
-		queue.Add(func() { executed++ })
-		require.Equal(t, 3, queue.Len(), "В очереди должно быть 3 задачи")
+		queueRepo.Add(func() { executed++ })
+		require.Equal(t, 3, queueRepo.Len(), "В очереди должно быть 3 задачи")
 
-		// Добавляю смещение времени для тиков
+		// Добавляем смещение времени для тиков
 		time.Sleep(1 * time.Nanosecond)
 
 		// Ждем выполнения всех задач
