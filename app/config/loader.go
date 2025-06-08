@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -43,9 +42,9 @@ func load() *config {
 		log.Panic("ошибка чтения конфигурации: ", err)
 	}
 
-	// Создаем конфигурацию со значениями по умолчанию
+	// Создаем конфигурацию со значениями для разработки
 	config := &config{}
-	setDefaultConfig(config)
+	setDevConfig(config)
 
 	// Настраиваем декодирование
 	options := viper.DecodeHook(
@@ -86,7 +85,7 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
-func setDefaultConfig(config *config) {
+func setDevConfig(config *config) {
 	// config.General.AutoStart = true
 	// config.General.NotifyOnStart = true
 	// config.General.Language = "en"
@@ -94,7 +93,7 @@ func setDefaultConfig(config *config) {
 
 	config.LogOptions.Level = slog.LevelDebug
 
-	config.Telegram.UseTestDc = testing.Testing()
+	config.Telegram.UseTestDc = true
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
@@ -106,7 +105,7 @@ func setDefaultConfig(config *config) {
 	config.Telegram.LogVerbosityLevel = 0
 	config.Telegram.LogMaxFileSize = 10485760
 
-	config.Telegram.LogDirectory = filepath.Join(projectRoot, ".data", "telegram", "github.com/comerc/budva43/app/config")
+	config.Telegram.LogDirectory = filepath.Join(projectRoot, ".data", "telegram", "log")
 	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = filepath.Join(projectRoot, ".data", "telegram", "files")
 
