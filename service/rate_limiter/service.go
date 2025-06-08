@@ -29,29 +29,24 @@ func New() *Service {
 	}
 }
 
-// getLastForwardedDiff возвращает время, прошедшее с момента последней пересылки сообщений в целевой чат
-func (s *Service) getLastForwardedDiff(dstChatId int64) time.Duration {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return time.Since(s.lastForwarded[dstChatId])
-}
-
-// setLastForwarded устанавливает время последней пересылки сообщений в целевой чат
-func (s *Service) setLastForwarded(dstChatId int64) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.lastForwarded[dstChatId] = time.Now()
-}
-
 // WaitForForward добавляет задержку, чтобы бот успел отреагировать на сообщение
 func (s *Service) WaitForForward(ctx context.Context, dstChatId int64) {
-	diff := s.getLastForwardedDiff(dstChatId)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	diff := time.Since(s.lastForwarded[dstChatId])
 	if diff < waitForForward {
+		// Освобождаем блокировку на время ожидания
+		s.mu.Unlock()
+
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(waitForForward - diff):
 		}
+
+		// Снова захватываем блокировку для записи
+		s.mu.Lock()
 	}
-	s.setLastForwarded(dstChatId)
+	s.lastForwarded[dstChatId] = time.Now()
 }
