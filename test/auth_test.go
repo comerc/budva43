@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -34,7 +33,8 @@ func TestMain(m *testing.M) {
 func initTelegramDirs(t *testing.T) {
 	t.Helper()
 
-	fmt.Println("config.Telegram.UseTestDc:", config.Telegram.UseTestDc)
+	require.True(t, config.Telegram.UseTestDc)
+	// TODO: https://core.telegram.org/api/auth#test-accounts
 
 	currDir, err := os.Getwd()
 	if err != nil {
