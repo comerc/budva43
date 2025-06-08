@@ -47,6 +47,8 @@ func (s *SomeObject) NestedMethod() {
 }
 
 func TestSomeMethod(t *testing.T) {
+	t.Parallel()
+
 	var o *SomeObject
 	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
 		o = NewSomeObject() // вызываем функцию-конструктор в обёртке spylogHandler
@@ -70,6 +72,8 @@ type SomeError struct {
 }
 
 func TestUnwrappedError(t *testing.T) {
+	t.Parallel()
+
 	type OtherObject struct {
 		log *Logger
 	}
@@ -94,6 +98,6 @@ func TestUnwrappedError(t *testing.T) {
 	assert.Equal(t, "unwrapped error", record0.Message)
 	assert.Equal(t, "val", spylog.GetAttrValue(record0, "arg"))
 	assert.Equal(t, "log.SomeError", spylog.GetAttrValue(record0, "type"))
-	assert.Equal(t, "app/log/log_test.go:88 log.TestUnwrappedError",
+	assert.Equal(t, "app/log/log_test.go:92 log.TestUnwrappedError",
 		spylog.GetAttrValue(record0, "source"))
 }

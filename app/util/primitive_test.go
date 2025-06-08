@@ -8,6 +8,8 @@ import (
 )
 
 func TestConvertToInt(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		s     string
@@ -33,6 +35,8 @@ func TestConvertToInt(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			if test.panic {
 				assert.PanicsWithValue(t, fmt.Sprintf("ConvertToInt: strconv.Atoi: parsing \"%s\": invalid syntax", test.s), func() {
 					ConvertToInt[int64](test.s)
@@ -45,6 +49,8 @@ func TestConvertToInt(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
+	t.Parallel()
+
 	type object struct {
 		I int64
 		A []string

@@ -7,6 +7,8 @@ import (
 )
 
 func TestEscapeMarkdown(t *testing.T) {
+	t.Parallel()
+
 	a := []string{
 		"_",
 		"*",

@@ -18,7 +18,7 @@ import (
 
 // TestNewCLIAutomator проверяет корректность создания экземпляра CLIAutomator
 func TestNewCLIAutomator(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -69,7 +69,7 @@ func TestNewCLIAutomator(t *testing.T) {
 
 // TestCLIAutomatorRunAndSendInput проверяет работу методов Run и SendInput
 func TestCLIAutomatorRunAndSendInput(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(func() {
@@ -135,7 +135,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 
 // TestCLIAutomatorWaitForOutput проверяет работу метода WaitForOutput
 func TestCLIAutomatorWaitForOutput(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(func() {
@@ -161,6 +161,8 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	})
 
 	t.Run("Успешное обнаружение префикса", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         log.NewLogger("app.util.cli_automator.test"),
@@ -189,6 +191,8 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	})
 
 	t.Run("Таймаут при отсутствии строки", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
 			log:         log.NewLogger("app.util.cli_automator.test"),
@@ -228,7 +232,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 
 // TestCLIAutomatorClose проверяет корректность метода Close
 func TestCLIAutomatorClose(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -299,7 +303,7 @@ func TestCLIAutomatorClose(t *testing.T) {
 
 // TestCLIAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
 func TestCLIAutomatorBufferResize(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(func() {
@@ -353,7 +357,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 
 // TestCLIAutomatorErrorHandling проверяет корректность обработки ошибок
 func TestCLIAutomatorErrorHandling(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(func() {
@@ -386,6 +390,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 	})
 
 	t.Run("WaitForOutput с малым таймаутом без Run", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем автоматор
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
@@ -399,6 +405,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 	})
 
 	t.Run("WaitForOutput с пустым шаблоном", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем автоматор
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
@@ -421,6 +429,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 	})
 
 	t.Run("WaitForOutput после закрытия stdout", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем автоматор
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
@@ -448,6 +458,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 	})
 
 	t.Run("SendInput после Close", func(t *testing.T) {
+		t.Parallel()
+
 		// Создаем автоматор
 		automator, err := NewCLIAutomator()
 		require.NoError(t, err, "Не удалось создать CLIAutomator")
@@ -496,7 +508,7 @@ func (m *mockReadWriter) Close() error {
 
 // TestCLIAutomatorWithMocks проверяет CLIAutomator с использованием моков для stdin/stdout
 func TestCLIAutomatorWithMocks(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(func() {

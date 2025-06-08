@@ -11,6 +11,8 @@ import (
 )
 
 func TestRunRedis(t *testing.T) {
+	// t.Parallel() // TODO: включить
+
 	if testing.Short() {
 		t.Skip()
 	}
