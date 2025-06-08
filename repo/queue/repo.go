@@ -3,6 +3,7 @@ package queue
 import (
 	"container/list"
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -70,9 +71,20 @@ func (s *Repo) run(ctx context.Context) {
 					fn := front.Value.(func())
 					// Это позволит удалить выделенную память и избежать утечек памяти
 					s.queue.Remove(front)
-					fn()
+					s.executeTask(fn)
 				}
 			}()
 		}
 	}
+}
+
+// executeTask безопасно выполняет задачу с recovery
+func (s *Repo) executeTask(fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			err := fmt.Errorf("%v", r)
+			s.log.DebugOrError("", &err)
+		}
+	}()
+	fn()
 }
