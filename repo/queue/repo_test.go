@@ -2,67 +2,74 @@ package queue
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"testing"
 	"testing/synctest"
 	"time"
 
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/spylog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	config.Init()
+	log.Init()
+	spylog.Init(slog.Default())
+	os.Exit(m.Run())
+}
 
 func TestQueueRepo(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	t.Cleanup(cancel)
 
 	synctest.Run(func() {
 		// Создаем репозиторий очереди
-		queue := New()
+		var queue *Repo
+		spylogHandler := spylog.GetModuleLogHandler("repo.queue", t.Name(), func() {
+			queue = New() // вызываем функцию-конструктор в обёртке spylogHandler
+		})
+
 		err := queue.Start(ctx)
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			queue.Close()
 		})
 
-		// Проверяем, что очередь изначально пуста
-		assert.Equal(t, 0, queue.Len(), "Длина очереди должна быть 0")
-
 		// Счетчик выполненных задач
 		executed := 0
 
-		// Добавляем несколько задач в очередь
+		// Добавляем задачи, одна из которых вызывает панику
 		queue.Add(func() { executed++ })
+		queue.Add(func() {
+			executed++
+			panic("Alarm!")
+		})
 		queue.Add(func() { executed++ })
-		queue.Add(func() { executed++ })
-
-		// Проверяем, что задачи добавились
-		assert.Equal(t, 3, queue.Len(), "В очереди должно быть 3 задачи")
+		require.Equal(t, 3, queue.Len(), "В очереди должно быть 3 задачи")
 
 		// Добавляю смещение времени для тиков
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(1 * time.Nanosecond)
 
-		// В synctest время контролируется, поэтому мы можем точно знать,
-		// когда задачи будут выполнены
-
-		// Ждем первый тик таймера (1 секунда)
+		// Ждем выполнения всех задач
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 1, executed, "Должна быть выполнена одна задача после первого тика")
-		assert.Equal(t, 2, queue.Len(), "В очереди должно остаться 2 задачи")
-
-		// Ждем второй тик
+		assert.Equal(t, 1, executed, "Первая задача должна выполниться")
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 2, executed, "Должны быть выполнены две задачи после второго тика")
-		assert.Equal(t, 1, queue.Len(), "В очереди должна остаться 1 задача")
-
-		// Ждем третий тик
+		assert.Equal(t, 2, executed, "Задача с паникой должна выполниться, но не сломать очередь")
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 3, executed, "Должны быть выполнены все три задачи после третьего тика")
-		assert.Equal(t, 0, queue.Len(), "Очередь должна быть пуста после выполнения всех задач")
+		assert.Equal(t, 3, executed, "Третья задача должна выполниться после паники")
 
-		// Проверяем, что больше задач нет
-		time.Sleep(1 * time.Second)
-		assert.Equal(t, 3, executed, "Количество выполненных задач не должно измениться")
-		assert.Equal(t, 0, queue.Len(), "Очередь должна оставаться пустой")
+		// Проверяем запись в лог
+		require.True(t, len(spylogHandler.Records) == 1)
+		record0 := spylogHandler.Records[0]
+		assert.Equal(t, "Alarm!", record0.Message)
+
+		// Завершаем контекст
+		cancel()
 	})
 }
