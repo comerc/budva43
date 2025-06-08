@@ -92,7 +92,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] [gostackparse](https://github.com/DataDog/gostackparse)
 - [ ] grafana-loki
 - [ ] pprof
-
+- [x] time.AfterFunc() & context.AfterFunc()
+ 
 ## .env
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
