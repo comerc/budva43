@@ -3,6 +3,7 @@ package queue
 import (
 	"container/list"
 	"context"
+	"sync"
 	"time"
 
 	"github.com/comerc/budva43/app/log"
@@ -13,6 +14,7 @@ type Repo struct {
 	log *log.Logger
 	//
 	queue *list.List
+	mu    sync.RWMutex
 }
 
 // New создает новый экземпляр сервиса очереди
@@ -39,7 +41,16 @@ func (s *Repo) Close() error {
 
 // Add добавляет задачу в очередь
 func (s *Repo) Add(fn func()) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.queue.PushBack(fn)
+}
+
+// Len возвращает количество задач в очереди
+func (s *Repo) Len() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.queue.Len()
 }
 
 // run обрабатывает очередь задач
@@ -51,13 +62,17 @@ func (s *Repo) run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			front := s.queue.Front()
-			if front != nil {
-				fn := front.Value.(func())
-				fn()
-				// Это позволит удалить выделенную память и избежать утечек памяти
-				s.queue.Remove(front)
-			}
+			func() {
+				s.mu.Lock()
+				defer s.mu.Unlock()
+				front := s.queue.Front()
+				if front != nil {
+					fn := front.Value.(func())
+					// Это позволит удалить выделенную память и избежать утечек памяти
+					s.queue.Remove(front)
+					fn()
+				}
+			}()
 		}
 	}
 }
