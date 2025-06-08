@@ -58,6 +58,8 @@ func testFunction3() string {
 }
 
 func TestCallInfo(t *testing.T) {
+	t.Parallel()
+
 	info := CallInfo{
 		FuncName: "TestFunction",
 		FileName: "test/file.go",
@@ -73,6 +75,8 @@ func TestCallInfo(t *testing.T) {
 }
 
 func TestGetCaller(t *testing.T) {
+	t.Parallel()
+
 	caller := GetCaller()
 
 	if caller == "" {
@@ -97,6 +101,8 @@ func TestGetCaller(t *testing.T) {
 }
 
 func TestGetCallers(t *testing.T) {
+	t.Parallel()
+
 	stackDepth := 5
 	callers := GetCallers(stackDepth)
 
@@ -128,6 +134,8 @@ func TestGetCallers(t *testing.T) {
 }
 
 func TestGetCallersWithDepth(t *testing.T) {
+	t.Parallel()
+
 	// Тестируем различные глубины
 	depths := []int{3, 5, 7, 10}
 
@@ -144,6 +152,8 @@ func TestGetCallersWithDepth(t *testing.T) {
 }
 
 func TestNestedFunctionCalls(t *testing.T) {
+	t.Parallel()
+
 	result := testFunction1()
 
 	// Проверяем, что результат содержит ожидаемые функции
@@ -159,6 +169,8 @@ func TestNestedFunctionCalls(t *testing.T) {
 }
 
 func TestProjectModuleDetection(t *testing.T) {
+	t.Parallel()
+
 	module := getProjectModule()
 
 	if module == "" {
@@ -173,6 +185,8 @@ func TestProjectModuleDetection(t *testing.T) {
 }
 
 func TestProjectRootDetection(t *testing.T) {
+	t.Parallel()
+
 	root := getProjectRoot()
 
 	if root == "" {
@@ -188,6 +202,8 @@ func TestProjectRootDetection(t *testing.T) {
 }
 
 func TestRelativePaths(t *testing.T) {
+	t.Parallel()
+
 	caller := GetCaller()
 
 	// Проверяем, что путь относительный (не начинается с /)

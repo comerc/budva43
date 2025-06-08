@@ -53,6 +53,8 @@ func initTelegramDirs(t *testing.T) {
 }
 
 func TestAuth(t *testing.T) {
+	// t.Parallel() // TODO: включить
+
 	if testing.Short() {
 		t.Skip()
 	}
