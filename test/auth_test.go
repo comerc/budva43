@@ -60,9 +60,7 @@ func TestAuth(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	t.Cleanup(cancel)
 
 	initTelegramDirs(t)
 
