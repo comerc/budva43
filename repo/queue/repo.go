@@ -63,18 +63,22 @@ func (s *Repo) run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			func() {
-				s.mu.Lock()
-				defer s.mu.Unlock()
-				front := s.queue.Front()
-				if front != nil {
-					fn := front.Value.(func())
-					// Это позволит удалить выделенную память и избежать утечек памяти
-					s.queue.Remove(front)
-					s.executeTask(fn)
-				}
-			}()
+			s.processQueue()
 		}
+	}
+}
+
+// processQueue обрабатывает одну задачу из очереди
+func (s *Repo) processQueue() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	front := s.queue.Front()
+	if front != nil {
+		fn := front.Value.(func())
+		// Это позволит удалить выделенную память и избежать утечек памяти
+		s.queue.Remove(front)
+		s.executeTask(fn)
 	}
 }
 
