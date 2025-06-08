@@ -71,10 +71,8 @@ func TestNewCLIAutomator(t *testing.T) {
 func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -137,10 +135,8 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -305,10 +301,8 @@ func TestCLIAutomatorClose(t *testing.T) {
 func TestCLIAutomatorBufferResize(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -359,10 +353,8 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 func TestCLIAutomatorErrorHandling(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -510,10 +502,8 @@ func (m *mockReadWriter) Close() error {
 func TestCLIAutomatorWithMocks(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	t.Cleanup(func() {
-		cancel()
-	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(cancel)
 
 	// Этот тест не использует реальные stdin/stdout, а создает моки
 	// В реальной ситуации мы бы использовали gomock или testify/mock для более сложных моков
