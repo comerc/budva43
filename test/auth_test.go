@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func initTelegramDirs(t *testing.T) {
+func initDirs(t *testing.T) {
 	t.Helper()
 
 	require.True(t, config.Telegram.UseTestDc)
@@ -40,10 +40,14 @@ func initTelegramDirs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ошибка получения текущей директории: %v", err)
 	}
-	config.Telegram.LogDirectory = path.Join(currDir, ".data", "telegram", "log")
-	config.Telegram.DatabaseDirectory = path.Join(currDir, ".data", "telegram", "db")
-	config.Telegram.FilesDirectory = path.Join(currDir, ".data", "telegram", "files")
+	config.LogOptions.Directory = filepath.Join(currDir, ".data", "log")
+	config.Storage.LogDirectory = filepath.Join(currDir, ".data", "badger", "log")
+	config.Telegram.LogDirectory = filepath.Join(currDir, ".data", "telegram", "log")
+	config.Telegram.DatabaseDirectory = filepath.Join(currDir, ".data", "telegram", "db")
+	config.Telegram.FilesDirectory = filepath.Join(currDir, ".data", "telegram", "files")
 	var dirs = []string{
+		config.LogOptions.Directory,
+		config.Storage.LogDirectory,
 		config.Telegram.LogDirectory,
 		config.Telegram.DatabaseDirectory,
 		config.Telegram.FilesDirectory,
@@ -62,7 +66,7 @@ func TestAuth(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(cancel)
 
-	initTelegramDirs(t)
+	initDirs(t)
 
 	var err error
 

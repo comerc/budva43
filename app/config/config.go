@@ -47,11 +47,16 @@ type (
 
 	// Настройки логгера
 	logOptions struct {
-		Level slog.Level
+		Level       slog.Level
+		Directory   string
+		MaxFileSize int // MB
 	}
 
 	// Настройки хранилища данных
 	storage struct {
+		LogLevel          slog.Level
+		LogDirectory      string
+		LogMaxFileSize    int // MB
 		DatabaseDirectory string
 		// MaxCacheSize      int64
 		// DataRetentionDays int
@@ -79,7 +84,7 @@ type (
 		UseSecretChats      bool
 		LogVerbosityLevel   int32
 		LogDirectory        string
-		LogMaxFileSize      int64
+		LogMaxFileSize      int // MB
 	}
 
 	// Настройки для бота

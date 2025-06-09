@@ -92,6 +92,8 @@ func setDefaultConfig(config *config) {
 	// config.General.Theme = "light"
 
 	config.LogOptions.Level = slog.LevelDebug
+	config.LogOptions.Directory = filepath.Join(projectRoot, ".data", "log")
+	config.LogOptions.MaxFileSize = 10 // MB
 
 	config.Telegram.UseTestDc = false
 	config.Telegram.UseFileDatabase = true
@@ -103,7 +105,7 @@ func setDefaultConfig(config *config) {
 	config.Telegram.SystemVersion = "1.0.0"
 	config.Telegram.ApplicationVersion = "1.0.0"
 	config.Telegram.LogVerbosityLevel = 0
-	config.Telegram.LogMaxFileSize = 10485760
+	config.Telegram.LogMaxFileSize = 10 // MB
 
 	config.Telegram.LogDirectory = filepath.Join(projectRoot, ".data", "telegram", "log")
 	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
@@ -126,6 +128,11 @@ func setDefaultConfig(config *config) {
 	// config.Reports.IncludeStatistics = true
 	// config.Reports.StatFormat = "text"
 
+	config.Storage.LogLevel = slog.LevelInfo
+	config.Storage.LogDirectory = filepath.Join(projectRoot, ".data", "badger", "log")
+	config.Storage.LogMaxFileSize = 10 // MB
+	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "badger", "db")
+	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
 	// config.Storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
 	// config.Storage.DataRetentionDays = 30
 	// config.Storage.AutoCleanup = true
