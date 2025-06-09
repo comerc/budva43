@@ -5,9 +5,8 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"gopkg.in/natefinch/lumberjack.v2"
-
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/log"
 )
 
 type Logger struct {
@@ -15,21 +14,15 @@ type Logger struct {
 }
 
 func NewLogger() *Logger {
-
-	writer := &lumberjack.Logger{
-		Filename:   filepath.Join(config.Storage.LogDirectory, "badger.log"),
-		MaxSize:    config.Storage.LogMaxFileSize,
-		MaxBackups: 10,
-		MaxAge:     2, // days
-		Compress:   false,
-	}
+	writer := log.NewWriter(
+		filepath.Join(config.Storage.LogDirectory, "badger.log"),
+		config.Storage.LogMaxFileSize,
+	)
 	logHandler := slog.NewTextHandler(writer, &slog.HandlerOptions{
 		Level: config.Storage.LogLevel,
 	})
-	logger := slog.New(logHandler)
-
 	return &Logger{
-		log: logger,
+		log: slog.New(logHandler),
 	}
 }
 

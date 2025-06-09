@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"gopkg.in/natefinch/lumberjack.v2"
-
 	"github.com/comerc/budva43/app/config"
 )
 
@@ -20,16 +18,12 @@ func Init() {
 }
 
 func setupDefaultLogger() {
-	writer := &lumberjack.Logger{
-		Filename:   filepath.Join(config.LogOptions.Directory, "app.log"),
-		MaxSize:    config.LogOptions.MaxFileSize,
-		MaxBackups: 10,
-		MaxAge:     2, // days
-		Compress:   false,
-	}
+	writer := NewWriter(
+		filepath.Join(config.LogOptions.Directory, "app.log"),
+		config.LogOptions.MaxFileSize,
+	)
 	logHandler := slog.NewTextHandler(writer, &slog.HandlerOptions{
 		Level: config.LogOptions.Level,
 	})
-	logger := slog.New(logHandler)
-	slog.SetDefault(logger)
+	slog.SetDefault(slog.New(logHandler))
 }

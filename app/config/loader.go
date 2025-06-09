@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"log"
 	"log/slog"
 	"path/filepath"
@@ -15,7 +16,8 @@ import (
 )
 
 func load() *config {
-	// flag.Parse() // TODO: пока отказался от флагов, проблема с тестами - cobra?
+	flag.Parse()
+	// TODO: пока отказался от флагов, проблема с тестами - cobra?
 
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
@@ -43,7 +45,9 @@ func load() *config {
 	}
 
 	// Создаем конфигурацию с дефолтными значениями
-	config := &config{}
+	config := &config{
+		Testing: flag.Lookup("test.v"),
+	}
 	setDefaultConfig(config)
 
 	// Настраиваем декодирование
@@ -59,6 +63,9 @@ func load() *config {
 	if err := viper.Unmarshal(config, options); err != nil {
 		log.Panic("ошибка разбора конфигурации: ", err)
 	}
+
+	// Преобразуем относительные пути в абсолютные
+	transformDirs()
 
 	return config
 }
@@ -97,7 +104,7 @@ func setDefaultConfig(config *config) {
 	config.LogOptions.Directory = logDir
 	config.LogOptions.MaxFileSize = 10 // MB
 
-	config.Telegram.UseTestDc = false
+	config.Telegram.UseTestDc = config.Testing != nil
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
