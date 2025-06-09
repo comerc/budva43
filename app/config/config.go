@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"log/slog"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 var (
 	cfg = &config{}
 	// General     = &cfg.General
+	Testing    = &cfg.Testing
 	LogOptions = &cfg.LogOptions
 	Storage    = &cfg.Storage
 	Telegram   = &cfg.Telegram
@@ -27,6 +29,7 @@ type (
 	// Настройки приложения
 	config struct {
 		// General    general
+		Testing    *flag.Flag
 		LogOptions logOptions
 		Storage    storage
 		Telegram   telegram

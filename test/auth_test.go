@@ -26,7 +26,6 @@ import (
 
 func TestMain(m *testing.M) {
 	config.Init()
-	test_util.InitConfigDirs()
 	log.Init()
 	os.Exit(m.Run())
 }

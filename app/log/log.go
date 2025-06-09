@@ -4,8 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"os"
 	"strings"
+
+	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/comerc/budva43/app/config"
 )
 
 type Logger struct {
@@ -57,4 +63,21 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 		// args = append(args, slog.Group("source", group...))
 	}
 	l.Logger.Log(context.Background(), level, message, args...)
+}
+
+func NewWriter(filePath string, maxSize int) io.Writer {
+	v := *config.Testing
+	if v == nil {
+		return &lumberjack.Logger{
+			Filename:   filePath,
+			MaxSize:    maxSize,
+			MaxBackups: 10,
+			MaxAge:     2, // days
+			Compress:   false,
+		}
+	}
+	if v.Value.String() == "true" {
+		return os.Stdout
+	}
+	return io.Discard
 }
