@@ -9,6 +9,6 @@ func Init() {
 	once.Do(func() {
 		projectRoot = findProjectRoot()
 		*cfg = *load()
-		MakeDirs() // TODO: не нравится, что запускается и для тестов
+		MakeDirs()
 	})
 }

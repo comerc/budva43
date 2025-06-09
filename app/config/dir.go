@@ -58,6 +58,10 @@ func getAllDirs() []string {
 	}
 }
 
+func LenAllDirs() int {
+	return len(getAllDirs())
+}
+
 var projectRoot string
 
 // findProjectRoot находит корень проекта на основе файла go.mod
