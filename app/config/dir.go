@@ -10,30 +10,31 @@ import (
 
 // не используем slog, т.к. он инициализируется после конфига
 
-func RemoveDirs(dirs ...string) {
-	if len(dirs) == 0 {
-		dirs = getAllDirs()
-	}
-	for _, dir := range dirs {
+// TODO: на выброс?
+// func RemoveDirs() {
+// 	for _, dirPtr := range dirPtrs {
+// 		dir := *dirPtr
+// 		err := os.RemoveAll(dir)
+// 		if err != nil && !os.IsNotExist(err) {
+// 			log.Panicf("ошибка удаления директории %s: %v", dir, err)
+// 		}
+// 	}
+// }
+
+func transformDirs() {
+	for _, dirPtr := range dirPtrs {
+		dir := *dirPtr
+		// Устанавливаем директории относительно корня проекта, если они не абсолютные
 		if !filepath.IsAbs(dir) {
 			dir = filepath.Join(projectRoot, dir)
-		}
-		err := os.RemoveAll(dir)
-		if err != nil && !os.IsNotExist(err) {
-			log.Panicf("ошибка удаления директории %s: %v", dir, err)
+			*dirPtr = dir
 		}
 	}
 }
 
-func MakeDirs(dirs ...string) {
-	if len(dirs) == 0 {
-		dirs = getAllDirs()
-	}
-	for _, dir := range dirs {
-		// Устанавливаем директории относительно корня проекта, если они не абсолютные
-		if !filepath.IsAbs(dir) {
-			dir = filepath.Join(projectRoot, dir)
-		}
+func MakeDirs() {
+	for _, dirPtr := range dirPtrs {
+		dir := *dirPtr
 		_, err := os.Stat(dir)
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -46,20 +47,14 @@ func MakeDirs(dirs ...string) {
 	}
 }
 
-func getAllDirs() []string {
-	return []string{
-		LogOptions.Directory,
-		Storage.LogDirectory,
-		Storage.DatabaseDirectory,
-		Storage.BackupDirectory,
-		Telegram.LogDirectory,
-		Telegram.DatabaseDirectory,
-		Telegram.FilesDirectory,
-	}
-}
-
-func LenAllDirs() int {
-	return len(getAllDirs())
+var dirPtrs = []*string{
+	&LogOptions.Directory,
+	&Storage.LogDirectory,
+	&Storage.DatabaseDirectory,
+	&Storage.BackupDirectory,
+	&Telegram.LogDirectory,
+	&Telegram.DatabaseDirectory,
+	&Telegram.FilesDirectory,
 }
 
 var projectRoot string
