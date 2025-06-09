@@ -17,6 +17,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/zelenin/go-tdlib v0.7.6
 	golang.org/x/term v0.30.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 replace github.com/zelenin/go-tdlib => github.com/comerc/go-tdlib v0.7.6-fix1

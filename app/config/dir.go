@@ -48,6 +48,8 @@ func MakeDirs(dirs ...string) {
 
 func getAllDirs() []string {
 	return []string{
+		LogOptions.Directory,
+		Storage.LogDirectory,
 		Storage.DatabaseDirectory,
 		Storage.BackupDirectory,
 		Telegram.LogDirectory,
