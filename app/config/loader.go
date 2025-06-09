@@ -42,9 +42,9 @@ func load() *config {
 		log.Panic("ошибка чтения конфигурации: ", err)
 	}
 
-	// Создаем конфигурацию со значениями для разработки
+	// Создаем конфигурацию с дефолтными значениями
 	config := &config{}
-	setDevConfig(config)
+	setDefaultConfig(config)
 
 	// Настраиваем декодирование
 	options := viper.DecodeHook(
@@ -85,7 +85,7 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
-func setDevConfig(config *config) {
+func setDefaultConfig(config *config) {
 	// config.General.AutoStart = true
 	// config.General.NotifyOnStart = true
 	// config.General.Language = "en"
@@ -93,7 +93,7 @@ func setDevConfig(config *config) {
 
 	config.LogOptions.Level = slog.LevelDebug
 
-	config.Telegram.UseTestDc = true
+	config.Telegram.UseTestDc = false
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
