@@ -86,13 +86,15 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func setDefaultConfig(config *config) {
+	logDir := filepath.Join(projectRoot, ".data", "log")
+
 	// config.General.AutoStart = true
 	// config.General.NotifyOnStart = true
 	// config.General.Language = "en"
 	// config.General.Theme = "light"
 
 	config.LogOptions.Level = slog.LevelDebug
-	config.LogOptions.Directory = filepath.Join(projectRoot, ".data", "log")
+	config.LogOptions.Directory = logDir
 	config.LogOptions.MaxFileSize = 10 // MB
 
 	config.Telegram.UseTestDc = false
@@ -107,7 +109,7 @@ func setDefaultConfig(config *config) {
 	config.Telegram.LogVerbosityLevel = 0
 	config.Telegram.LogMaxFileSize = 10 // MB
 
-	config.Telegram.LogDirectory = filepath.Join(projectRoot, ".data", "telegram", "log")
+	config.Telegram.LogDirectory = logDir
 	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = filepath.Join(projectRoot, ".data", "telegram", "files")
 
@@ -129,7 +131,7 @@ func setDefaultConfig(config *config) {
 	// config.Reports.StatFormat = "text"
 
 	config.Storage.LogLevel = slog.LevelInfo
-	config.Storage.LogDirectory = filepath.Join(projectRoot, ".data", "badger", "log")
+	config.Storage.LogDirectory = logDir
 	config.Storage.LogMaxFileSize = 10 // MB
 	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "badger", "db")
 	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")

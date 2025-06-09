@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/test_util"
 	"github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
@@ -26,34 +26,9 @@ import (
 
 func TestMain(m *testing.M) {
 	config.Init()
+	test_util.InitConfigDirs()
 	log.Init()
 	os.Exit(m.Run())
-}
-
-func initDirs(t *testing.T) {
-	t.Helper()
-
-	require.True(t, config.Telegram.UseTestDc)
-	// TODO: https://core.telegram.org/api/auth#test-accounts
-
-	currDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("ошибка получения текущей директории: %v", err)
-	}
-	config.LogOptions.Directory = filepath.Join(currDir, ".data", "log")
-	config.Storage.LogDirectory = filepath.Join(currDir, ".data", "badger", "log")
-	config.Telegram.LogDirectory = filepath.Join(currDir, ".data", "telegram", "log")
-	config.Telegram.DatabaseDirectory = filepath.Join(currDir, ".data", "telegram", "db")
-	config.Telegram.FilesDirectory = filepath.Join(currDir, ".data", "telegram", "files")
-	var dirs = []string{
-		config.LogOptions.Directory,
-		config.Storage.LogDirectory,
-		config.Telegram.LogDirectory,
-		config.Telegram.DatabaseDirectory,
-		config.Telegram.FilesDirectory,
-	}
-	config.RemoveDirs(dirs...)
-	config.MakeDirs(dirs...)
 }
 
 func TestAuth(t *testing.T) {
@@ -66,11 +41,12 @@ func TestAuth(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	t.Cleanup(cancel)
 
-	initDirs(t)
+	require.True(t, config.Telegram.UseTestDc)
+	// TODO: https://core.telegram.org/api/auth#test-accounts
 
 	var err error
 
-	automator, err := util.NewCLIAutomator()
+	automator, err := test_util.NewCLIAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()
