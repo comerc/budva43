@@ -32,6 +32,7 @@ func (r *Repo) Start(ctx context.Context) error {
 	var err error
 
 	opts := badger.DefaultOptions(config.Storage.DatabaseDirectory)
+	opts.Logger = NewLoggerAdapter(r.log)
 	db, err := badger.Open(opts)
 	if err != nil {
 		return err
