@@ -1,25 +1,15 @@
 package config
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/comerc/budva43/app/util"
 )
 
 // не используем slog, т.к. он инициализируется после конфига
-
-// TODO: на выброс?
-// func RemoveDirs() {
-// 	for _, dirPtr := range dirPtrs {
-// 		dir := *dirPtr
-// 		err := os.RemoveAll(dir)
-// 		if err != nil && !os.IsNotExist(err) {
-// 			log.Panicf("ошибка удаления директории %s: %v", dir, err)
-// 		}
-// 	}
-// }
 
 func transformDirs() {
 	for _, dirPtr := range dirPtrs {
@@ -32,18 +22,10 @@ func transformDirs() {
 	}
 }
 
-func MakeDirs() {
+func makeDirs() {
 	for _, dirPtr := range dirPtrs {
 		dir := *dirPtr
-		_, err := os.Stat(dir)
-		if os.IsNotExist(err) {
-			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Panicf("ошибка создания директории %s: %v", dir, err)
-			}
-		} else if err != nil {
-			log.Panicf("ошибка проверки директории %s: %v", dir, err)
-		}
-		// Если директория существует, то ничего не делаем
+		util.MakeDir(dir)
 	}
 }
 

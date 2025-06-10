@@ -10,6 +10,6 @@ func init() {
 	once.Do(func() {
 		projectRoot = findProjectRoot()
 		*cfg = *load()
-		MakeDirs()
+		makeDirs()
 	})
 }
