@@ -6,16 +6,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/spylog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
-	config.Init()
-	Init()
-	spylog.Init(slog.Default())
+	// Исключение: используется без app/spylog - циклическая зависимость
+	spylog.Init(slog.Default()) // init() app/log before slog.Default()
 	os.Exit(m.Run())
 }
 
@@ -55,16 +53,16 @@ func TestSomeMethod(t *testing.T) {
 	})
 	o.SomeMethod() // вызываем тестируемый метод
 
-	require.True(t, len(spylogHandler.Records) == 1)
-	record0 := spylogHandler.Records[0]
+	records := spylogHandler.GetRecords()
+	require.True(t, len(records) == 1)
 
-	assert.Equal(t, slog.LevelError, record0.Level)
-	assert.Equal(t, "error", record0.Message)
-	assert.Equal(t, "val0", spylog.GetAttrValue(record0, "arg0"))
-	assert.Equal(t, "val1", spylog.GetAttrValue(record0, "arg1"))
-	assert.Equal(t, "val2", spylog.GetAttrValue(record0, "arg2"))
-	assert.Equal(t, "app/log/log_test.go:45 log.(*SomeObject).NestedMethod",
-		spylog.GetAttrValue(record0, "source"))
+	assert.Equal(t, slog.LevelError, records[0].Level)
+	assert.Equal(t, "error", records[0].Message)
+	assert.Equal(t, "val0", spylog.GetAttrValue(records[0], "arg0"))
+	assert.Equal(t, "val1", spylog.GetAttrValue(records[0], "arg1"))
+	assert.Equal(t, "val2", spylog.GetAttrValue(records[0], "arg2"))
+	assert.Equal(t, "app/log/log_test.go:43 log.(*SomeObject).NestedMethod",
+		spylog.GetAttrValue(records[0], "source"))
 }
 
 type SomeError struct {
@@ -91,13 +89,13 @@ func TestUnwrappedError(t *testing.T) {
 	}
 	o.log.InfoOrError("message", &err, "arg", "val")
 
-	require.True(t, len(spylogHandler.Records) == 1)
-	record0 := spylogHandler.Records[0]
+	records := spylogHandler.GetRecords()
+	require.True(t, len(records) == 1)
 
-	assert.Equal(t, slog.LevelError, record0.Level)
-	assert.Equal(t, "unwrapped error", record0.Message)
-	assert.Equal(t, "val", spylog.GetAttrValue(record0, "arg"))
-	assert.Equal(t, "log.SomeError", spylog.GetAttrValue(record0, "type"))
-	assert.Equal(t, "app/log/log_test.go:92 log.TestUnwrappedError",
-		spylog.GetAttrValue(record0, "source"))
+	assert.Equal(t, slog.LevelError, records[0].Level)
+	assert.Equal(t, "unwrapped error", records[0].Message)
+	assert.Equal(t, "val", spylog.GetAttrValue(records[0], "arg"))
+	assert.Equal(t, "log.SomeError", spylog.GetAttrValue(records[0], "type"))
+	assert.Equal(t, "app/log/log_test.go:90 log.TestUnwrappedError",
+		spylog.GetAttrValue(records[0], "source"))
 }

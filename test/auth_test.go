@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/test_util"
 	"github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
@@ -23,12 +21,6 @@ import (
 	cliTransport "github.com/comerc/budva43/transport/cli"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
-
-func TestMain(m *testing.M) {
-	config.Init()
-	log.Init()
-	os.Exit(m.Run())
-}
 
 func TestAuth(t *testing.T) {
 	// t.Parallel() // TODO: включить

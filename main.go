@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 	authController "github.com/comerc/budva43/controller/auth"
@@ -54,8 +53,6 @@ type App struct {
 }
 
 func NewApp() *App {
-	config.Init()
-	log.Init()
 	return &App{
 		log: log.NewLogger("main"),
 	}
