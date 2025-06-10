@@ -77,7 +77,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] samber/do
 - [ ] samber/oops
 - [ ] samber/slog-*
-- [ ] тестирование Time & Concurrency https://danp.net/posts/synctest-experiment/
+- [x] тестирование Time & Concurrency https://danp.net/posts/synctest-experiment/
 - [ ] spf13/cobra
 - [x] go.mod replace
 - [x] [comerc/spylog](https://github.com/comerc/spylog)
