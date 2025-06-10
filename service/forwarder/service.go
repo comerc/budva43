@@ -183,7 +183,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 
 	for i, message := range messages {
 		func() {
-			defer s.log.DebugOrError("prepareMessageContents", nil,
+			defer s.log.Debug("prepareMessageContents",
 				"i", i,
 				"chatId", message.ChatId,
 				"messageId", message.Id,

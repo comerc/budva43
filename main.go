@@ -230,7 +230,7 @@ func (a *App) setupSignalHandler(shutdown func()) {
 
 	go func() {
 		sig := <-sigs
-		a.log.DebugOrError("Получен сигнал остановки", nil, "sig", sig)
+		a.log.Debug("Получен сигнал остановки", "sig", sig)
 		shutdown()
 	}()
 }
