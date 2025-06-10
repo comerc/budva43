@@ -2,22 +2,12 @@ package rate_limiter
 
 import (
 	"context"
-	"os"
 	"testing"
 	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/log"
 )
-
-func TestMain(m *testing.M) {
-	config.Init()
-	log.Init()
-	os.Exit(m.Run())
-}
 
 func TestRateLimiter(t *testing.T) {
 	t.Parallel()

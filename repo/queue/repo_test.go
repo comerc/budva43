@@ -2,26 +2,15 @@ package queue
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"testing"
 	"testing/synctest"
 	"time"
 
-	"github.com/comerc/spylog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/spylog"
 )
-
-func TestMain(m *testing.M) {
-	config.Init()
-	log.Init()
-	spylog.Init(slog.Default())
-	os.Exit(m.Run())
-}
 
 func TestQueueRepo(t *testing.T) {
 	t.Parallel()
@@ -66,9 +55,9 @@ func TestQueueRepo(t *testing.T) {
 		assert.Equal(t, 3, executed, "Третья задача должна выполниться после паники")
 
 		// Проверяем запись в лог
-		require.True(t, len(spylogHandler.Records) == 1)
-		record0 := spylogHandler.Records[0]
-		assert.Equal(t, "Alarm!", record0.Message)
+		records := spylogHandler.GetRecords()
+		require.True(t, len(records) == 1)
+		assert.Equal(t, "Alarm!", records[0].Message)
 
 		// Завершаем контекст
 		cancel()

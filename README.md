@@ -93,6 +93,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] grafana-loki
 - [ ] pprof
 - [x] time.AfterFunc() & context.AfterFunc()
+- [x] init() - цепочка зависимостей config -> log -> spylog
  
 ## .env
 
