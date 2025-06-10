@@ -86,7 +86,7 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() clien
 					return
 				case state, ok := <-authorizer.State:
 					s.state = state
-					s.log.DebugOrError("authorizer.State", nil, "state", s.state, "ok", ok)
+					s.log.Debug("authorizer.State", "state", s.state, "ok", ok)
 					if !ok {
 						return
 					}

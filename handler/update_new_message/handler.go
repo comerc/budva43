@@ -92,7 +92,7 @@ func New(
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	h.ctx = ctx
 	src := update.Message
-	defer h.log.DebugOrError("Run", nil,
+	defer h.log.Debug("Run",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 	)

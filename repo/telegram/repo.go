@@ -71,10 +71,10 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 	}
 
 	version := r.GetVersion()
-	r.log.DebugOrError("TDLib", nil, "version", version)
+	r.log.Debug("TDLib", "version", version)
 
 	me := r.GetMe()
-	r.log.DebugOrError("Me", nil,
+	r.log.Debug("Me",
 		"FirstName", me.FirstName,
 		// "LastName", me.LastName,
 		// "Username", func() string {

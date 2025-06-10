@@ -56,7 +56,7 @@ func New(
 // Transform преобразует содержимое сообщения
 // TODO: withSources - переставить в конец
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) {
-	defer s.log.DebugOrError("Transform", nil,
+	defer s.log.Debug("Transform",
 		"withSources", withSources,
 		"srcChatId", src.ChatId,
 		"srcId", src.Id,
