@@ -20,11 +20,11 @@ func init() {
 
 func setupDefaultLogger() {
 	writer := NewWriter(
-		filepath.Join(config.LogOptions.Directory, "app.log"),
-		config.LogOptions.MaxFileSize,
+		filepath.Join(config.General.LogDirectory, "app.log"),
+		config.General.LogMaxFileSize,
 	)
 	logHandler := slog.NewTextHandler(writer, &slog.HandlerOptions{
-		Level: config.LogOptions.Level,
+		Level: config.General.LogLevel,
 	})
 	slog.SetDefault(slog.New(logHandler))
 }

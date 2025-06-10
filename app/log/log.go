@@ -66,7 +66,7 @@ func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, arg
 }
 
 func NewWriter(filePath string, maxSize int) io.Writer {
-	v := *config.Testing
+	v := config.General.TestVerbose
 	if v == nil {
 		return &lumberjack.Logger{
 			Filename:   filePath,

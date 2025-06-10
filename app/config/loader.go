@@ -43,9 +43,7 @@ func load() *config {
 	}
 
 	// Создаем конфигурацию с дефолтными значениями
-	config := &config{
-		Testing: getFlag("test.v"),
-	}
+	config := &config{}
 	setDefaultConfig(config)
 
 	// Настраиваем декодирование
@@ -103,18 +101,15 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func setDefaultConfig(config *config) {
+	testVerboseFlag := getFlag("test.v")
 	logDir := filepath.Join(projectRoot, ".data", "log")
 
-	// config.General.AutoStart = true
-	// config.General.NotifyOnStart = true
-	// config.General.Language = "en"
-	// config.General.Theme = "light"
+	config.General.TestVerbose = testVerboseFlag
+	config.General.LogLevel = slog.LevelDebug
+	config.General.LogDirectory = logDir
+	config.General.LogMaxFileSize = 10 // MB
 
-	config.LogOptions.Level = slog.LevelDebug
-	config.LogOptions.Directory = logDir
-	config.LogOptions.MaxFileSize = 10 // MB
-
-	config.Telegram.UseTestDc = config.Testing != nil
+	config.Telegram.UseTestDc = testVerboseFlag != nil
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
@@ -130,42 +125,23 @@ func setDefaultConfig(config *config) {
 	config.Telegram.DatabaseDirectory = filepath.Join(projectRoot, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = filepath.Join(projectRoot, ".data", "telegram", "files")
 
-	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "storage")
-	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "backups")
-
-	// config.Forwarding.DefaultDelay = 3
-	// config.Forwarding.MaxMessagesPerMinute = 20
-	// config.Forwarding.PreserveFormatting = true
-	// config.Forwarding.KeepMediaOriginal = true
-	// config.Forwarding.AutoSign = false
-	// config.Forwarding.AddSourceLink = true
-	// config.Forwarding.AddForwardedTag = true
-
-	// config.Reports.DefaultPeriod = "daily"
-	// config.Reports.AutoGenerate = false
-	// config.Reports.SendToAdmin = false
-	// config.Reports.IncludeStatistics = true
-	// config.Reports.StatFormat = "text"
-
 	config.Storage.LogLevel = slog.LevelInfo
 	config.Storage.LogDirectory = logDir
 	config.Storage.LogMaxFileSize = 10 // MB
 	config.Storage.DatabaseDirectory = filepath.Join(projectRoot, ".data", "badger", "db")
-	config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
-	// config.Storage.MaxCacheSize = 1024 * 1024 * 100 // 100 MB
-	// config.Storage.DataRetentionDays = 30
-	// config.Storage.AutoCleanup = true
 	// config.Storage.BackupEnabled = false
+	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
+	// config.Storage.BackupFrequency = "daily"
 
-	// config.Bot.BotToken = "default"
-
-	// config.Web.Enabled = true
 	config.Web.Port = 8080
 	config.Web.Host = "localhost"
 	config.Web.ReadTimeout = 15 * time.Second
 	config.Web.WriteTimeout = 15 * time.Second
 	config.Web.ShutdownTimeout = 5 * time.Second
-	// config.Web.EnableTLS = false
-	// config.Web.RequireAuth = true
-	// config.Web.SessionTimeout = 60 * time.Minute
 }
+
+// TODO: реализовать перезагрузку конфига при изменении файла
+// func Watch(cb func(e fsnotify.Event)) {
+// 	viper.OnConfigChange(cb)
+// 	viper.WatchConfig()
+// }

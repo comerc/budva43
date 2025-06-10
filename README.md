@@ -133,54 +133,7 @@ $ sudo chmod -R 777 ./tdata
 
 ## .config.yml example
 
-```yml
-# escape markdown '\*\_\{\}\[\]\(\)\#\+\-\.\!'
-destinations:
-	-321:
-		replace-myself-links:
-		  run: true
-			delete-external: true
-		replace-fragments: # must be equal length
-			- from: "ccc"
-				to: "ddd"
-			- from: "aaa"
-				to: "bbb"
-sources:
-  -123:
-    sign:
-      title: '*\#Source*' # for SendCopy (with markdown)
-      for: [-888]
-    link:
-			title: "*Source*" # for SendCopy (with markdown)
-			for: [-321]
-		auto-answer: true
-		delete-system-messages: true
-report:
-  template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
-  for: [
-      -222,
-      -321,
-      -888,
-    ]
-forward-rules:
-	"id1":
-		from: -111
-		to: [-222]
-	"id2":
-		from: -123
-		to: [-321, -888]
-		send-copy: true
-		copy-once: true # wo edit-sync
-		indelible: true # wo delete-sync
-		exclude: 'Крамер|#УТРЕННИЙ_ОБЗОР'
-		include: '#ARK|#Идеи_покупок|#ОТЧЕТЫ'
-		include-submatch:
-			- regexp: '(^|[^A-Z])\$([A-Z]+)'
-				group: 2
-				match: ['F', 'GM', 'TSLA']
-		other: -444 # after include (copy only)
-		check: -777 # after exclude (forward only)
-```
+see ./config.yml
 
 ## Get chat list with limit (optional)
 
