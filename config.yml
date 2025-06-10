@@ -47,15 +47,15 @@ web:
   # shutdown-timeout: 5s
 
 engine:
-    -321:
-      replace-myself-links:
-        run: true
-        delete-external: true
-      replace-fragments: # must be equal length 
-        - from: "ccc"
-          to: "ddd"
-        - from: "aaa"
-          to: "bbb"
+  -321:
+    replace-myself-links:
+      run: true
+      delete-external: true
+    replace-fragments: # must be equal length 
+      - from: "ccc"
+        to: "ddd"
+      - from: "aaa"
+        to: "bbb"
   sources:
     -123:
       sign:
