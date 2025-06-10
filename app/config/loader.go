@@ -1,9 +1,10 @@
 package config
 
 import (
-	"flag"
+	"fmt"
 	"log"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -16,9 +17,6 @@ import (
 )
 
 func load() *config {
-	flag.Parse()
-	// TODO: пока отказался от флагов, проблема с тестами - cobra?
-
 	envPath := filepath.Join(projectRoot, ".env")
 	if err := godotenv.Load(envPath); err != nil {
 		log.Panic("не удалось загрузить .env файл: ", err)
@@ -46,7 +44,7 @@ func load() *config {
 
 	// Создаем конфигурацию с дефолтными значениями
 	config := &config{
-		Testing: flag.Lookup("test.v"),
+		Testing: getFlag("test.v"),
 	}
 	setDefaultConfig(config)
 
@@ -68,6 +66,18 @@ func load() *config {
 	transformDirs()
 
 	return config
+}
+
+func getFlag(flagName string) *string {
+	flagPrefix := fmt.Sprintf("-%s=", flagName)
+	var result *string
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, flagPrefix) {
+			v := arg[len(flagPrefix):]
+			result = &v
+		}
+	}
+	return result
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
@@ -146,6 +156,8 @@ func setDefaultConfig(config *config) {
 	// config.Storage.DataRetentionDays = 30
 	// config.Storage.AutoCleanup = true
 	// config.Storage.BackupEnabled = false
+
+	// config.Bot.BotToken = "default"
 
 	// config.Web.Enabled = true
 	config.Web.Port = 8080

@@ -76,7 +76,8 @@ func NewWriter(filePath string, maxSize int) io.Writer {
 			Compress:   false,
 		}
 	}
-	if v.Value.String() == "true" {
+	s := *v
+	if s == "true" {
 		return os.Stdout
 	}
 	return io.Discard
