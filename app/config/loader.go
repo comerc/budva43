@@ -68,12 +68,12 @@ func load() *config {
 	return config
 }
 
-func getFlag(flagName string) *string {
-	flagPrefix := fmt.Sprintf("-%s=", flagName)
+func getFlag(name string) *string {
+	prefix := fmt.Sprintf("-%s=", name)
 	var result *string
 	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, flagPrefix) {
-			v := arg[len(flagPrefix):]
+		if strings.HasPrefix(arg, prefix) {
+			v := arg[len(prefix):]
 			result = &v
 		}
 	}
