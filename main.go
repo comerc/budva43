@@ -31,6 +31,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: реализовать storage.BackupEnabled
 // TODO: пересмотреть луковичную архитектуру
 // TODO: применить гексагональную архитектуру для handlers?
 // TODO: проверить на Race Condition

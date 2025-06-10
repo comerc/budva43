@@ -48,10 +48,10 @@ func MakeDirs() {
 }
 
 var dirPtrs = []*string{
-	&LogOptions.Directory,
+	&General.LogDirectory,
 	&Storage.LogDirectory,
 	&Storage.DatabaseDirectory,
-	&Storage.BackupDirectory,
+	// &Storage.BackupDirectory,
 	&Telegram.LogDirectory,
 	&Telegram.DatabaseDirectory,
 	&Telegram.FilesDirectory,
