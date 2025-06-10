@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"log/slog"
 	"time"
 
@@ -29,7 +28,7 @@ type (
 	// Настройки приложения
 	config struct {
 		// General    general
-		Testing    *flag.Flag
+		Testing    *string
 		LogOptions logOptions
 		Storage    storage
 		Telegram   telegram
