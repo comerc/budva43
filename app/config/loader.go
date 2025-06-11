@@ -31,11 +31,18 @@ func load() *config {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))
 	viper.SetEnvPrefix("BUDVA43_") // Префикс для переменных окружения
 	// одинаково работает:
-	// - BUDVA43__GENERAL__TELEGRAM__API_ID - из переменной окружения
-	// - viper.GetString("general.telegram.api-id") - из конфигурационного файла
+	// - BUDVA43__TELEGRAM__API_ID - из переменной окружения
+	// - viper.GetString("telegram.api-id") - из конфигурационного файла
 
 	// Автоматическое чтение из переменных окружения
-	viper.AutomaticEnv()
+	// viper.AutomaticEnv()
+	// требуется костыль - ключ в config.yml,
+	// иначе не читается из .env и выдает дефолтное значение
+
+	// Задаём ключи для переопределения через .env
+	viper.BindEnv("telegram.api-id")
+	viper.BindEnv("telegram.api-hash")
+	viper.BindEnv("telegram.phone-number")
 
 	// Читаем конфигурацию из файла
 	if err := viper.ReadInConfig(); err != nil {
