@@ -11,7 +11,7 @@ general:
 
 # Настройки Telegram
 telegram:
-  # api-id: ""
+  # api-id: 0
   # api-hash: ""
   # phone-number: ""
   # log-directory: "./.data/log"
