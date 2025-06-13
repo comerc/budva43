@@ -52,6 +52,21 @@ func (s *Service) Close() error {
 	return nil
 }
 
+// GetInitDone возвращает канал, который будет закрыт после инициализации клиента
+func (s *Service) GetInitDone() <-chan any {
+	return s.initDone
+}
+
+// GetInputChan возвращает канал для ввода данных
+func (s *Service) GetInputChan() chan<- string {
+	return s.inputChan
+}
+
+// GetState возвращает текущее состояние авторизации
+func (s *Service) GetState() client.AuthorizationState {
+	return s.state
+}
+
 // runAuthorizationStateHandler обрабатывает состояния авторизации
 func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() client.AuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
@@ -103,19 +118,4 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() clien
 
 		return authorizer
 	}
-}
-
-// GetInitDone возвращает канал, который будет закрыт после инициализации клиента
-func (s *Service) GetInitDone() <-chan any {
-	return s.initDone
-}
-
-// GetInputChan возвращает канал для ввода данных
-func (s *Service) GetInputChan() chan<- string {
-	return s.inputChan
-}
-
-// GetState возвращает текущее состояние авторизации
-func (s *Service) GetState() client.AuthorizationState {
-	return s.state
 }
