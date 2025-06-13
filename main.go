@@ -64,7 +64,7 @@ func (a *App) Run() error {
 	var err error
 	// Исключение: логируем ошибку на этом уровне, но передаём выше
 	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
-	defer a.log.DebugOrError("Приложение завершило работу", &err)
+	defer a.log.ErrorOrDebug(&err, "Приложение завершило работу")
 
 	a.log.Debug("Запуск приложения")
 
@@ -81,7 +81,7 @@ func (a *App) Run() error {
 		// Выводим накопленные ошибки при завершении
 		for i, err := range errSet.GetErrors() {
 			// Выводим по одной ошибке, преследуя атомарность сообщений
-			a.log.DebugOrError("Ошибки при завершении работы", &err, "i", i)
+			a.log.ErrorOrDebug(&err, "Ошибки при завершении работы", "i", i)
 		}
 	}()
 

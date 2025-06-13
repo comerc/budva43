@@ -50,7 +50,7 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 	for {
 		ok := func() bool {
 			var err error
-			defer r.log.DebugOrError("client.NewClient", &err)
+			defer r.log.ErrorOrDebug(&err, "client.NewClient")
 
 			authorizationStateHandler := runAuthorizationStateHandler()
 			var tdlibClient *client.Client
@@ -112,7 +112,7 @@ func (r *Repo) Close() error {
 // GetVersion выводит информацию о версии TDLib
 func (r *Repo) GetVersion() string {
 	var err error
-	defer r.log.DebugOrError("GetVersion", &err)
+	defer r.log.ErrorOrDebug(&err, "GetVersion")
 
 	var versionOption client.OptionValue
 	versionOption, err = r.GetClient().GetOption(&client.GetOptionRequest{
@@ -127,7 +127,7 @@ func (r *Repo) GetVersion() string {
 // GetMe выводит информацию о пользователе
 func (r *Repo) GetMe() *client.User {
 	var err error
-	defer r.log.DebugOrError("GetMe", &err)
+	defer r.log.ErrorOrDebug(&err, "GetMe")
 
 	var me *client.User
 	me, err = r.GetClient().GetMe()

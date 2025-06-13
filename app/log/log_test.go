@@ -37,7 +37,7 @@ func (s *SomeObject) NestedMethod() {
 		args := []any{
 			"arg2", "val2",
 		}
-		s.log.DebugOrError("message", &err, args...)
+		s.log.ErrorOrDebug(&err, "message", args...)
 	}()
 
 	err = NewError("error", "arg0", "val0")

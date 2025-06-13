@@ -76,7 +76,7 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 // replaceMyselfLinks заменяет ссылки на текущего бота в тексте
 func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) {
 	var err error
-	defer s.log.DebugOrError("replaceMyselfLinks", &err)
+	defer s.log.ErrorOrDebug(&err, "replaceMyselfLinks")
 
 	data, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
@@ -144,7 +144,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 // replaceFragments заменяет фрагменты текста согласно настройкам
 func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
 	var err error
-	defer s.log.DebugOrError("replaceFragments", &err)
+	defer s.log.ErrorOrDebug(&err, "replaceFragments")
 
 	destination, ok := config.Engine.Destinations[dstChatId]
 	if !ok {
@@ -170,7 +170,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 // addAutoAnswer добавляет ответ на сообщение
 func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
 	var err error
-	defer s.log.DebugOrError("addAutoAnswer", &err)
+	defer s.log.ErrorOrDebug(&err, "addAutoAnswer")
 
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
@@ -204,7 +204,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 // addSources добавляет подпись и ссылку на источник к тексту
 func (s *Service) addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) {
 	var err error
-	defer s.log.DebugOrError("addSources", &err)
+	defer s.log.ErrorOrDebug(&err, "addSources")
 
 	source, ok := config.Engine.Sources[src.ChatId]
 	if !ok {
@@ -235,7 +235,7 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 // addText добавляет новый текст в конец форматированного текста
 func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
-	defer s.log.DebugOrError("addText", &err)
+	defer s.log.ErrorOrDebug(&err, "addText")
 
 	var parsedText *client.FormattedText
 	parsedText, err = s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{

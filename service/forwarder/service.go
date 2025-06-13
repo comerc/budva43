@@ -70,7 +70,7 @@ func New(
 func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) {
 	var err error
 	defer func() {
-		s.log.DebugOrError("ForwardMessages", &err,
+		s.log.ErrorOrDebug(&err, "ForwardMessages",
 			"srcChatId", srcChatId,
 			"dstChatId", dstChatId,
 			"isSendCopy", isSendCopy,
@@ -142,7 +142,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения
 func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	var err error
-	defer s.log.DebugOrError("getOriginMessage", &err)
+	defer s.log.ErrorOrDebug(&err, "getOriginMessage")
 
 	if message.ForwardInfo == nil {
 		err = log.NewError("message.ForwardInfo is nil")
@@ -213,7 +213,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 // getReplyToMessageId получает ID сообщения для ответа
 func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
 	var err error
-	defer s.log.DebugOrError("getReplyToMessageId", &err)
+	defer s.log.ErrorOrDebug(&err, "getReplyToMessageId")
 
 	var replyToMessageId int64
 	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)

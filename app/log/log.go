@@ -9,9 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/natefinch/lumberjack.v2"
-
 	"github.com/comerc/budva43/app/config"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger struct {
@@ -24,19 +23,19 @@ func NewLogger(moduleName string) *Logger {
 	}
 }
 
-func (l *Logger) DebugOrError(message string, errPtr *error, args ...any) {
-	l.logOrError(slog.LevelDebug, message, errPtr, args...)
+func (l *Logger) ErrorOrDebug(errPtr *error, message string, args ...any) {
+	l.logWithError(slog.LevelDebug, errPtr, message, args...)
 }
 
-func (l *Logger) InfoOrError(message string, errPtr *error, args ...any) {
-	l.logOrError(slog.LevelInfo, message, errPtr, args...)
+func (l *Logger) InfoOrError(errPtr *error, message string, args ...any) {
+	l.logWithError(slog.LevelInfo, errPtr, message, args...)
 }
 
-func (l *Logger) WarnOrError(message string, errPtr *error, args ...any) {
-	l.logOrError(slog.LevelWarn, message, errPtr, args...)
+func (l *Logger) WarnOrError(errPtr *error, message string, args ...any) {
+	l.logWithError(slog.LevelWarn, errPtr, message, args...)
 }
 
-func (l *Logger) logOrError(level slog.Level, message string, errPtr *error, args ...any) {
+func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) {
 	var err error
 	if errPtr != nil && *errPtr != nil {
 		err = *errPtr

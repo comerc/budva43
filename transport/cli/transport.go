@@ -142,7 +142,7 @@ func (t *Transport) Close() error {
 // processCommand обрабатывает введенную команду
 func (t *Transport) processCommand(input string) {
 	var err error
-	defer t.log.DebugOrError("processCommand", &err)
+	defer t.log.ErrorOrDebug(&err, "processCommand")
 
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -184,7 +184,7 @@ func (t *Transport) handleExit(args []string) {
 // // handleReport обрабатывает команду report
 // func (t *Transport) handleReport(args []string) {
 // 	var err error
-// 	defer t.log.DebugOrError("handleReport", &err)
+// 	defer t.log.ErrorOrDebug(&err, "handleReport")
 
 // 	if len(args) == 0 {
 // 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
@@ -230,7 +230,7 @@ func (t *Transport) handleExit(args []string) {
 // handleAuth обрабатывает команду auth
 func (t *Transport) handleAuth(args []string) {
 	var err error
-	defer t.log.DebugOrError("handleAuth", &err)
+	defer t.log.ErrorOrDebug(&err, "handleAuth")
 
 	state := t.authController.GetState()
 	if state == nil {
