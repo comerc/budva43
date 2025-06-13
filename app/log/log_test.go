@@ -87,7 +87,7 @@ func TestUnwrappedError(t *testing.T) {
 	err = &SomeError{
 		error: errors.New("unwrapped error"),
 	}
-	o.log.InfoOrError("message", &err, "arg", "val")
+	o.log.InfoOrError(&err, "message", "arg", "val")
 
 	records := spylogHandler.GetRecords()
 	require.True(t, len(records) == 1)
