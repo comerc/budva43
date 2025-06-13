@@ -73,16 +73,26 @@ func load() *config {
 	return config
 }
 
-func getFlag(name string) *string {
-	prefix := fmt.Sprintf("-%s=", name)
-	var result *string
+// func getFlag(name string) *string {
+// 	prefix := fmt.Sprintf("-%s=", name) // только для флагов через "="
+// 	var result *string
+// 	for _, arg := range os.Args {
+// 		if strings.HasPrefix(arg, prefix) {
+// 			v := arg[len(prefix):]
+// 			result = &v
+// 		}
+// 	}
+// 	return result
+// }
+
+func hasFlag(name string) bool {
+	prefix := fmt.Sprintf("-%s", name)
 	for _, arg := range os.Args {
 		if strings.HasPrefix(arg, prefix) {
-			v := arg[len(prefix):]
-			result = &v
+			return true
 		}
 	}
-	return result
+	return false
 }
 
 func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
@@ -108,15 +118,17 @@ func kebabCaseKeyHookFunc() mapstructure.DecodeHookFunc {
 }
 
 func setDefaultConfig(config *config) {
-	testVerboseFlag := getFlag("test.v")
 	logDir := filepath.Join(projectRoot, ".data", "log")
 
-	config.General.TestVerbose = testVerboseFlag
+	// var testVerbose *string // TODO: отказаться совсем от TestVerbose?
+	// testVerbose = getFlag("test.v") // TODO: не работает для debug-сессии
+	// config.General.TestVerbose = testVerbose
+
 	config.General.LogLevel = slog.LevelDebug
 	config.General.LogDirectory = logDir
 	config.General.LogMaxFileSize = 10 // MB
 
-	config.Telegram.UseTestDc = testVerboseFlag != nil
+	config.Telegram.UseTestDc = hasFlag("test.run")
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
@@ -140,7 +152,7 @@ func setDefaultConfig(config *config) {
 	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
 	// config.Storage.BackupFrequency = "daily"
 
-	config.Web.Port = 8080
+	config.Web.Port = 7070
 	config.Web.Host = "localhost"
 	config.Web.ReadTimeout = 15 * time.Second
 	config.Web.WriteTimeout = 15 * time.Second
