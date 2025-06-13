@@ -69,21 +69,6 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 			break
 		}
 	}
-
-	version := r.GetVersion()
-	r.log.Debug("TDLib", "version", version)
-
-	me := r.GetMe()
-	r.log.Debug("Me",
-		"FirstName", me.FirstName,
-		// "LastName", me.LastName,
-		// "Username", func() string {
-		// 	if me.Usernames != nil {
-		// 		return me.Usernames.EditableUsername
-		// 	}
-		// 	return ""
-		// }(),
-	)
 }
 
 // Close закрывает клиент TDLib
