@@ -155,7 +155,7 @@ func (r *Repo) setupClientLog() error {
 		LogStream: &client.LogStreamFile{
 			Path:           filepath.Join(config.Telegram.LogDirectory, "telegram.log"),
 			MaxFileSize:    int64(config.Telegram.LogMaxFileSize) * 1024 * 1024, // MB
-			RedirectStderr: true,
+			RedirectStderr: false,
 		},
 	})
 	if err != nil {
