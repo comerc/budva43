@@ -31,6 +31,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: после переезда на go-tdlib 1.0.0 проверить, что исправлена ошибка: "panic: send on closed channel" - при невалидном BUDVA43__TELEGRAM__API_HASH
 // TODO: реализовать storage.BackupEnabled
 // TODO: пересмотреть луковичную архитектуру
 // TODO: применить гексагональную архитектуру для handlers?

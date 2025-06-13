@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"sync"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -24,7 +23,6 @@ type Service struct {
 	initDone     chan any
 	inputChan    chan string
 	state        client.AuthorizationState
-	wg           sync.WaitGroup
 }
 
 // New создает новый экземпляр сервиса авторизации
@@ -50,7 +48,6 @@ func (s *Service) Start(ctx context.Context) error {
 func (s *Service) Close() error {
 
 	close(s.inputChan)
-	s.wg.Wait()
 
 	return nil
 }
@@ -76,10 +73,7 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() clien
 		}
 		authorizer := client.ClientAuthorizer(tdlibParameters)
 
-		s.wg.Wait()
-		s.wg.Add(1)
 		go func() {
-			defer s.wg.Done()
 			for {
 				select {
 				case <-ctx.Done():

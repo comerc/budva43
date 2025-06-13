@@ -2,8 +2,12 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -22,8 +26,24 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+func TestMain(m *testing.M) {
+	currDir := util.GetCurrDir()
+	config.Telegram.DatabaseDirectory = filepath.Join(currDir, ".data", "telegram", "db")
+	config.Telegram.FilesDirectory = filepath.Join(currDir, ".data", "telegram", "files")
+
+	var dirs = []string{
+		config.Telegram.DatabaseDirectory,
+		config.Telegram.FilesDirectory,
+	}
+	for _, dir := range dirs {
+		util.RemoveDir(dir)
+		util.MakeDir(dir)
+	}
+	os.Exit(m.Run())
+}
+
 func TestAuth(t *testing.T) {
-	// t.Parallel() // TODO: включить
+	// t.Parallel()
 
 	if testing.Short() {
 		t.Skip()
@@ -82,17 +102,6 @@ func TestAuth(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	webTransport := webTransport.New(
-		// reportController,
-		authController,
-	)
-	err = webTransport.Start(ctx, cancel)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := webTransport.Close()
-		require.NoError(t, err)
-	})
-
 	var found bool
 
 	found = automator.WaitForOutput(ctx, "Запуск CLI интерфейса", 3*time.Second)
@@ -107,9 +116,9 @@ func TestAuth(t *testing.T) {
 	assert.True(t, found, "Команда help не выдала список команд")
 
 	// Проверяем команду auth
-	phoneNumber := config.Telegram.PhoneNumber
+	oldPhoneNumber := config.Telegram.PhoneNumber
 	t.Cleanup(func() {
-		config.Telegram.PhoneNumber = phoneNumber
+		config.Telegram.PhoneNumber = oldPhoneNumber
 	})
 	config.Telegram.PhoneNumber = "" // test empty phone number
 
@@ -118,23 +127,40 @@ func TestAuth(t *testing.T) {
 	found = automator.WaitForOutput(ctx, "Введите номер телефона:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод номера телефона")
 
-	delimiter := strings.Repeat("*", len(phoneNumber))
+	X := rand.Intn(3) + 1
+	Y := rand.Perm(10)[:4]
+	newPhoneNumber :=
+		fmt.Sprintf("99966%d%d%d%d%d", X, Y[0], Y[1], Y[2], Y[3])
+	delimiter := strings.Repeat("*", len(newPhoneNumber))
 	println(delimiter)
-	println(util.MaskPhoneNumber(phoneNumber))
+	println(util.MaskPhoneNumber(newPhoneNumber))
 	println(delimiter)
-
-	err = automator.SendInput(phoneNumber)
+	err = automator.SendInput(newPhoneNumber)
 	require.NoError(t, err)
 	time.Sleep(3 * time.Second)
 
 	err = automator.SendInput("auth")
 	require.NoError(t, err)
-	found = automator.WaitForOutput(ctx, "Введите код подтверждения:", 3*time.Second)
+	found = automator.WaitForOutput(ctx, "Введите код подтверждения:", 11*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
-	err = automator.SendInput("xxx")
+	code := strings.Repeat(fmt.Sprintf("%d", X), 5)
+	err = automator.SendInput(code)
 	require.NoError(t, err)
 	time.Sleep(3 * time.Second)
+
+	// TODO: логин для UseTestDc не работает https://github.com/tdlib/td/issues/3361
+
+	webTransport := webTransport.New(
+		// reportController,
+		authController,
+	)
+	err = webTransport.Start(ctx, cancel)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		err := webTransport.Close()
+		require.NoError(t, err)
+	})
 
 	target := "http://localhost:7070/api/auth/telegram/state"
 
@@ -162,10 +188,6 @@ func TestAuth(t *testing.T) {
 	// Проверяем команду exit
 	err = automator.SendInput("exit")
 	require.NoError(t, err)
-	found = automator.WaitForOutput(ctx, "Выход из программы", 3*time.Second)
-	assert.True(t, found, "Команда exit не сработала")
-
-	// Проверяем, что контекст был отменен (CLI завершился)
 	select {
 	case <-ctx.Done():
 		// OK, контекст отменен

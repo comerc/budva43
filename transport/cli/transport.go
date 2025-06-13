@@ -103,6 +103,8 @@ func (t *Transport) registerCommands() {
 
 // Start запускает CLI интерфейс
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
+	t.shutdown = shutdown
+
 	// Запускаем обработку ввода в отдельной горутине
 	go func() {
 

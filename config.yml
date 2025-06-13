@@ -22,7 +22,7 @@ telegram:
   # use-file-database: true
   # use-message-database: true
   # use-secret-chats: false
-  # log-verbosity-level: 0
+  # log-verbosity-level: 0 # 0 - only fatal errors, 1 - plus errors
   # system-language-code: "en"
   # device-model: "Server"
   # system-version: "1.0.0"
@@ -47,15 +47,16 @@ web:
   # shutdown-timeout: 5s
 
 engine:
-  -321:
-    replace-myself-links:
-      run: true
-      delete-external: true
-    replace-fragments: # must be equal length 
-      - from: "ccc"
-        to: "ddd"
-      - from: "aaa"
-        to: "bbb"
+  destinations:
+    -321:
+      replace-myself-links:
+        run: true
+        delete-external: true
+      replace-fragments: # must be equal length 
+        - from: "ccc"
+          to: "ddd"
+        - from: "aaa"
+          to: "bbb"
   sources:
     -123:
       sign:

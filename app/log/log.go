@@ -67,6 +67,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 func NewWriter(filePath string, maxSize int) io.Writer {
 	v := config.General.TestVerbose
 	if v == nil {
+		// TODO: не работает для synctest - на что заменить?
 		return &lumberjack.Logger{
 			Filename:   filePath,
 			MaxSize:    maxSize,
