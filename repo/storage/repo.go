@@ -74,7 +74,7 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 				} else {
 					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
 				}
-				r.log.DebugOrError("GC completed: no files to rewrite", &err)
+				r.log.ErrorOrDebug(&err, "GC completed: no files to rewrite")
 				break // Выходим из внутреннего цикла, ждем следующего тика
 			}
 		}

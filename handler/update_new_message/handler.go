@@ -153,7 +153,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		for check, fn := range checkFns {
 			func() {
 				var err error
-				defer h.log.DebugOrError("has fn", &err,
+				defer h.log.ErrorOrDebug(&err, "has fn",
 					"check", check,
 				)
 				if fn == nil {
@@ -166,7 +166,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		for other, fn := range otherFns {
 			func() {
 				var err error
-				defer h.log.DebugOrError("has fn", &err,
+				defer h.log.ErrorOrDebug(&err, "has fn",
 					"other", other,
 				)
 				if fn == nil {
@@ -183,7 +183,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 // deleteSystemMessage удаляет системное сообщение
 func (h *Handler) deleteSystemMessage(src *client.Message) {
 	var err error
-	defer h.log.DebugOrError("deleteSystemMessage", &err,
+	defer h.log.ErrorOrDebug(&err, "deleteSystemMessage",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 	)
@@ -211,7 +211,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 	filtersMode := ""
 	result := []int64{}
 	defer func() {
-		h.log.DebugOrError("processMessage", &err,
+		h.log.ErrorOrDebug(&err, "processMessage",
 			"chatId", src.ChatId,
 			"messageId", src.Id,
 			"mediaAlbumId", src.MediaAlbumId,

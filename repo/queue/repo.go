@@ -87,7 +87,7 @@ func (s *Repo) executeTask(fn func()) {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("%v", r)
-			s.log.DebugOrError("", &err)
+			s.log.ErrorOrDebug(&err, "")
 		}
 	}()
 	fn()

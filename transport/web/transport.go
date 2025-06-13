@@ -71,7 +71,7 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
 
 // logHandler логирует ошибку и время выполнения функции
 func (t *Transport) logHandler(message string, errPtr *error, now time.Time) {
-	t.log.DebugOrError(message, errPtr,
+	t.log.ErrorOrDebug(errPtr, message,
 		"took", time.Since(now),
 	)
 }
@@ -344,7 +344,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
 		var err error
-		defer t.log.DebugOrError("ListenAndServe", &err)
+		defer t.log.ErrorOrDebug(&err, "ListenAndServe")
 
 		select {
 		case <-ctx.Done():
