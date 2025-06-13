@@ -28,6 +28,8 @@ type authController interface {
 	GetInitDone() <-chan any
 	GetState() client.AuthorizationState
 	GetInputChan() chan<- string
+	GetVersion() string
+	GetMe() *client.User
 }
 
 // Transport представляет интерфейс командной строки
@@ -88,11 +90,11 @@ func (t *Transport) registerCommands() {
 		// 	handler:     t.handleReport,
 		// },
 		// TODO: перенести в запуск cli
-		{
-			name:        "auth",
-			description: "Запустить процесс авторизации в Telegram",
-			handler:     t.handleAuth,
-		},
+		// {
+		// 	name:        "auth",
+		// 	description: "Запустить процесс авторизации в Telegram",
+		// 	handler:     t.handleAuth,
+		// },
 	}
 
 	t.commandMap = make(map[string]*command)
@@ -113,23 +115,54 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 			return
 		case <-t.authController.GetInitDone():
 			// TDLib клиент готов к выполнению авторизации
+			func() {
+				// TODO: Ожидаем смены состояния, можно использовать канал со сменой state
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					default:
+						time.Sleep(1 * time.Second)
+						state := t.authController.GetState()
+						if state == nil {
+							return
+						}
+						stateType := state.AuthorizationStateType()
+						if stateType != "authorizationStateWaitTdlibParameters" {
+							return
+						}
+					}
+				}
+			}()
 		}
 
-		fmt.Println("Запуск CLI интерфейса. Введите 'help' для просмотра доступных команд.")
+		isAuth := false
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
-				fmt.Println("> ")
-				if !t.scanner.Scan() {
-					return
+				if !isAuth {
+					state := t.authController.GetState()
+					if state == nil {
+						version := t.authController.GetVersion()
+						me := t.authController.GetMe()
+						fmt.Printf("TDLib version: %s userId: %d\n", version, me.Id)
+						isAuth = true
+					}
 				}
-
-				input := t.scanner.Text()
-
-				t.processCommand(input)
+				if isAuth {
+					fmt.Println("> ")
+					if !t.scanner.Scan() {
+						return
+					}
+					input := t.scanner.Text()
+					t.processCommand(input)
+				} else {
+					t.handleAuth(nil)
+					time.Sleep(3 * time.Second) // TODO: вместо Sleep можно использовать канал со сменой state
+				}
 			}
 		}
 	}()

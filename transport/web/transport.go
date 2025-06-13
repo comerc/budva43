@@ -344,7 +344,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	// Запускаем HTTP-сервер в отдельной горутине
 	go func() {
 		var err error
-		defer t.log.ErrorOrDebug(&err, "ListenAndServe")
+		defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
 
 		select {
 		case <-ctx.Done():
@@ -352,7 +352,6 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		case <-t.authController.GetInitDone():
 			// TDLib клиент готов к выполнению авторизации
 		}
-		fmt.Println("Start HTTP server", t.server.Addr)
 		err = t.server.ListenAndServe()
 		// TODO: обрабатывать http.ErrServerClosed
 	}()

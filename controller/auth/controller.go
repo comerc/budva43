@@ -10,6 +10,8 @@ type authService interface {
 	GetInitDone() <-chan any
 	GetState() client.AuthorizationState
 	GetInputChan() chan<- string
+	GetVersion() string
+	GetMe() *client.User
 }
 
 // Controller представляет контроллер для авторизации в Telegram
@@ -41,4 +43,14 @@ func (c *Controller) GetState() client.AuthorizationState {
 // GetInputChan возвращает канал для ввода данных
 func (c *Controller) GetInputChan() chan<- string {
 	return c.authService.GetInputChan()
+}
+
+// GetVersion возвращает версию TDLib
+func (c *Controller) GetVersion() string {
+	return c.authService.GetVersion()
+}
+
+// GetMe возвращает информацию о пользователе
+func (c *Controller) GetMe() *client.User {
+	return c.authService.GetMe()
 }

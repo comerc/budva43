@@ -12,6 +12,8 @@ import (
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
 type telegramRepo interface {
 	CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler)
+	GetVersion() string
+	GetMe() *client.User
 }
 
 // Service управляет процессом авторизации в Telegram
@@ -65,6 +67,16 @@ func (s *Service) GetInputChan() chan<- string {
 // GetState возвращает текущее состояние авторизации
 func (s *Service) GetState() client.AuthorizationState {
 	return s.state
+}
+
+// GetVersion возвращает версию TDLib
+func (s *Service) GetVersion() string {
+	return s.telegramRepo.GetVersion()
+}
+
+// GetMe возвращает информацию о пользователе
+func (s *Service) GetMe() *client.User {
+	return s.telegramRepo.GetMe()
 }
 
 // runAuthorizationStateHandler обрабатывает состояния авторизации

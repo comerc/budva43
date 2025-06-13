@@ -13,8 +13,8 @@ import (
 )
 
 type telegramRepo interface {
-	GetClient() *client.Client
 	GetClientDone() <-chan any
+	GetClient() *client.Client
 }
 
 type updateNewMessageHandler interface {
@@ -68,8 +68,6 @@ func New(
 func (s *Service) Start(ctx context.Context) error {
 
 	s.ctx = ctx
-
-	return nil
 
 	// Проверяем конфигурацию
 	if err := s.validateConfig(); err != nil {
