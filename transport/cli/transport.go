@@ -108,11 +108,13 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	return nil
 }
 
+// Close закрывает транспорт
 func (t *Transport) Close() error {
 	close(t.authState)
 	return nil
 }
 
+// createNotify создает функцию для отправки состояния авторизации
 func (t *Transport) createNotify() notify {
 	return func(state client.AuthorizationState) {
 		select {
@@ -286,6 +288,7 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 	}
 }
 
+// hiddenReadLine считывает консоль без отображения введенных символов
 func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()

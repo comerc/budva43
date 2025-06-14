@@ -87,6 +87,7 @@ func (s *Service) GetClientDone() <-chan any {
 	return s.telegramRepo.GetClientDone()
 }
 
+// GetStatus возвращает статус авторизации
 func (s *Service) GetStatus() string {
 	version := s.telegramRepo.GetVersion()
 	me := s.telegramRepo.GetMe()
