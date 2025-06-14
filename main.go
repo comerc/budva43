@@ -31,7 +31,6 @@ import (
 )
 
 // TODO: реализовать storage.BackupEnabled
-// TODO: применить гексагональную архитектуру для handlers?
 // TODO: проверить на Race Condition
 // TODO: заменить примитивы синхронизации на [CSP](../go-secrets/README_V2/Communicating Sequential Processes (CSP) и потокобезопасный счетчик.md)
 // TODO: проверить весь перенесённый код на early return
