@@ -13,52 +13,100 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
-// type reportController interface {
-// 	GenerateActivityReport(startDate, endDate time.Time) *entity.ActivityReport
-// 	GenerateForwardingReport(startDate, endDate time.Time) *entity.ForwardingReport
-// 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
-// }
+// TODO: передавать состояние авторизации в режиме SSE
+// TODO: передавать статус успешной авторизации
+
+type notify = func(state client.AuthorizationState)
 
 type authService interface {
-	// GetInitDone() <-chan any
-	// GetState() <-chan client.AuthorizationState
+	Subscribe(notify)
 	GetInputChan() chan<- string
+	// GetClientDone() <-chan any
+	// GetStatus() string
 }
 
-// Transport представляет HTTP маршрутизатор для API
+// Transport предст авляет HTTP маршрутизатор для API
 type Transport struct {
 	log *log.Logger
 	//
-	// reportController reportController
 	authService authService
-	authClients map[string]chan<- client.AuthorizationState
+	authState   client.AuthorizationState
 	server      *http.Server
 }
 
 // New создает новый экземпляр HTTP маршрутизатора
 func New(
-	// reportController reportController,
 	authService authService,
 ) *Transport {
 	return &Transport{
 		log: log.NewLogger("transport.web"),
 		//
-		// reportController: reportController,
 		authService: authService,
-		authClients: make(map[string]chan<- client.AuthorizationState),
+	}
+}
+
+// Start запускает HTTP-сервер
+func (t *Transport) Start(ctx context.Context, shutdown func()) error {
+	_ = shutdown // не используется
+
+	t.authService.Subscribe(t.createNotify())
+
+	// Создаем новый мультиплексор
+	mux := http.NewServeMux()
+
+	// Настраиваем маршруты
+	t.setupRoutes(mux)
+
+	// Настраиваем HTTP-сервер
+	t.server = &http.Server{
+		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
+		Handler:      mux,
+		ReadTimeout:  config.Web.ReadTimeout,
+		WriteTimeout: config.Web.WriteTimeout,
+	}
+
+	// Запускаем HTTP-сервер в отдельной горутине
+	go func() {
+		var err error
+		defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
+
+		err = t.server.ListenAndServe()
+		// TODO: обрабатывать http.ErrServerClosed
+	}()
+
+	return nil
+}
+
+// Close останавливает HTTP-сервер
+func (t *Transport) Close() error {
+	var err error
+
+	// Создаем контекст с таймаутом для graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
+	defer cancel()
+
+	err = t.server.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// createNotify создает функцию для отправки состояния авторизации
+func (t *Transport) createNotify() notify {
+	return func(state client.AuthorizationState) {
+		t.authState = state
 	}
 }
 
 // setupRoutes настраивает HTTP маршруты
 func (t *Transport) setupRoutes(mux *http.ServeMux) {
-	// mux.HandleFunc("/api/reports", t.handleReports)
-
-	// TODO: перенести в middleware
+	// TODO: перенести в middleware?
 	mux.HandleFunc("/api/auth/telegram/state", t.handleAuthState)
 	mux.HandleFunc("/api/auth/telegram/phone", t.handleSubmitPhone)
 	mux.HandleFunc("/api/auth/telegram/code", t.handleSubmitCode)
 	mux.HandleFunc("/api/auth/telegram/password", t.handleSubmitPassword)
-	mux.HandleFunc("/api/auth/telegram/events", t.handleAuthEvents)
 
 	mux.HandleFunc("/favicon.ico", t.handleFavicon)
 	mux.HandleFunc("/", t.handleRoot)
@@ -85,75 +133,6 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	_, err = w.Write([]byte("Budva43 API Server"))
 }
 
-// // handleReports обрабатывает запросы для работы с отчетами
-// func (t *Transport) handleReports(w http.ResponseWriter, req *http.Request) {
-// 	var err error
-// 	defer t.logHandler("handleMessages", &err, time.Now())
-
-// 	if req.Method != http.MethodGet {
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-
-// 	// Получаем параметры запроса
-// 	query := req.URL.Query()
-
-// 	reportType := query.Get("type")
-// 	if reportType == "" {
-// 		http.Error(w, "Missing type parameter", http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	startDateStr := query.Get("start_date")
-// 	endDateStr := query.Get("end_date")
-
-// 	// Парсим даты
-// 	var startDate, endDate time.Time
-
-// 	if startDateStr != "" {
-// 		startDate, err = time.Parse("2006-01-02", startDateStr)
-// 		if err != nil {
-// 			http.Error(w, "Invalid start_date format. Use YYYY-MM-DD", http.StatusBadRequest)
-// 			return
-// 		}
-// 	} else {
-// 		startDate = time.Now().AddDate(0, 0, -7) // По умолчанию - неделя назад
-// 	}
-
-// 	if endDateStr != "" {
-// 		endDate, err = time.Parse("2006-01-02", endDateStr)
-// 		if err != nil {
-// 			http.Error(w, "Invalid end_date format. Use YYYY-MM-DD", http.StatusBadRequest)
-// 			return
-// 		}
-// 	} else {
-// 		endDate = time.Now() // По умолчанию - текущая дата
-// 	}
-
-// 	var report any
-
-// 	// Генерируем отчет в зависимости от типа
-// 	switch reportType {
-// 	case "activity":
-// 		report, err = t.reportController.GenerateActivityReport(startDate, endDate)
-// 	case "forwarding":
-// 		report, err = t.reportController.GenerateForwardingReport(startDate, endDate)
-// 	case "error":
-// 		report, err = t.reportController.GenerateErrorReport(startDate, endDate)
-// 	default:
-// 		http.Error(w, "Invalid report type. Use 'activity', 'forwarding', or 'error'", http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	if err != nil {
-// 		http.Error(w, fmt.Sprintf("Error generating report: %v", err), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	err = json.NewEncoder(w).Encode(report)
-// }
-
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -164,14 +143,11 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: under construction
-	// var stateType string
-	// state := t.authService.GetState()
-	// if state != nil {
-	// 	stateType = state.AuthorizationStateType()
-	// }
-	stateType := "under construction"
-
+	var stateType string
+	state := t.authState
+	if state != nil {
+		stateType = state.AuthorizationStateType()
+	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"state_type": stateType,
@@ -264,134 +240,3 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 		"status": "accepted",
 	})
 }
-
-// TODO: under construction
-// handleAuthEvents устанавливает SSE соединение для получения обновлений состояния авторизации
-func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
-	var err error
-	defer t.logHandler("handleAuthEvents", &err, time.Now())
-
-	// Настройка SSE
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-
-	// Создаем канал для событий авторизации
-	clientId := generateClientId()
-	events := make(chan client.AuthorizationState, 10)
-
-	// Регистрируем клиента с каналом для записи
-	t.authClients[clientId] = events
-
-	// Отправляем текущее состояние сразу при подключении
-	// TODO: under construction
-	// state := t.authService.GetState()
-	// if state != nil {
-	// 	events <- state
-	// }
-
-	// Отправляем события клиенту
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming not supported", http.StatusInternalServerError)
-		return
-	}
-
-	// Закрываем канал и удаляем клиента при завершении запроса
-	defer func() {
-		delete(t.authClients, clientId)
-		close(events)
-	}()
-
-	// Обрабатываем закрытие соединения
-	disconnect := r.Context().Done()
-
-	for {
-		select {
-		case <-disconnect:
-			// Клиент отключился
-			return
-		case state, ok := <-events:
-			if !ok {
-				// Канал закрыт
-				return
-			}
-			// Отправляем событие клиенту
-			fmt.Fprintf(w, "data: {\"state_type\": \"%s\"}\n\n", state.AuthorizationStateType())
-			flusher.Flush()
-		}
-	}
-}
-
-// generateClientId генерирует уникальный идентификатор клиента
-func generateClientId() string {
-	return fmt.Sprintf("client-%d", time.Now().UnixNano())
-}
-
-// Start запускает HTTP-сервер
-func (t *Transport) Start(ctx context.Context, shutdown func()) error {
-	// Создаем новый мультиплексор
-	mux := http.NewServeMux()
-
-	// Настраиваем маршруты
-	t.setupRoutes(mux)
-
-	// Настраиваем HTTP-сервер
-	t.server = &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
-		Handler:      mux,
-		ReadTimeout:  config.Web.ReadTimeout,
-		WriteTimeout: config.Web.WriteTimeout,
-	}
-
-	// Запускаем HTTP-сервер в отдельной горутине
-	go func() {
-		var err error
-		defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
-
-		// TODO: under construction
-		// select {
-		// case <-ctx.Done():
-		// 	return
-		// case <-t.authService.GetInitDone():
-		// 	// TDLib клиент готов к выполнению авторизации
-		// }
-		err = t.server.ListenAndServe()
-		// TODO: обрабатывать http.ErrServerClosed
-	}()
-
-	return nil
-}
-
-// Close останавливает HTTP-сервер
-func (t *Transport) Close() error {
-	var err error
-
-	// Создаем контекст с таймаутом для graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), config.Web.ShutdownTimeout)
-	defer cancel()
-
-	err = t.server.Shutdown(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// TODO: under construction
-// OnAuthStateChanged обработчик изменения состояния авторизации
-// func (t *Transport) OnAuthStateChanged(state client.AuthorizationState) {
-// 	t.log.Debug("Web транспорт получил обновление состояния авторизации",
-// 		"stateType", state.AuthorizationStateType())
-
-// 	// Отправляем обновление всем подключенным клиентам
-// 	for clientId, clientChan := range t.authClients {
-// 		select {
-// 		case clientChan <- state:
-// 			t.log.Debug("Отправлено обновление состояния клиенту", "clientId", clientId)
-// 		default:
-// 			t.log.Debug("Канал клиента заполнен, пропускаем обновление", "clientId", clientId)
-// 		}
-// 	}
-// }
