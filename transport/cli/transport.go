@@ -117,6 +117,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 			// TDLib клиент готов к выполнению авторизации
 			func() {
 				// TODO: Ожидаем смены состояния, можно использовать канал со сменой state
+				// TODO: зачем всё это на уровне transport? может перенести в authService?
 				for {
 					select {
 					case <-ctx.Done():
@@ -128,7 +129,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 							return
 						}
 						stateType := state.AuthorizationStateType()
-						if stateType != "authorizationStateWaitTdlibParameters" {
+						if stateType != client.TypeAuthorizationStateWaitTdlibParameters {
 							return
 						}
 					}
