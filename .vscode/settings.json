@@ -3,7 +3,8 @@
     "GOEXPERIMENT": "synctest"
   },
   "go.testFlags": [
-    "-v"
+    "-count=1",
+    "-v",
   ],
   "go.buildTags": "goexperiment.synctest"
 }
