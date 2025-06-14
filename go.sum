@@ -10,8 +10,8 @@ github.com/cenkalti/backoff/v4 v4.2.1 h1:y4OZtCnogmCPw98Zjyt5a6+QwPLGkiQsYW5oUqy
 github.com/cenkalti/backoff/v4 v4.2.1/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/comerc/go-tdlib v0.7.6-fix1 h1:NQ5hN/NuvEwwrfY1zuVRVI2yulWGSe0bI1WGbjbnnMk=
-github.com/comerc/go-tdlib v0.7.6-fix1/go.mod h1:yqNbNZenZtXPKgf9hDuyZbsRz7qlxOxdfKOc+sAxxIE=
+github.com/comerc/go-tdlib v0.7.6-fix2 h1:b5BVgmIZHxTmI1lyth5ycaGv1gFFpXordKLfsw6yU/c=
+github.com/comerc/go-tdlib v0.7.6-fix2/go.mod h1:yqNbNZenZtXPKgf9hDuyZbsRz7qlxOxdfKOc+sAxxIE=
 github.com/comerc/spylog v0.0.3 h1:LUtybbF6jL1sojq0RuVZ8DBy4B0xwXfjTVoGODbs1pA=
 github.com/comerc/spylog v0.0.3/go.mod h1:/fKniU6Nc9qUippW+BPOGTMuqpduCYXyr2S0AE6HGqk=
 github.com/containerd/log v0.1.0 h1:TCJt7ioM2cr/tfR8GPbGf9/VRAX8D2B4PjzCpfX540I=
