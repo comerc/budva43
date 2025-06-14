@@ -105,7 +105,6 @@ func (a *App) Run() error {
 	defer gracefulShutdown(errSet, queueRepo)
 
 	// - Инициализация вспомогательных сервисов
-	// reportService := reportService.New()
 	storageService := storageService.New(storageRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
@@ -175,18 +174,7 @@ func (a *App) Run() error {
 
 	// - Инициализация транспортных адаптеров
 
-	// botTransport := botTransport.New(
-	// 	reportController,
-	//  authController,
-	// )
-	// err = botTransport.Start(ctx, cancel)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer gracefulShutdown(errSet, botTransport)
-
 	cliTransport := cliTransport.New(
-		// reportController,
 		authService,
 	)
 	err = cliTransport.Start(ctx, cancel)
@@ -196,7 +184,6 @@ func (a *App) Run() error {
 	defer gracefulShutdown(errSet, cliTransport)
 
 	webTransport := webTransport.New(
-		// reportController,
 		authService,
 	)
 	err = webTransport.Start(ctx, cancel)

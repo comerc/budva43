@@ -88,7 +88,6 @@ func TestAuth(t *testing.T) {
 	})
 
 	cliTransport := cliTransport.New(
-		// reportController,
 		authService,
 	)
 	err = cliTransport.Start(ctx, cancel)
@@ -98,13 +97,23 @@ func TestAuth(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	webTransport := webTransport.New(
+		authService,
+	)
+	err = webTransport.Start(ctx, cancel)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		err := webTransport.Close()
+		require.NoError(t, err)
+	})
+
 	var found bool
 
 	found = automator.WaitForOutput(ctx, "Введите номер телефона:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод номера телефона")
 
 	// X := rand.Intn(3) + 1
-	X := 2
+	X := 2 // этот работает стабильнее
 	Y := rand.Perm(10)[:4]
 	newPhoneNumber :=
 		fmt.Sprintf("99966%d%d%d%d%d", X, Y[0], Y[1], Y[2], Y[3])
@@ -123,17 +132,6 @@ func TestAuth(t *testing.T) {
 	require.NoError(t, err)
 
 	// TODO: логин для UseTestDc пока не работает https://github.com/tdlib/td/issues/3361
-
-	webTransport := webTransport.New(
-		// reportController,
-		authService,
-	)
-	err = webTransport.Start(ctx, cancel)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := webTransport.Close()
-		require.NoError(t, err)
-	})
 
 	target := "http://localhost:7070/api/auth/telegram/state"
 

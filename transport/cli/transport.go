@@ -17,12 +17,6 @@ import (
 
 // TODO: Добавить автодополнение команд
 
-// type reportController interface {
-// 	GenerateActivityReport(startDate, endDate time.Time) *entity.ActivityReport
-// 	GenerateForwardingReport(startDate, endDate time.Time) *entity.ForwardingReport
-// 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
-// }
-
 type notify = func(state client.AuthorizationState)
 
 type authService interface {
@@ -36,13 +30,12 @@ type authService interface {
 type Transport struct {
 	log *log.Logger
 	//
-	// reportController reportController
-	authService authService
-	authState   chan client.AuthorizationState
-	scanner     *bufio.Scanner
-	commands    []command
-	commandMap  map[string]*command
-	shutdown    func()
+	authService   authService
+	authStateChan chan client.AuthorizationState
+	scanner       *bufio.Scanner
+	commands      []command
+	commandMap    map[string]*command
+	shutdown      func()
 }
 
 // command представляет команду CLI
@@ -54,17 +47,15 @@ type command struct {
 
 // New создает новый экземпляр CLI
 func New(
-	// reportController reportController,
 	authService authService,
 ) *Transport {
 	cli := &Transport{
 		log: log.NewLogger("transport.cli"),
 		//
-		// reportController: reportController,
-		authService: authService,
-		authState:   make(chan client.AuthorizationState, 10),
-		scanner:     bufio.NewScanner(os.Stdin),
-		commands:    []command{},
+		authService:   authService,
+		authStateChan: make(chan client.AuthorizationState, 10),
+		scanner:       bufio.NewScanner(os.Stdin),
+		commands:      []command{},
 	}
 
 	// Регистрация команд
@@ -99,7 +90,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 				}
 				input := t.scanner.Text()
 				t.processCommand(input)
-			case state := <-t.authState:
+			case state := <-t.authStateChan:
 				t.processAuth(state)
 			}
 		}
@@ -110,7 +101,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 // Close закрывает транспорт
 func (t *Transport) Close() error {
-	close(t.authState)
+	close(t.authStateChan)
 	return nil
 }
 
@@ -118,7 +109,7 @@ func (t *Transport) Close() error {
 func (t *Transport) createNotify() notify {
 	return func(state client.AuthorizationState) {
 		select {
-		case t.authState <- state:
+		case t.authStateChan <- state:
 			// успешно отправили
 		default:
 			// канал переполнен или закрыт - игнорируем
@@ -139,11 +130,6 @@ func (t *Transport) registerCommands() {
 			description: "Выйти из программы",
 			handler:     t.handleExit,
 		},
-		// {
-		// 	name:        "report",
-		// 	description: "Генерация отчетов: activity, forwarding, error",
-		// 	handler:     t.handleReport,
-		// },
 	}
 
 	t.commandMap = make(map[string]*command)
@@ -193,52 +179,6 @@ func (t *Transport) handleExit(args []string) {
 	fmt.Println("Выход из программы...")
 	t.shutdown()
 }
-
-// // handleReport обрабатывает команду report
-// func (t *Transport) handleReport(args []string) {
-// 	var err error
-// 	defer t.log.ErrorOrDebug(&err, "handleReport")
-
-// 	if len(args) == 0 {
-// 		fmt.Println("Использование: report [activity|forwarding|error] [days=7]")
-// 		return
-// 	}
-
-// 	reportType := args[0]
-// 	days := 7
-// 	if len(args) > 1 {
-// 		if _, err = fmt.Sscanf(args[1], "%d", &days); err != nil {
-// 			fmt.Println("Используется период по умолчанию (7 дней)")
-// 		}
-// 	}
-
-// 	// Получаем даты для отчета
-// 	endDate := time.Now()
-// 	startDate := endDate.AddDate(0, 0, -days)
-
-// 	fmt.Printf("Генерация отчета '%s' за период %s - %s...\n",
-// 		reportType, startDate.Format("02.01.2006"), endDate.Format("02.01.2006"))
-
-// 	switch reportType {
-// 	case "activity":
-// 		_, err = t.reportController.GenerateActivityReport(startDate, endDate)
-// 	case "forwarding":
-// 		_, err = t.reportController.GenerateForwardingReport(startDate, endDate)
-// 	case "error":
-// 		_, err = t.reportController.GenerateErrorReport(startDate, endDate)
-// 	default:
-//    // доступные: activity, forwarding, error
-//    err = log.NewError("неизвестный тип отчета",
-// 	   "reportType", reportType,
-//    )
-// 	}
-
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
-// }
 
 // processAuth обрабатывает состояние авторизации
 func (t *Transport) processAuth(state client.AuthorizationState) {
