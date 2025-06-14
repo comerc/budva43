@@ -19,9 +19,9 @@ import (
 // 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
 // }
 
-type authController interface {
-	GetInitDone() <-chan any
-	GetState() client.AuthorizationState
+type authService interface {
+	// GetInitDone() <-chan any
+	// GetState() <-chan client.AuthorizationState
 	GetInputChan() chan<- string
 }
 
@@ -30,22 +30,22 @@ type Transport struct {
 	log *log.Logger
 	//
 	// reportController reportController
-	authController authController
-	authClients    map[string]chan<- client.AuthorizationState
-	server         *http.Server
+	authService authService
+	authClients map[string]chan<- client.AuthorizationState
+	server      *http.Server
 }
 
 // New создает новый экземпляр HTTP маршрутизатора
 func New(
 	// reportController reportController,
-	authController authController,
+	authService authService,
 ) *Transport {
 	return &Transport{
 		log: log.NewLogger("transport.web"),
 		//
 		// reportController: reportController,
-		authController: authController,
-		authClients:    make(map[string]chan<- client.AuthorizationState),
+		authService: authService,
+		authClients: make(map[string]chan<- client.AuthorizationState),
 	}
 }
 
@@ -164,11 +164,13 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var stateType string
-	state := t.authController.GetState()
-	if state != nil {
-		stateType = state.AuthorizationStateType()
-	}
+	// TODO: under construction
+	// var stateType string
+	// state := t.authService.GetState()
+	// if state != nil {
+	// 	stateType = state.AuthorizationStateType()
+	// }
+	stateType := "under construction"
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]any{
@@ -196,7 +198,7 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.authController.GetInputChan() <- data.Phone
+	t.authService.GetInputChan() <- data.Phone
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -225,7 +227,7 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.authController.GetInputChan() <- data.Code
+	t.authService.GetInputChan() <- data.Code
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -254,7 +256,7 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	t.authController.GetInputChan() <- data.Password
+	t.authService.GetInputChan() <- data.Password
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -282,10 +284,11 @@ func (t *Transport) handleAuthEvents(w http.ResponseWriter, r *http.Request) {
 	t.authClients[clientId] = events
 
 	// Отправляем текущее состояние сразу при подключении
-	state := t.authController.GetState()
-	if state != nil {
-		events <- state
-	}
+	// TODO: under construction
+	// state := t.authService.GetState()
+	// if state != nil {
+	// 	events <- state
+	// }
 
 	// Отправляем события клиенту
 	flusher, ok := w.(http.Flusher)
@@ -346,12 +349,13 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		var err error
 		defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
 
-		select {
-		case <-ctx.Done():
-			return
-		case <-t.authController.GetInitDone():
-			// TDLib клиент готов к выполнению авторизации
-		}
+		// TODO: under construction
+		// select {
+		// case <-ctx.Done():
+		// 	return
+		// case <-t.authService.GetInitDone():
+		// 	// TDLib клиент готов к выполнению авторизации
+		// }
 		err = t.server.ListenAndServe()
 		// TODO: обрабатывать http.ErrServerClosed
 	}()
