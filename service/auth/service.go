@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"fmt"
+	"sync"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -9,22 +11,27 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
+type runAuthorizationStateHandler = func() client.AuthorizationStateHandler
+
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
 type telegramRepo interface {
-	CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler)
+	CreateClient(runAuthorizationStateHandler)
+	GetClientDone() <-chan any
 	GetVersion() string
 	GetMe() *client.User
 }
+
+type notify = func(state client.AuthorizationState)
 
 // Service управляет процессом авторизации в Telegram
 type Service struct {
 	log *log.Logger
 	//
 	telegramRepo telegramRepo
-	initFlag     bool
-	initDone     chan any
 	inputChan    chan string
-	state        client.AuthorizationState
+	// Для широковещательного оповещения
+	subscribers []notify
+	mu          sync.RWMutex
 }
 
 // New создает новый экземпляр сервиса авторизации
@@ -33,8 +40,8 @@ func New(telegramRepo telegramRepo) *Service {
 		log: log.NewLogger("service.auth"),
 		//
 		telegramRepo: telegramRepo,
-		initDone:     make(chan any), // закроется, когда авторизатор запущен
 		inputChan:    make(chan string, 1),
+		subscribers:  make([]notify, 0),
 	}
 }
 
@@ -54,9 +61,20 @@ func (s *Service) Close() error {
 	return nil
 }
 
-// GetInitDone возвращает канал, который будет закрыт после инициализации клиента
-func (s *Service) GetInitDone() <-chan any {
-	return s.initDone
+// Subscribe добавляет подписчика на изменения состояния авторизации
+func (s *Service) Subscribe(notify notify) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.subscribers = append(s.subscribers, notify)
+}
+
+// broadcast отправляет состояние всем подписчикам
+func (s *Service) broadcast(state client.AuthorizationState) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, notify := range s.subscribers {
+		go notify(state)
+	}
 }
 
 // GetInputChan возвращает канал для ввода данных
@@ -64,23 +82,19 @@ func (s *Service) GetInputChan() chan<- string {
 	return s.inputChan
 }
 
-// GetState возвращает текущее состояние авторизации
-func (s *Service) GetState() client.AuthorizationState {
-	return s.state
+// GetClientDone возвращает канал, который будет закрыт после завершения авторизации
+func (s *Service) GetClientDone() <-chan any {
+	return s.telegramRepo.GetClientDone()
 }
 
-// GetVersion возвращает версию TDLib
-func (s *Service) GetVersion() string {
-	return s.telegramRepo.GetVersion()
-}
-
-// GetMe возвращает информацию о пользователе
-func (s *Service) GetMe() *client.User {
-	return s.telegramRepo.GetMe()
+func (s *Service) GetStatus() string {
+	version := s.telegramRepo.GetVersion()
+	me := s.telegramRepo.GetMe()
+	return fmt.Sprintf("TDLib version: %s userId: %d", version, me.Id)
 }
 
 // runAuthorizationStateHandler обрабатывает состояния авторизации
-func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() client.AuthorizationStateHandler {
+func (s *Service) runAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
 		tdlibParameters := &client.SetTdlibParametersRequest{
@@ -106,24 +120,23 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) func() clien
 				case <-ctx.Done():
 					return
 				case state, ok := <-authorizer.State:
-					s.state = state
-					s.log.Debug("authorizer.State", "state", s.state, "ok", ok)
 					if !ok {
 						return
 					}
-				}
-				switch s.state.(type) {
-				case *client.AuthorizationStateWaitTdlibParameters:
-					if !s.initFlag {
-						close(s.initDone)
-						s.initFlag = true
+					stateType := state.AuthorizationStateType()
+					if stateType == client.TypeAuthorizationStateClosing {
+						continue // пропускаю широковещание, но продолжаю <-authorizer.State
 					}
-				case *client.AuthorizationStateWaitPhoneNumber:
-					authorizer.PhoneNumber <- <-s.inputChan
-				case *client.AuthorizationStateWaitCode:
-					authorizer.Code <- <-s.inputChan
-				case *client.AuthorizationStateWaitPassword:
-					authorizer.Password <- <-s.inputChan
+					// Широковещательное оповещение всех подписчиков
+					s.broadcast(state)
+					switch stateType {
+					case client.TypeAuthorizationStateWaitPhoneNumber:
+						authorizer.PhoneNumber <- <-s.inputChan
+					case client.TypeAuthorizationStateWaitCode:
+						authorizer.Code <- <-s.inputChan
+					case client.TypeAuthorizationStateWaitPassword:
+						authorizer.Password <- <-s.inputChan
+					}
 				}
 			}
 		}()

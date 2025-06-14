@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/zelenin/go-tdlib/client"
 	"golang.org/x/term"
@@ -16,7 +15,7 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
-// TODO: не нравится, что нужно вводить auth для каждого последующего шага
+// TODO: Добавить автодополнение команд
 
 // type reportController interface {
 // 	GenerateActivityReport(startDate, endDate time.Time) *entity.ActivityReport
@@ -24,12 +23,13 @@ import (
 // 	GenerateErrorReport(startDate, endDate time.Time) *entity.ErrorReport
 // }
 
-type authController interface {
-	GetInitDone() <-chan any
-	GetState() client.AuthorizationState
+type notify = func(state client.AuthorizationState)
+
+type authService interface {
+	Subscribe(notify)
 	GetInputChan() chan<- string
-	GetVersion() string
-	GetMe() *client.User
+	GetClientDone() <-chan any
+	GetStatus() string
 }
 
 // Transport представляет интерфейс командной строки
@@ -37,11 +37,12 @@ type Transport struct {
 	log *log.Logger
 	//
 	// reportController reportController
-	authController authController
-	scanner        *bufio.Scanner
-	commands       []command
-	commandMap     map[string]*command
-	shutdown       func()
+	authService authService
+	authState   chan client.AuthorizationState
+	scanner     *bufio.Scanner
+	commands    []command
+	commandMap  map[string]*command
+	shutdown    func()
 }
 
 // command представляет команду CLI
@@ -54,21 +55,73 @@ type command struct {
 // New создает новый экземпляр CLI
 func New(
 	// reportController reportController,
-	authController authController,
+	authService authService,
 ) *Transport {
 	cli := &Transport{
 		log: log.NewLogger("transport.cli"),
 		//
 		// reportController: reportController,
-		authController: authController,
-		scanner:        bufio.NewScanner(os.Stdin),
-		commands:       []command{},
+		authService: authService,
+		authState:   make(chan client.AuthorizationState, 10),
+		scanner:     bufio.NewScanner(os.Stdin),
+		commands:    []command{},
 	}
 
 	// Регистрация команд
 	cli.registerCommands()
 
 	return cli
+}
+
+// Start запускает CLI интерфейс
+func (t *Transport) Start(ctx context.Context, shutdown func()) error {
+	t.shutdown = shutdown
+
+	t.authService.Subscribe(t.createNotify())
+
+	// Запускаем обработку ввода в отдельной горутине
+	go func() {
+
+		isAuth := false
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.authService.GetClientDone():
+				if !isAuth {
+					fmt.Println(t.authService.GetStatus())
+					isAuth = true
+				}
+				fmt.Println(">")
+				if !t.scanner.Scan() {
+					return
+				}
+				input := t.scanner.Text()
+				t.processCommand(input)
+			case state := <-t.authState:
+				t.processAuth(state)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (t *Transport) Close() error {
+	close(t.authState)
+	return nil
+}
+
+func (t *Transport) createNotify() notify {
+	return func(state client.AuthorizationState) {
+		select {
+		case t.authState <- state:
+			// успешно отправили
+		default:
+			// канал переполнен или закрыт - игнорируем
+		}
+	}
 }
 
 // registerCommands регистрирует доступные команды
@@ -89,90 +142,12 @@ func (t *Transport) registerCommands() {
 		// 	description: "Генерация отчетов: activity, forwarding, error",
 		// 	handler:     t.handleReport,
 		// },
-		// TODO: перенести в запуск cli
-		// {
-		// 	name:        "auth",
-		// 	description: "Запустить процесс авторизации в Telegram",
-		// 	handler:     t.handleAuth,
-		// },
 	}
 
 	t.commandMap = make(map[string]*command)
 	for _, cmd := range t.commands {
 		t.commandMap[cmd.name] = &cmd
 	}
-}
-
-// Start запускает CLI интерфейс
-func (t *Transport) Start(ctx context.Context, shutdown func()) error {
-	t.shutdown = shutdown
-
-	// Запускаем обработку ввода в отдельной горутине
-	go func() {
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-t.authController.GetInitDone():
-			// TDLib клиент готов к выполнению авторизации
-			func() {
-				// TODO: Ожидаем смены состояния, можно использовать канал со сменой state
-				// TODO: зачем всё это на уровне transport? может перенести в authService?
-				for {
-					select {
-					case <-ctx.Done():
-						return
-					default:
-						time.Sleep(1 * time.Second)
-						state := t.authController.GetState()
-						if state == nil {
-							return
-						}
-						stateType := state.AuthorizationStateType()
-						if stateType != client.TypeAuthorizationStateWaitTdlibParameters {
-							return
-						}
-					}
-				}
-			}()
-		}
-
-		isAuth := false
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				if !isAuth {
-					state := t.authController.GetState()
-					if state == nil {
-						version := t.authController.GetVersion()
-						me := t.authController.GetMe()
-						fmt.Printf("TDLib version: %s userId: %d\n", version, me.Id)
-						isAuth = true
-					}
-				}
-				if isAuth {
-					fmt.Println("> ")
-					if !t.scanner.Scan() {
-						return
-					}
-					input := t.scanner.Text()
-					t.processCommand(input)
-				} else {
-					t.handleAuth(nil)
-					time.Sleep(3 * time.Second) // TODO: вместо Sleep можно использовать канал со сменой state
-				}
-			}
-		}
-	}()
-
-	return nil
-}
-
-func (t *Transport) Close() error {
-	return nil
 }
 
 // processCommand обрабатывает введенную команду
@@ -263,12 +238,11 @@ func (t *Transport) handleExit(args []string) {
 // 	fmt.Printf("Отчет '%s' успешно сгенерирован\n", reportType)
 // }
 
-// handleAuth обрабатывает команду auth
-func (t *Transport) handleAuth(args []string) {
+// processAuth обрабатывает состояние авторизации
+func (t *Transport) processAuth(state client.AuthorizationState) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "handleAuth")
+	defer t.log.ErrorOrDebug(&err, "processAuth")
 
-	state := t.authController.GetState()
 	if state == nil {
 		err = log.NewError("state is nil")
 		return
@@ -280,10 +254,8 @@ func (t *Transport) handleAuth(args []string) {
 	case client.TypeAuthorizationStateWaitPhoneNumber:
 		var phoneNumber string
 		if config.Telegram.PhoneNumber != "" {
-			// TODO: перенести в authController?
 			phoneNumber = config.Telegram.PhoneNumber
 			fmt.Println("Используется номер телефона из конфигурации:", util.MaskPhoneNumber(phoneNumber))
-			time.Sleep(3 * time.Second)
 		} else {
 			fmt.Println("Введите номер телефона: ")
 			phoneNumber, err = t.hiddenReadLine()
@@ -291,7 +263,7 @@ func (t *Transport) handleAuth(args []string) {
 				return
 			}
 		}
-		t.authController.GetInputChan() <- phoneNumber
+		t.authService.GetInputChan() <- phoneNumber
 
 	case client.TypeAuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
@@ -300,7 +272,7 @@ func (t *Transport) handleAuth(args []string) {
 		if err != nil {
 			return
 		}
-		t.authController.GetInputChan() <- code
+		t.authService.GetInputChan() <- code
 
 	case client.TypeAuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
@@ -309,7 +281,7 @@ func (t *Transport) handleAuth(args []string) {
 		if err != nil {
 			return
 		}
-		t.authController.GetInputChan() <- password
+		t.authService.GetInputChan() <- password
 
 	}
 }

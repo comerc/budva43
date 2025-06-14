@@ -9,7 +9,6 @@ import (
 
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
-	authController "github.com/comerc/budva43/controller/auth"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
 	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
@@ -31,9 +30,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
-// TODO: после переезда на go-tdlib 1.0.0 проверить, что исправлена ошибка: "panic: send on closed channel" - при невалидном BUDVA43__TELEGRAM__API_HASH
 // TODO: реализовать storage.BackupEnabled
-// TODO: пересмотреть луковичную архитектуру
 // TODO: применить гексагональную архитектуру для handlers?
 // TODO: проверить на Race Condition
 // TODO: заменить примитивы синхронизации на [CSP](../go-secrets/README_V2/Communicating Sequential Processes (CSP) и потокобезопасный счетчик.md)
@@ -177,14 +174,6 @@ func (a *App) Run() error {
 	}
 	defer gracefulShutdown(errSet, engineService)
 
-	// - Инициализация контроллеров
-	// reportController := reportController.New(
-	// 	reportService,
-	// )
-
-	// Инициализация контроллера авторизации
-	authController := authController.New(authService)
-
 	// - Инициализация транспортных адаптеров
 
 	// botTransport := botTransport.New(
@@ -199,7 +188,7 @@ func (a *App) Run() error {
 
 	cliTransport := cliTransport.New(
 		// reportController,
-		authController,
+		authService,
 	)
 	err = cliTransport.Start(ctx, cancel)
 	if err != nil {
@@ -209,7 +198,7 @@ func (a *App) Run() error {
 
 	webTransport := webTransport.New(
 		// reportController,
-		authController,
+		authService,
 	)
 	err = webTransport.Start(ctx, cancel)
 	if err != nil {
