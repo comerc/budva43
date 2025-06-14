@@ -19,7 +19,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
-replace github.com/zelenin/go-tdlib => github.com/comerc/go-tdlib v0.7.6-fix1
+replace github.com/zelenin/go-tdlib => github.com/comerc/go-tdlib v0.7.6-fix2
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
