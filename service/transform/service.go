@@ -215,11 +215,11 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 		err = log.NewError("source not found")
 		return
 	}
-	if slices.Contains(source.Sign.For, dstChatId) {
+	if source.Sign != nil && slices.Contains(source.Sign.For, dstChatId) {
 		text := source.Sign.Title
 		s.addText(formattedText, text)
 	}
-	if slices.Contains(source.Link.For, dstChatId) {
+	if source.Link != nil && slices.Contains(source.Link.For, dstChatId) {
 		var messageLink *client.MessageLink
 		messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
 			ChatId:    src.ChatId,
