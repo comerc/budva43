@@ -72,6 +72,31 @@ engine:
         for: [-321]
       auto-answer: true
       delete-system-messages: true
+    # TestTransformService - 101x
+    1010: # for sign only test
+      sign:
+        title: "Test Source"
+        for: [1019]
+    1011: # for link only test
+      link:
+        title: "Source Link"
+        for: [1019]
+    1012: # for sign and link test
+      sign:
+        title: "Test Source"
+        for: [1019]
+      link:
+        title: "Source Link"
+        for: [1019]
+    1013: # for sign not for this chat test
+      sign:
+        title: "Test Source"
+        for: [1018] # не для чата 1019
+    1014: # for empty source test
+    1015: # for get message link error test
+      link:
+        title: "Source Link"
+        for: [1019]
   forward-rules:
     "id1":
       from: -111
