@@ -19,18 +19,22 @@ type telegramRepo interface {
 	GetListener() *client.Listener
 }
 
+//go:generate mockery --name=updateNewMessageHandler --exported
 type updateNewMessageHandler interface {
 	Run(ctx context.Context, update *client.UpdateNewMessage)
 }
 
+//go:generate mockery --name=updateMessageEditedHandler --exported
 type updateMessageEditedHandler interface {
 	Run(update *client.UpdateMessageEdited)
 }
 
+//go:generate mockery --name=updateDeleteMessagesHandler --exported
 type updateDeleteMessagesHandler interface {
 	Run(update *client.UpdateDeleteMessages)
 }
 
+//go:generate mockery --name=updateMessageSendHandler --exported
 type updateMessageSendHandler interface {
 	Run(update *client.UpdateMessageSendSucceeded)
 }

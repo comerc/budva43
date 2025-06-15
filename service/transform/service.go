@@ -22,13 +22,13 @@ type telegramRepo interface {
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 }
 
-// storageService определяет методы для работы с хранилищем
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	GetNewMessageId(chatId, tmpMessageId int64) int64
 	GetCopiedMessageIds(fromChatMessageId string) []string
 }
 
-// messageService определяет методы для работы с сообщениями
+//go:generate mockery --name=messageService --exported
 type messageService interface {
 	GetReplyMarkupData(message *client.Message) []byte
 }

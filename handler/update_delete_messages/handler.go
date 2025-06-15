@@ -17,10 +17,12 @@ type telegramRepo interface {
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
 }
 
+//go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
 	Add(task func())
 }
 
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	GetCopiedMessageIds(fromChatMessageId string) []string
 	DeleteCopiedMessageIds(fromChatMessageId string)

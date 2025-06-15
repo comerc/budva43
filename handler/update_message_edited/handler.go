@@ -20,10 +20,12 @@ type telegramRepo interface {
 	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 }
 
+//go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
 	Add(task func())
 }
 
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	GetCopiedMessageIds(fromChatMessageId string) []string
 	GetNewMessageId(chatId, tmpMessageId int64) int64
@@ -31,20 +33,24 @@ type storageService interface {
 	DeleteAnswerMessageId(dstChatId, tmpMessageId int64)
 }
 
+//go:generate mockery --name=messageService --exported
 type messageService interface {
 	GetFormattedText(message *client.Message) *client.FormattedText
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
 	GetReplyMarkupData(message *client.Message) []byte
 }
 
+//go:generate mockery --name=transformService --exported
 type transformService interface {
 	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
 }
 
+//go:generate mockery --name=filtersModeService --exported
 type filtersModeService interface {
 	Map(formattedText *client.FormattedText, forwardRule *entity.ForwardRule) entity.FiltersMode
 }
 
+//go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
 	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
 }
