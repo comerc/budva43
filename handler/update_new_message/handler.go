@@ -18,20 +18,24 @@ type telegramRepo interface {
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
 }
 
+//go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
 	Add(task func())
 }
 
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	IncrementViewedMessages(toChatId int64, date string)
 	IncrementForwardedMessages(toChatId int64, date string)
 }
 
+//go:generate mockery --name=messageService --exported
 type messageService interface {
 	GetFormattedText(message *client.Message) *client.FormattedText
 	IsSystemMessage(message *client.Message) bool
 }
 
+//go:generate mockery --name=mediaAlbumService --exported
 type mediaAlbumService interface {
 	AddMessage(key entity.MediaAlbumKey, message *client.Message) bool
 	GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration
@@ -39,15 +43,18 @@ type mediaAlbumService interface {
 	GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey
 }
 
+//go:generate mockery --name=filtersModeService --exported
 type filtersModeService interface {
 	Map(formattedText *client.FormattedText, rule *entity.ForwardRule) entity.FiltersMode
 }
 
+//go:generate mockery --name=forwardedToService --exported
 type forwardedToService interface {
 	Init(forwardedTo map[int64]bool, dstChatIds []int64)
 	Add(forwardedTo map[int64]bool, dstChatId int64) bool
 }
 
+//go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
 	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
 }

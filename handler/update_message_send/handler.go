@@ -6,10 +6,12 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
+//go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
 	Add(task func())
 }
 
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	SetNewMessageId(chatId, tmpMessageId, newMessageId int64)
 	SetTmpMessageId(chatId, newMessageId, tmpMessageId int64)

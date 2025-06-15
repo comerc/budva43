@@ -18,6 +18,7 @@ import (
 
 type notify = func(state client.AuthorizationState)
 
+//go:generate mockery --name=authService --exported
 type authService interface {
 	Subscribe(notify)
 	GetInputChan() chan<- string

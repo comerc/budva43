@@ -21,6 +21,7 @@ type telegramRepo interface {
 	SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
 }
 
+//go:generate mockery --name=storageService --exported
 type storageService interface {
 	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string)
 	GetCopiedMessageIds(fromChatMessageId string) []string
@@ -28,16 +29,19 @@ type storageService interface {
 	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string)
 }
 
+//go:generate mockery --name=messageService --exported
 type messageService interface {
 	GetFormattedText(message *client.Message) *client.FormattedText
 	GetInputMessageContent(message *client.Message, formattedText *client.FormattedText) client.InputMessageContent
 	GetReplyMarkupData(message *client.Message) []byte
 }
 
+//go:generate mockery --name=transformService --exported
 type transformService interface {
 	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
 }
 
+//go:generate mockery --name=rateLimiterService --exported
 type rateLimiterService interface {
 	WaitForForward(ctx context.Context, dstChatId int64)
 }
