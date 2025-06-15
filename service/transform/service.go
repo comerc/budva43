@@ -266,8 +266,6 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 
 // escapeMarkdown экранирует специальные символы Markdown в тексте
 func escapeMarkdown(text string) string {
-	// эскейпит все символы: которые нужны для markdown-разметки
-
 	s1 := "_ * ( ) ~ ` > # + = | { } . !"
 	s2 := `\[ \] \-`
 	a := strings.Split(s1+" "+s2, " ")
