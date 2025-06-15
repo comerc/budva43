@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,26 +10,9 @@ import (
 func TestEscapeMarkdown(t *testing.T) {
 	t.Parallel()
 
-	a := []string{
-		"_",
-		"*",
-		`\[`,
-		`\]`,
-		"(",
-		")",
-		"~",
-		"`",
-		">",
-		"#",
-		"+",
-		`\-`,
-		"=",
-		"|",
-		"{",
-		"}",
-		".",
-		"!",
-	}
+	s1 := "_ * ( ) ~ ` > # + = | { } . !"
+	s2 := `\[ \] \-`
+	a := strings.Split(s1+" "+s2, " ")
 	for _, v := range a {
 		assert.Equal(t, `\`+v, escapeMarkdown(v))
 	}
