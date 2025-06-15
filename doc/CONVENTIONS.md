@@ -891,34 +891,34 @@ func (s *Repo) run(ctx context.Context) {
 ## Соглашение о нумерации чатов в тестах
 
 ### **Схема префиксов:**
-- `100x` - common (переиспользуемые между модулями данные)
-- `101x` - service.transform 
-- `102x` - service.engine
-- `103x` - service.forwarder
+- `100xx` - common (переиспользуемые между модулями данные)
+- `101xx` - service.transform 
+- `102xx` - service.engine
+- `103xx` - service.forwarder
 - ...
 
 ### **Структура номера:**
 - **3 цифры** = условный номер модуля
-- **1 цифра** = индекс внутри модуля 
+- **2 цифра** = индекс внутри модуля (xx)
 
 ### **Ограничения:**
 - Максимум **100 модулей** (100-199)
-- Максимум **10 значений** на модуль
+- Максимум **100 значений** на модуль (00-99)
 
 ### **Правила:**
-1. **Комментарий в начале** тестового файла: `// data for service.transform - 101x`
-2. **Комментарий в config.yml**: `# data for service.transform - 101x`
+1. **Комментарий в начале** тестового файла: `// data for service.transform - 101xx`
+2. **Комментарий в config.yml**: `# data for service.transform - 101xx`
 3. **Изоляция данных** - каждый модуль использует свой диапазон (бывают исключения)
 
 ### **Пример:**
 ```yaml
 # config.yml
-1010: # sign only test
-1011: # link only test  
-1019: # destination chat
+10100: # sign only test
+10101: # link only test  
+10109: # destination chat
 ```
 
 ```go
 // service_test.go
-ChatId: 1010, dstChatId: 1019
+ChatId: 10100, dstChatId: 10109
 ```

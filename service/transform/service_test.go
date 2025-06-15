@@ -10,7 +10,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// data for service.transform - 101x
+// data for service.transform - 101xx
 
 func TestTransformService_addSources(t *testing.T) {
 	t.Parallel()
@@ -28,10 +28,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "source not found",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 9999, // не существует в config.yml
-				Id:     456,
+				ChatId: 99999, // не существует в config.yml
+				Id:     123,
 			},
-			dstChatId:        1019,
+			// dstChatId:        10109,
 			expectedText:     "",
 			expectedEntities: nil,
 		},
@@ -39,10 +39,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1010,
-				Id:     456,
+				ChatId: 10100,
+				Id:     123,
 			},
-			dstChatId:        1019,
+			dstChatId:        10109,
 			expectedText:     "Test Source",
 			expectedEntities: nil,
 			setupMocks: func(telegramRepo *mocks.TelegramRepo, src *client.Message) {
@@ -61,12 +61,12 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "link only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       1011,
-				Id:           456,
+				ChatId:       10101,
+				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        1019,
-			expectedText:     "[🔗Source Link](https://t.me/test/456)",
+			dstChatId:        10109,
+			expectedText:     "[🔗Source Link](https://t.me/test/123)",
 			expectedEntities: nil,
 			setupMocks: func(telegramRepo *mocks.TelegramRepo, src *client.Message) {
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
@@ -74,16 +74,16 @@ func TestTransformService_addSources(t *testing.T) {
 					MessageId: src.Id,
 					ForAlbum:  src.MediaAlbumId != 0,
 				}).Return(&client.MessageLink{
-					Link: "https://t.me/test/456",
+					Link: "https://t.me/test/123",
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[🔗Source Link](https://t.me/test/456)",
+					Text: "[🔗Source Link](https://t.me/test/123)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[🔗Source Link](https://t.me/test/456)",
+					Text:     "[🔗Source Link](https://t.me/test/123)",
 					Entities: nil,
 				}, nil)
 			},
@@ -95,12 +95,12 @@ func TestTransformService_addSources(t *testing.T) {
 				Entities: []*client.TextEntity{},
 			},
 			src: &client.Message{
-				ChatId:       1012,
-				Id:           456,
+				ChatId:       10102,
+				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        1019,
-			expectedText:     "existing\n\nTest Source\n\n[🔗Source Link](https://t.me/test/456)",
+			dstChatId:        10109,
+			expectedText:     "existing\n\nTest Source\n\n[🔗Source Link](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setupMocks: func(telegramRepo *mocks.TelegramRepo, src *client.Message) {
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
@@ -118,16 +118,16 @@ func TestTransformService_addSources(t *testing.T) {
 					MessageId: src.Id,
 					ForAlbum:  src.MediaAlbumId != 0,
 				}).Return(&client.MessageLink{
-					Link: "https://t.me/test/456",
+					Link: "https://t.me/test/123",
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[🔗Source Link](https://t.me/test/456)",
+					Text: "[🔗Source Link](https://t.me/test/123)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[🔗Source Link](https://t.me/test/456)",
+					Text:     "[🔗Source Link](https://t.me/test/123)",
 					Entities: nil,
 				}, nil)
 			},
@@ -136,10 +136,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign not for this chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1013,
-				Id:     456,
+				ChatId: 10103,
+				Id:     123,
 			},
-			dstChatId:        1019,
+			dstChatId:        10109,
 			expectedText:     "",
 			expectedEntities: nil,
 		},
@@ -147,10 +147,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "empty source",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1014,
-				Id:     456,
+				ChatId: 10104,
+				Id:     123,
 			},
-			dstChatId:        1019,
+			dstChatId:        10109,
 			expectedText:     "",
 			expectedEntities: nil,
 		},
@@ -158,11 +158,11 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "get message link error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       1015,
-				Id:           456,
+				ChatId:       10105,
+				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        1019,
+			dstChatId:        10109,
 			expectedText:     "",
 			expectedEntities: nil,
 			setupMocks: func(telegramRepo *mocks.TelegramRepo, src *client.Message) {
