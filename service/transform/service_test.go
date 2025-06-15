@@ -5,8 +5,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/zelenin/go-tdlib/client"
 )
 
@@ -23,6 +26,7 @@ func TestTransformService_addSources(t *testing.T) {
 		expectedText     string
 		expectedEntities []*client.TextEntity
 		setupMocks       func(telegramRepo *mocks.TelegramRepo, src *client.Message)
+		expectedError    error
 	}{
 		{
 			name:          "source not found",
@@ -31,9 +35,10 @@ func TestTransformService_addSources(t *testing.T) {
 				ChatId: 99999, // не существует в config.yml
 				Id:     123,
 			},
-			// dstChatId:        10109,
+			dstChatId:        0,
 			expectedText:     "",
 			expectedEntities: nil,
+			expectedError:    log.NewError("source not found"),
 		},
 		{
 			name:          "sign only",
@@ -172,6 +177,7 @@ func TestTransformService_addSources(t *testing.T) {
 					ForAlbum:  src.MediaAlbumId != 0,
 				}).Return(nil, errors.New("get message link error"))
 			},
+			expectedError: log.NewError("get message link error"),
 		},
 	}
 
@@ -180,13 +186,22 @@ func TestTransformService_addSources(t *testing.T) {
 			t.Parallel()
 
 			telegramRepo := mocks.NewTelegramRepo(t)
-
 			if test.setupMocks != nil {
 				test.setupMocks(telegramRepo, test.src)
 			}
 
-			service := New(telegramRepo, nil, nil)
-			service.addSources(test.formattedText, test.src, test.dstChatId)
+			var transformService *Service
+			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+				transformService = New(telegramRepo, nil, nil)
+			})
+
+			transformService.addSources(test.formattedText, test.src, test.dstChatId)
+
+			if test.expectedError != nil {
+				records := spylogHandler.GetRecords()
+				require.True(t, len(records) == 1)
+				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
@@ -266,8 +281,18 @@ func TestTransformService_addText(t *testing.T) {
 				Entities: test.expectedEntities,
 			}, test.expectedError)
 
-			service := New(telegramRepo, nil, nil)
-			service.addText(test.formattedText, test.text)
+			var transformService *Service
+			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+				transformService = New(telegramRepo, nil, nil)
+			})
+
+			transformService.addText(test.formattedText, test.text)
+
+			if test.expectedError != nil {
+				records := spylogHandler.GetRecords()
+				require.True(t, len(records) == 1)
+				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
