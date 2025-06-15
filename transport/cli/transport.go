@@ -69,7 +69,7 @@ func New(
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	t.shutdown = shutdown
 
-	t.authService.Subscribe(t.createNotify())
+	t.authService.Subscribe(t.newNotify())
 
 	// Запускаем обработку ввода в отдельной горутине
 	go func() {
@@ -106,8 +106,8 @@ func (t *Transport) Close() error {
 	return nil
 }
 
-// createNotify создает функцию для отправки состояния авторизации
-func (t *Transport) createNotify() notify {
+// newNotify создает функцию для отправки состояния авторизации
+func (t *Transport) newNotify() notify {
 	return func(state client.AuthorizationState) {
 		select {
 		case t.authStateChan <- state:

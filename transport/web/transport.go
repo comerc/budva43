@@ -50,7 +50,7 @@ func New(
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	_ = shutdown // не используется
 
-	t.authService.Subscribe(t.createNotify())
+	t.authService.Subscribe(t.newNotify())
 
 	// Создаем новый мультиплексор
 	mux := http.NewServeMux()
@@ -94,8 +94,8 @@ func (t *Transport) Close() error {
 	return nil
 }
 
-// createNotify создает функцию для отправки состояния авторизации
-func (t *Transport) createNotify() notify {
+// newNotify создает функцию для отправки состояния авторизации
+func (t *Transport) newNotify() notify {
 	return func(state client.AuthorizationState) {
 		t.authState = state
 	}

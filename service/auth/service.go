@@ -49,7 +49,7 @@ func New(telegramRepo telegramRepo) *Service {
 // Start запускает процесс авторизации
 func (s *Service) Start(ctx context.Context) error {
 
-	go s.telegramRepo.CreateClient(s.runAuthorizationStateHandler(ctx))
+	go s.telegramRepo.CreateClient(s.newRunAuthorizationStateHandler(ctx))
 
 	return nil
 }
@@ -113,8 +113,8 @@ func (s *Service) broadcast(state client.AuthorizationState) {
 	}
 }
 
-// runAuthorizationStateHandler обрабатывает состояния авторизации
-func (s *Service) runAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
+// newRunAuthorizationStateHandler обрабатывает состояния авторизации
+func (s *Service) newRunAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
 		tdlibParameters := &client.SetTdlibParametersRequest{
@@ -145,9 +145,8 @@ func (s *Service) runAuthorizationStateHandler(ctx context.Context) runAuthoriza
 					}
 					stateType := state.AuthorizationStateType()
 					if stateType == client.TypeAuthorizationStateClosing {
-						continue // пропускаю широковещание, но продолжаю <-authorizer.State
+						continue // пропускаю broadcast, но продолжаю <-authorizer.State
 					}
-					// Широковещательное оповещение всех подписчиков
 					s.broadcast(state)
 					switch stateType {
 					case client.TypeAuthorizationStateWaitPhoneNumber:
