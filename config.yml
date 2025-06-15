@@ -62,23 +62,6 @@ engine:
         for: [-321]
       auto-answer: true
       delete-system-messages: true
-    # data for service.transform - 100xx (reusable)
-    10001: # minimal source for Transform test (with markdown)
-      sign:
-        title: "*Test Source*"
-        for: [10003]
-      link:
-        title: "*Source Link*"
-        for: [10003]
-      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
-    10002: # minimal source for Transform test (with escaped markdown)
-      sign:
-        title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
-        for: [10003]
-      link:
-        title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
-        for: [10003]
-      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
     # data for service.transform - 101xx
     10100: # for sign only test
       sign:
@@ -108,12 +91,23 @@ engine:
       auto-answer: true
     10107: # for auto answer false test
       auto-answer: false
+    10121: # for Transform test (with markdown)
+      sign:
+        title: "*Test Source*"
+        for: [10123]
+      link:
+        title: "*Source Link*"
+        for: [10123]
+      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
+    10122: # for Transform test (with escaped markdown)
+      sign:
+        title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+        for: [10123]
+      link:
+        title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+        for: [10123]
+      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   destinations:
-    # data for service.transform - 100xx (reusable minimal config)
-    10003: # minimal destination for Transform test
-      replace-myself-links:
-        run: false # чтобы replaceMyselfLinks не выдавал ошибку
-      replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
     # data for service.transform - 101xx
     10110: # for replace fragments test
       replace-fragments: # must be equal length
@@ -142,6 +136,10 @@ engine:
       replace-myself-links:
         run: true
         delete-external: false
+    10123: # for Transform test
+      replace-myself-links:
+        run: false # чтобы replaceMyselfLinks не выдавал ошибку
+      replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
   forward-rules:
     "id1":
       from: -111

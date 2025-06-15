@@ -38,11 +38,11 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: true,
 			src: &client.Message{
-				ChatId:       10001,
+				ChatId:       10121,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10003,
+			dstChatId:        10123,
 			expectedText:     "test message\n\n*Test Source*\n\n[🔗*Source Link*](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -63,7 +63,7 @@ func TestTransformService_Transform(t *testing.T) {
 
 				// Mock для addSources - link
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10001,
+					ChatId:    10121,
 					MessageId: 123,
 					ForAlbum:  false,
 				}).Return(&client.MessageLink{
@@ -91,11 +91,11 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: true,
 			src: &client.Message{
-				ChatId:       10002,
+				ChatId:       10122,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10003,
+			dstChatId:        10123,
 			expectedText:     "test message\n\nTest Source\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|\n\n[🔗Source Link\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -116,7 +116,7 @@ func TestTransformService_Transform(t *testing.T) {
 
 				// Mock для addSources - link
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10002,
+					ChatId:    10122,
 					MessageId: 123,
 					ForAlbum:  false,
 				}).Return(&client.MessageLink{
@@ -144,7 +144,7 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: false,
 			src: &client.Message{
-				ChatId:       10001,
+				ChatId:       10121,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
