@@ -40,6 +40,8 @@ func TestWrapError(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := WrapError(test.err, test.args...)
 			if err == nil {
 				assert.Nil(t, test.err)
