@@ -54,7 +54,7 @@ func TestSomeMethod(t *testing.T) {
 	o.SomeMethod() // вызываем тестируемый метод
 
 	records := spylogHandler.GetRecords()
-	require.True(t, len(records) == 1)
+	require.Equal(t, len(records), 1)
 
 	assert.Equal(t, slog.LevelError, records[0].Level)
 	assert.Equal(t, "error", records[0].Message)
@@ -90,7 +90,7 @@ func TestUnwrappedError(t *testing.T) {
 	o.log.InfoOrError(&err, "message", "arg", "val")
 
 	records := spylogHandler.GetRecords()
-	require.True(t, len(records) == 1)
+	require.Equal(t, len(records), 1)
 
 	assert.Equal(t, slog.LevelError, records[0].Level)
 	assert.Equal(t, "unwrapped error", records[0].Message)
