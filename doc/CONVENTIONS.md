@@ -641,19 +641,19 @@ func TestFormatMessage(t *testing.T) {
         // другие тест-кейсы
     }
     
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
+    for _, test := range tests {
+        t.Run(test.name, func(t *testing.T) {
             t.Parallel()
             
             // Атомарная инициализация для каждого тест-кейса
-            input := tt.setupInput()
-            formatter := tt.setupMocks()
+            input := test.setupInput()
+            formatter := test.setupMocks()
             
             // Выполнение тестируемой функции
             result, err := FormatMessage(input, formatter)
             
             // Проверка результата через функцию проверки
-            tt.verifyFunc(t, result, err, formatter)
+            test.verifyFunc(t, result, err, formatter)
         })
     }
 }
