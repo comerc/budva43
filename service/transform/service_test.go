@@ -10,7 +10,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 )
 
-// TestTransformService - 101x
+// data for service.transform - 101x
 
 func TestTransformService_addSources(t *testing.T) {
 	t.Parallel()
@@ -39,7 +39,7 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1010, // источник из config.yml с только sign
+				ChatId: 1010,
 				Id:     456,
 			},
 			dstChatId:        1019,
@@ -61,7 +61,7 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "link only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       1011, // источник из config.yml с только link
+				ChatId:       1011,
 				Id:           456,
 				MediaAlbumId: 0,
 			},
@@ -95,7 +95,7 @@ func TestTransformService_addSources(t *testing.T) {
 				Entities: []*client.TextEntity{},
 			},
 			src: &client.Message{
-				ChatId:       1012, // источник из config.yml с sign и link
+				ChatId:       1012,
 				Id:           456,
 				MediaAlbumId: 0,
 			},
@@ -136,7 +136,7 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign not for this chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1013, // источник из config.yml с sign для чата 1018, а не 1019
+				ChatId: 1013,
 				Id:     456,
 			},
 			dstChatId:        1019,
@@ -147,7 +147,7 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "empty source",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 1014, // пустой источник из config.yml
+				ChatId: 1014,
 				Id:     456,
 			},
 			dstChatId:        1019,
@@ -158,7 +158,7 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "get message link error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       1015, // источник из config.yml для тестирования ошибки
+				ChatId:       1015,
 				Id:           456,
 				MediaAlbumId: 0,
 			},
