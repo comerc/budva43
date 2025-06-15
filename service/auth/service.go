@@ -14,11 +14,14 @@ import (
 type runAuthorizationStateHandler = func() client.AuthorizationStateHandler
 
 // telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
+//
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	CreateClient(runAuthorizationStateHandler)
 	GetClientDone() <-chan any
-	GetVersion() string
-	GetMe() *client.User
+	// tdlibClient methods
+	GetOption(req *client.GetOptionRequest) (client.OptionValue, error)
+	GetMe() (*client.User, error)
 }
 
 type notify = func(state client.AuthorizationState)
@@ -73,8 +76,26 @@ func (s *Service) GetClientDone() <-chan any {
 
 // GetStatus возвращает статус авторизации
 func (s *Service) GetStatus() string {
-	version := s.telegramRepo.GetVersion()
-	me := s.telegramRepo.GetMe()
+	var err error
+	defer s.log.ErrorOrDebug(&err, "GetStatus")
+
+	var versionOption client.OptionValue
+	versionOption, err = s.telegramRepo.GetOption(&client.GetOptionRequest{
+		Name: "version",
+	})
+	if err != nil {
+		err = log.WrapError(err)
+		return ""
+	}
+	version := versionOption.(*client.OptionValueString).Value
+
+	var me *client.User
+	me, err = s.telegramRepo.GetMe()
+	if err != nil {
+		err = log.WrapError(err)
+		return ""
+	}
+
 	return fmt.Sprintf("TDLib version: %s userId: %d", version, me.Id)
 }
 
