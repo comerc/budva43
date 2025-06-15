@@ -112,12 +112,12 @@ func TestMaskPhoneNumber(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			result := MaskPhoneNumber(tt.phone)
-			assert.Equal(t, tt.expected, result, "Неверная маскировка для номера: %s", tt.phone)
+			result := MaskPhoneNumber(test.phone)
+			assert.Equal(t, test.expected, result, "Неверная маскировка для номера: %s", test.phone)
 		})
 	}
 }
