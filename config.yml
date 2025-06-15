@@ -1,7 +1,5 @@
 # Файл конфигурации Budva43
 
-# escape markdown '\*\_\{\}\[\]\(\)\#\+\-\.\!'
-
 # Общие настройки приложения
 general:
   # test-verbose: true # nil - production mode
@@ -58,9 +56,16 @@ engine:
         - from: "aaa"
           to: "bbb"
   sources:
+    -111:
+      sign:
+        title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+        for: [-888]
+      link:
+        title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+        for: [-321]
     -123:
       sign:
-        title: '*\#Source*' # for SendCopy (with markdown)
+        title: "*Source*" # for SendCopy (with markdown)
         for: [-888]
       link:
         title: "*Source*" # for SendCopy (with markdown)
