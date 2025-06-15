@@ -9,7 +9,7 @@ import (
 	"github.com/comerc/budva43/service/auth/mocks"
 )
 
-func TestService_GetStatus(t *testing.T) {
+func TestAuthService_GetStatus(t *testing.T) {
 	t.Parallel()
 
 	telegramRepo := mocks.NewTelegramRepo(t)
