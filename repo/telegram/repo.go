@@ -94,32 +94,14 @@ func (r *Repo) Close() error {
 	return nil
 }
 
-// GetVersion выводит информацию о версии TDLib
-func (r *Repo) GetVersion() string {
-	var err error
-	defer r.log.ErrorOrDebug(&err, "GetVersion")
-
-	var versionOption client.OptionValue
-	versionOption, err = r.GetClient().GetOption(&client.GetOptionRequest{
-		Name: "version",
-	})
-	if err != nil {
-		return ""
-	}
-	return versionOption.(*client.OptionValueString).Value
+// GetOption выводит информацию о параметрах TDLib
+func (r *Repo) GetOption(req *client.GetOptionRequest) (client.OptionValue, error) {
+	return r.GetClient().GetOption(req)
 }
 
 // GetMe выводит информацию о пользователе
-func (r *Repo) GetMe() *client.User {
-	var err error
-	defer r.log.ErrorOrDebug(&err, "GetMe")
-
-	var me *client.User
-	me, err = r.GetClient().GetMe()
-	if err != nil {
-		return nil
-	}
-	return me
+func (r *Repo) GetMe() (*client.User, error) {
+	return r.GetClient().GetMe()
 }
 
 // GetClient возвращает клиент TDLib, если он авторизован
