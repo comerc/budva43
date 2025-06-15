@@ -15,6 +15,7 @@ import (
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
+	clientAdapter
 	log *log.Logger
 	//
 	client     *client.Client
@@ -94,25 +95,15 @@ func (r *Repo) Close() error {
 	return nil
 }
 
-// GetOption выводит информацию о параметрах TDLib
-func (r *Repo) GetOption(req *client.GetOptionRequest) (client.OptionValue, error) {
-	return r.GetClient().GetOption(req)
-}
-
-// GetMe выводит информацию о пользователе
-func (r *Repo) GetMe() (*client.User, error) {
-	return r.GetClient().GetMe()
-}
-
-// GetClient возвращает клиент TDLib, если он авторизован
-func (r *Repo) GetClient() *client.Client {
-	<-r.clientDone
-	return r.client
-}
-
 // GetClientDone возвращает канал, который будет закрыт после авторизации клиента
 func (r *Repo) GetClientDone() <-chan any {
 	return r.clientDone
+}
+
+// getClient возвращает клиент TDLib, если он авторизован
+func (r *Repo) getClient() *client.Client {
+	<-r.clientDone
+	return r.client
 }
 
 // setupClientLog устанавливает опции для клиента TDLib

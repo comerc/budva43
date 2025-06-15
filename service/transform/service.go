@@ -13,9 +13,13 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
-// telegramRepo определяет методы для работы с Telegram API
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClient() *client.Client
+	// tdlibClient methods
+	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
+	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
+	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
+	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 }
 
 // storageService определяет методы для работы с хранилищем
@@ -93,7 +97,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			continue
 		}
 		var messageLinkInfo *client.MessageLinkInfo
-		messageLinkInfo, err = s.telegramRepo.GetClient().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+		messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
 			Url: textUrl.Url,
 		})
 		if err != nil {
@@ -122,7 +126,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 				return
 			}
 			var messageLink *client.MessageLink
-			messageLink, err = s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
+			messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
 				ChatId:    dstChatId,
 				MessageId: newMessageId,
 			})
@@ -187,7 +191,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 		return
 	}
 	var answer *client.CallbackQueryAnswer
-	answer, err = s.telegramRepo.GetClient().GetCallbackQueryAnswer(
+	answer, err = s.telegramRepo.GetCallbackQueryAnswer(
 		&client.GetCallbackQueryAnswerRequest{
 			ChatId:    src.ChatId,
 			MessageId: src.Id,
@@ -217,7 +221,7 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 	}
 	if slices.Contains(source.Link.For, dstChatId) {
 		var messageLink *client.MessageLink
-		messageLink, err = s.telegramRepo.GetClient().GetMessageLink(&client.GetMessageLinkRequest{
+		messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
 			ChatId:    src.ChatId,
 			MessageId: src.Id,
 			ForAlbum:  src.MediaAlbumId != 0,
@@ -238,7 +242,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	defer s.log.ErrorOrDebug(&err, "addText")
 
 	var parsedText *client.FormattedText
-	parsedText, err = s.telegramRepo.GetClient().ParseTextEntities(&client.ParseTextEntitiesRequest{
+	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: text,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,

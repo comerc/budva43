@@ -12,8 +12,13 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClient() *client.Client
+	// tdlibClient methods
+	ForwardMessages(*client.ForwardMessagesRequest) (*client.Messages, error)
+	GetMessage(*client.GetMessageRequest) (*client.Message, error)
+	SendMessage(*client.SendMessageRequest) (*client.Message, error)
+	SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
 }
 
 type storageService interface {
@@ -88,7 +93,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 		replyToMessageId := s.getReplyToMessageId(messages[0], dstChatId)
 		result, err = s.sendMessages(dstChatId, contents, replyToMessageId)
 	} else {
-		result, err = s.telegramRepo.GetClient().ForwardMessages(&client.ForwardMessagesRequest{
+		result, err = s.telegramRepo.ForwardMessages(&client.ForwardMessagesRequest{
 			ChatId:     dstChatId,
 			FromChatId: srcChatId,
 			MessageIds: func() []int64 {
@@ -156,7 +161,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	}
 
 	var originMessage *client.Message
-	originMessage, err = s.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
+	originMessage, err = s.telegramRepo.GetMessage(&client.GetMessageRequest{
 		ChatId:    origin.ChatId,
 		MessageId: origin.MessageId,
 	})
@@ -267,7 +272,7 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 
 	if len(contents) == 1 {
 		var message *client.Message
-		message, err = s.telegramRepo.GetClient().SendMessage(&client.SendMessageRequest{
+		message, err = s.telegramRepo.SendMessage(&client.SendMessageRequest{
 			ChatId:              dstChatId,
 			InputMessageContent: contents[0],
 			ReplyTo: &client.InputMessageReplyToMessage{
@@ -283,7 +288,7 @@ func (s *Service) sendMessages(dstChatId int64, contents []client.InputMessageCo
 		}, nil
 	}
 	var messages *client.Messages
-	messages, err = s.telegramRepo.GetClient().SendMessageAlbum(&client.SendMessageAlbumRequest{
+	messages, err = s.telegramRepo.SendMessageAlbum(&client.SendMessageAlbumRequest{
 		ChatId:               dstChatId,
 		InputMessageContents: contents,
 		ReplyTo: &client.InputMessageReplyToMessage{
