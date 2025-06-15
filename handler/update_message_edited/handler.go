@@ -12,8 +12,12 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClient() *client.Client
+	// tdlibClient methods
+	GetMessage(*client.GetMessageRequest) (*client.Message, error)
+	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
+	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 }
 
 type queueRepo interface {
@@ -170,7 +174,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 	toChatMessageIds := data.copiedMessageIds
 
 	var src *client.Message
-	src, err = h.telegramRepo.GetClient().GetMessage(&client.GetMessageRequest{
+	src, err = h.telegramRepo.GetMessage(&client.GetMessageRequest{
 		ChatId:    chatId,
 		MessageId: messageId,
 	})
@@ -266,7 +270,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 				*client.MessageVideo,
 				*client.MessagePhoto:
 				content := h.messageService.GetInputMessageContent(src, formattedText)
-				_, err = h.telegramRepo.GetClient().EditMessageText(&client.EditMessageTextRequest{
+				_, err = h.telegramRepo.EditMessageText(&client.EditMessageTextRequest{
 					ChatId:              dstChatId,
 					MessageId:           newMessageId,
 					InputMessageContent: content,
@@ -281,7 +285,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 					err = log.WrapError(err)
 				}
 			case *client.MessageVoiceNote:
-				_, err = h.telegramRepo.GetClient().EditMessageCaption(&client.EditMessageCaptionRequest{
+				_, err = h.telegramRepo.EditMessageCaption(&client.EditMessageCaptionRequest{
 					ChatId:    dstChatId,
 					MessageId: newMessageId,
 					Caption:   formattedText,

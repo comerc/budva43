@@ -13,8 +13,6 @@ import (
 
 type runAuthorizationStateHandler = func() client.AuthorizationStateHandler
 
-// telegramRepo представляет базовые методы репозитория Telegram, необходимые для авторизации
-//
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	CreateClient(runAuthorizationStateHandler)

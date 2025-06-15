@@ -11,8 +11,10 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClient() *client.Client
+	// tdlibClient methods
+	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
 }
 
 type queueRepo interface {
@@ -182,7 +184,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
 				h.storageService.DeleteTmpMessageId(dstChatId, newMessageId)
 				h.storageService.DeleteNewMessageId(dstChatId, tmpMessageId)
 
-				_, err = h.telegramRepo.GetClient().DeleteMessages(&client.DeleteMessagesRequest{
+				_, err = h.telegramRepo.DeleteMessages(&client.DeleteMessagesRequest{
 					ChatId:     dstChatId,
 					MessageIds: []int64{newMessageId},
 					Revoke:     true,

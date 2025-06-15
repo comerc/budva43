@@ -12,9 +12,11 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+//go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	GetClientDone() <-chan any
-	GetClient() *client.Client
+	// tdlibClient methods
+	GetListener() *client.Listener
 }
 
 type updateNewMessageHandler interface {
@@ -161,7 +163,7 @@ func (s *Service) run() {
 	case <-s.ctx.Done():
 		return
 	case <-s.telegramRepo.GetClientDone():
-		listener := s.telegramRepo.GetClient().GetListener()
+		listener := s.telegramRepo.GetListener()
 		defer listener.Close()
 		s.handleUpdates(listener)
 	}
