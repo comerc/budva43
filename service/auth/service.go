@@ -61,22 +61,6 @@ func (s *Service) Close() error {
 	return nil
 }
 
-// Subscribe добавляет подписчика на изменения состояния авторизации
-func (s *Service) Subscribe(notify notify) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.subscribers = append(s.subscribers, notify)
-}
-
-// broadcast отправляет состояние всем подписчикам
-func (s *Service) broadcast(state client.AuthorizationState) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	for _, notify := range s.subscribers {
-		go notify(state)
-	}
-}
-
 // GetInputChan возвращает канал для ввода данных
 func (s *Service) GetInputChan() chan<- string {
 	return s.inputChan
@@ -92,6 +76,22 @@ func (s *Service) GetStatus() string {
 	version := s.telegramRepo.GetVersion()
 	me := s.telegramRepo.GetMe()
 	return fmt.Sprintf("TDLib version: %s userId: %d", version, me.Id)
+}
+
+// Subscribe добавляет подписчика на изменения состояния авторизации
+func (s *Service) Subscribe(notify notify) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.subscribers = append(s.subscribers, notify)
+}
+
+// broadcast отправляет состояние всем подписчикам
+func (s *Service) broadcast(state client.AuthorizationState) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, notify := range s.subscribers {
+		go notify(state)
+	}
 }
 
 // runAuthorizationStateHandler обрабатывает состояния авторизации
