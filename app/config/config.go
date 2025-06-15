@@ -79,10 +79,10 @@ type (
 
 	// Настройки движка форвардинга из budva32
 	engine struct {
-		// Настройки получателей
-		Destinations map[entity.ChatId]*entity.Destination
 		// Настройки источников
 		Sources map[entity.ChatId]*entity.Source
+		// Настройки получателей
+		Destinations map[entity.ChatId]*entity.Destination
 		// Правила форвардинга
 		ForwardRules map[entity.ForwardRuleId]*entity.ForwardRule
 		// Уникальные источники

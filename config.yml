@@ -45,16 +45,6 @@ web:
   # shutdown-timeout: 5s
 
 engine:
-  destinations:
-    -321:
-      replace-myself-links:
-        run: true
-        delete-external: true
-      replace-fragments: # must be equal length 
-        - from: "ccc"
-          to: "ddd"
-        - from: "aaa"
-          to: "bbb"
   sources:
     -111:
       sign:
@@ -72,6 +62,23 @@ engine:
         for: [-321]
       auto-answer: true
       delete-system-messages: true
+    # data for service.transform - 100xx (reusable)
+    10001: # minimal source for Transform test (with markdown)
+      sign:
+        title: "*Test Source*"
+        for: [10003]
+      link:
+        title: "*Source Link*"
+        for: [10003]
+      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
+    10002: # minimal source for Transform test (with escaped markdown)
+      sign:
+        title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+        for: [10003]
+      link:
+        title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+        for: [10003]
+      auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
     # data for service.transform - 101xx
     10100: # for sign only test
       sign:
@@ -97,6 +104,44 @@ engine:
       link:
         title: "Source Link"
         for: [10109]
+    10106: # for auto answer true test
+      auto-answer: true
+    10107: # for auto answer false test
+      auto-answer: false
+  destinations:
+    # data for service.transform - 100xx (reusable minimal config)
+    10003: # minimal destination for Transform test
+      replace-myself-links:
+        run: false # чтобы replaceMyselfLinks не выдавал ошибку
+      replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
+    # data for service.transform - 101xx
+    10110: # for replace fragments test
+      replace-fragments: # must be equal length
+        - from: "hello"
+          to: "12345"
+        - from: "world"
+          to: "67890"
+    10111: # for case insensitive test
+      replace-fragments: # must be equal length
+        - from: "Test"
+          to: "Тест"
+    10112: # for multiple replacements test
+      replace-fragments: # must be equal length
+        - from: "old"
+          to: "new"
+    10113: # for no fragments test
+    10114: # for replace myself links test
+      replace-myself-links:
+        run: true
+        delete-external: true
+    10115: # for replace myself links disabled test
+      replace-myself-links:
+        run: false
+        delete-external: true
+    10116: # for replace myself links no delete external test
+      replace-myself-links:
+        run: true
+        delete-external: false
   forward-rules:
     "id1":
       from: -111
