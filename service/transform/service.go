@@ -58,7 +58,6 @@ func New(
 }
 
 // Transform преобразует содержимое сообщения
-// TODO: withSources - переставить в конец
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) {
 	defer s.log.Debug("Transform",
 		"withSources", withSources,
@@ -266,12 +265,11 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 
 // escapeMarkdown экранирует специальные символы Markdown в тексте
 func escapeMarkdown(text string) string {
-	s1 := "_ * ( ) ~ ` > # + = | { } . !"
-	s2 := `\[ \] \-`
-	a := strings.Split(s1+" "+s2, " ")
+	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
+	a := strings.Split(s, " ")
 	result := text
 	for _, v := range a {
-		result = strings.ReplaceAll(result, v, `\`+v)
+		result = strings.ReplaceAll(result, v, "\\"+v)
 	}
 	return result
 	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
