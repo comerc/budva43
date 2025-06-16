@@ -583,6 +583,96 @@ type telegramRepo interface {
 
 На первый взгляд `clientAdapter` кажется избыточным — он просто пробрасывает методы `tdlibClient` без изменения сигнатур. Однако он предоставляет возможность частичного применения интерфейса. Модули получают в конструкторе не полный `clientAdapter` или `tdlibClient`, а минимальный локальный интерфейс `telegramRepo` только с используемыми методами. Это делает код более читаемым, тестируемым и поддерживаемым.
 
+## Соглашение об именовании колбеков
+
+### Контекст и мотивация
+
+В Go идеальный интерфейс содержит один метод, именуемый глаголом. Название такого интерфейса образуется от названия метода путем преобразования глагола в существительное через суффикс `-er`.
+
+Для **"частично применяемых интерфейсов"** в сочетании с идиомой **"Accept interfaces, return structs"** возникает ограничение: нельзя использовать интерфейсы в качестве параметров методов других интерфейсов из-за несовместимости типов функций с именованными типами в Go.
+
+**Решение**: использование колбеков (функций первого класса) в качестве параметров методов частично применяемых интерфейсов. 
+
+В отличие от идеальных интерфейсов, функции и методы принято именовать с глагола + опциональное существительное.
+
+### Принципы именования колбеков
+
+**1. Именование колбеков**
+
+```go
+// Правильно - глагол в нижнем регистре + опциональное существительное
+type notify = func(message string) error
+type checkBalance = func(data interface{}) error
+
+// Неправильно - существительные или другие формы
+type Notifier func(message string) error // существительное
+type OnNotify func(message string) error // prefix "On"
+```
+
+**2. Функции-конструкторы для замыканий**
+
+Для создания замыканий колбеков используются функции-конструкторы с префиксом `NewFunc`:
+
+```go
+// Правильно - NewFunc + глагол с заглавной буквы
+func NewFuncNotify(logger Logger) notify {
+    return func(message string) error {
+        return logger.Log(message)
+    }
+}
+
+func NewFuncAuthenticate(repo UserRepo) authenticate {
+    return func(credentials Credentials) (*User, error) {
+        return repo.FindByCredentials(credentials)
+    }
+}
+
+// Неправильно - обычное именование функций
+func NewNotify(logger Logger) notify        // вводит в заблуждение
+func CreateNotifier(logger Logger) notify   // не следует соглашению
+func MakeNotifyFunc(logger Logger) notify   // избыточность
+```
+
+**3. Обоснование именования NewFunc**
+
+**Проблема**: Если функции именуются глаголами (например, `notify()`), то `NewNotify()` создает путаницу - непонятно, создается ли функция или вызывается действие.
+
+**Решение**: Префикс `NewFunc` явно указывает, что создается функция-замыкание:
+- `NewFuncNotify()` - создает функцию уведомления
+- `notify()` - выполняет уведомление
+
+### Пример
+
+```go
+// Определение алиаса для колбека
+type process = func(data []byte) error
+
+// Функция-конструктор для создания замыкания
+func NewFuncProcess(validator Validator, transformer Transformer) process {
+    return func(data []byte) error {
+        if err := validator.Validate(data); err != nil {
+            return fmt.Errorf("validation failed: %w", err)
+        }
+        
+        transformed, err := transformer.Transform(data)
+        if err != nil {
+            return fmt.Errorf("transformation failed: %w", err)
+        }
+        
+        // Дополнительная логика обработки
+        return nil
+    }
+}
+
+// Использование в частично применяемом интерфейсе
+type dataProcessor interface {
+    ProcessData(data []byte, process process) error
+}
+
+// Идиома "Accept interfaces, return structs"
+func NewService(dataProcessor dataProcessor) *Service
+```
+
 ## Соглашение о контроле области видимости переменных
 
 Для предотвращения проблемы скрытого переиспользования переменной `err` и других подобных переменных будет применяться ограничение области видимости с помощью фигурных скобок. Это позволит избежать потенциальных уязвимостей безопасности и логических ошибок.
