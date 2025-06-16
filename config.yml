@@ -136,7 +136,7 @@ engine:
       replace-myself-links:
         run: true
         delete-external: false
-    10123: # for Transform test
+    10123: # for Transform test - minimal success config
       replace-myself-links:
         run: false # чтобы replaceMyselfLinks не выдавал ошибку
       replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
