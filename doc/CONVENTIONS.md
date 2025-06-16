@@ -496,6 +496,93 @@ var f2 fn2 = f1 // ошибка компиляции
 
 Из-за этого ограничения нельзя использовать передачу интерфейсов в аргументах методов других интерфейсов. Идиома применима только в функциях-констукторах. 
 
+## Частичное применение интерфейса
+
+### Принцип
+
+Каждый модуль определяет в своём пакете локальный интерфейс, содержащий только те методы зависимости, которые он реально использует. Это позволяет явно обозначить требования модуля и упростить тестирование.
+
+### Основные преимущества
+
+- **Interface Segregation Principle**: соблюдение принципа разделения интерфейсов
+- **Слабая связанность**: модуль не зависит от неиспользуемых методов  
+- **Читаемость**: сразу видно, какие именно методы использует модуль
+- **Тестируемость**: нужно мокать только используемые методы
+
+### Пример
+
+```go
+// repo/telegram/repo.go
+
+type Repo struct {}
+
+func (r *Repo) CreateClient(runAuthorizationStateHandler) { ... }
+func (r *Repo) GetClientDone() <-chan any { ... }
+// Другие методы ...
+```
+
+```go
+// service/auth/service.go
+
+//go:generate mockery --name=telegramRepo --exported
+type telegramRepo interface {
+	// Только используемые методы
+  CreateClient(runAuthorizationStateHandler)
+	GetClientDone() <-chan any
+}
+
+func New(telegramRepo telegramRepo) *Service
+```
+
+### Дополнительный приём: адаптер сторонней зависимости
+
+**Проблема**
+При работе со сторонними библиотеками (например, `tdlibClient`) модули получают прямую зависимость от внешнего API, что усложняет тестирование и создаёт жёсткую связанность.
+
+**Решение: clientAdapter**
+```go
+// repo/telegram/client_adapter.go
+
+type clientAdapter interface {
+  // Обёртки методов tdlibClient
+	GetListener() *client.Listener
+  // Другие объявления ...
+}
+
+func (r *Repo) GetListener() *client.Listener {
+	return r.getClient().GetListener()
+}
+
+// Другие реализации ...
+```
+
+```go
+// repo/telegram/repo.go
+
+type Repo struct {
+  clientAdapter // внедрение интерфейса адаптера
+}
+
+// Собственные методы репозитория
+func (r *Repo) CreateClient(runAuthorizationStateHandler) { ... }
+func (r *Repo) GetClientDone() <-chan any { ... }
+```
+
+```go
+// service/engine/service.go
+
+//go:generate mockery --name=telegramRepo --exported
+type telegramRepo interface {
+	CreateClient(runAuthorizationStateHandler)
+	GetClientDone() <-chan any
+  GetListener() *client.Listener // tdlibClient метод через clientAdapter
+}
+```
+
+**Зачем нужен адаптер**
+
+На первый взгляд `clientAdapter` кажется избыточным — он просто пробрасывает методы `tdlibClient` без изменения сигнатур. Однако он предоставляет возможность частичного применения интерфейса. Модули получают в конструкторе не полный `clientAdapter` или `tdlibClient`, а минимальный локальный интерфейс `telegramRepo` только с используемыми методами. Это делает код более читаемым, тестируемым и поддерживаемым.
+
 ## Соглашение о контроле области видимости переменных
 
 Для предотвращения проблемы скрытого переиспользования переменной `err` и других подобных переменных будет применяться ограничение области видимости с помощью фигурных скобок. Это позволит избежать потенциальных уязвимостей безопасности и логических ошибок.
