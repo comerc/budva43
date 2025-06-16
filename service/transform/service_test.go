@@ -1076,7 +1076,7 @@ func TestTransformService_addText(t *testing.T) {
 			name:             "with error",
 			formattedText:    &client.FormattedText{},
 			text:             "new text",
-			expectedError:    errors.New("error"),
+			expectedError:    assert.AnError,
 			expectedText:     "",
 			expectedEntities: nil,
 		},
