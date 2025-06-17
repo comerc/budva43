@@ -47,17 +47,19 @@ func TestAuth(t *testing.T) {
 		t.Skip()
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
 
 	require.True(t, config.Telegram.UseTestDc)
 
-	// Проверяем команду auth
-	oldPhoneNumber := config.Telegram.PhoneNumber
-	t.Cleanup(func() {
-		config.Telegram.PhoneNumber = oldPhoneNumber
-	})
-	config.Telegram.PhoneNumber = "" // test empty phone number
+	// X := rand.Intn(3) + 1
+	X := 2 // этот работает стабильнее
+	Y := rand.Perm(10)[:4]
+	phoneNumber := fmt.Sprintf("99966%d%d%d%d%d", X, Y[0], Y[1], Y[2], Y[3])
+	// delimiter := strings.Repeat("*", len(phoneNumber))
+	// println(delimiter)
+	// println(util.MaskPhoneNumber(phoneNumber))
+	// println(delimiter)
 
 	var err error
 
@@ -89,7 +91,7 @@ func TestAuth(t *testing.T) {
 
 	cliTransport := cliTransport.New(
 		authService,
-	)
+	).WithPhoneNumber("")
 	err = cliTransport.Start(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -112,19 +114,10 @@ func TestAuth(t *testing.T) {
 	found = automator.WaitForOutput(ctx, "Введите номер телефона:", 3*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод номера телефона")
 
-	// X := rand.Intn(3) + 1
-	X := 2 // этот работает стабильнее
-	Y := rand.Perm(10)[:4]
-	newPhoneNumber :=
-		fmt.Sprintf("99966%d%d%d%d%d", X, Y[0], Y[1], Y[2], Y[3])
-	delimiter := strings.Repeat("*", len(newPhoneNumber))
-	println(delimiter)
-	println(util.MaskPhoneNumber(newPhoneNumber))
-	println(delimiter)
-	err = automator.SendInput(newPhoneNumber)
+	err = automator.SendInput(phoneNumber)
 	require.NoError(t, err)
 
-	found = automator.WaitForOutput(ctx, "Введите код подтверждения:", 11*time.Second)
+	found = automator.WaitForOutput(ctx, "Введите код подтверждения:", 5*time.Second)
 	assert.True(t, found, "Команда auth не выдала запрос на ввод кода подтверждения")
 
 	code := strings.Repeat(fmt.Sprintf("%d", X), 5)
@@ -153,8 +146,9 @@ func TestAuth(t *testing.T) {
 	require.NoError(t, err, "Ошибка при чтении тела ответа")
 
 	responseBody := string(body)
-	println(responseBody)
-	assert.Contains(t, responseBody, "state_type", "Ответ должен содержать информацию о состоянии авторизации")
+	// println(responseBody)
+	// assert.Contains(t, responseBody, "state_type", "Ответ должен содержать информацию о состоянии авторизации")
+	assert.Equal(t, `{"state_type":"authorizationStateWaitCode"}`+"\n", responseBody)
 
 	cancel()
 

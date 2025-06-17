@@ -37,6 +37,7 @@ type Transport struct {
 	commands      []command
 	commandMap    map[string]*command
 	shutdown      func()
+	phoneNumber   string
 }
 
 // command представляет команду CLI
@@ -47,9 +48,7 @@ type command struct {
 }
 
 // New создает новый экземпляр CLI
-func New(
-	authService authService,
-) *Transport {
+func New(authService authService) *Transport {
 	cli := &Transport{
 		log: log.NewLogger("transport.cli"),
 		//
@@ -57,12 +56,19 @@ func New(
 		authStateChan: make(chan client.AuthorizationState, 10),
 		scanner:       bufio.NewScanner(os.Stdin),
 		commands:      []command{},
+		phoneNumber:   config.Telegram.PhoneNumber,
 	}
 
 	// Регистрация команд
 	cli.registerCommands()
 
 	return cli
+}
+
+// WithPhoneNumber устанавливает номер телефона для авторизации
+func (t *Transport) WithPhoneNumber(v string) *Transport {
+	t.phoneNumber = v
+	return t
 }
 
 // Start запускает CLI интерфейс
@@ -196,16 +202,15 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 
 	switch stateType {
 	case client.TypeAuthorizationStateWaitPhoneNumber:
-		var phoneNumber string
-		if config.Telegram.PhoneNumber != "" {
-			phoneNumber = config.Telegram.PhoneNumber
-			fmt.Println("Используется номер телефона из конфигурации:", util.MaskPhoneNumber(phoneNumber))
-		} else {
+		phoneNumber := t.phoneNumber
+		if phoneNumber == "" {
 			fmt.Println("Введите номер телефона: ")
 			phoneNumber, err = t.hiddenReadLine()
 			if err != nil {
 				return
 			}
+		} else {
+			fmt.Println("Номер телефона:", util.MaskPhoneNumber(phoneNumber))
 		}
 		t.authService.GetInputChan() <- phoneNumber
 
