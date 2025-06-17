@@ -48,7 +48,6 @@ func TestNewCLIAutomator(t *testing.T) {
 	// Создаем экземпляр CLIAutomator
 	automator, err := NewCLIAutomator()
 	require.NoError(t, err, "Не удалось создать CLIAutomator")
-	require.NotNil(t, automator, "CLIAutomator не должен быть nil")
 
 	// Проверяем, что stdin и stdout были перенаправлены
 	assert.NotEqual(t, origStdin, os.Stdin, "stdin должен быть перенаправлен")

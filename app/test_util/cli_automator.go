@@ -147,9 +147,24 @@ func (a *CLIAutomator) Close() {
 	os.Stdin = a.originalStdin
 	os.Stdout = a.originalStdout
 
-	// Закрываем потоки ввода-вывода
-	a.stdinReader.Close()
-	a.stdinWriter.Close()
-	a.stdoutWriter.Close()
-	a.stdoutReader.Close()
+	// Закрываем потоки ввода-вывода в правильном порядке
+	// Сначала закрываем writer'ы чтобы прекратить запись и дать signal читателям
+	if a.stdoutWriter != nil {
+		a.stdoutWriter.Close()
+		a.stdoutWriter = nil
+	}
+	if a.stdinWriter != nil {
+		a.stdinWriter.Close()
+		a.stdinWriter = nil
+	}
+
+	// Затем закрываем reader'ы (это должно разблокировать горутину Run)
+	if a.stdoutReader != nil {
+		a.stdoutReader.Close()
+		a.stdoutReader = nil
+	}
+	if a.stdinReader != nil {
+		a.stdinReader.Close()
+		a.stdinReader = nil
+	}
 }
