@@ -49,7 +49,7 @@ func New(telegramRepo telegramRepo) *Service {
 // Start запускает процесс авторизации
 func (s *Service) Start(ctx context.Context) error {
 
-	go s.telegramRepo.CreateClient(s.newRunAuthorizationStateHandler(ctx))
+	go s.telegramRepo.CreateClient(s.newFuncRunAuthorizationStateHandler(ctx))
 
 	return nil
 }
@@ -113,8 +113,8 @@ func (s *Service) broadcast(state client.AuthorizationState) {
 	}
 }
 
-// newRunAuthorizationStateHandler обрабатывает состояния авторизации
-func (s *Service) newRunAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
+// newFuncRunAuthorizationStateHandler обрабатывает состояния авторизации
+func (s *Service) newFuncRunAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
 		tdlibParameters := &client.SetTdlibParametersRequest{
