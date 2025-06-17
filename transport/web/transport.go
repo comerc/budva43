@@ -52,28 +52,9 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	t.authService.Subscribe(t.newFuncNotify())
 
-	// Создаем новый мультиплексор
-	mux := http.NewServeMux()
+	t.createServer()
 
-	// Настраиваем маршруты
-	t.setupRoutes(mux)
-
-	// Настраиваем HTTP-сервер
-	t.server = &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
-		Handler:      mux,
-		ReadTimeout:  config.Web.ReadTimeout,
-		WriteTimeout: config.Web.WriteTimeout,
-	}
-
-	// Запускаем HTTP-сервер в отдельной горутине
-	go func() {
-		var err error
-		defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
-
-		err = t.server.ListenAndServe()
-		// TODO: обрабатывать http.ErrServerClosed
-	}()
+	go t.runServer()
 
 	return nil
 }
@@ -99,6 +80,30 @@ func (t *Transport) newFuncNotify() notify {
 	return func(state client.AuthorizationState) {
 		t.authState = state
 	}
+}
+
+func (t *Transport) createServer() {
+	// Создаем новый мультиплексор
+	mux := http.NewServeMux()
+
+	// Настраиваем маршруты
+	t.setupRoutes(mux)
+
+	// Настраиваем HTTP-сервер
+	t.server = &http.Server{
+		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
+		Handler:      mux,
+		ReadTimeout:  config.Web.ReadTimeout,
+		WriteTimeout: config.Web.WriteTimeout,
+	}
+}
+
+func (t *Transport) runServer() {
+	var err error
+	defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
+
+	err = t.server.ListenAndServe()
+	// TODO: обрабатывать http.ErrServerClosed
 }
 
 // setupRoutes настраивает HTTP маршруты
