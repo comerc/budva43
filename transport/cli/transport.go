@@ -71,31 +71,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	t.authService.Subscribe(t.newNotify())
 
-	// Запускаем обработку ввода в отдельной горутине
-	go func() {
-
-		isAuth := false
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-t.authService.GetClientDone():
-				if !isAuth {
-					fmt.Println(t.authService.GetStatus())
-					isAuth = true
-				}
-				fmt.Println(">")
-				if !t.scanner.Scan() {
-					return
-				}
-				input := t.scanner.Text()
-				t.processCommand(input)
-			case state := <-t.authStateChan:
-				t.processAuth(state)
-			}
-		}
-	}()
+	go t.runInputLoop(ctx)
 
 	return nil
 }
@@ -104,6 +80,31 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 func (t *Transport) Close() error {
 	close(t.authStateChan)
 	return nil
+}
+
+// runInputLoop запускает цикл обработки ввода
+func (t *Transport) runInputLoop(ctx context.Context) {
+	isAuth := false
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.authService.GetClientDone():
+			if !isAuth {
+				fmt.Println(t.authService.GetStatus())
+				isAuth = true
+			}
+			fmt.Println(">")
+			if !t.scanner.Scan() {
+				return
+			}
+			input := t.scanner.Text()
+			t.processCommand(input)
+		case state := <-t.authStateChan:
+			t.processAuth(state)
+		}
+	}
 }
 
 // newNotify создает функцию для отправки состояния авторизации
