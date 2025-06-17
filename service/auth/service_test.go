@@ -103,7 +103,7 @@ func TestAuthService_broadcast(t *testing.T) {
 		}
 
 		// Ждем завершения горутин
-		time.Sleep(100 * time.Millisecond)
+		synctest.Wait()
 
 		// Проверяем, что каждый подписчик получил все состояния
 		for i := range numSubscribers {
