@@ -145,7 +145,7 @@ func (s *Service) newFuncRunAuthorizationStateHandler(ctx context.Context) runAu
 					}
 					stateType := state.AuthorizationStateType()
 					if stateType == client.TypeAuthorizationStateClosing {
-						continue // пропускаю broadcast, но продолжаю <-authorizer.State
+						continue // пропускаем broadcast, но продолжаем <-authorizer.State
 					}
 					s.broadcast(state)
 					switch stateType {
