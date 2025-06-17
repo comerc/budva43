@@ -53,6 +53,53 @@ func (_c *TelegramRepo_CreateClient_Call) RunAndReturn(run func(func() client.Au
 	return _c
 }
 
+// CreateTdlibParameters provides a mock function with no fields
+func (_m *TelegramRepo) CreateTdlibParameters() *client.SetTdlibParametersRequest {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateTdlibParameters")
+	}
+
+	var r0 *client.SetTdlibParametersRequest
+	if rf, ok := ret.Get(0).(func() *client.SetTdlibParametersRequest); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.SetTdlibParametersRequest)
+		}
+	}
+
+	return r0
+}
+
+// TelegramRepo_CreateTdlibParameters_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateTdlibParameters'
+type TelegramRepo_CreateTdlibParameters_Call struct {
+	*mock.Call
+}
+
+// CreateTdlibParameters is a helper method to define mock.On call
+func (_e *TelegramRepo_Expecter) CreateTdlibParameters() *TelegramRepo_CreateTdlibParameters_Call {
+	return &TelegramRepo_CreateTdlibParameters_Call{Call: _e.mock.On("CreateTdlibParameters")}
+}
+
+func (_c *TelegramRepo_CreateTdlibParameters_Call) Run(run func()) *TelegramRepo_CreateTdlibParameters_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_CreateTdlibParameters_Call) Return(_a0 *client.SetTdlibParametersRequest) *TelegramRepo_CreateTdlibParameters_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *TelegramRepo_CreateTdlibParameters_Call) RunAndReturn(run func() *client.SetTdlibParametersRequest) *TelegramRepo_CreateTdlibParameters_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetClientDone provides a mock function with no fields
 func (_m *TelegramRepo) GetClientDone() <-chan interface{} {
 	ret := _m.Called()

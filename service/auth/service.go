@@ -7,7 +7,6 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -15,6 +14,7 @@ type runAuthorizationStateHandler = func() client.AuthorizationStateHandler
 
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
+	CreateTdlibParameters() *client.SetTdlibParametersRequest
 	CreateClient(runAuthorizationStateHandler)
 	GetClientDone() <-chan any
 	// tdlibClient methods
@@ -117,21 +117,7 @@ func (s *Service) broadcast(state client.AuthorizationState) {
 func (s *Service) newFuncRunAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
-		tdlibParameters := &client.SetTdlibParametersRequest{
-			UseTestDc:           config.Telegram.UseTestDc,
-			DatabaseDirectory:   config.Telegram.DatabaseDirectory,
-			FilesDirectory:      config.Telegram.FilesDirectory,
-			UseFileDatabase:     config.Telegram.UseFileDatabase,
-			UseChatInfoDatabase: config.Telegram.UseChatInfoDatabase,
-			UseMessageDatabase:  config.Telegram.UseMessageDatabase,
-			UseSecretChats:      config.Telegram.UseSecretChats,
-			ApiId:               config.Telegram.ApiId,
-			ApiHash:             config.Telegram.ApiHash,
-			SystemLanguageCode:  config.Telegram.SystemLanguageCode,
-			DeviceModel:         config.Telegram.DeviceModel,
-			SystemVersion:       config.Telegram.SystemVersion,
-			ApplicationVersion:  config.Telegram.ApplicationVersion,
-		}
+		tdlibParameters := s.telegramRepo.CreateTdlibParameters()
 		authorizer := client.ClientAuthorizer(tdlibParameters)
 
 		go func() {
