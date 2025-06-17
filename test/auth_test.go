@@ -122,7 +122,8 @@ func TestAuth(t *testing.T) {
 	err = automator.SendInput(code)
 	require.NoError(t, err)
 
-	target := "http://localhost:7070/api/auth/telegram/state"
+	target := fmt.Sprintf("http://%s:%d/api/auth/telegram/state",
+		config.Web.Host, config.Web.Port)
 
 	// Отправляем реальный HTTP-запрос к запущенному серверу
 	client := &http.Client{
