@@ -127,7 +127,8 @@ func TestAuthService_broadcast(t *testing.T) {
 
 			expectedStates := make(map[string]bool) // stateType -> found
 			for _, state := range states {
-				expectedStates[state.AuthorizationStateType()] = false
+				stateType := state.AuthorizationStateType()
+				expectedStates[stateType] = false
 			}
 
 			// Отмечаем найденные состояния
