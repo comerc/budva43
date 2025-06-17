@@ -46,6 +46,25 @@ func (r *Repo) Start(_ context.Context) error {
 	return nil
 }
 
+// CreateTdlibParameters создает параметры для TDLib
+func (r *Repo) CreateTdlibParameters() *client.SetTdlibParametersRequest {
+	return &client.SetTdlibParametersRequest{
+		UseTestDc:           config.Telegram.UseTestDc,
+		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
+		FilesDirectory:      config.Telegram.FilesDirectory,
+		UseFileDatabase:     config.Telegram.UseFileDatabase,
+		UseChatInfoDatabase: config.Telegram.UseChatInfoDatabase,
+		UseMessageDatabase:  config.Telegram.UseMessageDatabase,
+		UseSecretChats:      config.Telegram.UseSecretChats,
+		ApiId:               config.Telegram.ApiId,
+		ApiHash:             config.Telegram.ApiHash,
+		SystemLanguageCode:  config.Telegram.SystemLanguageCode,
+		DeviceModel:         config.Telegram.DeviceModel,
+		SystemVersion:       config.Telegram.SystemVersion,
+		ApplicationVersion:  config.Telegram.ApplicationVersion,
+	}
+}
+
 // CreateClient создает клиент TDLib после успешной авторизации
 func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler) {
 	for {
