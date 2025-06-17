@@ -20,6 +20,12 @@ type Repo struct {
 	//
 	client     *client.Client
 	clientDone chan any
+	options    Options
+}
+
+type Options struct {
+	DatabaseDirectory string
+	FilesDirectory    string
 }
 
 // New создает новый экземпляр репозитория Telegram
@@ -29,8 +35,18 @@ func New() *Repo {
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
 		clientDone: make(chan any), // закроется, когда клиент авторизован
+		options: Options{
+			DatabaseDirectory: config.Telegram.DatabaseDirectory,
+			FilesDirectory:    config.Telegram.FilesDirectory,
+		},
 	}
 
+	return r
+}
+
+// WithOptions устанавливает опции репозитория
+func (r *Repo) WithOptions(options Options) *Repo {
+	r.options = options
 	return r
 }
 
@@ -50,8 +66,8 @@ func (r *Repo) Start(_ context.Context) error {
 func (r *Repo) CreateTdlibParameters() *client.SetTdlibParametersRequest {
 	return &client.SetTdlibParametersRequest{
 		UseTestDc:           config.Telegram.UseTestDc,
-		DatabaseDirectory:   config.Telegram.DatabaseDirectory,
-		FilesDirectory:      config.Telegram.FilesDirectory,
+		DatabaseDirectory:   r.options.DatabaseDirectory,
+		FilesDirectory:      r.options.FilesDirectory,
 		UseFileDatabase:     config.Telegram.UseFileDatabase,
 		UseChatInfoDatabase: config.Telegram.UseChatInfoDatabase,
 		UseMessageDatabase:  config.Telegram.UseMessageDatabase,
