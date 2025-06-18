@@ -44,22 +44,35 @@ web:
   # write-timeout: 15s
   # shutdown-timeout: 5s
 
+# При чтении из конфига: 
+# - цифровые ключи лишаются минуса
+# - именные ключи преобразуются в PascalCase
+# - пустые ключи требуют значение `dummy: true`
 engine:
   sources:
-    -111:
+    ### Start real data
+    4814113560:
+      sign:
+        title: "*Test Source*"
+        for: [1002674233740]
+      link:
+        title: "*Source Link*"
+        for: [1002674233740]
+    ### Final real data
+    111:
       sign:
         title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
-        for: [-888]
+        for: [888]
       link:
         title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
-        for: [-321]
-    -123:
+        for: [321]
+    123:
       sign:
         title: "*Source*" # for SendCopy (with markdown)
-        for: [-888]
+        for: [888]
       link:
         title: "*Source*" # for SendCopy (with markdown)
-        for: [-321]
+        for: [321]
       auto-answer: true
       delete-system-messages: true
     # data for service.transform - 101xx
@@ -108,6 +121,9 @@ engine:
         for: [10123]
       auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   destinations:
+    ### Start real data
+    1002674233740: 
+    ### Final real data
     # data for service.transform - 101xx
     10110: # for replace fragments test
       replace-fragments: # must be equal length
@@ -141,12 +157,17 @@ engine:
         run: false # чтобы replaceMyselfLinks не выдавал ошибку
       replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
   forward-rules:
-    "id1":
-      from: -111
-      to: [-222]
-    "id2":
-      from: -123
-      to: [-321, -888]
+    ### Start real data
+    "Id3":
+      from: 4814113560
+      to: [1002674233740]
+    ### Final real data
+    "Id1":
+      from: 111
+      to: [222]
+    "Id2":
+      from: 123
+      to: [321, 888]
       send-copy: true
       copy-once: true # wo edit-sync
       indelible: true # wo delete-sync
@@ -156,8 +177,8 @@ engine:
         - regexp: '(^|[^A-Z])\$([A-Z]+)'
           group: 2
           match: ['F', 'GM', 'TSLA']
-      other: -444 # after include (copy only)
-      check: -777 # after exclude (forward only)
+      other: 444 # after include (copy only)
+      check: 777 # after exclude (forward only)
 
 # report:
 #   template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
