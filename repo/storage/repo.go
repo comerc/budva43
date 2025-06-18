@@ -82,9 +82,9 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 }
 
 // Increment увеличивает значение по ключу на 1
-func (r *Repo) Increment(key string) (string, error) {
+func (r *Repo) Increment(key string) (uint64, error) {
 	var (
-		val string
+		val uint64
 		err error
 	)
 	// Merge function to add two uint64 numbers
@@ -95,14 +95,14 @@ func (r *Repo) Increment(key string) (string, error) {
 	defer m.Stop()
 	err = m.Add(convertUint64ToBytes(1))
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	var valBytes []byte
 	valBytes, err = m.Get()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	val = string(valBytes)
+	val = ConvertBytesToUint64(valBytes)
 	return val, nil
 }
 
