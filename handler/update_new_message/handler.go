@@ -160,30 +160,24 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	fn := func() {
 		h.addStatistics(forwardedTo)
 		for check, fn := range checkFns {
-			func() {
-				var err error
-				defer h.log.ErrorOrDebug(&err, "has fn",
-					"check", check,
-				)
-				if fn == nil {
-					err = log.NewError("fn is nil")
-					return
-				}
-				fn()
-			}()
+			h.log.Debug("fn",
+				"check", check,
+				"isNil", fn == nil,
+			)
+			if fn == nil {
+				continue
+			}
+			fn()
 		}
 		for other, fn := range otherFns {
-			func() {
-				var err error
-				defer h.log.ErrorOrDebug(&err, "has fn",
-					"other", other,
-				)
-				if fn == nil {
-					err = log.NewError("fn is nil")
-					return
-				}
-				fn()
-			}()
+			h.log.Debug("fn",
+				"other", other,
+				"isNil", fn == nil,
+			)
+			if fn == nil {
+				continue
+			}
+			fn()
 		}
 	}
 	h.queueRepo.Add(fn)
