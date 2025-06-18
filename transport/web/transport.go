@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -100,10 +101,13 @@ func (t *Transport) createServer() {
 
 func (t *Transport) runServer() {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "ListenAndServe", "addr", t.server.Addr)
+	defer t.log.ErrorOrDebug(&err, "runServer", "addr", t.server.Addr)
 
-	err = t.server.ListenAndServe()
-	// TODO: обрабатывать http.ErrServerClosed
+	err = t.server.ListenAndServe() // нельзя использовать log.WrapError()
+
+	if errors.Is(err, http.ErrServerClosed) {
+		err = nil
+	}
 }
 
 // setupRoutes настраивает HTTP маршруты
