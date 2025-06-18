@@ -24,7 +24,7 @@ type storageRepo interface {
 	Set(key, value string) error
 	Get(key string) (string, error)
 	Delete(key string) error
-	Increment(key string) (string, error)
+	Increment(key string) (uint64, error)
 }
 
 // Service предоставляет методы для хранения данных, специфичных для engine
@@ -212,7 +212,7 @@ func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) {
 func (s *Service) IncrementViewedMessages(toChatId int64, date string) {
 	var (
 		err error
-		val string
+		val uint64
 	)
 	defer func() {
 		s.log.ErrorOrDebug(&err, "IncrementViewedMessages",
@@ -256,7 +256,7 @@ func (s *Service) GetViewedMessages(toChatId int64, date string) int64 {
 func (s *Service) IncrementForwardedMessages(toChatId int64, date string) {
 	var (
 		err error
-		val string
+		val uint64
 	)
 	defer func() {
 		s.log.ErrorOrDebug(&err, "IncrementForwardedMessages",
