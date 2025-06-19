@@ -20,7 +20,7 @@ type telegramRepo interface {
 
 //go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
-	Add(task func())
+	Add(fn func())
 }
 
 //go:generate mockery --name=storageService --exported
@@ -106,12 +106,14 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		"messageId", src.Id,
 	)
 
-	if _, ok := config.Engine.UniqueSources[src.ChatId]; !ok {
+	engineConfig := config.Engine // копируем, см. WATCH-CONFIG.md
+
+	if _, ok := engineConfig.UniqueSources[src.ChatId]; !ok {
 		return
 	}
 	if h.messageService.IsSystemMessage(src) {
 		fn := func() {
-			h.deleteSystemMessage(src)
+			h.deleteSystemMessage(src, engineConfig)
 		}
 		h.queueRepo.Add(fn)
 		return
@@ -124,8 +126,8 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	forwardedTo := make(map[int64]bool)
 	checkFns := make(map[int64]func())
 	otherFns := make(map[int64]func())
-	for _, forwardRuleId := range config.Engine.OrderedForwardRules {
-		forwardRule := config.Engine.ForwardRules[forwardRuleId]
+	for _, forwardRuleId := range engineConfig.OrderedForwardRules {
+		forwardRule := engineConfig.ForwardRules[forwardRuleId]
 		if src.ChatId != forwardRule.From {
 			continue
 		}
@@ -184,14 +186,14 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 }
 
 // deleteSystemMessage удаляет системное сообщение
-func (h *Handler) deleteSystemMessage(src *client.Message) {
+func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *entity.EngineConfig) {
 	var err error
 	defer h.log.ErrorOrDebug(&err, "deleteSystemMessage",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 	)
 
-	source, ok := config.Engine.Sources[src.ChatId]
+	source, ok := engineConfig.Sources[src.ChatId]
 	if !ok {
 		return
 	}

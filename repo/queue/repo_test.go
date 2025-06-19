@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/spylog"
 )
 
@@ -36,12 +37,29 @@ func TestQueueRepo(t *testing.T) {
 		executed := 0
 
 		// Добавляем задачи, одна из которых вызывает панику
-		queueRepo.Add(func() { executed++ })
-		queueRepo.Add(func() {
+		var fn func()
+		fn = func() {
 			executed++
 			panic("Alarm!")
-		})
-		queueRepo.Add(func() { executed++ })
+		}
+		queueRepo.Add(fn)
+
+		engineConfig1 := newEngineConfig(-123)
+		fn = func() {
+			assert.Equal(t, int64(-123), engineConfig1.ForwardRules["rule1"].From,
+				"Замыкается engineConfig1")
+			executed++
+		}
+		queueRepo.Add(fn)
+
+		engineConfig2 := newEngineConfig(-321)
+		fn = func() {
+			assert.Equal(t, int64(-321), engineConfig2.ForwardRules["rule1"].From,
+				"Замыкается engineConfig2")
+			executed++
+		}
+		queueRepo.Add(fn)
+
 		require.Equal(t, 3, queueRepo.Len(), "В очереди должно быть 3 задачи")
 
 		// Добавляем смещение времени для тиков
@@ -49,11 +67,11 @@ func TestQueueRepo(t *testing.T) {
 
 		// Ждем выполнения всех задач
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 1, executed, "Первая задача должна выполниться")
+		assert.Equal(t, 1, executed, "Задача с паникой должна выполниться, но не сломать очередь")
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 2, executed, "Задача с паникой должна выполниться, но не сломать очередь")
+		assert.Equal(t, 2, executed, "Вторая задача должна выполниться")
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, 3, executed, "Третья задача должна выполниться после паники")
+		assert.Equal(t, 3, executed, "Третья задача должна выполниться")
 
 		// Проверяем запись в лог
 		records := spylogHandler.GetRecords()
@@ -64,4 +82,14 @@ func TestQueueRepo(t *testing.T) {
 		// Завершаем контекст
 		cancel()
 	})
+}
+
+func newEngineConfig(from int64) *entity.EngineConfig {
+	return &entity.EngineConfig{
+		ForwardRules: map[string]*entity.ForwardRule{
+			"rule1": {
+				From: from,
+			},
+		},
+	}
 }

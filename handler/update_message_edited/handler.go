@@ -22,7 +22,7 @@ type telegramRepo interface {
 
 //go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
-	Add(task func())
+	Add(fn func())
 }
 
 //go:generate mockery --name=storageService --exported
@@ -91,8 +91,10 @@ func New(
 
 // Run выполняет обрабатку обновления о редактировании сообщения
 func (h *Handler) Run(update *client.UpdateMessageEdited) {
+	engineConfig := config.Engine // копируем, см. WATCH-CONFIG.md
+
 	chatId := update.ChatId
-	if _, ok := config.Engine.UniqueSources[chatId]; !ok {
+	if _, ok := engineConfig.UniqueSources[chatId]; !ok {
 		return
 	}
 	messageId := update.MessageId
@@ -118,11 +120,11 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 				err = log.NewError("max retries reached for message edit")
 				return
 			}
-			h.queueRepo.Add(fn)
+			h.queueRepo.Add(fn) // переставляем в конец очереди
 			return
 		}
 
-		h.editMessages(chatId, messageId, data)
+		h.editMessages(chatId, messageId, data, engineConfig)
 	}
 
 	h.queueRepo.Add(fn)
@@ -163,7 +165,7 @@ func (h *Handler) collectData(chatId, messageId int64) *data {
 }
 
 // editMessages редактирует сообщения
-func (h *Handler) editMessages(chatId, messageId int64, data *data) {
+func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig *entity.EngineConfig) {
 	var err error
 	mediaAlbumId := int64(0)
 	result := []string{}
@@ -212,7 +214,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 			dstChatId := util.ConvertToInt[int64](a[1])
 			tmpMessageId := util.ConvertToInt[int64](a[2])
 
-			forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
+			forwardRule, ok := engineConfig.ForwardRules[forwardRuleId]
 			if !ok {
 				err = log.NewError("forwardRule not found")
 				return
@@ -238,7 +240,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data) {
 			// hasFiltersCheck := false
 			// testChatId := dstChatId
 			// var src *client.Message
-			// for _, forwardRule := range config.Engine.ForwardRules {
+			// for _, forwardRule := range engineConfig.ForwardRules {
 			// 	if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
 			// 		for _, dstChatId := range forwardRule.To {
 			// 			if testChatId == dstChatId {
