@@ -1,45 +1,13 @@
-package config
+package util
 
 import (
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/comerc/budva43/app/util"
 )
 
-// не используем slog, т.к. он инициализируется после конфига
-
-func transformDirs() {
-	for _, dirPtr := range dirPtrs {
-		dir := *dirPtr
-		// Устанавливаем директории относительно корня проекта, если они не абсолютные
-		if !filepath.IsAbs(dir) {
-			dir = filepath.Join(projectRoot, dir)
-			*dirPtr = dir
-		}
-	}
-}
-
-func makeDirs() {
-	for _, dirPtr := range dirPtrs {
-		dir := *dirPtr
-		util.MakeDir(dir)
-	}
-}
-
-var dirPtrs = []*string{
-	&General.LogDirectory,
-	&Storage.LogDirectory,
-	&Storage.DatabaseDirectory,
-	// &Storage.BackupDirectory,
-	&Telegram.LogDirectory,
-	&Telegram.DatabaseDirectory,
-	&Telegram.FilesDirectory,
-}
-
-var projectRoot string
+var ProjectRoot string
 
 // findProjectRoot находит корень проекта на основе файла go.mod
 func findProjectRoot() string {
