@@ -1,4 +1,4 @@
-package config
+package util
 
 import "sync"
 
@@ -8,7 +8,6 @@ var once sync.Once
 // но подходит для реализации синглтона
 func init() {
 	once.Do(func() {
-		*cfg = *load()
-		makeDirs()
+		ProjectRoot = findProjectRoot()
 	})
 }
