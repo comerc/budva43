@@ -30,7 +30,7 @@ func Distinct(a []string) []string {
 	return slices.Compact(a)
 }
 
-// Copy копирует любую структуру
+// Copy копирует любую структуру, про ограничения: "doc/COPY.md"
 func Copy[T any](from *T) *T {
 	var err error
 	var b []byte
