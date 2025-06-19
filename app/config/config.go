@@ -24,7 +24,7 @@ type (
 		Storage  storage
 		Telegram telegram
 		Web      web
-		Engine   engine
+		Engine   entity.EngineConfig
 		// Reports reports
 	}
 
@@ -75,20 +75,6 @@ type (
 		ReadTimeout     time.Duration
 		WriteTimeout    time.Duration
 		ShutdownTimeout time.Duration
-	}
-
-	// Настройки движка форвардинга из budva32
-	engine struct {
-		// Настройки источников
-		Sources map[entity.ChatId]*entity.Source
-		// Настройки получателей
-		Destinations map[entity.ChatId]*entity.Destination
-		// Правила форвардинга
-		ForwardRules map[entity.ForwardRuleId]*entity.ForwardRule
-		// Уникальные источники
-		UniqueSources map[entity.ChatId]struct{} `mapstructure:"-"`
-		// Порядок форвардинга
-		OrderedForwardRules []entity.ForwardRuleId `mapstructure:"-"`
 	}
 
 	// Настройки отчетов
