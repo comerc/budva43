@@ -2,7 +2,9 @@ package transform
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 	"testing"
 
@@ -10,12 +12,24 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zelenin/go-tdlib/client"
 
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/engine_config"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
 )
 
-// data for service.transform - 101xx
+// data for service.transform - -101xx
+
+func TestMain(m *testing.M) {
+	engine_config.Reload()
+	os.Exit(m.Run())
+}
+
+func TestTry(t *testing.T) {
+	t.Parallel()
+	fmt.Printf("config.Engine: %+v\n", config.Engine)
+}
 
 func TestTransformService_Transform(t *testing.T) {
 	t.Parallel()
@@ -38,11 +52,11 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: true,
 			src: &client.Message{
-				ChatId:       10121,
+				ChatId:       -10121,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10123,
+			dstChatId:        -10123,
 			expectedText:     "test message\n\n*Test Source*\n\n[🔗*Source Link*](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -63,7 +77,7 @@ func TestTransformService_Transform(t *testing.T) {
 
 				// Mock для addSources - link
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10121,
+					ChatId:    -10121,
 					MessageId: 123,
 					ForAlbum:  false,
 				}).Return(&client.MessageLink{
@@ -91,11 +105,11 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: true,
 			src: &client.Message{
-				ChatId:       10122,
+				ChatId:       -10122,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10123,
+			dstChatId:        -10123,
 			expectedText:     "test message\n\nTest Source\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|\n\n[🔗Source Link\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -116,7 +130,7 @@ func TestTransformService_Transform(t *testing.T) {
 
 				// Mock для addSources - link
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10122,
+					ChatId:    -10122,
 					MessageId: 123,
 					ForAlbum:  false,
 				}).Return(&client.MessageLink{
@@ -144,7 +158,7 @@ func TestTransformService_Transform(t *testing.T) {
 			},
 			withSources: false,
 			src: &client.Message{
-				ChatId:       10121,
+				ChatId:       -10121,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
@@ -197,7 +211,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
+			srcChatId: -10100,
 			dstChatId: 99999, // не существует в config.yml
 			expectedEntities: []*client.TextEntity{
 				{
@@ -211,7 +225,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 				storageService := mocks.NewStorageService(t)
 				return New(telegramRepo, storageService, nil)
 			},
-			expectedError: log.NewError("dstChatId not found"),
+			expectedError: log.NewError("destination not found"),
 		},
 		{
 			name: "replace myself links disabled",
@@ -225,8 +239,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10115,
+			srcChatId: -10100,
+			dstChatId: -10115,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -251,8 +265,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeBold{},
@@ -276,8 +290,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -307,8 +321,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -342,8 +356,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -358,19 +372,19 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					Url: "https://t.me/test/123",
 				}).Return(&client.MessageLinkInfo{
 					Message: &client.Message{
-						ChatId: 10100,
+						ChatId: -10100,
 						Id:     123,
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("10100:123").Return([]string{
-					"rule1:10114:789",
+				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+					"rule1:-10114:789",
 				})
 
-				storageService.EXPECT().GetNewMessageId(int64(10114), int64(789)).Return(int64(456))
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(456))
 
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10114,
+					ChatId:    -10114,
 					MessageId: 456,
 				}).Return(&client.MessageLink{
 					Link: "https://t.me/newchat/456",
@@ -390,8 +404,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeStrikethrough{},
@@ -404,12 +418,12 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					Url: "https://t.me/test/123",
 				}).Return(&client.MessageLinkInfo{
 					Message: &client.Message{
-						ChatId: 10100,
+						ChatId: -10100,
 						Id:     123,
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("10100:123").Return([]string{})
+				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{})
 				return New(telegramRepo, storageService, nil)
 			},
 		},
@@ -425,8 +439,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10116,
+			srcChatId: -10100,
+			dstChatId: -10116,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -441,12 +455,12 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					Url: "https://t.me/test/123",
 				}).Return(&client.MessageLinkInfo{
 					Message: &client.Message{
-						ChatId: 10100,
+						ChatId: -10100,
 						Id:     123,
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("10100:123").Return([]string{})
+				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{})
 				return New(telegramRepo, storageService, nil)
 			},
 		},
@@ -462,8 +476,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -478,16 +492,16 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					Url: "https://t.me/test/123",
 				}).Return(&client.MessageLinkInfo{
 					Message: &client.Message{
-						ChatId: 10100,
+						ChatId: -10100,
 						Id:     123,
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("10100:123").Return([]string{
-					"rule1:10114:789",
+				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+					"rule1:-10114:789",
 				})
 
-				storageService.EXPECT().GetNewMessageId(int64(10114), int64(789)).Return(int64(0))
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(0))
 				return New(telegramRepo, storageService, nil)
 			},
 			expectedError: log.NewError("GetNewMessageId return 0"),
@@ -504,8 +518,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				},
 			},
-			srcChatId: 10100,
-			dstChatId: 10114,
+			srcChatId: -10100,
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeTextUrl{
@@ -520,19 +534,19 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					Url: "https://t.me/test/123",
 				}).Return(&client.MessageLinkInfo{
 					Message: &client.Message{
-						ChatId: 10100,
+						ChatId: -10100,
 						Id:     123,
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("10100:123").Return([]string{
-					"rule1:10114:789",
+				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+					"rule1:-10114:789",
 				})
 
-				storageService.EXPECT().GetNewMessageId(int64(10114), int64(789)).Return(int64(456))
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(456))
 
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
-					ChatId:    10114,
+					ChatId:    -10114,
 					MessageId: 456,
 				}).Return(nil, errors.New("message link error"))
 				return New(telegramRepo, storageService, nil)
@@ -588,7 +602,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "some text",
 			},
-			dstChatId:    10113,
+			dstChatId:    -10113,
 			expectedText: "some text",
 		},
 		{
@@ -596,7 +610,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "hello world",
 			},
-			dstChatId:    10110,
+			dstChatId:    -10110,
 			expectedText: "12345 67890",
 		},
 		{
@@ -604,7 +618,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "This is a test and TEST and Test",
 			},
-			dstChatId:    10111,
+			dstChatId:    -10111,
 			expectedText: "This is a Тест and Тест and Тест",
 		},
 		{
@@ -612,7 +626,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "old text with old values and old data",
 			},
-			dstChatId:    10112,
+			dstChatId:    -10112,
 			expectedText: "new text with new values and new data",
 		},
 		{
@@ -620,7 +634,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "some random text",
 			},
-			dstChatId:    10110,
+			dstChatId:    -10110,
 			expectedText: "some random text",
 		},
 		{
@@ -628,7 +642,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "hello? and world!",
 			},
-			dstChatId:    10110,
+			dstChatId:    -10110,
 			expectedText: "12345? and 67890!",
 		},
 		{
@@ -636,7 +650,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			formattedText: &client.FormattedText{
 				Text: "",
 			},
-			dstChatId:    10110,
+			dstChatId:    -10110,
 			expectedText: "",
 		},
 	}
@@ -696,7 +710,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			name:          "auto answer disabled",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10107,
+				ChatId: -10107,
 				Id:     123,
 			},
 			expectedText:     "",
@@ -712,7 +726,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			name:          "reply markup data is empty",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10106,
+				ChatId: -10106,
 				Id:     123,
 			},
 			expectedText:     "",
@@ -729,7 +743,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			name:          "get callback query answer error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10106,
+				ChatId: -10106,
 				Id:     123,
 			},
 			expectedText:     "",
@@ -755,7 +769,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 				Entities: []*client.TextEntity{},
 			},
 			src: &client.Message{
-				ChatId: 10106,
+				ChatId: -10106,
 				Id:     123,
 			},
 			expectedText:     "existing text\n\n\\*Auto Answer\\*",
@@ -788,7 +802,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			name:          "empty formatted text",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10106,
+				ChatId: -10106,
 				Id:     123,
 			},
 			expectedText:     "\\*Auto Answer\\*",
@@ -876,10 +890,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10100,
+				ChatId: -10100,
 				Id:     123,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "Test Source",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -900,11 +914,11 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "link only",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       10101,
+				ChatId:       -10101,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "[🔗Source Link](https://t.me/test/123)",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -936,11 +950,11 @@ func TestTransformService_addSources(t *testing.T) {
 				Entities: []*client.TextEntity{},
 			},
 			src: &client.Message{
-				ChatId:       10102,
+				ChatId:       -10102,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "existing\n\nTest Source\n\n[🔗Source Link](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -979,10 +993,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "sign not for this chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10103,
+				ChatId: -10103,
 				Id:     123,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -994,10 +1008,10 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "empty source",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: 10104,
+				ChatId: -10104,
 				Id:     123,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -1009,11 +1023,11 @@ func TestTransformService_addSources(t *testing.T) {
 			name:          "get message link error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       10105,
+				ChatId:       -10105,
 				Id:           123,
 				MediaAlbumId: 0,
 			},
-			dstChatId:        10109,
+			dstChatId:        -10109,
 			expectedText:     "",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
@@ -1103,7 +1117,7 @@ func TestTransformService_addText(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Type:   &client.TextEntityTypeBold{},
-					Offset: 10,
+					Offset: -10,
 					Length: 6,
 				},
 			},

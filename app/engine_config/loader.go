@@ -183,8 +183,14 @@ func validate(config *entity.EngineConfig) error {
 
 // transform преобразует конфигурацию в отрицательные идентификаторы
 func transform(config *entity.EngineConfig) {
-	// Трансформируем Sources
-	for srcChatId, src := range config.Sources {
+	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
+	sourceKeys := make([]entity.ChatId, 0, len(config.Sources))
+	for srcChatId := range config.Sources {
+		sourceKeys = append(sourceKeys, srcChatId)
+	}
+
+	for _, srcChatId := range sourceKeys {
+		src := config.Sources[srcChatId]
 		config.Sources[-srcChatId] = src
 		delete(config.Sources, srcChatId)
 	}
@@ -206,13 +212,18 @@ func transform(config *entity.EngineConfig) {
 		}
 	}
 
-	// Трансформируем Destinations
-	for dstChatId, dsc := range config.Destinations {
+	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
+	destinationKeys := make([]entity.ChatId, 0, len(config.Destinations))
+	for dstChatId := range config.Destinations {
+		destinationKeys = append(destinationKeys, dstChatId)
+	}
+
+	for _, dstChatId := range destinationKeys {
+		dsc := config.Destinations[dstChatId]
 		config.Destinations[-dstChatId] = dsc
 		delete(config.Destinations, dstChatId)
 	}
 
-	// Трансформируем ForwardRules
 	for _, forwardRule := range config.ForwardRules {
 		forwardRule.From = -forwardRule.From
 		for i, dstChatId := range forwardRule.To {

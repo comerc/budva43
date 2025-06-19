@@ -81,12 +81,12 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 	var err error
 	defer s.log.ErrorOrDebug(&err, "replaceMyselfLinks")
 
-	data, ok := config.Engine.Destinations[dstChatId]
-	if !ok {
-		err = log.NewError("dstChatId not found")
+	destination := config.Engine.Destinations[dstChatId]
+	if destination == nil {
+		err = log.NewError("destination not found")
 		return
 	}
-	if !data.ReplaceMyselfLinks.Run {
+	if !destination.ReplaceMyselfLinks.Run {
 		err = log.NewError("Run is disabled")
 		return
 	}
@@ -138,7 +138,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			}
 			isReplaced = true
 		}
-		if !isReplaced && data.ReplaceMyselfLinks.DeleteExternal {
+		if !isReplaced && destination.ReplaceMyselfLinks.DeleteExternal {
 			entity.Type = &client.TextEntityTypeStrikethrough{}
 		}
 	}
@@ -149,8 +149,8 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 	var err error
 	defer s.log.ErrorOrDebug(&err, "replaceFragments")
 
-	destination, ok := config.Engine.Destinations[dstChatId]
-	if !ok {
+	destination := config.Engine.Destinations[dstChatId]
+	if destination == nil {
 		err = log.NewError("destination not found")
 		return
 	}
@@ -175,8 +175,8 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 	var err error
 	defer s.log.ErrorOrDebug(&err, "addAutoAnswer")
 
-	source, ok := config.Engine.Sources[src.ChatId]
-	if !ok {
+	source := config.Engine.Sources[src.ChatId]
+	if source == nil {
 		err = log.NewError("source not found")
 		return
 	}
@@ -209,8 +209,8 @@ func (s *Service) addSources(formattedText *client.FormattedText, src *client.Me
 	var err error
 	defer s.log.ErrorOrDebug(&err, "addSources")
 
-	source, ok := config.Engine.Sources[src.ChatId]
-	if !ok {
+	source := config.Engine.Sources[src.ChatId]
+	if source == nil {
 		err = log.NewError("source not found")
 		return
 	}
