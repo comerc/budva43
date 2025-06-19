@@ -33,6 +33,8 @@ func TestQueueRepo(t *testing.T) {
 			queueRepo.Close()
 		})
 
+		var engineConfig *entity.EngineConfig
+
 		// Счетчик выполненных задач
 		executed := 0
 
@@ -44,7 +46,8 @@ func TestQueueRepo(t *testing.T) {
 		}
 		queueRepo.Add(fn)
 
-		engineConfig1 := newEngineConfig(-123)
+		engineConfig = newEngineConfig(-123)
+		engineConfig1 := engineConfig // копируем, см. WATCH-CONFIG.md
 		fn = func() {
 			assert.Equal(t, int64(-123), engineConfig1.ForwardRules["rule1"].From,
 				"Замыкается engineConfig1")
@@ -52,7 +55,8 @@ func TestQueueRepo(t *testing.T) {
 		}
 		queueRepo.Add(fn)
 
-		engineConfig2 := newEngineConfig(-321)
+		engineConfig = newEngineConfig(-321)
+		engineConfig2 := engineConfig // копируем, см. WATCH-CONFIG.md
 		fn = func() {
 			assert.Equal(t, int64(-321), engineConfig2.ForwardRules["rule1"].From,
 				"Замыкается engineConfig2")
