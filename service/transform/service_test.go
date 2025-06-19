@@ -2,7 +2,6 @@ package transform
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -24,11 +23,6 @@ import (
 func TestMain(m *testing.M) {
 	engine_config.Reload()
 	os.Exit(m.Run())
-}
-
-func TestTry(t *testing.T) {
-	t.Parallel()
-	fmt.Printf("config.Engine: %+v\n", config.Engine)
 }
 
 func TestTransformService_Transform(t *testing.T) {
@@ -179,7 +173,7 @@ func TestTransformService_Transform(t *testing.T) {
 			t.Parallel()
 
 			transformService := test.setup(t)
-			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId)
+			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId, config.Engine)
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
@@ -564,7 +558,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 				transformService = test.setup(t)
 			})
 
-			transformService.replaceMyselfLinks(test.formattedText, test.srcChatId, test.dstChatId)
+			transformService.replaceMyselfLinks(test.formattedText, test.srcChatId, test.dstChatId, config.Engine)
 
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
@@ -664,7 +658,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 				transformService = New(nil, nil, nil)
 			})
 
-			transformService.replaceFragments(test.formattedText, test.dstChatId)
+			transformService.replaceFragments(test.formattedText, test.dstChatId, config.Engine)
 
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
@@ -842,7 +836,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 				transformService = test.setup(t, test.src)
 			})
 
-			transformService.addAutoAnswer(test.formattedText, test.src)
+			transformService.addAutoAnswer(test.formattedText, test.src, config.Engine)
 
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
@@ -1052,7 +1046,7 @@ func TestTransformService_addSources(t *testing.T) {
 				transformService = test.setup(t, test.src)
 			})
 
-			transformService.addSources(test.formattedText, test.src, test.dstChatId)
+			transformService.addSources(test.formattedText, test.src, test.dstChatId, config.Engine)
 
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
