@@ -159,7 +159,7 @@ func setDefaultConfig(config *config) {
 	config.Web.ShutdownTimeout = 5 * time.Second
 }
 
-// TODO: реализовать перезагрузку конфига при изменении файла
+// TODO: #22 реализовать перезагрузку конфига при изменении файла
 // func Watch(cb func(e fsnotify.Event)) {
 // 	viper.OnConfigChange(cb)
 // 	viper.WatchConfig()
