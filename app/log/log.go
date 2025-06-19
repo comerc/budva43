@@ -9,8 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/comerc/budva43/app/config"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/comerc/budva43/app/config"
 )
 
 type Logger struct {
@@ -61,7 +62,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		// }
 		// args = append(args, slog.Group("source", group...))
 	}
-	l.Logger.Log(context.Background(), level, message, args...)
+	l.Log(context.Background(), level, message, args...)
 }
 
 func NewWriter(filePath string, maxSize int) io.Writer {

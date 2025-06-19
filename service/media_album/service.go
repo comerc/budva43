@@ -67,6 +67,6 @@ func (s *Service) PopMessages(key entity.MediaAlbumKey) []*client.Message {
 }
 
 // GetKey возвращает ключ для пересылаемого медиа-альбома
-func (s *Service) GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey {
-	return fmt.Sprintf("%s:%d", forwardRuleId, MediaAlbumId)
+func (s *Service) GetKey(forwardRuleId entity.ForwardRuleId, mediaAlbumId client.JsonInt64) entity.MediaAlbumKey {
+	return fmt.Sprintf("%s:%d", forwardRuleId, mediaAlbumId)
 }

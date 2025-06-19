@@ -5,9 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/comerc/budva43/app/util"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+
+	"github.com/comerc/budva43/app/util"
 )
 
 func load() *config {
@@ -34,9 +35,9 @@ func load() *config {
 	// иначе не читается из .env и выдает дефолтное значение
 
 	// Задаём ключи для переопределения через .env
-	viper.BindEnv("telegram.api-id")
-	viper.BindEnv("telegram.api-hash")
-	viper.BindEnv("telegram.phone-number")
+	_ = viper.BindEnv("telegram.api-id")
+	_ = viper.BindEnv("telegram.api-hash")
+	_ = viper.BindEnv("telegram.phone-number")
 
 	// Читаем конфигурацию из файла
 	if err := viper.ReadInConfig(); err != nil {

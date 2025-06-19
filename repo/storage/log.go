@@ -26,22 +26,22 @@ func NewLogger() *Logger {
 	}
 }
 
-func (l *Logger) Errorf(format string, v ...interface{}) {
+func (l *Logger) Errorf(format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.log.Error(msg)
 }
 
-func (l *Logger) Warningf(format string, v ...interface{}) {
+func (l *Logger) Warningf(format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.log.Warn(msg)
 }
 
-func (l *Logger) Infof(format string, v ...interface{}) {
+func (l *Logger) Infof(format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.log.Info(msg)
 }
 
-func (l *Logger) Debugf(format string, v ...interface{}) {
+func (l *Logger) Debugf(format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.log.Debug(msg)
 }

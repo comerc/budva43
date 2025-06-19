@@ -53,7 +53,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	_ = shutdown // не используется
 
 	if !isPortFree(config.Web.Host, config.Web.Port) {
-		err := fmt.Errorf("Port %s:%d is busy -> make kill-port", config.Web.Host, config.Web.Port)
+		err := fmt.Errorf("port %s:%d is busy -> make kill-port", config.Web.Host, config.Web.Port)
 		return log.WrapError(err)
 	}
 

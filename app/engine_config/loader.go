@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
-	"github.com/comerc/budva43/app/log"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
 

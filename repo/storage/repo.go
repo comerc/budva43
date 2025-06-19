@@ -71,7 +71,7 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 				if err == badger.ErrNoRewrite {
 					err = nil
 					// Нет файлов для перезаписи - это нормально, выходим
-				} else {
+					// } else {
 					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
 				}
 				r.log.ErrorOrDebug(&err, "GC completed: no files to rewrite")
@@ -162,8 +162,7 @@ func (r *Repo) Get(key string) (string, error) {
 
 // Set устанавливает значение по ключу
 func (r *Repo) Set(key, val string) error {
-	var err error
-	err = r.db.Update(func(txn *badger.Txn) error {
+	err := r.db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(key), []byte(val))
 	})
 	return err
@@ -171,8 +170,7 @@ func (r *Repo) Set(key, val string) error {
 
 // Delete удаляет значение по ключу
 func (r *Repo) Delete(key string) error {
-	var err error
-	err = r.db.Update(func(txn *badger.Txn) error {
+	err := r.db.Update(func(txn *badger.Txn) error {
 		return txn.Delete([]byte(key))
 	})
 	return err
