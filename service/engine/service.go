@@ -72,11 +72,6 @@ func (s *Service) Start(ctx context.Context) error {
 
 	s.ctx = ctx
 
-	// Используем Reload для начальной загрузки конфигурации движка
-	if err := engine_config.Reload(); err != nil {
-		return err // log.WrapError(err) - уже есть внутри engine_config.Reload()
-	}
-
 	// Настраиваем отслеживание изменений engine.yml
 	engine_config.Watch(s.handleConfigReload)
 

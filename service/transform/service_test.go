@@ -3,7 +3,6 @@ package transform
 import (
 	"errors"
 	"log/slog"
-	"os"
 	"strings"
 	"testing"
 
@@ -12,18 +11,13 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/engine_config"
+	_ "github.com/comerc/budva43/app/engine_config"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
 )
 
 // data for service.transform - -101xx
-
-func TestMain(m *testing.M) {
-	engine_config.Reload()
-	os.Exit(m.Run())
-}
 
 func TestTransformService_Transform(t *testing.T) {
 	t.Parallel()
@@ -247,7 +241,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 				storageService := mocks.NewStorageService(t)
 				return New(telegramRepo, storageService, nil)
 			},
-			expectedError: log.NewError("Run is disabled"),
+			expectedError: log.NewError("replaceMyselfLinks: Run is disabled"),
 		},
 		{
 			name: "no text url entities",
@@ -498,7 +492,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(0))
 				return New(telegramRepo, storageService, nil)
 			},
-			expectedError: log.NewError("GetNewMessageId return 0"),
+			expectedError: log.NewError("storageService.GetNewMessageId() return 0"),
 		},
 		{
 			name: "get message link error",
