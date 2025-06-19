@@ -28,3 +28,4 @@ bin/
 .data/
 vendor/
 _try/
+_*.go
