@@ -1,7 +1,7 @@
 all: lint check build
 
 lint:
-	golangci-lint run
+	GOEXPERIMENT=synctest golangci-lint run
 
 check:
 	GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
