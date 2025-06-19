@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -27,7 +28,7 @@ type authService interface {
 	// GetStatus() string
 }
 
-// Transport предст авляет HTTP маршрутизатор для API
+// Transport представляет HTTP маршрутизатор для API
 type Transport struct {
 	log *log.Logger
 	//
@@ -50,6 +51,11 @@ func New(
 // Start запускает HTTP-сервер
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	_ = shutdown // не используется
+
+	if !isPortFree(config.Web.Host, config.Web.Port) {
+		err := fmt.Errorf("Port %s:%d is busy -> make kill-port", config.Web.Host, config.Web.Port)
+		return log.WrapError(err)
+	}
 
 	t.authService.Subscribe(t.newFuncNotify())
 
@@ -155,9 +161,11 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 
 	var stateType string
 	state := t.authState
+
 	if state != nil {
 		stateType = state.AuthorizationStateType()
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"state_type": stateType,
@@ -249,4 +257,19 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 	err = json.NewEncoder(w).Encode(map[string]any{
 		"status": "accepted",
 	})
+}
+
+// isPortFree проверяет, свободен ли порт
+func isPortFree(host string, port int) bool {
+	addr := fmt.Sprintf("%s:%d", host, port) // нужно оставить без протокола
+
+	// Пытаемся подключиться к порту как клиент
+	conn, err := net.DialTimeout("tcp", addr, 1*time.Second)
+	if err != nil {
+		// Если не удалось подключиться, порт свободен
+		return true
+	}
+	// Если подключились, значит порт занят
+	conn.Close()
+	return false
 }
