@@ -123,6 +123,7 @@ engine:
   destinations:
     ### Start real data
     1002674233740: 
+      dummy: true # чтобы попал в config.Engine.Destinations
     ### Final real data
     # data for service.transform - 101xx
     10110: # for replace fragments test
@@ -161,6 +162,7 @@ engine:
     "Id3":
       from: 4814113560
       to: [1002674233740]
+      # send-copy: true
     ### Final real data
     "Id1":
       from: 111
