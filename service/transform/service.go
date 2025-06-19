@@ -8,7 +8,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -58,7 +58,7 @@ func New(
 }
 
 // Transform преобразует содержимое сообщения
-func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) {
+func (s *Service) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig) {
 	defer s.log.Debug("Transform",
 		"withSources", withSources,
 		"srcChatId", src.ChatId,
@@ -66,22 +66,22 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 		"dstChatId", dstChatId,
 	)
 
-	s.addAutoAnswer(formattedText, src)
-	s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId)
-	s.replaceFragments(formattedText, dstChatId)
+	s.addAutoAnswer(formattedText, src, engineConfig)
+	s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId, engineConfig)
+	s.replaceFragments(formattedText, dstChatId, engineConfig)
 	// s.resetEntities(formattedText, dstChatId)
 	// TODO: только addSources() нужно ограничивать для первого сообщения в альбоме?
 	if withSources {
-		s.addSources(formattedText, src, dstChatId)
+		s.addSources(formattedText, src, dstChatId, engineConfig)
 	}
 }
 
 // replaceMyselfLinks заменяет ссылки на текущего бота в тексте
-func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64) {
+func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcChatId, dstChatId int64, engineConfig *entity.EngineConfig) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "replaceMyselfLinks")
 
-	destination := config.Engine.Destinations[dstChatId]
+	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
 		err = log.NewError("destination not found")
 		return
@@ -145,11 +145,11 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 }
 
 // replaceFragments заменяет фрагменты текста согласно настройкам
-func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatId int64) {
+func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatId int64, engineConfig *entity.EngineConfig) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "replaceFragments")
 
-	destination := config.Engine.Destinations[dstChatId]
+	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
 		err = log.NewError("destination not found")
 		return
@@ -171,11 +171,11 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText, dstChatI
 }
 
 // addAutoAnswer добавляет ответ на сообщение
-func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message) {
+func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client.Message, engineConfig *entity.EngineConfig) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "addAutoAnswer")
 
-	source := config.Engine.Sources[src.ChatId]
+	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
 		err = log.NewError("source not found")
 		return
@@ -205,11 +205,11 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText, src *client
 }
 
 // addSources добавляет подпись и ссылку на источник к тексту
-func (s *Service) addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64) {
+func (s *Service) addSources(formattedText *client.FormattedText, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "addSources")
 
-	source := config.Engine.Sources[src.ChatId]
+	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
 		err = log.NewError("source not found")
 		return

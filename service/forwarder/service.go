@@ -8,6 +8,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
+	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -38,7 +39,7 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)
 }
 
 //go:generate mockery --name=rateLimiterService --exported
@@ -76,7 +77,7 @@ func New(
 }
 
 // ForwardMessages пересылает сообщения в целевой чат
-func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string) {
+func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig) {
 	var err error
 	defer func() {
 		s.log.ErrorOrDebug(&err, "ForwardMessages",
@@ -93,7 +94,7 @@ func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChat
 	var result *client.Messages
 
 	if isSendCopy {
-		contents := s.prepareMessageContents(messages, dstChatId)
+		contents := s.prepareMessageContents(messages, dstChatId, engineConfig)
 		replyToMessageId := s.getReplyToMessageId(messages[0], dstChatId)
 		result, err = s.sendMessages(dstChatId, contents, replyToMessageId)
 	} else {
@@ -187,7 +188,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 }
 
 // prepareMessageContents подготавливает сообщения для отправки
-func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64) []client.InputMessageContent {
+func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64, engineConfig *entity.EngineConfig) []client.InputMessageContent {
 	contents := make([]client.InputMessageContent, 0)
 
 	for i, message := range messages {
@@ -207,7 +208,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 			formattedText := util.Copy(srcFormattedText)
 
 			withSources := i == 0
-			s.transformService.Transform(formattedText, withSources, src, dstChatId)
+			s.transformService.Transform(formattedText, withSources, src, dstChatId, engineConfig)
 
 			content := s.messageService.GetInputMessageContent(src, formattedText)
 			if content != nil {

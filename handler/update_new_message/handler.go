@@ -56,7 +56,7 @@ type forwardedToService interface {
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
+	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
 }
 
 type Handler struct {
@@ -138,7 +138,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		h.forwardedToService.Init(forwardedTo, forwardRule.To)
 		if src.MediaAlbumId == 0 {
 			fn := func() {
-				h.processMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns)
+				h.processMessage([]*client.Message{src}, forwardRule, forwardedTo, checkFns, otherFns, engineConfig)
 			}
 			h.queueRepo.Add(fn)
 		} else {
@@ -148,7 +148,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 				continue
 			}
 			cb := func(messages []*client.Message) {
-				h.processMessage(messages, forwardRule, forwardedTo, checkFns, otherFns)
+				h.processMessage(messages, forwardRule, forwardedTo, checkFns, otherFns, engineConfig)
 			}
 			fn := func() {
 				h.processMediaAlbum(key, cb)
@@ -210,7 +210,8 @@ func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *entity.
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (h *Handler) processMessage(messages []*client.Message,
 	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
-	checkFns map[int64]func(), otherFns map[int64]func()) {
+	checkFns map[int64]func(), otherFns map[int64]func(),
+	engineConfig *entity.EngineConfig) {
 	var err error
 	src := messages[0]
 	filtersMode := ""
@@ -238,7 +239,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
 			if h.forwardedToService.Add(forwardedTo, dstChatId) {
-				h.forwarderService.ForwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id)
+				h.forwarderService.ForwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id, engineConfig)
 				result = append(result, dstChatId)
 			}
 		}
@@ -248,7 +249,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id)
+					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id, engineConfig)
 				}
 			}
 		}
@@ -258,7 +259,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				otherFns[forwardRule.Other] = func() {
 					const isSendCopy = true // обязательно надо копировать, иначе не видно редактирование исходного сообщения
-					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id)
+					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id, engineConfig)
 				}
 			}
 		}

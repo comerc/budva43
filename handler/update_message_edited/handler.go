@@ -42,7 +42,7 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)
 }
 
 //go:generate mockery --name=filtersModeService --exported
@@ -52,7 +52,7 @@ type filtersModeService interface {
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string)
+	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
 }
 
 type Handler struct {
@@ -230,7 +230,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 				if !ok {
 					checkFns[forwardRule.Check] = func() {
 						const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-						h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId)
+						h.forwarderService.ForwardMessages([]*client.Message{src}, chatId, forwardRule.Check, isSendCopy, forwardRuleId, engineConfig)
 					}
 				}
 				return
@@ -263,7 +263,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			// }
 
 			withSources := true
-			h.transformService.Transform(formattedText, withSources, src, dstChatId)
+			h.transformService.Transform(formattedText, withSources, src, dstChatId, engineConfig)
 
 			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
 			newMessageId := data.newMessageIds[tmpChatMessageId]
