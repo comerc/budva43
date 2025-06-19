@@ -76,6 +76,8 @@ func TestUnwrappedError(t *testing.T) {
 		log *Logger
 	}
 
+	var err error
+
 	var o *OtherObject
 	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
 		o = &OtherObject{
@@ -83,7 +85,6 @@ func TestUnwrappedError(t *testing.T) {
 		}
 	})
 
-	var err error
 	err = &SomeError{
 		error: errors.New("unwrapped error"),
 	}

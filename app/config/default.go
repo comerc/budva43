@@ -11,9 +11,7 @@ import (
 func setDefaultConfig(config *config) {
 	logDir := filepath.Join(util.ProjectRoot, ".data", "log")
 
-	var testVerbose *string
-	testVerbose = util.GetFlag("test.v") // не работает для debug-сессии!
-	config.General.TestVerbose = testVerbose
+	config.General.TestVerbose = util.GetFlag("test.v") // не работает для debug-сессии!
 
 	config.General.LogLevel = slog.LevelDebug
 	config.General.LogDirectory = logDir

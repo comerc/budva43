@@ -26,7 +26,7 @@ func GetCallers(depth int) []string {
 		return []string{}
 	}
 
-	var result []string
+	result := make([]string, 0, len(callStack))
 	for _, call := range callStack {
 		result = append(result, call.String())
 	}

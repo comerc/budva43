@@ -87,7 +87,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		return
 	}
 	if !destination.ReplaceMyselfLinks.Run {
-		err = log.NewError("Run is disabled")
+		err = log.NewError("replaceMyselfLinks: Run is disabled")
 		return
 	}
 	for _, entity := range formattedText.Entities {
@@ -121,7 +121,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		if tmpMessageId != 0 {
 			newMessageId := s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 			if newMessageId == 0 {
-				err = log.NewError("GetNewMessageId return 0")
+				err = log.NewError("storageService.GetNewMessageId() return 0")
 				return
 			}
 			var messageLink *client.MessageLink
@@ -254,7 +254,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec
 	if offset > 0 {
 		formattedText.Text += "\n\n"
-		offset = offset + 2
+		offset += 2
 	}
 	for _, entity := range parsedText.Entities {
 		entity.Offset += offset

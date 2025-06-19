@@ -52,9 +52,7 @@ func (r *Repo) WithOptions(options Options) *Repo {
 
 // Start устанавливает соединение с Telegram API
 func (r *Repo) Start(_ context.Context) error {
-	var err error
-
-	err = r.setupClientLog()
+	err := r.setupClientLog()
 	if err != nil {
 		return err
 	}

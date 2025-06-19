@@ -228,7 +228,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 
 	formattedText := h.messageService.GetFormattedText(src)
 	if formattedText == nil {
-		err = log.NewError("GetFormattedText return nil")
+		err = log.NewError("messageService.GetFormattedText() return nil")
 		return
 	}
 
