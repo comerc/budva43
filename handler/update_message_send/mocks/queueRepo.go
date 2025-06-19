@@ -17,9 +17,9 @@ func (_m *QueueRepo) EXPECT() *QueueRepo_Expecter {
 	return &QueueRepo_Expecter{mock: &_m.Mock}
 }
 
-// Add provides a mock function with given fields: task
-func (_m *QueueRepo) Add(task func()) {
-	_m.Called(task)
+// Add provides a mock function with given fields: fn
+func (_m *QueueRepo) Add(fn func()) {
+	_m.Called(fn)
 }
 
 // QueueRepo_Add_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Add'
@@ -28,12 +28,12 @@ type QueueRepo_Add_Call struct {
 }
 
 // Add is a helper method to define mock.On call
-//   - task func()
-func (_e *QueueRepo_Expecter) Add(task interface{}) *QueueRepo_Add_Call {
-	return &QueueRepo_Add_Call{Call: _e.mock.On("Add", task)}
+//   - fn func()
+func (_e *QueueRepo_Expecter) Add(fn interface{}) *QueueRepo_Add_Call {
+	return &QueueRepo_Add_Call{Call: _e.mock.On("Add", fn)}
 }
 
-func (_c *QueueRepo_Add_Call) Run(run func(task func())) *QueueRepo_Add_Call {
+func (_c *QueueRepo_Add_Call) Run(run func(fn func())) *QueueRepo_Add_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(func()))
 	})

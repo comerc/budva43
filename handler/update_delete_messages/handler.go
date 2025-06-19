@@ -7,6 +7,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -19,7 +20,7 @@ type telegramRepo interface {
 
 //go:generate mockery --name=queueRepo --exported
 type queueRepo interface {
-	Add(task func())
+	Add(fn func())
 }
 
 //go:generate mockery --name=storageService --exported
@@ -60,8 +61,10 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 		return
 	}
 
+	engineConfig := config.Engine // копируем, см. WATCH-CONFIG.md
+
 	chatId := update.ChatId
-	if _, ok := config.Engine.UniqueSources[update.ChatId]; !ok {
+	if _, ok := engineConfig.UniqueSources[update.ChatId]; !ok {
 		return
 	}
 	messageIds := update.MessageIds
@@ -91,7 +94,7 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 			return
 		}
 
-		h.deleteMessages(chatId, messageIds, data)
+		h.deleteMessages(chatId, messageIds, data, engineConfig)
 	}
 
 	h.queueRepo.Add(fn)
@@ -136,7 +139,7 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 }
 
 // deleteMessages удаляет сообщения
-func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
+func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, engineConfig *entity.EngineConfig) {
 	var err error
 	result := []string{}
 	defer func() {
@@ -168,7 +171,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data) {
 				dstChatId := util.ConvertToInt[int64](a[1])
 				tmpMessageId := util.ConvertToInt[int64](a[2])
 
-				forwardRule, ok := config.Engine.ForwardRules[forwardRuleId]
+				forwardRule, ok := engineConfig.ForwardRules[forwardRuleId]
 				if !ok {
 					err = log.NewError("forwardRule not found")
 					return
