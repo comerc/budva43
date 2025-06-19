@@ -12,6 +12,9 @@ build:
 run:
 	go run main.go
 
+kill-port:
+	lsof -ti:7070 | xargs kill -9
+
 test-auth-telegram-state:
 	curl http://localhost:7070/api/auth/telegram/state
 
