@@ -30,10 +30,11 @@ type (
 
 	// Общие настройки приложения
 	general struct {
-		TestVerbose    *string // nil - production mode & debug mode
-		LogLevel       slog.Level
-		LogDirectory   string
-		LogMaxFileSize int // MB
+		TestVerbose      *string // nil - production mode & debug mode
+		LogLevel         slog.Level
+		LogDirectory     string
+		LogMaxFileSize   int // MB
+		EngineConfigFile string
 	}
 
 	// Настройки хранилища данных

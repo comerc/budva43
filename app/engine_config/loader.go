@@ -19,14 +19,9 @@ var (
 )
 
 func initEngineViper(projectRoot string) {
-	var configName = "engine"
-	if util.HasFlag("test.run") {
-		configName += "_test"
-	}
 	engineViper = viper.New()
-	engineViper.SetConfigName(configName)
-	engineViper.SetConfigType("yml")
-	engineViper.AddConfigPath(filepath.Join(projectRoot, "config"))
+	file := filepath.Join(projectRoot, "config", config.General.EngineConfigFile)
+	engineViper.SetConfigFile(file)
 }
 
 // Reload перезагружает конфигурацию config.Engine из engine.yml

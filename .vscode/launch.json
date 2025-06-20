@@ -9,7 +9,7 @@
 			"program": "${workspaceFolder}",
 			"cwd": "${workspaceFolder}",
 			"env": {
-				"GO_ENV": "development"
+				"BUDVA43__GENERAL__ENGINE_CONFIG_FILE": "engine.e2e.yml"
 			},
 			"args": [],
 			"showLog": true,
