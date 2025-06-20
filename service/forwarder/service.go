@@ -77,10 +77,15 @@ func New(
 }
 
 // ForwardMessages пересылает сообщения в целевой чат
-func (s *Service) ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig) {
+func (s *Service) ForwardMessages(
+	messages []*client.Message, filtersMode entity.FiltersMode,
+	srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string,
+	engineConfig *entity.EngineConfig,
+) {
 	var err error
 	defer func() {
 		s.log.ErrorOrDebug(&err, "ForwardMessages",
+			"filtersMode", filtersMode,
 			"srcChatId", srcChatId,
 			"dstChatId", dstChatId,
 			"isSendCopy", isSendCopy,
