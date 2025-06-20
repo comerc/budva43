@@ -292,7 +292,7 @@ func check(engineConfig *entity.EngineConfig) error {
 
 	if len(args) > 0 {
 		return &ErrEmptyConfigData{
-			CustomError: *log.NewError("отсутствуют данные"),
+			CustomError: *log.NewError("отсутствуют данные", args...),
 		}
 	}
 
