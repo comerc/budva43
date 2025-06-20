@@ -102,6 +102,7 @@ func (s *Service) ForwardMessages(
 		contents := s.prepareMessageContents(messages, dstChatId, engineConfig)
 		replyToMessageId := s.getReplyToMessageId(messages[0], dstChatId)
 		result, err = s.sendMessages(dstChatId, contents, replyToMessageId)
+		err = log.WrapError(err)
 	} else {
 		result, err = s.telegramRepo.ForwardMessages(&client.ForwardMessagesRequest{
 			ChatId:     dstChatId,
@@ -123,6 +124,7 @@ func (s *Service) ForwardMessages(
 			SendCopy:      false,
 			RemoveCaption: false,
 		})
+		err = log.WrapError(err)
 	}
 
 	if err != nil {
