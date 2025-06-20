@@ -56,7 +56,7 @@ type forwardedToService interface {
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
+	ForwardMessages(messages []*client.Message, filtersMode entity.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
 }
 
 type Handler struct {
@@ -239,7 +239,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
 			if h.forwardedToService.Add(forwardedTo, dstChatId) {
-				h.forwarderService.ForwardMessages(messages, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id, engineConfig)
+				h.forwarderService.ForwardMessages(messages, filtersMode, src.ChatId, dstChatId, forwardRule.SendCopy, forwardRule.Id, engineConfig)
 				result = append(result, dstChatId)
 			}
 		}
@@ -249,7 +249,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				checkFns[forwardRule.Check] = func() {
 					const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id, engineConfig)
+					h.forwarderService.ForwardMessages(messages, filtersMode, src.ChatId, forwardRule.Check, isSendCopy, forwardRule.Id, engineConfig)
 				}
 			}
 		}
@@ -259,7 +259,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 			if !ok {
 				otherFns[forwardRule.Other] = func() {
 					const isSendCopy = true // обязательно надо копировать, иначе не видно редактирование исходного сообщения
-					h.forwarderService.ForwardMessages(messages, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id, engineConfig)
+					h.forwarderService.ForwardMessages(messages, filtersMode, src.ChatId, forwardRule.Other, isSendCopy, forwardRule.Id, engineConfig)
 				}
 			}
 		}
