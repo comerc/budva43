@@ -1,6 +1,6 @@
 # Файл конфигурации Budva43 - динамические правила форвардинга
 
-# При чтении из конфига: 
+# При чтении из конфига:
 # - цифровые ключи лишаются минуса
 # - именные ключи преобразуются в PascalCase
 # - пустые ключи требуют значение `dummy: true`
@@ -62,10 +62,10 @@ sources:
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   10122: # for Transform test (with escaped markdown)
     sign:
-      title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+      title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
       for: [10123]
     link:
-      title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' 
+      title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
       for: [10123]
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
 destinations:
@@ -128,4 +128,3 @@ forward-rules:
 #       -321,
 #       -888,
 #     ]
-

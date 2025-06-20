@@ -1,6 +1,6 @@
 {
 	"go.testEnvVars": {
-		"GOEXPERIMENT": "synctest"
+		"GOEXPERIMENT": "synctest",
 	},
 	"go.testFlags": [
 		"-count=1",

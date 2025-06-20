@@ -10,6 +10,7 @@ build:
 	rm -f bin/app && go build -o bin/app main.go
 
 run:
+	@BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml \
 	go run main.go
 
 kill-port:
@@ -38,5 +39,3 @@ test-auth-telegram-submit-password:
 		--request POST \
 		--data '{"password":"'$$PASSWORD'"}' \
 		http://localhost:7070/api/auth/telegram/password
-
-

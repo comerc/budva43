@@ -6,6 +6,7 @@ general:
   # log-level: -4 # DEBUG
   # log-directory: "./.data/log"
   # log-max-file-size: 10 # MB
+  # engine-config-file: "engine.yml" # или .json
 
 # Настройки Telegram
 telegram:

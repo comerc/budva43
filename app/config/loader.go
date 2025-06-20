@@ -38,6 +38,7 @@ func load() *config {
 	_ = viper.BindEnv("telegram.api-id")
 	_ = viper.BindEnv("telegram.api-hash")
 	_ = viper.BindEnv("telegram.phone-number")
+	_ = viper.BindEnv("general.engine-config-file")
 
 	// Читаем конфигурацию из файла
 	if err := viper.ReadInConfig(); err != nil {
