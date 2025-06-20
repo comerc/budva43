@@ -51,39 +51,44 @@ func load() (*entity.EngineConfig, error) {
 		return nil, log.WrapError(err)
 	}
 
-	config := &entity.EngineConfig{}
-	if err := engineViper.Unmarshal(config, util.GetConfigOptions()); err != nil {
+	engineConfig := &entity.EngineConfig{}
+	if err := engineViper.Unmarshal(engineConfig, util.GetConfigOptions()); err != nil {
 		return nil, log.WrapError(err)
 	}
 
-	if err := validate(config); err != nil {
+	initialize(engineConfig)
+
+	if err := validate(engineConfig); err != nil {
 		return nil, log.WrapError(err)
 	}
 
-	transform(config)
+	transform(engineConfig)
 
-	enrich(config)
+	enrich(engineConfig)
 
-	return config, nil
+	if err := check(engineConfig); err != nil {
+		return nil, log.WrapError(err)
+	}
+
+	return engineConfig, nil
 }
 
-type ErrEmptySources struct {
-	log.CustomError
-}
-
-func NewErrEmptySources(args ...any) *ErrEmptySources {
-	return &ErrEmptySources{
-		CustomError: *log.NewError("отсутствуют настройки", args...),
+// initialize инициализирует конфигурацию
+func initialize(engineConfig *entity.EngineConfig) {
+	if engineConfig.Sources == nil {
+		engineConfig.Sources = make(map[entity.ChatId]*entity.Source)
+	}
+	if engineConfig.Destinations == nil {
+		engineConfig.Destinations = make(map[entity.ChatId]*entity.Destination)
+	}
+	if engineConfig.ForwardRules == nil {
+		engineConfig.ForwardRules = make(map[entity.ForwardRuleId]*entity.ForwardRule)
 	}
 }
 
-// validate проверяет корректность конфигурации движка
-func validate(config *entity.EngineConfig) error {
-	if len(config.Sources) == 0 {
-		return NewErrEmptySources("path", "config.Engine.Sources")
-	}
-
-	for srcChatId, src := range config.Sources {
+// validate проверяет корректность конфигурации
+func validate(engineConfig *entity.EngineConfig) error {
+	for srcChatId, src := range engineConfig.Sources {
 		// viper читает цифровые ключи без минуса
 		// if srcChatId < 0 {
 		// 	return log.NewError("идентификатор не может быть отрицательным",
@@ -110,11 +115,7 @@ func validate(config *entity.EngineConfig) error {
 		}
 	}
 
-	if len(config.Destinations) == 0 {
-		return NewErrEmptySources("path", "config.Engine.Destinations")
-	}
-
-	for dstChatId, dsc := range config.Destinations {
+	for dstChatId, dsc := range engineConfig.Destinations {
 		// viper читает цифровые ключи без минуса
 		// if dstChatId < 0 {
 		// 	return log.NewError("идентификатор не может быть отрицательным",
@@ -132,12 +133,8 @@ func validate(config *entity.EngineConfig) error {
 		}
 	}
 
-	if len(config.ForwardRules) == 0 {
-		return NewErrEmptySources("path", "config.Engine.ForwardRules")
-	}
-
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)
-	for forwardRuleId, forwardRule := range config.ForwardRules {
+	for forwardRuleId, forwardRule := range engineConfig.ForwardRules {
 		if re.FindString(forwardRuleId) != "" {
 			return log.NewError("нельзя использовать [:,] в идентификаторе",
 				"path", "config.Engine.ForwardRules",
@@ -189,20 +186,20 @@ func validate(config *entity.EngineConfig) error {
 }
 
 // transform преобразует конфигурацию в отрицательные идентификаторы
-func transform(config *entity.EngineConfig) {
+func transform(engineConfig *entity.EngineConfig) {
 	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
-	sourceKeys := make([]entity.ChatId, 0, len(config.Sources))
-	for srcChatId := range config.Sources {
+	sourceKeys := make([]entity.ChatId, 0, len(engineConfig.Sources))
+	for srcChatId := range engineConfig.Sources {
 		sourceKeys = append(sourceKeys, srcChatId)
 	}
 
 	for _, srcChatId := range sourceKeys {
-		src := config.Sources[srcChatId]
-		config.Sources[-srcChatId] = src
-		delete(config.Sources, srcChatId)
+		src := engineConfig.Sources[srcChatId]
+		engineConfig.Sources[-srcChatId] = src
+		delete(engineConfig.Sources, srcChatId)
 	}
 
-	for _, src := range config.Sources {
+	for _, src := range engineConfig.Sources {
 		if src.Sign != nil {
 			a := []entity.ChatId{}
 			for _, targetChatId := range src.Sign.For {
@@ -220,18 +217,18 @@ func transform(config *entity.EngineConfig) {
 	}
 
 	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
-	destinationKeys := make([]entity.ChatId, 0, len(config.Destinations))
-	for dstChatId := range config.Destinations {
+	destinationKeys := make([]entity.ChatId, 0, len(engineConfig.Destinations))
+	for dstChatId := range engineConfig.Destinations {
 		destinationKeys = append(destinationKeys, dstChatId)
 	}
 
 	for _, dstChatId := range destinationKeys {
-		dsc := config.Destinations[dstChatId]
-		config.Destinations[-dstChatId] = dsc
-		delete(config.Destinations, dstChatId)
+		dsc := engineConfig.Destinations[dstChatId]
+		engineConfig.Destinations[-dstChatId] = dsc
+		delete(engineConfig.Destinations, dstChatId)
 	}
 
-	for _, forwardRule := range config.ForwardRules {
+	for _, forwardRule := range engineConfig.ForwardRules {
 		forwardRule.From = -forwardRule.From
 		for i, dstChatId := range forwardRule.To {
 			forwardRule.To[i] = -dstChatId
@@ -242,28 +239,62 @@ func transform(config *entity.EngineConfig) {
 }
 
 // enrich обогащает конфигурацию
-func enrich(config *entity.EngineConfig) {
-	config.UniqueSources = make(map[entity.ChatId]struct{})
+func enrich(engineConfig *entity.EngineConfig) {
+	engineConfig.UniqueSources = make(map[entity.ChatId]struct{})
+	engineConfig.UniqueDestinations = make(map[entity.ChatId]struct{})
 	tmpOrderedForwardRules := make([]entity.ForwardRuleId, 0)
 
-	for key, destination := range config.Destinations {
+	for key, destination := range engineConfig.Destinations {
 		destination.ChatId = key
 	}
 
-	for key, source := range config.Sources {
+	for key, source := range engineConfig.Sources {
 		source.ChatId = key
 	}
 
-	for key, forwardRule := range config.ForwardRules {
+	for key, forwardRule := range engineConfig.ForwardRules {
+		srcChatId := forwardRule.From
 		forwardRule.Id = key
-		if _, ok := config.Sources[forwardRule.From]; !ok {
-			config.Sources[forwardRule.From] = &entity.Source{
-				ChatId: forwardRule.From,
+		if _, ok := engineConfig.Sources[srcChatId]; !ok {
+			engineConfig.Sources[srcChatId] = &entity.Source{
+				ChatId: srcChatId,
 			}
 		}
-		config.UniqueSources[forwardRule.From] = struct{}{}
+		engineConfig.UniqueSources[srcChatId] = struct{}{}
+		for _, dstChatId := range forwardRule.To {
+			engineConfig.UniqueDestinations[dstChatId] = struct{}{}
+		}
 		tmpOrderedForwardRules = append(tmpOrderedForwardRules, forwardRule.Id)
 	}
 
-	config.OrderedForwardRules = util.Distinct(tmpOrderedForwardRules)
+	engineConfig.OrderedForwardRules = util.Distinct(tmpOrderedForwardRules)
+}
+
+type ErrEmptyConfigData struct {
+	log.CustomError
+}
+
+// check проверяет, что конфигурация не пуста
+func check(engineConfig *entity.EngineConfig) error {
+	var args []any
+
+	getKey := util.NewFuncWithIndex("path")
+
+	if len(engineConfig.UniqueSources) == 0 {
+		args = append(args, getKey(), "config.Engine.UniqueSources")
+	}
+	if len(engineConfig.UniqueDestinations) == 0 {
+		args = append(args, getKey(), "config.Engine.UniqueDestinations")
+	}
+	if len(engineConfig.OrderedForwardRules) == 0 {
+		args = append(args, getKey(), "config.Engine.OrderedForwardRules")
+	}
+
+	if len(args) > 0 {
+		return &ErrEmptyConfigData{
+			CustomError: *log.NewError("отсутствуют данные"),
+		}
+	}
+
+	return nil
 }

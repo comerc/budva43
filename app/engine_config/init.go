@@ -14,8 +14,8 @@ func init() {
 	once.Do(func() {
 		initEngineViper(util.ProjectRoot)
 		if err := Reload(); err != nil {
-			var emptySources *ErrEmptySources
-			if !errors.As(err, &emptySources) {
+			var emptyConfigData *ErrEmptyConfigData
+			if !errors.As(err, &emptyConfigData) {
 				log.Panic(err)
 			}
 		}

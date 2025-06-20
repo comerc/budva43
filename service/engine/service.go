@@ -14,6 +14,8 @@ import (
 type telegramRepo interface {
 	GetClientDone() <-chan any
 	// tdlibClient methods
+	LoadChats(*client.LoadChatsRequest) (*client.Ok, error)
+	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
 	GetListener() *client.Listener
 }
 
@@ -93,9 +95,9 @@ func (s *Service) handleConfigReload() {
 
 	err = engine_config.Reload()
 
-	var emptySources *engine_config.ErrEmptySources
-	if errors.As(err, &emptySources) {
-		s.log.Warn(emptySources.Error(), emptySources.Args...)
+	var emptyConfigData *engine_config.ErrEmptyConfigData
+	if errors.As(err, &emptyConfigData) {
+		s.log.Warn(err.Error(), emptyConfigData.Args...)
 		err = nil
 	}
 }
