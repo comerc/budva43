@@ -29,7 +29,7 @@ func initEngineViper(projectRoot string) {
 func Reload() error {
 	newEngineConfig, err := load()
 	if err != nil {
-		return err // log.WrapError(err) - уже есть внутри load()
+		return log.WrapError(err)
 	}
 
 	// Атомарно заменяем глобальную конфигурацию
@@ -68,12 +68,20 @@ func load() (*entity.EngineConfig, error) {
 	return config, nil
 }
 
+type ErrEmptySources struct {
+	log.CustomError
+}
+
+func NewErrEmptySources(args ...any) *ErrEmptySources {
+	return &ErrEmptySources{
+		CustomError: *log.NewError("отсутствуют настройки", args...),
+	}
+}
+
 // validate проверяет корректность конфигурации движка
 func validate(config *entity.EngineConfig) error {
 	if len(config.Sources) == 0 {
-		return log.NewError("отсутствуют настройки",
-			"path", "config.Engine.Sources",
-		)
+		return NewErrEmptySources("path", "config.Engine.Sources")
 	}
 
 	for srcChatId, src := range config.Sources {
@@ -104,7 +112,7 @@ func validate(config *entity.EngineConfig) error {
 	}
 
 	if len(config.Destinations) == 0 {
-		return log.NewError("отсутствуют настройки", "path", "config.Engine.Destinations")
+		return NewErrEmptySources("path", "config.Engine.Destinations")
 	}
 
 	for dstChatId, dsc := range config.Destinations {
@@ -126,7 +134,7 @@ func validate(config *entity.EngineConfig) error {
 	}
 
 	if len(config.ForwardRules) == 0 {
-		return log.NewError("отсутствуют настройки", "path", "config.Engine.ForwardRules")
+		return NewErrEmptySources("path", "config.Engine.ForwardRules")
 	}
 
 	re := regexp.MustCompile("[:,]") // TODO: зачем нужна эта проверка? (предположительно для badger)

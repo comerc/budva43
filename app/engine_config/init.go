@@ -1,6 +1,7 @@
 package engine_config
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -13,7 +14,10 @@ func init() {
 	once.Do(func() {
 		initEngineViper(util.ProjectRoot)
 		if err := Reload(); err != nil {
-			log.Panic(err)
+			var emptySources *ErrEmptySources
+			if !errors.As(err, &emptySources) {
+				log.Panic(err)
+			}
 		}
 	})
 }
