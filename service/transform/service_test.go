@@ -244,6 +244,34 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 			expectedError: log.NewError("replaceMyselfLinks: Run is disabled"),
 		},
 		{
+			name: "replace myself links is nil",
+			formattedText: &client.FormattedText{
+				Text: "test",
+				Entities: []*client.TextEntity{
+					{
+						Type: &client.TextEntityTypeTextUrl{
+							Url: "https://t.me/test/123",
+						},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10113, // destination с dummy: true (без replace-myself-links)
+			expectedEntities: []*client.TextEntity{
+				{
+					Type: &client.TextEntityTypeTextUrl{
+						Url: "https://t.me/test/123",
+					},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				storageService := mocks.NewStorageService(t)
+				return New(telegramRepo, storageService, nil)
+			},
+			expectedError: log.NewError("replaceMyselfLinks: Run is disabled"),
+		},
+		{
 			name: "no text url entities",
 			formattedText: &client.FormattedText{
 				Text: "test",

@@ -86,7 +86,8 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 		err = log.NewError("destination not found")
 		return
 	}
-	if !destination.ReplaceMyselfLinks.Run {
+	replaceMyselfLinks := destination.ReplaceMyselfLinks
+	if replaceMyselfLinks == nil || !replaceMyselfLinks.Run {
 		err = log.NewError("replaceMyselfLinks: Run is disabled")
 		return
 	}
@@ -138,7 +139,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			}
 			isReplaced = true
 		}
-		if !isReplaced && destination.ReplaceMyselfLinks.DeleteExternal {
+		if !isReplaced && replaceMyselfLinks.DeleteExternal {
 			entity.Type = &client.TextEntityTypeStrikethrough{}
 		}
 	}
