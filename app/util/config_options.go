@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Настраиваем декодирование
+// GetConfigOptions Настраиваем декодирование
 func GetConfigOptions() viper.DecoderConfigOption {
 	return viper.DecodeHook(
 		mapstructure.ComposeDecodeHookFunc(
