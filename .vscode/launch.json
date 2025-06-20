@@ -1,0 +1,93 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug Budva43",
+			"type": "go",
+			"request": "launch",
+			"mode": "debug",
+			"program": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"GO_ENV": "development"
+			},
+			"args": [],
+			"showLog": true,
+			"logOutput": "rpc",
+			"buildFlags": "",
+			"dlvFlags": [
+				"--check-go-version=false"
+			],
+			"preLaunchTask": "",
+			"postDebugTask": "",
+			"console": "integratedTerminal"
+		},
+		// {
+		// 	"name": "Debug Budva43 with Config",
+		// 	"type": "go",
+		// 	"request": "launch",
+		// 	"mode": "debug",
+		// 	"program": "${workspaceFolder}",
+		// 	"cwd": "${workspaceFolder}",
+		// 	"env": {
+		// 		"GO_ENV": "development",
+		// 		"CONFIG_PATH": "${workspaceFolder}/config/app.yml"
+		// 	},
+		// 	"args": [],
+		// 	"showLog": true,
+		// 	"logOutput": "rpc",
+		// 	"buildFlags": "",
+		// 	"dlvFlags": [
+		// 		"--check-go-version=false"
+		// 	],
+		// 	"console": "integratedTerminal"
+		// },
+		// {
+		// 	"name": "Debug Test (Current Package)",
+		// 	"type": "go",
+		// 	"request": "launch",
+		// 	"mode": "test",
+		// 	"program": "${fileDirname}",
+		// 	"env": {
+		// 		"GO_ENV": "test"
+		// 	},
+		// 	"args": [
+		// 		"-test.v"
+		// 	],
+		// 	"showLog": true,
+		// 	"console": "integratedTerminal"
+		// },
+		// {
+		// 	"name": "Debug Test (Current File)",
+		// 	"type": "go",
+		// 	"request": "launch",
+		// 	"mode": "test",
+		// 	"program": "${fileDirname}",
+		// 	"env": {
+		// 		"GO_ENV": "test"
+		// 	},
+		// 	"args": [
+		// 		"-test.run",
+		// 		"^${input:testName}$",
+		// 		"-test.v"
+		// 	],
+		// 	"showLog": true,
+		// 	"console": "integratedTerminal"
+		// },
+		// {
+		// 	"name": "Attach to Process",
+		// 	"type": "go",
+		// 	"request": "attach",
+		// 	"mode": "local",
+		// 	"processId": "${command:pickProcess}"
+		// }
+	],
+	// "inputs": [
+	// 	{
+	// 		"id": "testName",
+	// 		"description": "Имя теста для запуска",
+	// 		"default": "",
+	// 		"type": "promptString"
+	// 	}
+	// ]
+}

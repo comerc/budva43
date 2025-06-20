@@ -1,0 +1,161 @@
+{
+	"version": "2.0.0",
+	// "tasks": [
+	// 	{
+	// 		"label": "go: build",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"build",
+	// 			"-v",
+	// 			"./..."
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		},
+	// 		"problemMatcher": "$go"
+	// 	},
+	// 	{
+	// 		"label": "go: build (race)",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"build",
+	// 			"-race",
+	// 			"-v",
+	// 			"./..."
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		},
+	// 		"problemMatcher": "$go"
+	// 	},
+	// 	{
+	// 		"label": "go: test",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"test",
+	// 			"-v",
+	// 			"./..."
+	// 		],
+	// 		"group": "test",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		},
+	// 		"problemMatcher": "$go"
+	// 	},
+	// 	{
+	// 		"label": "go: test (race)",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"test",
+	// 			"-race",
+	// 			"-v",
+	// 			"./..."
+	// 		],
+	// 		"group": "test",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		},
+	// 		"problemMatcher": "$go"
+	// 	},
+	// 	{
+	// 		"label": "go: clean",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"clean",
+	// 			"-cache"
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "go: mod tidy",
+	// 		"type": "shell",
+	// 		"command": "go",
+	// 		"args": [
+	// 			"mod",
+	// 			"tidy"
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "docker: build",
+	// 		"type": "shell",
+	// 		"command": "docker",
+	// 		"args": [
+	// 			"build",
+	// 			"-t",
+	// 			"budva43",
+	// 			"."
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		}
+	// 	},
+	// 	{
+	// 		"label": "docker-compose: up",
+	// 		"type": "shell",
+	// 		"command": "docker-compose",
+	// 		"args": [
+	// 			"up",
+	// 			"-d"
+	// 		],
+	// 		"group": "build",
+	// 		"presentation": {
+	// 			"echo": true,
+	// 			"reveal": "always",
+	// 			"focus": false,
+	// 			"panel": "shared",
+	// 			"showReuseMessage": true,
+	// 			"clear": false
+	// 		}
+	// 	}
+	// ]
+}
