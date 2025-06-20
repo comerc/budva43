@@ -3,6 +3,7 @@
 # При чтении из конфига: 
 # - цифровые ключи лишаются минуса
 # - именные ключи преобразуются в PascalCase
+# - пустые ключи требуют значение `dummy: true`
 
 sources:
   4814113560:
@@ -13,10 +14,10 @@ sources:
       title: "*Source Link*"
       for: [1002674233740]
 destinations:
-  # 
   1002674233740: 
+    dummy: true
 forward-rules:
   "Id3":
     from: 4814113560
     to: [1002674233740]
-    # send-copy: true
+    send-copy: true
