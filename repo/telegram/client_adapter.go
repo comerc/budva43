@@ -20,6 +20,8 @@ type clientAdapter interface {
 	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
 
 	// Other operations
+	LoadChats(*client.LoadChatsRequest) (*client.Ok, error)
+	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
 	GetListener() *client.Listener
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
