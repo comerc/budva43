@@ -10,11 +10,11 @@ type CustomError struct {
 	Stack []*CallInfo
 }
 
-func (ce *CustomError) Unwrap() error {
-	return ce.error
+func (e *CustomError) Unwrap() error {
+	return e.error
 }
 
-func NewError(text string, args ...any) error {
+func NewError(text string, args ...any) *CustomError {
 	return &CustomError{
 		error: errors.New(text),
 		Args:  args,

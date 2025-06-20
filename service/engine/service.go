@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 
 	"github.com/zelenin/go-tdlib/client"
 
@@ -91,6 +92,12 @@ func (s *Service) handleConfigReload() {
 	defer s.log.ErrorOrDebug(&err, "handleConfigReload")
 
 	err = engine_config.Reload()
+
+	var emptySources *engine_config.ErrEmptySources
+	if errors.As(err, &emptySources) {
+		s.log.Warn(emptySources.Error(), emptySources.Args...)
+		err = nil
+	}
 }
 
 // run запускает обработчик обновлений от Telegram
