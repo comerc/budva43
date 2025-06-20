@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"testing"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -70,4 +71,13 @@ func TestCopy(t *testing.T) {
 	assert.Equal(t, obj1.I, int64(1), "obj1.I не изменился")
 	assert.Equal(t, obj1.A, []string{"a", "b"}, "obj1.A не изменился")
 	assert.Equal(t, obj1.M, map[string]string{"a": "b"}, "obj1.M не изменился")
+}
+
+func TestGetCurrentDate(t *testing.T) {
+	t.Parallel()
+
+	synctest.Run(func() {
+		date := GetCurrentDate()
+		assert.Equal(t, date, "2000-01-01")
+	})
 }

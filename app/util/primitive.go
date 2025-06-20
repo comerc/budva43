@@ -48,7 +48,7 @@ func Copy[T any](from *T) *T {
 
 // GetCurrentDate возвращает текущую дату в формате YYYY-MM-DD
 func GetCurrentDate() string {
-	return time.Now().Format("2000-12-31")
+	return time.Now().Format("2006-01-02")
 }
 
 // ErrSet представляет собой коллекцию ошибок, которые могут возникнуть при shutdown
