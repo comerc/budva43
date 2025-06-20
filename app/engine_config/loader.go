@@ -20,8 +20,8 @@ var (
 
 func initEngineViper(projectRoot string) {
 	engineViper = viper.New()
-	file := filepath.Join(projectRoot, "config", config.General.EngineConfigFile)
-	engineViper.SetConfigFile(file)
+	path := filepath.Join(projectRoot, "config", config.General.EngineConfigFile)
+	engineViper.SetConfigFile(path)
 }
 
 // Reload перезагружает конфигурацию config.Engine из engine.yml
