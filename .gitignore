@@ -29,3 +29,4 @@ bin/
 vendor/
 _try/
 _*.go
+config/engine.yml
