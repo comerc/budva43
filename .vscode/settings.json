@@ -1,9 +1,77 @@
 {
-  "go.testEnvVars": {
-    "GOEXPERIMENT": "synctest"
-  },
-  "go.testFlags": [
-    "-count=1",
-  ],
-  "go.buildTags": "goexperiment.synctest"
+	"go.testEnvVars": {
+		"GOEXPERIMENT": "synctest"
+	},
+	"go.testFlags": [
+		"-count=1",
+	],
+	"go.buildTags": "goexperiment.synctest",
+	"go.toolsManagement.autoUpdate": true,
+	// "go.useLanguageServer": true,
+	// "go.gopath": "",
+	// "go.goroot": "",
+	// "go.buildOnSave": "package",
+	// "go.lintOnSave": "package",
+	// "go.vetOnSave": "package",
+	// "go.formatTool": "goimports",
+	// "go.lintTool": "golangci-lint", // "golint",
+	// "go.buildFlags": [
+	// 	"-race",
+	// ],
+	"go.installDependenciesWhenBuilding": true,
+	// "go.gocodeAutoBuild": true,
+	// "go.autocompleteUnimportedPackages": true,
+	// "go.gotoSymbol.includeImports": true,
+	// "go.gotoSymbol.includeGoroot": true,
+	// "go.docsTool": "godoc",
+	// "go.alternateTools": {
+	// 	"go": "go",
+	// 	"gofmt": "gofmt",
+	// 	"goimports": "goimports"
+	// },
+	// "go.languageServerFlags": [
+	// 	"-rpc.trace",
+	// 	"serve",
+	// 	"--debug=localhost:6060"
+	// ],
+	"files.eol": "\n",
+	"files.trimTrailingWhitespace": true,
+	"files.trimFinalNewlines": true,
+	"files.insertFinalNewline": true,
+	// "[go]": {
+	// 	"editor.formatOnSave": true,
+	// 	"editor.codeActionsOnSave": {
+	// 		"source.organizeImports": "always"
+	// 	},
+	// 	"editor.snippetSuggestions": "none",
+	// 	"editor.insertSpaces": false,
+	// 	"editor.detectIndentation": false,
+	// },
+	// "[go.mod]": {
+	// 	"editor.formatOnSave": true,
+	// 	"editor.codeActionsOnSave": {
+	// 		"source.organizeImports": "always"
+	// 	}
+	// },
+	// "gopls": {
+	// 	"completeUnimported": true,
+	// 	"usePlaceholders": true,
+	// 	"deepCompletion": true,
+	// 	"matcher": "fuzzy",
+	// 	"staticcheck": true,
+	// 	"gofumpt": true,
+	// 	"analyses": {
+	// 		"fillstruct": true,
+	// 		"nonewvars": true,
+	// 		"undeclaredname": true,
+	// 		"unusedparams": true
+	// 	},
+	// 	"codelenses": {
+	// 		"generate": true,
+	// 		"test": true,
+	// 		"tidy": true,
+	// 		"upgrade_dependency": true,
+	// 		"vendor": true
+	// 	}
+	// }
 }

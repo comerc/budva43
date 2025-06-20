@@ -12,7 +12,7 @@ git submodule init
 git submodule update
 ```
 
-## How to Dev Start 
+## How to Dev Start
 
 Use DevContainer (some restrictions) for build on Ubuntu or direct install TDLib on host machine for best dev experience.
 
@@ -24,7 +24,7 @@ docker-compose build
 ```
 ...then "Reopen in Container"
 
-### With direct TDLib 
+### With direct TDLib
 
 Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this options:
 
@@ -94,7 +94,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] pprof
 - [x] time.AfterFunc() & context.AfterFunc()
 - [x] init() - цепочка зависимостей config -> log -> spylog
- 
+
 ## .env
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
@@ -262,3 +262,12 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
+
+## Debug Hot Keys
+
+- F5 - запустить отладку с выбранной конфигурацией
+- Ctrl+F5 - запустить без отладки
+- F9 - поставить/убрать breakpoint
+- F10 - step over (перейти к следующей строке)
+- F11 - step into (войти в функцию)
+- Shift+F11 - step out (выйти из функции)
