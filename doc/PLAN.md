@@ -212,7 +212,7 @@ budva43/
 - [Декларация следования принципам ](./DECLARATION.md)
 - [Соглашения](./CONVENTIONS.md)
 - [Архитектура v2](./ARCHITECTURE-V2.md)
-- [Шаблоны проектирования](./DESIGN_PATTERNS.md)
+- [Шаблоны проектирования](./DESIGN-PATTERNS.md)
 - [Конечный автомат](./FSM.md)
 - [Архитектурные приёмы для обеспечения высокой нагрузки](./HIGHLOAD.md)
 - [Разграничение бизнес-правил (deprecated)](./_BUSINESS-RULES.md)
