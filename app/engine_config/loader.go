@@ -24,12 +24,20 @@ func initEngineViper(projectRoot string) {
 	engineViper.SetConfigFile(path)
 }
 
+type initializeDestinations = func([]entity.ChatId)
+
 // Reload перезагружает конфигурацию config.Engine из engine.yml
-func Reload() error {
+func Reload(initializeDestinations initializeDestinations) error {
 	newEngineConfig, err := load()
 	if err != nil {
 		return log.WrapError(err)
 	}
+
+	var destinations []entity.ChatId
+	for dstChatId := range newEngineConfig.UniqueDestinations {
+		destinations = append(destinations, dstChatId)
+	}
+	initializeDestinations(destinations)
 
 	// Атомарно заменяем глобальную конфигурацию
 	config.Engine = newEngineConfig
@@ -56,7 +64,7 @@ func load() (*entity.EngineConfig, error) {
 		return nil, log.WrapError(err)
 	}
 
-	initialize(engineConfig)
+	Initialize(engineConfig)
 
 	if err := validate(engineConfig); err != nil {
 		return nil, log.WrapError(err)
@@ -73,8 +81,8 @@ func load() (*entity.EngineConfig, error) {
 	return engineConfig, nil
 }
 
-// initialize инициализирует конфигурацию
-func initialize(engineConfig *entity.EngineConfig) {
+// Initialize инициализирует конфигурацию
+func Initialize(engineConfig *entity.EngineConfig) {
 	if engineConfig.Sources == nil {
 		engineConfig.Sources = make(map[entity.ChatId]*entity.Source)
 	}
@@ -84,6 +92,8 @@ func initialize(engineConfig *entity.EngineConfig) {
 	if engineConfig.ForwardRules == nil {
 		engineConfig.ForwardRules = make(map[entity.ForwardRuleId]*entity.ForwardRule)
 	}
+	engineConfig.UniqueSources = make(map[entity.ChatId]struct{})
+	engineConfig.UniqueDestinations = make(map[entity.ChatId]struct{})
 }
 
 // validate проверяет корректность конфигурации
@@ -240,8 +250,6 @@ func transform(engineConfig *entity.EngineConfig) {
 
 // enrich обогащает конфигурацию
 func enrich(engineConfig *entity.EngineConfig) {
-	engineConfig.UniqueSources = make(map[entity.ChatId]struct{})
-	engineConfig.UniqueDestinations = make(map[entity.ChatId]struct{})
 	tmpOrderedForwardRules := make([]entity.ForwardRuleId, 0)
 
 	for key, destination := range engineConfig.Destinations {

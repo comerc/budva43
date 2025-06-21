@@ -4,7 +4,7 @@
 
 ## Communicating Sequential Processes (CSP)
 
-Основной принцип Go в контексте конкурентности выражен фразой: 
+Основной принцип Go в контексте конкурентности выражен фразой:
 > "Don't communicate by sharing memory, share memory by communicating"
 
 Это означает, что вместо защиты общей памяти с помощью мьютексов и других примитивов синхронизации, лучше организовать обмен данными через каналы.
@@ -103,11 +103,11 @@
         if msg == nil {
             return errors.New("message is nil")
         }
-        
+
         if err := validateMessage(msg); err != nil {
             return fmt.Errorf("invalid message: %w", err)
         }
-        
+
         // Основная логика обработки сообщения
         return nil
     }
@@ -242,7 +242,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
     // Инициализация сервисов
     messageService := messageService.New(telegramRepo, storageRepo)
     forwardService := forwardService.New(messageService)
-    
+
     // Запуск HTTP-сервера
     httpServer := httpTransport.NewHTTPServer(messageService)
     if ctx, err = util.Serve(ctx, "httpServer", errSet, httpServer.Serve); err != nil {
@@ -274,7 +274,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
     - Сервисы оборачивают ошибки репозиториев в доменные ошибки
     - Контроллеры преобразуют доменные ошибки в понятный формат для клиента
     - Транспортный слой преобразует ошибки в соответствующие форматы протокола
-    
+
 ## Модификация подхода к передаче данных
 
 В связи с отказом от отдельного слоя DTO, функциональность передачи данных перешла к Entity:
@@ -297,25 +297,25 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
        if err != nil {
            return nil, err
        }
-       
+
        return message, nil
    }
-   
+
    // В HTTP-обработчике
    func (h *HTTPHandler) HandleGetMessage(w http.ResponseWriter, r *http.Request) {
        // Получаем Id из запроса
        id := getIdFromRequest(r)
-       
+
        // Получаем сообщение через контроллер
        message, err := h.messageController.GetMessage(r.Context(), id)
        if err != nil {
            handleError(w, err)
            return
        }
-       
+
        // Используем метод Entity для подготовки ответа
        response := message.ToResponse()
-       
+
        // Отправляем ответ
        sendJSON(w, response)
    }
@@ -350,7 +350,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
        }
        return message, nil
    }
-   
+
    // В сервисе
    func (s *MessageService) GetMessage(ctx context.Context, id int64) (*entity.Message, error) {
        message, err := s.repo.GetMessage(id)
@@ -362,7 +362,7 @@ func runApp(ctx context.Context, errSet *errors.ErrSet) error {
        }
        return message, nil
    }
-   
+
    // В HTTP-обработчике
    func handleError(w http.ResponseWriter, err error) {
        switch {
@@ -494,7 +494,7 @@ var f1 fn1 = func(d driver1) {}
 var f2 fn2 = f1 // ошибка компиляции
 ```
 
-Из-за этого ограничения нельзя использовать передачу интерфейсов в аргументах методов других интерфейсов. Идиома применима только в функциях-констукторах. 
+Из-за этого ограничения нельзя использовать передачу интерфейсов в аргументах методов других интерфейсов. Идиома применима только в функциях-констукторах.
 
 ## Частичное применение интерфейса
 
@@ -505,7 +505,7 @@ var f2 fn2 = f1 // ошибка компиляции
 ### Основные преимущества
 
 - **Interface Segregation Principle**: соблюдение принципа разделения интерфейсов
-- **Слабая связанность**: модуль не зависит от неиспользуемых методов  
+- **Слабая связанность**: модуль не зависит от неиспользуемых методов
 - **Читаемость**: сразу видно, какие именно методы использует модуль
 - **Тестируемость**: нужно мокать только используемые методы
 
@@ -591,7 +591,7 @@ type telegramRepo interface {
 
 Для **"частично применяемых интерфейсов"** в сочетании с идиомой **"Accept interfaces, return structs"** возникает ограничение: нельзя использовать интерфейсы в качестве параметров методов других интерфейсов из-за несовместимости типов функций с именованными типами в Go.
 
-**Решение**: на замену идеальному интерфейсу, использование колбеков (функций первого класса) в качестве параметров методов частично применяемых интерфейсов. 
+**Решение**: на замену идеальному интерфейсу, использование колбеков (функций первого класса) в качестве параметров методов частично применяемых интерфейсов.
 
 Но, в отличие от идеальных интерфейсов, функции и методы принято именовать с глагола + опциональное существительное.
 
@@ -653,12 +653,12 @@ func NewFuncProcess(validator Validator, transformer Transformer) process {
         if err := validator.Validate(data); err != nil {
             return fmt.Errorf("validation failed: %w", err)
         }
-        
+
         transformed, err := transformer.Transform(data)
         if err != nil {
             return fmt.Errorf("transformation failed: %w", err)
         }
-        
+
         // Дополнительная логика обработки
         return nil
     }
@@ -703,7 +703,7 @@ var v2 V2
 
 **Или альтернативный вариант:**
 
-```go 
+```go
 {
     v1, err := NewV1()
     if err != nil {
@@ -818,18 +818,18 @@ func TestFormatMessage(t *testing.T) {
         },
         // другие тест-кейсы
     }
-    
+
     for _, test := range tests {
         t.Run(test.name, func(t *testing.T) {
             t.Parallel()
-            
+
             // Атомарная инициализация для каждого тест-кейса
             input := test.setupInput()
             formatter := test.setupMocks()
-            
+
             // Выполнение тестируемой функции
             result, err := FormatMessage(input, formatter)
-            
+
             // Проверка результата через функцию проверки
             test.verifyFunc(t, result, err, formatter)
         })
@@ -851,11 +851,11 @@ func TestFormatMessage(t *testing.T) {
 func (s *Service) GetMessage() {
 	tdlibClient := s.telegramRepo.GetClient()
     // тут будет лишней проверка, что tdlibClient != nil
-    // пока не инициализирован tdlibClient, 
+    // пока не инициализирован tdlibClient,
     // мы никакие методы не вызываем
 
     message, err := tdlibClient.GetMessage()
-    //... 
+    //...
 ```
 
 ```go
@@ -888,7 +888,7 @@ func (s *Service) sendMessage(message *client.Message) {
 
 **Характеристики:**
 - Декларативный стиль программирования
-- Использование колбэков (callback functions)
+- Использование колбеков (callback functions)
 - Цепочки действий (chaining)
 - Автоматическое управление ресурсами
 
@@ -896,15 +896,15 @@ func (s *Service) sendMessage(message *client.Message) {
 ```go
 func scheduleTask(ctx context.Context) {
     var timer *time.Timer
-    
+
     // Автоматическая отмена при отмене контекста
     stop := context.AfterFunc(ctx, func() {
         if timer != nil {
             timer.Stop()
         }
     })
-    
-    // Планирование выполнения через колбэк
+
+    // Планирование выполнения через колбек
     timer = time.AfterFunc(1*time.Second, func() {
         stop()
         processTask()
@@ -942,7 +942,7 @@ function scheduleTask() {
 func runLoop(ctx context.Context) {
     ticker := time.NewTicker(1 * time.Second)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-ctx.Done():
@@ -975,7 +975,7 @@ async function runLoop(signal) {
 | **Читаемость** | Сложнее для новичков | Проще и понятнее |
 | **Производительность** | Меньше горутин | Больше ресурсов |
 | **Управление ресурсами** | Автоматическое | Ручное |
-| **Отмена операций** | Встроенная в колбэк | Явная проверка |
+| **Отмена операций** | Встроенная в колбек | Явная проверка |
 | **Цепочки действий** | Естественные | Требуют дополнительной логики |
 | **Тестируемость** | Сложнее мокировать | Проще тестировать |
 
@@ -993,15 +993,15 @@ async function runLoop(signal) {
 func (s *Service) WaitForForward(ctx context.Context, chatId int64) {
     if delay := s.calculateDelay(chatId); delay > 0 {
         done := make(chan struct{})
-        
+
         stop := context.AfterFunc(ctx, func() {
             close(done)
         })
-        
+
         timer := time.AfterFunc(delay, func() {
             close(done)
         })
-        
+
         <-done
         timer.Stop()
         stop()
@@ -1021,7 +1021,7 @@ func (s *Service) WaitForForward(ctx context.Context, chatId int64) {
 func (s *Repo) run(ctx context.Context) {
     ticker := time.NewTicker(1 * time.Second)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-ctx.Done():
@@ -1072,7 +1072,7 @@ func (s *Repo) run(ctx context.Context) {
 
 ### **Схема префиксов:**
 - `100xx` - common (переиспользуемые между модулями данные)
-- `101xx` - service.transform 
+- `101xx` - service.transform
 - `102xx` - service.engine
 - `103xx` - service.forwarder
 - ...
@@ -1094,7 +1094,7 @@ func (s *Repo) run(ctx context.Context) {
 ```yaml
 # config.yml
 10100: # sign only test
-10101: # link only test  
+10101: # link only test
 10109: # destination chat
 ```
 

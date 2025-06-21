@@ -74,6 +74,16 @@ func (r *Repo) GetMessageLinkInfo(req *client.GetMessageLinkInfoRequest) (*clien
 	return r.getClient().GetMessageLinkInfo(req)
 }
 
+// LoadChats загружает чаты
+func (r *Repo) LoadChats(req *client.LoadChatsRequest) (*client.Ok, error) {
+	return r.getClient().LoadChats(req)
+}
+
+// GetChatHistory выводит историю сообщений
+func (r *Repo) GetChatHistory(req *client.GetChatHistoryRequest) (*client.Messages, error) {
+	return r.getClient().GetChatHistory(req)
+}
+
 // GetListener возвращает слушателя TDLib
 func (r *Repo) GetListener() *client.Listener {
 	return r.getClient().GetListener()

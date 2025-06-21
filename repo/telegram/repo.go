@@ -84,12 +84,13 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 	for {
 		ok := func() bool {
 			var err error
-			defer r.log.ErrorOrDebug(&err, "client.NewClient")
+			defer r.log.ErrorOrDebug(&err, "CreateClient")
 
 			authorizationStateHandler := runAuthorizationStateHandler()
 			var tdlibClient *client.Client
 			tdlibClient, err = client.NewClient(authorizationStateHandler)
 			if err != nil {
+				err = log.WrapError(err)
 				return false
 			}
 
