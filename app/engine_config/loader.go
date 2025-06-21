@@ -286,7 +286,7 @@ type ErrEmptyConfigData struct {
 func check(engineConfig *entity.EngineConfig) error {
 	var args []any
 
-	getKey := util.NewFuncWithIndex("path")
+	getKey := util.NewFuncWithIndex("path") // (!) частичное применение
 
 	if len(engineConfig.UniqueSources) == 0 {
 		args = append(args, getKey(), "config.Engine.UniqueSources")
