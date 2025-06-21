@@ -14,7 +14,8 @@ func TestCheck(t *testing.T) {
 
 	err := check(&entity.EngineConfig{})
 	var emptyConfigData *ErrEmptyConfigData
-	require.True(t, errors.As(err, &emptyConfigData))
+	ok := errors.As(err, &emptyConfigData)
+	require.True(t, ok)
 
 	assert.Equal(t, err.Error(), "отсутствуют данные")
 	assert.Equal(t, emptyConfigData.Args, []any{
