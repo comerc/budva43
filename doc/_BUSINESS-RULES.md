@@ -1,6 +1,6 @@
 # Разграничение бизнес-правил
 
-deprecated - отказались от классического DAO&DTO для упрощения, см. [Архитектура v2](./ARCHITECTURE_V2.md)
+deprecated - отказались от классического DAO&DTO для упрощения, см. [Архитектура v2](./ARCHITECTURE-V2.md)
 
 ## Разница между Enterprise Business Rules и Application Business Rules
 
