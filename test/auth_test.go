@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -122,8 +123,8 @@ func TestAuth(t *testing.T) {
 	err = automator.SendInput(code)
 	require.NoError(t, err)
 
-	target := fmt.Sprintf("http://%s:%d/api/auth/telegram/state",
-		config.Web.Host, config.Web.Port)
+	target := fmt.Sprintf("http://%s/api/auth/telegram/state",
+		net.JoinHostPort(config.Web.Host, config.Web.Port))
 
 	// Отправляем реальный HTTP-запрос к запущенному серверу
 	client := &http.Client{

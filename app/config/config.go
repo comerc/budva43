@@ -72,7 +72,7 @@ type (
 	// Настройки веб-интерфейса
 	web struct {
 		Host            string
-		Port            int
+		Port            string
 		ReadTimeout     time.Duration
 		WriteTimeout    time.Duration
 		ShutdownTimeout time.Duration
