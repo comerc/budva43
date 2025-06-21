@@ -8,8 +8,6 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
-// TODO: зочем? у нас уже есть таймер в service/queue/service.go, который отвечает за задержку между сообщениями
-
 const waitForForward = 3 * time.Second // чтобы бот успел отреагировать на сообщение
 
 // Service управляет скоростью пересылки сообщений
