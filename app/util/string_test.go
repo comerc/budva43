@@ -57,3 +57,12 @@ func TestGetCurrentDate(t *testing.T) {
 		assert.Equal(t, date, "2000-01-01")
 	})
 }
+
+func TestNewFuncWithIndex(t *testing.T) {
+	t.Parallel()
+
+	getKey := NewFuncWithIndex("path")
+	assert.Equal(t, getKey(), "path[0]")
+	assert.Equal(t, getKey(), "path[1]")
+	assert.Equal(t, getKey(), "path[2]")
+}
