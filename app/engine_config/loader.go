@@ -1,6 +1,7 @@
 package engine_config
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -30,7 +31,10 @@ type initializeDestinations = func([]entity.ChatId)
 func Reload(initializeDestinations initializeDestinations) error {
 	newEngineConfig, err := load()
 	if err != nil {
-		return log.WrapError(err)
+		var emptyConfigData *ErrEmptyConfigData
+		if !errors.As(err, &emptyConfigData) {
+			return log.WrapError(err)
+		}
 	}
 
 	var destinations []entity.ChatId
@@ -42,7 +46,7 @@ func Reload(initializeDestinations initializeDestinations) error {
 	// Атомарно заменяем глобальную конфигурацию
 	config.Engine = newEngineConfig
 
-	return nil
+	return err // нужно вернуть ErrEmptyConfigData
 }
 
 // Watch настраивает отслеживание изменений engine.yml
@@ -75,7 +79,7 @@ func load() (*entity.EngineConfig, error) {
 	enrich(engineConfig)
 
 	if err := check(engineConfig); err != nil {
-		return nil, log.WrapError(err)
+		return engineConfig, log.WrapError(err)
 	}
 
 	return engineConfig, nil
