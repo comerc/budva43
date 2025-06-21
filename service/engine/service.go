@@ -170,7 +170,7 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 			return
 		}
 
-		fn(destinations) // хвостовая рекурсия
+		fn(destinations) // (!) хвостовая рекурсия
 	}
 	return fn
 }
