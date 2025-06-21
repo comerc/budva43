@@ -42,8 +42,8 @@ func setDefaultConfig(config *config) {
 	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
 	// config.Storage.BackupFrequency = "daily"
 
-	config.Web.Port = 7070
-	config.Web.Host = "localhost"
+	config.Web.Port = "7070"
+	config.Web.Host = "localhost" // V6 supported
 	config.Web.ReadTimeout = 15 * time.Second
 	config.Web.WriteTimeout = 15 * time.Second
 	config.Web.ShutdownTimeout = 5 * time.Second

@@ -52,8 +52,9 @@ func New(
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	_ = shutdown // не используется
 
-	if !isPortFree(config.Web.Host, config.Web.Port) {
-		err := fmt.Errorf("port %s:%d is busy -> make kill-port", config.Web.Host, config.Web.Port)
+	addr := net.JoinHostPort(config.Web.Host, config.Web.Port)
+	if !isPortFree(addr) {
+		err := fmt.Errorf("port %s is busy -> make kill-port", addr)
 		return log.WrapError(err)
 	}
 
@@ -98,7 +99,7 @@ func (t *Transport) createServer() {
 
 	// Настраиваем HTTP-сервер
 	t.server = &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", config.Web.Host, config.Web.Port),
+		Addr:         net.JoinHostPort(config.Web.Host, config.Web.Port),
 		Handler:      mux,
 		ReadTimeout:  config.Web.ReadTimeout,
 		WriteTimeout: config.Web.WriteTimeout,
@@ -260,9 +261,7 @@ func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request)
 }
 
 // isPortFree проверяет, свободен ли порт
-func isPortFree(host string, port int) bool {
-	addr := fmt.Sprintf("%s:%d", host, port) // нужно оставить без протокола
-
+func isPortFree(addr string) bool {
 	// Пытаемся подключиться к порту как клиент
 	conn, err := net.DialTimeout("tcp", addr, 1*time.Second)
 	if err != nil {
