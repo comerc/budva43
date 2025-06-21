@@ -3,7 +3,6 @@
 # При чтении из конфига:
 # - цифровые ключи лишаются минуса
 # - именные ключи преобразуются в PascalCase
-# - пустые ключи требуют значение `dummy: true`
 
 sources:
   111:
@@ -43,7 +42,6 @@ sources:
       title: "Test Source"
       for: [10108] # не для чата 10109
   10104: # for empty source test
-    dummy: true
   10105: # for get message link error test
     link:
       title: "Source Link"
@@ -85,7 +83,6 @@ destinations:
       - from: "old"
         to: "new"
   10113: # for no fragments test
-    dummy: true
   10114: # for replace myself links test
     replace-myself-links:
       run: true
