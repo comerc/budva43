@@ -1,6 +1,6 @@
 # budva43
 
-Telegram-Forwarder (UNIX-way) - пересылает сообщения из наблюдаемых каналов и групп в целевые по заданным правилам, получая дайджест.
+Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
 [PLAN](./docs/PLAN.md)
 
@@ -77,7 +77,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] samber/do
 - [ ] samber/oops
 - [ ] samber/slog-*
-- [x] тестирование Time & Concurrency https://danp.net/posts/synctest-experiment/
+- [x] testing: Time & Concurrency https://danp.net/posts/synctest-experiment/
 - [ ] spf13/cobra
 - [x] go.mod replace
 - [x] [comerc/spylog](https://github.com/comerc/spylog)
@@ -93,17 +93,17 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] grafana-loki
 - [ ] pprof
 - [x] time.AfterFunc() & context.AfterFunc()
-- [x] init() - цепочка зависимостей config -> log -> spylog
-- [x] замыкания (каррирование и частичное применение)
-- [x] хвостовая рекурсия
+- [x] init() - dependency chain: config -> log -> spylog
+- [x] closures (currying and partial application)
+- [x] tail recursion
 - [x] errors.Is & errors.As
-- [x] дженерики
+- [x] generics
 - [x] PUB/SUB
-- [x] табличные (call-)тесты
-- [x] интеграционные тесты
-- [x] отдельный конфиг для e2e-тестов
-- [x] динамический конфиг engine.yml
-- [x] структурированные логи и ошибки
+- [x] table (call-)tests
+- [x] integration tests
+- [x] separate config for e2e tests
+- [x] dynamic config engine.yml
+- [x] structured logs and errors
 - [x] cliAutomator
 
 ## .env
@@ -112,21 +112,30 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 
 ```
 BUDVA43__TELEGRAM__API_ID=1234567
-BUDVA43__TELEGRAM__API_HASH=XXXXXXXX
+BUDVA43__TELEGRAM__API_HASH=XXXXXXX
 BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
 ```
 
-## First start for Telegram auth via web
+## Config example
 
-http://localhost:7007
+see ./config/*.yml
 
-<!-- ## Old variants for Telegram auth (draft)
+## First start for Telegram auth
 
 from console:
 
+```bash
+$ make run
 ```
-$ go run .
-```
+
+<!--
+
+## Old variants for Telegram auth (draft)
+
+via web:
+
+http://localhost:7007
+
 
 or via docker:
 
@@ -140,15 +149,13 @@ but then we have problem with permissions (may be need docker rootless mode?):
 
 ```
 $ sudo chmod -R 777 ./tdata
-``` -->
-
-## .config.yml example
-
-see ./config.yml
+```
 
 ## Get chat list with limit (optional)
 
 http://localhost:7007?limit=10
+
+-->
 
 ## Examples for go-tdlib
 
@@ -273,12 +280,3 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
-
-## Debug Hot Keys
-
-- F5 - запустить отладку с выбранной конфигурацией
-- Ctrl+F5 - запустить без отладки
-- F9 - поставить/убрать breakpoint
-- F10 - step over (перейти к следующей строке)
-- F11 - step into (войти в функцию)
-- Shift+F11 - step out (выйти из функции)
