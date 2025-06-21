@@ -50,6 +50,7 @@ type Service struct {
 	updateMessageEditedHandler  updateMessageEditedHandler
 	updateDeleteMessagesHandler updateDeleteMessagesHandler
 	updateMessageSendHandler    updateMessageSendHandler
+	loadChatsDone               bool
 }
 
 // New создает новый экземпляр сервиса engine
@@ -114,7 +115,7 @@ func (s *Service) handleConfigReload() {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "handleConfigReload")
 
-	err = engine_config.Reload(s.newFuncInitializeDestinations())
+	err = engine_config.Reload(s.newFuncInitializeDestinationsV2())
 
 	var emptyConfigData *engine_config.ErrEmptyConfigData
 	if errors.As(err, &emptyConfigData) {
@@ -133,7 +134,7 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 
 	fn = func(destinations []entity.ChatId) {
 
-		ok := func() bool {
+		repeat := func() bool {
 			var err error
 			defer s.log.ErrorOrDebug(&err, "initializeDestinations", "level", level)
 
@@ -159,20 +160,60 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 			if len(notFound) == 0 {
 				return false
 			}
-			if level == 2 {
-				err = log.NewError("not found", "destinations", destinations)
+			// TODO: было "level == 0", но рекурсия пока что отключена,
+			// LoadChats() нельзя вызывать дважды, только если перезапускать клиент,
+			// а это может привести к потере сообщений
+			if level == 0 {
+				a := []entity.ChatId{}
+				for k := range notFound {
+					a = append(a, k)
+				}
+				err = log.NewError("not found", "destinations", a)
 				return false
 			}
 			level++
 			return true
 		}()
-		if !ok {
+		if !repeat {
 			return
 		}
 
 		fn(destinations) // (!) хвостовая рекурсия
 	}
 	return fn
+}
+
+// newFuncInitializeDestinationsV2 создает колбек для загрузки чатов
+func (s *Service) newFuncInitializeDestinationsV2() initializeDestinations {
+	return func(destinations []entity.ChatId) {
+		var err error
+		defer s.log.ErrorOrDebug(&err, "initializeDestinations")
+
+		if !s.loadChatsDone {
+			s.loadChatsDone = true
+			_, err = s.telegramRepo.LoadChats(&client.LoadChatsRequest{
+				Limit: 200,
+			})
+			if err != nil {
+				err = log.WrapError(err)
+				return
+			}
+		}
+		notFound := []entity.ChatId{}
+		for _, dstChatId := range destinations {
+			_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
+				ChatId:    dstChatId,
+				Limit:     1,
+				OnlyLocal: true,
+			})
+			if err != nil {
+				notFound = append(notFound, dstChatId)
+			}
+		}
+		if len(notFound) > 0 {
+			err = log.NewError("not found", "destinations", notFound)
+		}
+	}
 }
 
 // handleUpdates обрабатывает обновления от Telegram
