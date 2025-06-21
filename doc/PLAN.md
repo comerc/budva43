@@ -220,4 +220,4 @@ budva43/
 - [Почему model (deprecated)](./_MODEL.md)
 - [Транспортный слой](./TRANSPORT.md)
 - [Обсуждения](./DISCUSSION.md)
-- [Технический долг](./TECH_DEBT.md)
+- [Технический долг](./TECH-DEBT.md)
