@@ -94,6 +94,17 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] pprof
 - [x] time.AfterFunc() & context.AfterFunc()
 - [x] init() - цепочка зависимостей config -> log -> spylog
+- [x] замыкания (каррирование и частичное применение)
+- [x] хвостовая рекурсия
+- [x] errors.Is & errors.As
+- [x] дженерики
+- [x] PUB/SUB
+- [x] табличные (call-)тесты
+- [x] интеграционные тесты
+- [x] отдельный конфиг для e2e-тестов
+- [x] динамический конфиг engine.yml
+- [x] структурированные логи и ошибки
+- [x] cliAutomator
 
 ## .env
 
