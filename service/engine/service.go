@@ -75,7 +75,10 @@ func (s *Service) Start(ctx context.Context) error {
 
 	s.ctx = ctx
 
-	// Настраиваем отслеживание изменений engine.yml
+	// Загружаем в первый раз engine.yml
+	s.handleConfigReload()
+
+	// Подключаем отслеживание изменений engine.yml
 	engine_config.Watch(s.handleConfigReload)
 
 	go s.run()
