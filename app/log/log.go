@@ -28,11 +28,11 @@ func (l *Logger) ErrorOrDebug(errPtr *error, message string, args ...any) {
 	l.logWithError(slog.LevelDebug, errPtr, message, args...)
 }
 
-func (l *Logger) InfoOrError(errPtr *error, message string, args ...any) {
+func (l *Logger) ErrorOrInfo(errPtr *error, message string, args ...any) {
 	l.logWithError(slog.LevelInfo, errPtr, message, args...)
 }
 
-func (l *Logger) WarnOrError(errPtr *error, message string, args ...any) {
+func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
 	l.logWithError(slog.LevelWarn, errPtr, message, args...)
 }
 
