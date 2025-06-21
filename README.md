@@ -1,4 +1,4 @@
-# budva43
+# budva43 [![Go Report Card][reportcard-img]][reportcard]
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
@@ -105,6 +105,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] dynamic config engine.yml
 - [x] structured logs and errors
 - [x] cliAutomator
+- [ ] codecov.io (as uber/atomic)
 
 ## .env
 
@@ -280,3 +281,6 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
+
+[reportcard-img]: https://goreportcard.com/badge/github.com/comerc/budva43
+[reportcard]: https://goreportcard.com/report/github.com/comerc/budva43
