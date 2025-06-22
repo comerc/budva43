@@ -51,16 +51,25 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		}
 		typeName := strings.TrimPrefix(fmt.Sprintf("%T", err), "*")
 		args = append(args, "type", typeName)
-		if stack == nil {
-			stack = GetCallStack(3, 1)
+		if options.ErrorSource.Type != TypeSourceNone {
+			if stack == nil {
+				var depth int
+				if options.ErrorSource.Type == TypeSourceSimple {
+					depth = 1
+				}
+				stack = GetCallStack(3, depth)
+			}
+			switch options.ErrorSource.Type {
+			case TypeSourceCallStack:
+				var groupArgs []any
+				for i, item := range stack {
+					groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
+				}
+				args = append(args, slog.Group("source", groupArgs...))
+			case TypeSourceSimple:
+				args = append(args, "source", stack[0].String())
+			}
 		}
-		args = append(args, "source", stack[0].String())
-		// TODO: вынести в конфиг?
-		// group := []any{}
-		// for i, item := range stack {
-		// 	group = append(group, fmt.Sprintf("%d", i), item)
-		// }
-		// args = append(args, slog.Group("source", group...))
 	}
 	l.Log(context.Background(), level, message, args...)
 }

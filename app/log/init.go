@@ -14,17 +14,23 @@ var once sync.Once
 // но подходит для реализации синглтона
 func init() {
 	once.Do(func() {
+		options = &Options{
+			ErrorSource: &SourceOptions{
+				Type:         config.General.Log.ErrorSource.Type,
+				RelativePath: config.General.Log.ErrorSource.RelativePath,
+			},
+		}
 		setupDefaultLogger()
 	})
 }
 
 func setupDefaultLogger() {
 	writer := NewWriter(
-		filepath.Join(config.General.LogDirectory, "app.log"),
-		config.General.LogMaxFileSize,
+		filepath.Join(config.General.Log.Directory, "app.log"),
+		config.General.Log.MaxFileSize,
 	)
 	logHandler := slog.NewJSONHandler(writer, &slog.HandlerOptions{
-		Level: config.General.LogLevel,
+		Level: config.General.Log.Level,
 	})
 	slog.SetDefault(slog.New(logHandler))
 }

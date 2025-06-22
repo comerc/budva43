@@ -203,8 +203,11 @@ func GetCallStack(skip int, depth int) []*CallInfo {
 		// Получаем короткое имя функции без полного пути модуля
 		funcName := getFuncName(fullFnName)
 
-		// Получаем относительный путь к файлу от корня проекта
-		fileName := getRelativePath(fullPath)
+		fileName := fullPath
+		if options.ErrorSource.RelativePath {
+			// Получаем относительный путь к файлу от корня проекта
+			fileName = getRelativePath(fullPath)
+		}
 
 		result = append(result, &CallInfo{
 			FuncName: funcName,

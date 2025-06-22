@@ -19,11 +19,11 @@ func TestCheck(t *testing.T) {
 
 	assert.Equal(t, err.Error(), "отсутствуют данные")
 	assert.Equal(t, emptyConfigData.Args, []any{
-		"path[0]",
+		"path.0",
 		"config.Engine.UniqueSources",
-		"path[1]",
+		"path.1",
 		"config.Engine.UniqueDestinations",
-		"path[2]",
+		"path.2",
 		"config.Engine.OrderedForwardRules",
 	})
 }

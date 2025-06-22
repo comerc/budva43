@@ -3,10 +3,14 @@
 # Общие настройки
 general:
   # test-verbose: true # nil - production mode
-  # log-level: -4 # DEBUG
-  # log-directory: "./.data/log"
-  # log-max-file-size: 10 # MB
   # engine-config-file: "engine.yml" # или .json
+  # log:
+  #   level: -4 # DEBUG
+  #   directory: "./.data/log"
+  #   max-file-size: 10 # MB
+  #   source:
+  #     type: "simple"
+  #     relative-path: true
 
 # Настройки Telegram
 telegram:

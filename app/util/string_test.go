@@ -62,7 +62,7 @@ func TestNewFuncWithIndex(t *testing.T) {
 	t.Parallel()
 
 	getKey := NewFuncWithIndex("path")
-	assert.Equal(t, getKey(), "path[0]")
-	assert.Equal(t, getKey(), "path[1]")
-	assert.Equal(t, getKey(), "path[2]")
+	assert.Equal(t, getKey(), "path.0")
+	assert.Equal(t, getKey(), "path.1")
+	assert.Equal(t, getKey(), "path.2")
 }

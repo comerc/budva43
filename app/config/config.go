@@ -31,21 +31,38 @@ type (
 	// Общие настройки приложения
 	general struct {
 		TestVerbose      *string // nil - production mode & debug mode
-		LogLevel         slog.Level
-		LogDirectory     string
-		LogMaxFileSize   int // MB
 		EngineConfigFile string
+		Log              generalLog
+	}
+
+	// Настройки логирования приложения
+	generalLog struct {
+		Level       slog.Level
+		Directory   string
+		MaxFileSize int // MB
+		ErrorSource errorSource
+	}
+
+	// Настройки источника ошибок
+	errorSource struct {
+		Type         string
+		RelativePath bool
 	}
 
 	// Настройки хранилища данных
 	storage struct {
-		LogLevel          slog.Level
-		LogDirectory      string
-		LogMaxFileSize    int // MB
+		Log               storageLog
 		DatabaseDirectory string
 		// BackupEnabled     bool
 		// BackupDirectory string
 		// BackupFrequency string
+	}
+
+	// Настройки логирования хранилища данных
+	storageLog struct {
+		Level       slog.Level
+		Directory   string
+		MaxFileSize int // MB
 	}
 
 	// Настройки Telegram
