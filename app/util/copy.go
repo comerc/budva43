@@ -6,6 +6,11 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+func SimpleCopy[T any](from *T) *T {
+	result := *from
+	return &result
+}
+
 // Copy копирует любую структуру, про ограничения: "doc/COPY.md"
 func Copy[T any](from *T) *T {
 	var err error
