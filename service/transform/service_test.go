@@ -3,6 +3,7 @@ package transform
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,13 +12,21 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/engine_config"
 	_ "github.com/comerc/budva43/app/engine_config"
+	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
 )
 
 // data for service.transform - -101xx
+
+func TestMain(m *testing.M) {
+	initializeDestinations := func([]entity.ChatId) {}
+	engine_config.Reload(initializeDestinations)
+	os.Exit(m.Run())
+}
 
 func TestTransformService_Transform(t *testing.T) {
 	t.Parallel()
