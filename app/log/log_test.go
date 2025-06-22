@@ -67,8 +67,8 @@ func TestSomeMethod(t *testing.T) {
 			expectedSource: "app/log/log_test.go:39 log.(*SomeObject).NestedMethod",
 		},
 		{
-			name:           "callstack",
-			sourceType:     TypeSourceCallStack,
+			name:           "more",
+			sourceType:     TypeSourceMore,
 			relativePath:   true,
 			expectedSource: "[0=app/log/log_test.go:39 log.(*SomeObject).NestedMethod 1=app/log/log_test.go:27 log.(*SomeObject).SomeMethod 2=app/log/log_test.go:88 log.TestSomeMethod.func2]",
 		},

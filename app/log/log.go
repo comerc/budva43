@@ -56,7 +56,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 				stack = GetCallStack(3)
 			}
 			switch options.ErrorSource.Type {
-			case TypeSourceCallStack:
+			case TypeSourceMore:
 				var groupArgs []any
 				for i, item := range stack {
 					groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())

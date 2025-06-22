@@ -13,6 +13,6 @@ type SourceType = string
 
 var TypeSourceNone SourceType = ""
 var TypeSourceOne SourceType = "one"
-var TypeSourceCallStack SourceType = "callstack"
+var TypeSourceMore SourceType = "more"
 
 var options *Options
