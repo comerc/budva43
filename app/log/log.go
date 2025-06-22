@@ -53,11 +53,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		args = append(args, "type", typeName)
 		if options.ErrorSource.Type != TypeSourceNone {
 			if stack == nil {
-				var depth int
-				if options.ErrorSource.Type == TypeSourceSimple {
-					depth = 1
-				}
-				stack = GetCallStack(3, depth)
+				stack = GetCallStack(3)
 			}
 			switch options.ErrorSource.Type {
 			case TypeSourceCallStack:
@@ -66,7 +62,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 					groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
 				}
 				args = append(args, slog.Group("source", groupArgs...))
-			case TypeSourceSimple:
+			case TypeSourceOne:
 				args = append(args, "source", stack[0].String())
 			}
 		}
