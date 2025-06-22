@@ -176,7 +176,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 					err = log.NewError("forwardRule not found")
 					return
 				}
-				if !forwardRule.Indelible {
+				if forwardRule.Indelible {
 					return
 				}
 
