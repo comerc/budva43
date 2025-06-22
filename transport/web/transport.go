@@ -110,7 +110,7 @@ func (t *Transport) runServer() {
 	var err error
 	defer t.log.ErrorOrDebug(&err, "runServer", "addr", t.server.Addr)
 
-	err = t.server.ListenAndServe() // нельзя использовать log.WrapError()
+	err = t.server.ListenAndServe()
 
 	if errors.Is(err, http.ErrServerClosed) {
 		err = nil

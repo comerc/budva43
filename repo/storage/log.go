@@ -15,11 +15,11 @@ type Logger struct {
 
 func NewLogger() *Logger {
 	writer := log.NewWriter(
-		filepath.Join(config.Storage.LogDirectory, "badger.log"),
-		config.Storage.LogMaxFileSize,
+		filepath.Join(config.Storage.Log.Directory, "badger.log"),
+		config.Storage.Log.MaxFileSize,
 	)
 	logHandler := slog.NewJSONHandler(writer, &slog.HandlerOptions{
-		Level: config.Storage.LogLevel,
+		Level: config.Storage.Log.Level,
 	})
 	return &Logger{
 		log: slog.New(logHandler),

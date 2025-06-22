@@ -38,6 +38,6 @@ func NewFuncWithIndex(prefix string) func() string {
 	index := -1
 	return func() string {
 		index++
-		return fmt.Sprintf("%s[%d]", prefix, index)
+		return fmt.Sprintf("%s.%d", prefix, index)
 	}
 }

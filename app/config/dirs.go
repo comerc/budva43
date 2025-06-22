@@ -27,8 +27,8 @@ func makeDirs() {
 }
 
 var dirPtrs = []*string{
-	&General.LogDirectory,
-	&Storage.LogDirectory,
+	&General.Log.Directory,
+	&Storage.Log.Directory,
 	&Storage.DatabaseDirectory,
 	// &Storage.BackupDirectory,
 	&Telegram.LogDirectory,

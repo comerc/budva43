@@ -11,12 +11,14 @@ import (
 func setDefaultConfig(config *config) {
 	logDir := filepath.Join(util.ProjectRoot, ".data", "log")
 
-	config.General.TestVerbose = util.GetFlag("test.v") // не работает для debug-сессии!
-
-	config.General.LogLevel = slog.LevelDebug
-	config.General.LogDirectory = logDir
-	config.General.LogMaxFileSize = 10 // MB
+	config.General.TestVerbose = util.GetFlag("test.v") // !! не работает для debug-сессии
 	config.General.EngineConfigFile = "engine.yml"
+
+	config.General.Log.Level = slog.LevelDebug
+	config.General.Log.Directory = logDir
+	config.General.Log.MaxFileSize = 10 // MB
+	config.General.Log.ErrorSource.Type = "simple"
+	config.General.Log.ErrorSource.RelativePath = true
 
 	config.Telegram.UseTestDc = util.HasFlag("test.run")
 	config.Telegram.UseFileDatabase = true
@@ -34,9 +36,9 @@ func setDefaultConfig(config *config) {
 	config.Telegram.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", "telegram", "db")
 	config.Telegram.FilesDirectory = filepath.Join(util.ProjectRoot, ".data", "telegram", "files")
 
-	config.Storage.LogLevel = slog.LevelInfo
-	config.Storage.LogDirectory = logDir
-	config.Storage.LogMaxFileSize = 10 // MB
+	config.Storage.Log.Level = slog.LevelInfo
+	config.Storage.Log.Directory = logDir
+	config.Storage.Log.MaxFileSize = 10 // MB
 	config.Storage.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", "badger", "db")
 	// config.Storage.BackupEnabled = false
 	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")

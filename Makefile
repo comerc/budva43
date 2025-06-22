@@ -13,6 +13,9 @@ run:
 	@BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml \
 	go run main.go
 
+log:
+	@tail -f .data/log/app.log | PROJECT_ROOT=$(shell pwd)/ pplog
+
 kill-port:
 	lsof -ti:7070 | xargs kill -9
 
