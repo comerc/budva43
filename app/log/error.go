@@ -18,7 +18,7 @@ func NewError(text string, args ...any) *CustomError {
 	return &CustomError{
 		error: errors.New(text),
 		Args:  args,
-		Stack: GetCallStack(2, 0),
+		Stack: GetCallStack(2),
 	}
 }
 
@@ -42,6 +42,6 @@ func WrapError(err error, args ...any) error {
 	return &CustomError{
 		error: err,
 		Args:  args,
-		Stack: GetCallStack(2, 0),
+		Stack: GetCallStack(2),
 	}
 }

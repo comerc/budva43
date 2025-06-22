@@ -12,7 +12,7 @@ type SourceOptions struct {
 type SourceType = string
 
 var TypeSourceNone SourceType = ""
-var TypeSourceSimple SourceType = "simple"
+var TypeSourceOne SourceType = "one"
 var TypeSourceCallStack SourceType = "callstack"
 
 var options *Options

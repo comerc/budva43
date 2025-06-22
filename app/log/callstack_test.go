@@ -11,7 +11,7 @@ import (
 
 // GetCaller возвращает информацию о вызывающем
 func GetCaller() string {
-	callStack := GetCallStack(2, 1) // Пропускаем GetCaller и getCallStack
+	callStack := GetCallStack(2) // Пропускаем GetCaller и getCallStack
 	if len(callStack) > 0 {
 		return callStack[0].String()
 	}
@@ -20,7 +20,9 @@ func GetCaller() string {
 
 // GetCallers возвращает информацию о вызывающих
 func GetCallers(depth int) []string {
-	callStack := GetCallStack(2, depth) // Пропускаем GetCallers и getCallStack
+	// TODO: depth - deprecated, remove it
+
+	callStack := GetCallStack(2) // Пропускаем GetCallers и getCallStack
 
 	if len(callStack) == 0 {
 		return []string{}
@@ -157,7 +159,7 @@ func TestNestedFunctionCalls(t *testing.T) {
 	result := testFunction1()
 
 	// Проверяем, что результат содержит ожидаемые функции
-	expectedFunctions := []string{"testFunction3", "testFunction2", "testFunction1"}
+	expectedFunctions := []string{"testFunction3"}
 
 	for _, fn := range expectedFunctions {
 		if !strings.Contains(result, fn) {

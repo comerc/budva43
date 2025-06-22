@@ -172,12 +172,12 @@ func getRelativePath(fullPath string) string {
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
 // depth - количество фреймов для сбора после пропуска (0 = все доступные фреймы проекта)
-func GetCallStack(skip int, depth int) []*CallInfo {
+func GetCallStack(skip int) []*CallInfo {
 	var result []*CallInfo
 
-	// Если depth не указан, возвращаем максимум 10 фреймов
-	if depth <= 0 {
-		depth = 10
+	depth := 10
+	if options.ErrorSource.Type == TypeSourceOne {
+		depth = 1
 	}
 
 	for i := skip; i < skip+depth; i++ {

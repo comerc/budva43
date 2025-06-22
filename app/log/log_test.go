@@ -41,11 +41,11 @@ func (s *SomeObject) NestedMethod() {
 }
 
 func TestSomeMethod(t *testing.T) {
-	// t.Parallel() // !! нельзя параллелить, тестирую подмену глобальных опций
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных опций
 
-	oldOptions := *options
+	optionsCopy := util.Copy(options)
 	t.Cleanup(func() {
-		*options = oldOptions
+		options = optionsCopy
 	})
 
 	tests := []struct {
@@ -56,13 +56,13 @@ func TestSomeMethod(t *testing.T) {
 	}{
 		{
 			name:           "simple with absolute path",
-			sourceType:     TypeSourceSimple,
+			sourceType:     TypeSourceOne,
 			relativePath:   false,
 			expectedSource: filepath.Join(util.ProjectRoot, "app/log/log_test.go:39 log.(*SomeObject).NestedMethod"),
 		},
 		{
-			name:           "simple",
-			sourceType:     TypeSourceSimple,
+			name:           "one",
+			sourceType:     TypeSourceOne,
 			relativePath:   true,
 			expectedSource: "app/log/log_test.go:39 log.(*SomeObject).NestedMethod",
 		},
@@ -98,6 +98,7 @@ func TestSomeMethod(t *testing.T) {
 			assert.Equal(t, test.expectedSource, spylog.GetAttrValue(records[0], "source"))
 		})
 	}
+
 }
 
 type SomeError struct {
@@ -132,6 +133,6 @@ func TestUnwrappedError(t *testing.T) {
 	assert.Equal(t, "unwrapped error", records[0].Message)
 	assert.Equal(t, "val", spylog.GetAttrValue(records[0], "arg"))
 	assert.Equal(t, "log.SomeError", spylog.GetAttrValue(records[0], "type"))
-	assert.Equal(t, "app/log/log_test.go:114 log.TestUnwrappedError",
+	assert.Equal(t, "app/log/log_test.go:127 log.TestUnwrappedError",
 		spylog.GetAttrValue(records[0], "source"))
 }

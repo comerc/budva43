@@ -9,7 +9,7 @@ general:
   #   directory: "./.data/log"
   #   max-file-size: 10 # MB
   #   source:
-  #     type: "simple"
+  #     type: "one"
   #     relative-path: true
 
 # Настройки Telegram
