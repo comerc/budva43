@@ -1,13 +1,13 @@
 all: lint check build
 
 lint:
-	GOEXPERIMENT=synctest golangci-lint run
+	@GOEXPERIMENT=synctest golangci-lint run
 
 check:
-	GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
+	@GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
 
 build:
-	rm -f bin/app && go build -o bin/app main.go
+	@rm -f bin/app && go build -o bin/app main.go
 
 run:
 	@BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml \
