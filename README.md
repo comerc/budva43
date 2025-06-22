@@ -90,7 +90,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [gocritic](https://habr.com/ru/articles/414739/)
 - [ ] [OpenTelemetry](https://pkg.go.dev/go.opentelemetry.io/otel#section-readme)
 - [ ] [gostackparse](https://github.com/DataDog/gostackparse)
-- [ ] grafana-loki
+- [x] grafana-loki
+- [x] [pplog](https://github.com/michurin/human-readable-json-logging)
 - [ ] pprof
 - [x] time.AfterFunc() & context.AfterFunc()
 - [x] init() - dependency chain: config -> log -> spylog
