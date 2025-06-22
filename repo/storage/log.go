@@ -18,7 +18,7 @@ func NewLogger() *Logger {
 		filepath.Join(config.Storage.LogDirectory, "badger.log"),
 		config.Storage.LogMaxFileSize,
 	)
-	logHandler := slog.NewTextHandler(writer, &slog.HandlerOptions{
+	logHandler := slog.NewJSONHandler(writer, &slog.HandlerOptions{
 		Level: config.Storage.LogLevel,
 	})
 	return &Logger{

@@ -23,7 +23,7 @@ func setupDefaultLogger() {
 		filepath.Join(config.General.LogDirectory, "app.log"),
 		config.General.LogMaxFileSize,
 	)
-	logHandler := slog.NewTextHandler(writer, &slog.HandlerOptions{
+	logHandler := slog.NewJSONHandler(writer, &slog.HandlerOptions{
 		Level: config.General.LogLevel,
 	})
 	slog.SetDefault(slog.New(logHandler))
