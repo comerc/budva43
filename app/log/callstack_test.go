@@ -97,7 +97,8 @@ func TestGetCaller(t *testing.T) {
 	}
 
 	// Проверяем, что путь содержит app/log/callstack_test.go
-	assert.True(t, strings.HasPrefix(caller, "app/log/callstack_test.go"))
+	prefix := "app/log/callstack_test.go"
+	assert.Equal(t, prefix, caller[:len(prefix)])
 
 	t.Logf("Caller: %s", caller)
 }
@@ -209,12 +210,11 @@ func TestRelativePaths(t *testing.T) {
 	caller := GetCaller()
 
 	// Проверяем, что путь относительный (не начинается с /)
-	if strings.HasPrefix(caller, "/") {
-		t.Errorf("Path should be relative, got: %s", caller)
-	}
+	assert.NotEqual(t, "/", caller[0], "path should be relative")
 
 	// Проверяем, что путь содержит app/log/callstack_test.go
-	assert.True(t, strings.HasPrefix(caller, "app/log/callstack_test.go"))
+	prefix := "app/log/callstack_test.go"
+	assert.Equal(t, prefix, caller[:len(prefix)])
 
 	// Проверяем, что путь заканчивается на .go
 	parts := strings.Split(caller, " ")
