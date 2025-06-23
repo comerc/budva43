@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/test/cli_automator"
+	"github.com/comerc/budva43/app/testing/cli_automator"
 	"github.com/comerc/budva43/app/util"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
