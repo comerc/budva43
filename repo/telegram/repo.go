@@ -115,7 +115,7 @@ func (r *Repo) Close() error {
 	}
 	_, err = r.client.Close()
 	if err != nil {
-		return err
+		return log.WrapError(err)
 	}
 	r.client = nil
 	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
