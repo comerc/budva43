@@ -1,4 +1,4 @@
-package test_util
+package cli_automator
 
 import (
 	"bufio"

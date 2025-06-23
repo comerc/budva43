@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/test_util"
+	"github.com/comerc/budva43/app/test/cli_automator"
 	"github.com/comerc/budva43/app/util"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
@@ -47,7 +47,7 @@ func TestAuth(t *testing.T) {
 
 	var err error
 
-	automator, err := test_util.NewCLIAutomator()
+	automator, err := cli_automator.NewCLIAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()

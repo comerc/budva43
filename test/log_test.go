@@ -13,7 +13,7 @@ import (
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
-	"github.com/comerc/budva43/app/spylog"
+	"github.com/comerc/budva43/app/test/spylog"
 	"github.com/comerc/budva43/app/util"
 )
 
