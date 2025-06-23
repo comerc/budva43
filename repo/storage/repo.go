@@ -47,7 +47,10 @@ func (r *Repo) Start(ctx context.Context) error {
 // Close закрывает соединение с базой данных
 func (r *Repo) Close() error {
 	if r.db != nil {
-		return r.db.Close()
+		err := r.db.Close()
+		if err != nil {
+			return log.WrapError(err)
+		}
 	}
 	return nil
 }
@@ -84,8 +87,8 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 // Increment увеличивает значение по ключу на 1
 func (r *Repo) Increment(key string) (uint64, error) {
 	var (
-		val uint64
-		err error
+		err    error
+		result uint64
 	)
 	// Merge function to add two uint64 numbers
 	add := func(existing, _new []byte) []byte {
@@ -97,13 +100,13 @@ func (r *Repo) Increment(key string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	var valBytes []byte
-	valBytes, err = m.Get()
+	var val []byte
+	val, err = m.Get()
 	if err != nil {
 		return 0, err
 	}
-	val = ConvertBytesToUint64(valBytes)
-	return val, nil
+	result = ConvertBytesToUint64(val)
+	return result, nil
 }
 
 // GetSet получает значение по ключу и устанавливает новое значение
