@@ -223,7 +223,12 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 				return
 			}
 
-			formattedText := util.Copy(srcFormattedText)
+			var formattedText *client.FormattedText
+			formattedText, err = util.DeepCopy(srcFormattedText)
+			if err != nil {
+				err = log.WrapError(err)
+				return
+			}
 			if (forwardRule.SendCopy || src.CanBeSaved) &&
 				h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
 				_, ok := checkFns[forwardRule.Check]

@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+synctest настроено через "GOEXPERIMENT=synctest go test"
