@@ -162,7 +162,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	defer s.log.ErrorOrDebug(&err, "getOriginMessage")
 
 	if message.ForwardInfo == nil {
-		err = log.NewError("message.ForwardInfo is nil")
+		s.log.Warn("message.ForwardInfo is nil")
 		return nil
 	}
 
@@ -212,8 +212,10 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 				messages[i] = originMessage
 			}
 			src := messages[i] // !! for origin message
+
 			srcFormattedText := s.messageService.GetFormattedText(src)
-			formattedText, err := util.DeepCopy(srcFormattedText)
+			var formattedText *client.FormattedText
+			formattedText, err = util.DeepCopy(srcFormattedText)
 			if err != nil {
 				err = log.WrapError(err)
 				return
