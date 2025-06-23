@@ -2,7 +2,6 @@
 
 # Общие настройки
 general:
-  # test-verbose: true # nil - production mode
   # engine-config-file: "engine.yml" # или .json
   # log:
   #   level: -4 # DEBUG
