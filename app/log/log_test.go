@@ -43,7 +43,8 @@ func (s *SomeObject) NestedMethod() {
 func TestSomeMethod(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных опций
 
-	optionsCopy := util.Copy(options)
+	optionsCopy, err := util.DeepCopy(options)
+	require.NoError(t, err)
 	t.Cleanup(func() {
 		options = optionsCopy
 	})

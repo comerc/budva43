@@ -200,7 +200,8 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 
 	for i, message := range messages {
 		func() {
-			defer s.log.Debug("prepareMessageContents",
+			var err error
+			defer s.log.ErrorOrDebug(&err, "prepareMessageContents",
 				"i", i,
 				"chatId", message.ChatId,
 				"messageId", message.Id,
@@ -212,7 +213,11 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 			}
 			src := messages[i] // !! for origin message
 			srcFormattedText := s.messageService.GetFormattedText(src)
-			formattedText := util.Copy(srcFormattedText)
+			formattedText, err := util.DeepCopy(srcFormattedText)
+			if err != nil {
+				err = log.WrapError(err)
+				return
+			}
 
 			withSources := i == 0
 			s.transformService.Transform(formattedText, withSources, src, dstChatId, engineConfig)

@@ -1,9 +1,7 @@
 package util
 
 import (
-	"log"
-
-	"github.com/vmihailenco/msgpack/v5"
+	"encoding/json"
 )
 
 func SimpleCopy[T any](from *T) *T {
@@ -11,18 +9,18 @@ func SimpleCopy[T any](from *T) *T {
 	return &result
 }
 
-// Copy копирует любую структуру, про ограничения: "doc/COPY.md"
-func Copy[T any](from *T) *T {
+// DeepCopy копирует любую структуру, про ограничения: "doc/COPY.md"
+func DeepCopy[T any](from *T) (*T, error) {
 	var err error
 	var b []byte
-	b, err = msgpack.Marshal(from)
+	b, err = json.Marshal(from)
 	if err != nil {
-		log.Panic("Copy: ", err)
+		return nil, err
 	}
 	to := new(T)
-	err = msgpack.Unmarshal(b, to)
+	err = json.Unmarshal(b, to)
 	if err != nil {
-		log.Panic("Copy: ", err)
+		return nil, err
 	}
-	return to
+	return to, nil
 }
