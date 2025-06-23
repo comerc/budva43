@@ -11,7 +11,6 @@ import (
 func setDefaultConfig(config *config) {
 	logDir := filepath.Join(util.ProjectRoot, ".data", "log")
 
-	config.General.TestVerbose = util.GetFlag("test.v") // !! не работает для debug-сессии
 	config.General.EngineConfigFile = "engine.yml"
 
 	config.General.Log.Level = slog.LevelDebug

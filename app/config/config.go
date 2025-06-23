@@ -32,7 +32,6 @@ type (
 
 	// Общие настройки приложения
 	general struct {
-		TestVerbose      *string // nil - production mode & debug mode
 		EngineConfigFile string
 		Log              generalLog
 	}
