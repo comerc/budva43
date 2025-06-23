@@ -278,7 +278,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 				storageService := mocks.NewStorageService(t)
 				return New(telegramRepo, storageService, nil)
 			},
-			expectedError: log.NewError("replaceMyselfLinks: Run is disabled"),
+			expectedError: log.NewError("destination not found"),
 		},
 		{
 			name: "no text url entities",
