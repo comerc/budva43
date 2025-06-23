@@ -8,23 +8,25 @@ import (
 )
 
 var (
-	cfg      = &config{}
-	General  = &cfg.General
-	Storage  = &cfg.Storage
-	Telegram = &cfg.Telegram
-	Web      = &cfg.Web
-	Engine   = &cfg.Engine
+	cfg         = &config{}
+	General     = &cfg.General
+	ErrorSource = &cfg.ErrorSource
+	Storage     = &cfg.Storage
+	Telegram    = &cfg.Telegram
+	Web         = &cfg.Web
+	Engine      = &cfg.Engine
 	// Reports = &cfg.Reports
 )
 
 type (
 	// Настройки приложения
 	config struct {
-		General  general
-		Storage  storage
-		Telegram telegram
-		Web      web
-		Engine   entity.EngineConfig
+		General     general
+		ErrorSource entity.ErrorSource
+		Storage     storage
+		Telegram    telegram
+		Web         web
+		Engine      entity.EngineConfig
 		// Reports reports
 	}
 
@@ -40,13 +42,6 @@ type (
 		Level       slog.Level
 		Directory   string
 		MaxFileSize int // MB
-		ErrorSource errorSource
-	}
-
-	// Настройки источника ошибок
-	errorSource struct {
-		Type         string
-		RelativePath bool
 	}
 
 	// Настройки хранилища данных
