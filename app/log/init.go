@@ -14,12 +14,6 @@ var once sync.Once
 // но подходит для реализации синглтона
 func init() {
 	once.Do(func() {
-		options = &Options{
-			ErrorSource: &SourceOptions{
-				Type:         config.General.Log.ErrorSource.Type,
-				RelativePath: config.General.Log.ErrorSource.RelativePath,
-			},
-		}
 		setupDefaultLogger()
 	})
 }

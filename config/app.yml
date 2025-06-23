@@ -8,9 +8,11 @@ general:
   #   level: -4 # DEBUG
   #   directory: "./.data/log"
   #   max-file-size: 10 # MB
-  #   source:
-  #     type: "more"
-  #     relative-path: true
+
+# Настройки источника ошибок
+error-source:
+  # type: "more"
+  # relative-path: true
 
 # Настройки Telegram
 telegram:

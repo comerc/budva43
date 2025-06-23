@@ -8,6 +8,9 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
 )
 
 var (
@@ -176,7 +179,7 @@ func GetCallStack(skip int) []*CallInfo {
 	var result []*CallInfo
 
 	depth := 10
-	if options.ErrorSource.Type == TypeSourceOne {
+	if config.ErrorSource.Type == entity.TypeErrorSourceOne {
 		depth = 1
 	}
 
@@ -204,7 +207,7 @@ func GetCallStack(skip int) []*CallInfo {
 		funcName := getFuncName(fullFnName)
 
 		fileName := fullPath
-		if options.ErrorSource.RelativePath {
+		if config.ErrorSource.RelativePath {
 			// Получаем относительный путь к файлу от корня проекта
 			fileName = getRelativePath(fullPath)
 		}

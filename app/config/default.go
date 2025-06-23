@@ -17,8 +17,9 @@ func setDefaultConfig(config *config) {
 	config.General.Log.Level = slog.LevelDebug
 	config.General.Log.Directory = logDir
 	config.General.Log.MaxFileSize = 10 // MB
-	config.General.Log.ErrorSource.Type = "more"
-	config.General.Log.ErrorSource.RelativePath = true
+
+	config.ErrorSource.Type = "more"
+	config.ErrorSource.RelativePath = true
 
 	config.Telegram.UseTestDc = util.HasFlag("test.run")
 	config.Telegram.UseFileDatabase = true

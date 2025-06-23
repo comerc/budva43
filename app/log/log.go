@@ -12,7 +12,10 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/entity"
 )
+
+// из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
 
 type Logger struct {
 	slog.Logger
@@ -51,18 +54,18 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		}
 		typeName := strings.TrimPrefix(fmt.Sprintf("%T", err), "*")
 		args = append(args, "type", typeName)
-		if options.ErrorSource.Type != TypeSourceNone {
+		if config.ErrorSource.Type != entity.TypeErrorSourceNone {
 			if stack == nil {
 				stack = GetCallStack(3)
 			}
-			switch options.ErrorSource.Type {
-			case TypeSourceMore:
+			switch config.ErrorSource.Type {
+			case entity.TypeErrorSourceMore:
 				var groupArgs []any
 				for i, item := range stack {
 					groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
 				}
 				args = append(args, slog.Group("source", groupArgs...))
-			case TypeSourceOne:
+			case entity.TypeErrorSourceOne:
 				args = append(args, "source", stack[0].String())
 			}
 		}
