@@ -16,7 +16,7 @@ import (
 	_ "github.com/comerc/budva43/app/engine_config"
 	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
-	"github.com/comerc/budva43/app/spylog"
+	"github.com/comerc/budva43/app/testing/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
 )
 
