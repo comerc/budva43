@@ -212,19 +212,19 @@ func (h *Handler) processMessage(messages []*client.Message,
 	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func(),
 	engineConfig *entity.EngineConfig) {
-	var err error
+	var (
+		err         error
+		filtersMode string
+		result      []int64
+	)
 	src := messages[0]
-	filtersMode := ""
-	result := []int64{}
-	defer func() {
-		h.log.ErrorOrDebug(&err, "processMessage",
-			"chatId", src.ChatId,
-			"messageId", src.Id,
-			"mediaAlbumId", src.MediaAlbumId,
-			"filtersMode", filtersMode,
-			"result", result,
-		)
-	}()
+	defer h.log.ErrorOrDebug(&err, "processMessage",
+		"chatId", src.ChatId,
+		"messageId", src.Id,
+		"mediaAlbumId", src.MediaAlbumId,
+		"filtersMode", &filtersMode,
+		"result", &result,
+	)
 
 	formattedText := h.messageService.GetFormattedText(src)
 	if formattedText == nil {

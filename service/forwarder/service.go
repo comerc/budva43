@@ -83,16 +83,14 @@ func (s *Service) ForwardMessages(
 	engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer func() {
-		s.log.ErrorOrDebug(&err, "ForwardMessages",
-			"filtersMode", filtersMode,
-			"srcChatId", srcChatId,
-			"dstChatId", dstChatId,
-			"isSendCopy", isSendCopy,
-			"forwardRuleId", forwardRuleId,
-			"len(messages)", len(messages),
-		)
-	}()
+	defer s.log.ErrorOrDebug(&err, "ForwardMessages",
+		"filtersMode", filtersMode,
+		"srcChatId", srcChatId,
+		"dstChatId", dstChatId,
+		"isSendCopy", isSendCopy,
+		"forwardRuleId", forwardRuleId,
+		"len(messages)", len(messages),
+	)
 
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
 

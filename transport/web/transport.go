@@ -77,7 +77,7 @@ func (t *Transport) Close() error {
 
 	err = t.server.Shutdown(ctx)
 	if err != nil {
-		return err
+		return log.WrapError(err)
 	}
 
 	return nil

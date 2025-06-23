@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/comerc/budva43/app/log"
-	"github.com/comerc/budva43/app/util"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
 	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
@@ -73,37 +72,27 @@ func (a *App) Run() error {
 	// Настраиваем обработку сигналов остановки
 	a.setupSignalHandler(cancel)
 
-	// Набор ошибок для graceful shutdown
-	errSet := &util.ErrSet{}
-	defer func() {
-		// Выводим накопленные ошибки при завершении
-		for i, err := range errSet.GetErrors() {
-			// Выводим по одной ошибке, преследуя атомарность сообщений
-			a.log.ErrorOrDebug(&err, "Ошибки при завершении работы", "i", i)
-		}
-	}()
-
 	// - Инициализация репозиториев
 	storageRepo := storageRepo.New()
 	err = storageRepo.Start(ctx)
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, storageRepo)
+	defer a.gracefulShutdown(storageRepo)
 
 	telegramRepo := telegramRepo.New()
 	err = telegramRepo.Start(ctx)
 	if err != nil {
 		return (err)
 	}
-	defer gracefulShutdown(errSet, telegramRepo)
+	defer a.gracefulShutdown(telegramRepo)
 
 	queueRepo := queueRepo.New()
 	err = queueRepo.Start(ctx)
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, queueRepo)
+	defer a.gracefulShutdown(queueRepo)
 
 	// - Инициализация вспомогательных сервисов
 	storageService := storageService.New(storageRepo)
@@ -129,7 +118,7 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, authService)
+	defer a.gracefulShutdown(authService)
 
 	// - Инициализация основного сервиса и его обработчиков
 	updateNewMessageHandler := updateNewMessageHandler.New(
@@ -171,7 +160,7 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, engineService)
+	defer a.gracefulShutdown(engineService)
 
 	// - Инициализация транспортных адаптеров
 
@@ -182,7 +171,7 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, cliTransport)
+	defer a.gracefulShutdown(cliTransport)
 
 	webTransport := webTransport.New(
 		authService,
@@ -191,16 +180,16 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
-	defer gracefulShutdown(errSet, webTransport)
+	defer a.gracefulShutdown(webTransport)
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
-	a.log.Debug("Получен сигнал завершения, начинаем graceful shutdown")
+	a.log.Debug("Начинаем graceful shutdown")
 
 	return nil
 }
 
-// SetupSignalHandler настраивает обработку сигналов остановки
+// setupSignalHandler настраивает обработку сигналов остановки
 func (a *App) setupSignalHandler(shutdown func()) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
@@ -213,8 +202,8 @@ func (a *App) setupSignalHandler(shutdown func()) {
 }
 
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
-func gracefulShutdown(errSet *util.ErrSet, closer io.Closer) {
+func (a *App) gracefulShutdown(closer io.Closer) {
 	if err := closer.Close(); err != nil {
-		errSet.Add(err)
+		a.log.ErrorOrDebug(&err, "")
 	}
 }

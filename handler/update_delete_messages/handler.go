@@ -75,13 +75,11 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 	var fn func()
 	fn = func() {
 		var err error
-		defer func() {
-			h.log.ErrorOrDebug(&err, "Run",
-				"retryCount", retryCount,
-				"chatId", chatId,
-				"messageIds", messageIds,
-			)
-		}()
+		defer h.log.ErrorOrDebug(&err, "Run",
+			"retryCount", &retryCount,
+			"chatId", chatId,
+			"messageIds", messageIds,
+		)
 
 		data := h.collectData(chatId, messageIds)
 		if data.needRepeat {
@@ -142,13 +140,11 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, engineConfig *entity.EngineConfig) {
 	var err error
 	result := []string{}
-	defer func() {
-		h.log.ErrorOrDebug(&err, "deleteMessages",
-			"chatId", chatId,
-			"messageIds", messageIds,
-			"result", result,
-		)
-	}()
+	defer h.log.ErrorOrDebug(&err, "deleteMessages",
+		"chatId", chatId,
+		"messageIds", messageIds,
+		"result", &result,
+	)
 
 	for _, messageId := range messageIds {
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
@@ -158,13 +154,11 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 			func() {
 				var err error
 				forwardRuleId := ""
-				defer func() {
-					h.log.ErrorOrDebug(&err, "deleteMessages",
-						"fromChatMessageId", fromChatMessageId,
-						"toChatMessageId", toChatMessageId,
-						"forwardRuleId", forwardRuleId,
-					)
-				}()
+				defer h.log.ErrorOrDebug(&err, "deleteMessages",
+					"fromChatMessageId", fromChatMessageId,
+					"toChatMessageId", toChatMessageId,
+					"forwardRuleId", &forwardRuleId,
+				)
 
 				a := strings.Split(toChatMessageId, ":")
 				forwardRuleId = a[0]
