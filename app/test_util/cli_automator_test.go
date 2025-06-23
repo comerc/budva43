@@ -18,7 +18,7 @@ import (
 
 // TestNewCLIAutomator проверяет корректность создания экземпляра CLIAutomator
 func TestNewCLIAutomator(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -68,7 +68,7 @@ func TestNewCLIAutomator(t *testing.T) {
 
 // TestCLIAutomatorRunAndSendInput проверяет работу методов Run и SendInput
 func TestCLIAutomatorRunAndSendInput(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
@@ -132,7 +132,7 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 
 // TestCLIAutomatorWaitForOutput проверяет работу метода WaitForOutput
 func TestCLIAutomatorWaitForOutput(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
@@ -227,7 +227,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 
 // TestCLIAutomatorClose проверяет корректность метода Close
 func TestCLIAutomatorClose(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
 	origStdin := os.Stdin
@@ -298,7 +298,7 @@ func TestCLIAutomatorClose(t *testing.T) {
 
 // TestCLIAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
 func TestCLIAutomatorBufferResize(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
@@ -350,7 +350,7 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 
 // TestCLIAutomatorErrorHandling проверяет корректность обработки ошибок
 func TestCLIAutomatorErrorHandling(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
