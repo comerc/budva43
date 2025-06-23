@@ -112,7 +112,9 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 
 [Register an application](https://my.telegram.org/apps) to obtain an api_id and api_hash
 
-```
+```ini
+# ./config/.private/.env
+
 BUDVA43__TELEGRAM__API_ID=1234567
 BUDVA43__TELEGRAM__API_HASH=XXXXXXX
 BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
@@ -120,7 +122,7 @@ BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
 
 ## Config example
 
-see ./config/*.yml
+`./config/*.yml`
 
 ## First start for Telegram auth
 
