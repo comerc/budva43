@@ -9,10 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/natefinch/lumberjack.v2"
-
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/entity"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
@@ -74,20 +73,15 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 }
 
 func NewWriter(filePath string, maxSize int) io.Writer {
-	v := config.General.TestVerbose
-	if v == nil {
-		// TODO: не работает для synctest - на что заменить?
-		return &lumberjack.Logger{
-			Filename:   filePath,
-			MaxSize:    maxSize,
-			MaxBackups: 10,
-			MaxAge:     2, // days
-			Compress:   false,
-		}
+	testing := os.Getenv("GOEXPERIMENT") == "synctest"
+	if testing {
+		return io.Discard
 	}
-	s := *v
-	if s == "true" {
-		return os.Stdout
+	return &lumberjack.Logger{
+		Filename:   filePath,
+		MaxSize:    maxSize,
+		MaxBackups: 10,
+		MaxAge:     2, // days
+		Compress:   false,
 	}
-	return io.Discard
 }
