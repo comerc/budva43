@@ -12,7 +12,7 @@ import (
 )
 
 func load() *config {
-	envPath := filepath.Join(util.ProjectRoot, ".env")
+	envPath := filepath.Join(util.ProjectRoot, "config", ".private", ".env")
 	if err := godotenv.Load(envPath); err != nil {
 		log.Panic("не удалось загрузить .env файл: ", err)
 	}
