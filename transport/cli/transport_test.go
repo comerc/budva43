@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/test/cli_automator"
+	"github.com/comerc/budva43/app/testing/cli_automator"
 	"github.com/comerc/budva43/transport/cli/mocks"
 )
 

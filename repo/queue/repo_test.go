@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comerc/budva43/app/entity"
-	"github.com/comerc/budva43/app/spylog"
+	"github.com/comerc/budva43/app/testing/spylog"
 )
 
 func TestQueueRepo(t *testing.T) {
