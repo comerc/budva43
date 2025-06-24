@@ -2,6 +2,7 @@ package config
 
 import (
 	"log/slog"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -20,7 +21,7 @@ func setDefaultConfig(config *config) {
 	config.ErrorSource.Type = "more"
 	config.ErrorSource.RelativePath = true
 
-	config.Telegram.UseTestDc = util.HasFlag("test.run")
+	config.Telegram.UseTestDc = os.Getenv("GOEXPERIMENT") == "synctest"
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true
