@@ -2,7 +2,8 @@
 	"go.testEnvVars": {
 		"GOEXPERIMENT": "synctest",
 	},
-	"go.buildTags": "goexperiment.synctest",
+	"go.testTimeout": "36s",
+	// "go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
 	// "go.useLanguageServer": true,
 	// "go.gopath": "",
@@ -16,6 +17,19 @@
 	// 	"-race",
 	// ],
 	"go.installDependenciesWhenBuilding": true,
+	"go.coverOnSave": true,
+	// "go.coverOnSingleTest": true,
+	// "go.coverOnSingleTestFile": true,
+	// "go.coverOnTestPackage": true,
+	// "go.coverMode": "atomic",
+	// "go.coverageOptions": "showUncoveredCodeOnly",
+	"go.coverageDecorator": {
+		"type": "gutter",
+		"coveredGutterStyle": "blockblue",
+		"uncoveredGutterStyle": "blockred"
+	},
+	// "go.toolsGopath": "",
+	// "go.testEnvFile": null,
 	// "go.gocodeAutoBuild": true,
 	// "go.autocompleteUnimportedPackages": true,
 	// "go.gotoSymbol.includeImports": true,
@@ -35,6 +49,9 @@
 	"files.trimTrailingWhitespace": true,
 	"files.trimFinalNewlines": true,
 	"files.insertFinalNewline": true,
+	"files.watcherExclude": {
+		"**/.coverage.out": true,
+	},
 	// "[go]": {
 	// 	"editor.formatOnSave": true,
 	// 	"editor.codeActionsOnSave": {
@@ -71,4 +88,5 @@
 	// 		"vendor": true
 	// 	}
 	// }
+	// "go.useGoProxyToCheckForToolUpdates": true,
 }
