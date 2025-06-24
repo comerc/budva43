@@ -2,6 +2,9 @@
 	"go.testEnvVars": {
 		"GOEXPERIMENT": "synctest",
 	},
+	// "go.testFlags": [
+	// 	"-count=1",
+	// ],
 	"go.testTimeout": "36s",
 	// "go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
