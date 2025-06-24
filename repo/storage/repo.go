@@ -72,12 +72,13 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 					continue
 				}
 				if err == badger.ErrNoRewrite {
-					err = nil
 					// Нет файлов для перезаписи - это нормально, выходим
-					// } else {
-					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
+					err = nil
 				}
-				r.log.ErrorOrDebug(&err, "GC completed: no files to rewrite")
+				if err != nil {
+					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
+					r.log.ErrorOrDebug(&err, "")
+				}
 				break // Выходим из внутреннего цикла, ждем следующего тика
 			}
 		}
