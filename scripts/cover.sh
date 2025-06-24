@@ -6,7 +6,7 @@ set -e
 
 echo "🔍 Создаю coverage профайл..."
 
-# Создаем coverage профайл (без -count=1 для использования кэша)
+# Создаем coverage профайл
 GOEXPERIMENT=synctest go test -coverprofile=.coverage.out -coverpkg=./... ./test/ > /dev/null || true
 
 if [ -f ".coverage.out" ]; then
