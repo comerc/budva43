@@ -44,14 +44,15 @@ func New(repo storageRepo) *Service {
 }
 
 // SetCopiedMessageId сохраняет связь между оригинальным и скопированным сообщением
-func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) {
+func (s *Service) SetCopiedMessageId(chatId, messageId int64, toChatMessageId string) {
 	var (
 		err    error
 		val    string
 		result []string
 	)
 	defer s.log.ErrorOrDebug(&err, "SetCopiedMessageId",
-		"fromChatMessageId", fromChatMessageId,
+		"chatId", chatId,
+		"messageId", messageId,
 		"toChatMessageId", toChatMessageId,
 		"result", &result,
 	)
@@ -67,25 +68,25 @@ func (s *Service) SetCopiedMessageId(fromChatMessageId string, toChatMessageId s
 		return strings.Join(ss, ","), nil
 	}
 
-	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%d:%d", copiedMessageIdsPrefix, chatId, messageId)
 	val, err = s.repo.GetSet(key, fn)
 	result = strings.Split(val, ",")
 }
 
 // GetCopiedMessageIds получает идентификаторы скопированных сообщений по Id оригинала
-// TODO: входные параметры: сhatId, messageId (по аналогии с остальными методами)
-func (s *Service) GetCopiedMessageIds(fromChatMessageId string) []string {
+func (s *Service) GetCopiedMessageIds(chatId, messageId int64) []string {
 	var (
 		err    error
 		val    string
 		result []string
 	)
 	defer s.log.ErrorOrDebug(&err, "GetCopiedMessageIds",
-		"fromChatMessageId", fromChatMessageId,
+		"chatId", chatId,
+		"messageId", messageId,
 		"result", &result,
 	)
 
-	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%d:%d", copiedMessageIdsPrefix, chatId, messageId)
 	val, err = s.repo.Get(key)
 	if err != nil {
 		return nil
@@ -100,14 +101,14 @@ func (s *Service) GetCopiedMessageIds(fromChatMessageId string) []string {
 }
 
 // DeleteCopiedMessageIds удаляет связь между оригинальным и скопированными сообщениями
-// TODO: почему не используется?
-func (s *Service) DeleteCopiedMessageIds(fromChatMessageId string) {
+func (s *Service) DeleteCopiedMessageIds(chatId, messageId int64) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "DeleteCopiedMessageIds",
-		"fromChatMessageId", fromChatMessageId,
+		"chatId", chatId,
+		"messageId", messageId,
 	)
 
-	key := fmt.Sprintf("%s:%s", copiedMessageIdsPrefix, fromChatMessageId)
+	key := fmt.Sprintf("%s:%d:%d", copiedMessageIdsPrefix, chatId, messageId)
 	err = s.repo.Delete(key)
 }
 
@@ -125,7 +126,6 @@ func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 }
 
 // GetNewMessageId получает постоянный Id сообщения по временному
-// TODO: почему не используется?
 func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) int64 {
 	var (
 		err    error
@@ -296,14 +296,16 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) int64 {
 }
 
 // SetAnswerMessageId устанавливает идентификатор сообщения ответа
-func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string) {
+func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId, chatId, messageId int64) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "SetAnswerMessageId",
 		"dstChatId", dstChatId,
 		"tmpMessageId", tmpMessageId,
-		"fromChatMessageId", fromChatMessageId,
+		"chatId", chatId,
+		"messageId", messageId,
 	)
 
+	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 	key := fmt.Sprintf("%s:%d:%d", answerMessageIdPrefix, dstChatId, tmpMessageId)
 	err = s.repo.Set(key, fromChatMessageId)
 }
@@ -326,7 +328,7 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
 		return ""
 	}
 
-	return result
+	return result // fromChatMessageId
 }
 
 // DeleteAnswerMessageId удаляет идентификатор сообщения ответа

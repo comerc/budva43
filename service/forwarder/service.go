@@ -24,10 +24,10 @@ type telegramRepo interface {
 
 //go:generate mockery --name=storageService --exported
 type storageService interface {
-	SetCopiedMessageId(fromChatMessageId string, toChatMessageId string)
-	GetCopiedMessageIds(fromChatMessageId string) []string
+	SetCopiedMessageId(chatId, messageId int64, toChatMessageId string)
+	GetCopiedMessageIds(chatId, messageId int64) []string
 	GetNewMessageId(chatId, tmpMessageId int64) int64
-	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string)
+	SetAnswerMessageId(dstChatId, tmpMessageId, chatId, messageId int64)
 }
 
 //go:generate mockery --name=messageService --exported
@@ -144,11 +144,10 @@ func (s *Service) ForwardMessages(
 			tmpMessageId := dst.Id
 			src := messages[i] // !! for origin message (in prepareMessageContents)
 			toChatMessageId := fmt.Sprintf("%s:%d:%d", forwardRuleId, dstChatId, tmpMessageId)
-			fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-			s.storageService.SetCopiedMessageId(fromChatMessageId, toChatMessageId)
+			s.storageService.SetCopiedMessageId(src.ChatId, src.Id, toChatMessageId)
 			// TODO: isAnswer
 			if replyMarkupData := s.messageService.GetReplyMarkupData(src); len(replyMarkupData) > 0 {
-				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, src.ChatId, src.Id)
 			}
 		}
 	}
@@ -256,8 +255,7 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 		return 0
 	}
 
-	fromChatMessageId := fmt.Sprintf("%d:%d", replyInChatId, replyToMessageId)
-	toChatMessageIds := s.storageService.GetCopiedMessageIds(fromChatMessageId)
+	toChatMessageIds := s.storageService.GetCopiedMessageIds(replyInChatId, replyToMessageId)
 
 	if len(toChatMessageIds) == 0 {
 		err = log.NewError("toChatMessageIds is empty")

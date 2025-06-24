@@ -25,8 +25,8 @@ type queueRepo interface {
 
 //go:generate mockery --name=storageService --exported
 type storageService interface {
-	GetCopiedMessageIds(fromChatMessageId string) []string
-	DeleteCopiedMessageIds(fromChatMessageId string)
+	GetCopiedMessageIds(chatId, messageId int64) []string
+	DeleteCopiedMessageIds(chatId, messageId int64)
 	GetNewMessageId(chatId, tmpMessageId int64) int64
 	DeleteNewMessageId(chatId, tmpMessageId int64)
 	DeleteTmpMessageId(chatId, newMessageId int64)
@@ -112,8 +112,8 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 	}
 
 	for _, messageId := range messageIds {
+		toChatMessageIds := h.storageService.GetCopiedMessageIds(chatId, messageId)
 		fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-		toChatMessageIds := h.storageService.GetCopiedMessageIds(fromChatMessageId)
 		result.copiedMessageIds[fromChatMessageId] = toChatMessageIds
 
 		for _, toChatMessageId := range toChatMessageIds {
@@ -155,7 +155,8 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 				var err error
 				forwardRuleId := ""
 				defer h.log.ErrorOrDebug(&err, "deleteMessages",
-					"fromChatMessageId", fromChatMessageId,
+					"chatId", chatId,
+					"messageId", messageId,
 					"toChatMessageId", toChatMessageId,
 					"forwardRuleId", &forwardRuleId,
 				)
@@ -199,7 +200,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 		}
 
 		if len(toChatMessageIds) > 0 {
-			h.storageService.DeleteCopiedMessageIds(fromChatMessageId)
+			h.storageService.DeleteCopiedMessageIds(chatId, messageId)
 		}
 	}
 }

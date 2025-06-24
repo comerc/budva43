@@ -177,22 +177,22 @@ func (_c *StorageRepo_GetSet_Call) RunAndReturn(run func(string, func(string) (s
 }
 
 // Increment provides a mock function with given fields: key
-func (_m *StorageRepo) Increment(key string) (string, error) {
+func (_m *StorageRepo) Increment(key string) (uint64, error) {
 	ret := _m.Called(key)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Increment")
 	}
 
-	var r0 string
+	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (uint64, error)); ok {
 		return rf(key)
 	}
-	if rf, ok := ret.Get(0).(func(string) string); ok {
+	if rf, ok := ret.Get(0).(func(string) uint64); ok {
 		r0 = rf(key)
 	} else {
-		r0 = ret.Get(0).(string)
+		r0 = ret.Get(0).(uint64)
 	}
 
 	if rf, ok := ret.Get(1).(func(string) error); ok {
@@ -222,12 +222,12 @@ func (_c *StorageRepo_Increment_Call) Run(run func(key string)) *StorageRepo_Inc
 	return _c
 }
 
-func (_c *StorageRepo_Increment_Call) Return(_a0 string, _a1 error) *StorageRepo_Increment_Call {
+func (_c *StorageRepo_Increment_Call) Return(_a0 uint64, _a1 error) *StorageRepo_Increment_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *StorageRepo_Increment_Call) RunAndReturn(run func(string) (string, error)) *StorageRepo_Increment_Call {
+func (_c *StorageRepo_Increment_Call) RunAndReturn(run func(string) (uint64, error)) *StorageRepo_Increment_Call {
 	_c.Call.Return(run)
 	return _c
 }

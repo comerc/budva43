@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	entity "github.com/comerc/budva43/app/entity"
 	client "github.com/zelenin/go-tdlib/client"
 
 	mock "github.com/stretchr/testify/mock"
@@ -21,9 +22,9 @@ func (_m *TransformService) EXPECT() *TransformService_Expecter {
 	return &TransformService_Expecter{mock: &_m.Mock}
 }
 
-// Transform provides a mock function with given fields: formattedText, withSources, src, dstChatId
-func (_m *TransformService) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64) {
-	_m.Called(formattedText, withSources, src, dstChatId)
+// Transform provides a mock function with given fields: formattedText, withSources, src, dstChatId, engineConfig
+func (_m *TransformService) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig) {
+	_m.Called(formattedText, withSources, src, dstChatId, engineConfig)
 }
 
 // TransformService_Transform_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Transform'
@@ -36,13 +37,14 @@ type TransformService_Transform_Call struct {
 //   - withSources bool
 //   - src *client.Message
 //   - dstChatId int64
-func (_e *TransformService_Expecter) Transform(formattedText interface{}, withSources interface{}, src interface{}, dstChatId interface{}) *TransformService_Transform_Call {
-	return &TransformService_Transform_Call{Call: _e.mock.On("Transform", formattedText, withSources, src, dstChatId)}
+//   - engineConfig *entity.EngineConfig
+func (_e *TransformService_Expecter) Transform(formattedText interface{}, withSources interface{}, src interface{}, dstChatId interface{}, engineConfig interface{}) *TransformService_Transform_Call {
+	return &TransformService_Transform_Call{Call: _e.mock.On("Transform", formattedText, withSources, src, dstChatId, engineConfig)}
 }
 
-func (_c *TransformService_Transform_Call) Run(run func(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64)) *TransformService_Transform_Call {
+func (_c *TransformService_Transform_Call) Run(run func(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)) *TransformService_Transform_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*client.FormattedText), args[1].(bool), args[2].(*client.Message), args[3].(int64))
+		run(args[0].(*client.FormattedText), args[1].(bool), args[2].(*client.Message), args[3].(int64), args[4].(*entity.EngineConfig))
 	})
 	return _c
 }
@@ -52,7 +54,7 @@ func (_c *TransformService_Transform_Call) Return() *TransformService_Transform_
 	return _c
 }
 
-func (_c *TransformService_Transform_Call) RunAndReturn(run func(*client.FormattedText, bool, *client.Message, int64)) *TransformService_Transform_Call {
+func (_c *TransformService_Transform_Call) RunAndReturn(run func(*client.FormattedText, bool, *client.Message, int64, *entity.EngineConfig)) *TransformService_Transform_Call {
 	_c.Run(run)
 	return _c
 }

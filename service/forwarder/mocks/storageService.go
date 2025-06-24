@@ -17,17 +17,17 @@ func (_m *StorageService) EXPECT() *StorageService_Expecter {
 	return &StorageService_Expecter{mock: &_m.Mock}
 }
 
-// GetCopiedMessageIds provides a mock function with given fields: fromChatMessageId
-func (_m *StorageService) GetCopiedMessageIds(fromChatMessageId string) []string {
-	ret := _m.Called(fromChatMessageId)
+// GetCopiedMessageIds provides a mock function with given fields: chatId, messageId
+func (_m *StorageService) GetCopiedMessageIds(chatId int64, messageId int64) []string {
+	ret := _m.Called(chatId, messageId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetCopiedMessageIds")
 	}
 
 	var r0 []string
-	if rf, ok := ret.Get(0).(func(string) []string); ok {
-		r0 = rf(fromChatMessageId)
+	if rf, ok := ret.Get(0).(func(int64, int64) []string); ok {
+		r0 = rf(chatId, messageId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -43,14 +43,15 @@ type StorageService_GetCopiedMessageIds_Call struct {
 }
 
 // GetCopiedMessageIds is a helper method to define mock.On call
-//   - fromChatMessageId string
-func (_e *StorageService_Expecter) GetCopiedMessageIds(fromChatMessageId interface{}) *StorageService_GetCopiedMessageIds_Call {
-	return &StorageService_GetCopiedMessageIds_Call{Call: _e.mock.On("GetCopiedMessageIds", fromChatMessageId)}
+//   - chatId int64
+//   - messageId int64
+func (_e *StorageService_Expecter) GetCopiedMessageIds(chatId interface{}, messageId interface{}) *StorageService_GetCopiedMessageIds_Call {
+	return &StorageService_GetCopiedMessageIds_Call{Call: _e.mock.On("GetCopiedMessageIds", chatId, messageId)}
 }
 
-func (_c *StorageService_GetCopiedMessageIds_Call) Run(run func(fromChatMessageId string)) *StorageService_GetCopiedMessageIds_Call {
+func (_c *StorageService_GetCopiedMessageIds_Call) Run(run func(chatId int64, messageId int64)) *StorageService_GetCopiedMessageIds_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(int64), args[1].(int64))
 	})
 	return _c
 }
@@ -60,7 +61,7 @@ func (_c *StorageService_GetCopiedMessageIds_Call) Return(_a0 []string) *Storage
 	return _c
 }
 
-func (_c *StorageService_GetCopiedMessageIds_Call) RunAndReturn(run func(string) []string) *StorageService_GetCopiedMessageIds_Call {
+func (_c *StorageService_GetCopiedMessageIds_Call) RunAndReturn(run func(int64, int64) []string) *StorageService_GetCopiedMessageIds_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -112,9 +113,9 @@ func (_c *StorageService_GetNewMessageId_Call) RunAndReturn(run func(int64, int6
 	return _c
 }
 
-// SetAnswerMessageId provides a mock function with given fields: dstChatId, tmpMessageId, fromChatMessageId
-func (_m *StorageService) SetAnswerMessageId(dstChatId int64, tmpMessageId int64, fromChatMessageId string) {
-	_m.Called(dstChatId, tmpMessageId, fromChatMessageId)
+// SetAnswerMessageId provides a mock function with given fields: dstChatId, tmpMessageId, chatId, messageId
+func (_m *StorageService) SetAnswerMessageId(dstChatId int64, tmpMessageId int64, chatId int64, messageId int64) {
+	_m.Called(dstChatId, tmpMessageId, chatId, messageId)
 }
 
 // StorageService_SetAnswerMessageId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAnswerMessageId'
@@ -125,14 +126,15 @@ type StorageService_SetAnswerMessageId_Call struct {
 // SetAnswerMessageId is a helper method to define mock.On call
 //   - dstChatId int64
 //   - tmpMessageId int64
-//   - fromChatMessageId string
-func (_e *StorageService_Expecter) SetAnswerMessageId(dstChatId interface{}, tmpMessageId interface{}, fromChatMessageId interface{}) *StorageService_SetAnswerMessageId_Call {
-	return &StorageService_SetAnswerMessageId_Call{Call: _e.mock.On("SetAnswerMessageId", dstChatId, tmpMessageId, fromChatMessageId)}
+//   - chatId int64
+//   - messageId int64
+func (_e *StorageService_Expecter) SetAnswerMessageId(dstChatId interface{}, tmpMessageId interface{}, chatId interface{}, messageId interface{}) *StorageService_SetAnswerMessageId_Call {
+	return &StorageService_SetAnswerMessageId_Call{Call: _e.mock.On("SetAnswerMessageId", dstChatId, tmpMessageId, chatId, messageId)}
 }
 
-func (_c *StorageService_SetAnswerMessageId_Call) Run(run func(dstChatId int64, tmpMessageId int64, fromChatMessageId string)) *StorageService_SetAnswerMessageId_Call {
+func (_c *StorageService_SetAnswerMessageId_Call) Run(run func(dstChatId int64, tmpMessageId int64, chatId int64, messageId int64)) *StorageService_SetAnswerMessageId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int64), args[1].(int64), args[2].(string))
+		run(args[0].(int64), args[1].(int64), args[2].(int64), args[3].(int64))
 	})
 	return _c
 }
@@ -142,14 +144,14 @@ func (_c *StorageService_SetAnswerMessageId_Call) Return() *StorageService_SetAn
 	return _c
 }
 
-func (_c *StorageService_SetAnswerMessageId_Call) RunAndReturn(run func(int64, int64, string)) *StorageService_SetAnswerMessageId_Call {
+func (_c *StorageService_SetAnswerMessageId_Call) RunAndReturn(run func(int64, int64, int64, int64)) *StorageService_SetAnswerMessageId_Call {
 	_c.Run(run)
 	return _c
 }
 
-// SetCopiedMessageId provides a mock function with given fields: fromChatMessageId, toChatMessageId
-func (_m *StorageService) SetCopiedMessageId(fromChatMessageId string, toChatMessageId string) {
-	_m.Called(fromChatMessageId, toChatMessageId)
+// SetCopiedMessageId provides a mock function with given fields: chatId, messageId, toChatMessageId
+func (_m *StorageService) SetCopiedMessageId(chatId int64, messageId int64, toChatMessageId string) {
+	_m.Called(chatId, messageId, toChatMessageId)
 }
 
 // StorageService_SetCopiedMessageId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetCopiedMessageId'
@@ -158,15 +160,16 @@ type StorageService_SetCopiedMessageId_Call struct {
 }
 
 // SetCopiedMessageId is a helper method to define mock.On call
-//   - fromChatMessageId string
+//   - chatId int64
+//   - messageId int64
 //   - toChatMessageId string
-func (_e *StorageService_Expecter) SetCopiedMessageId(fromChatMessageId interface{}, toChatMessageId interface{}) *StorageService_SetCopiedMessageId_Call {
-	return &StorageService_SetCopiedMessageId_Call{Call: _e.mock.On("SetCopiedMessageId", fromChatMessageId, toChatMessageId)}
+func (_e *StorageService_Expecter) SetCopiedMessageId(chatId interface{}, messageId interface{}, toChatMessageId interface{}) *StorageService_SetCopiedMessageId_Call {
+	return &StorageService_SetCopiedMessageId_Call{Call: _e.mock.On("SetCopiedMessageId", chatId, messageId, toChatMessageId)}
 }
 
-func (_c *StorageService_SetCopiedMessageId_Call) Run(run func(fromChatMessageId string, toChatMessageId string)) *StorageService_SetCopiedMessageId_Call {
+func (_c *StorageService_SetCopiedMessageId_Call) Run(run func(chatId int64, messageId int64, toChatMessageId string)) *StorageService_SetCopiedMessageId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(string))
+		run(args[0].(int64), args[1].(int64), args[2].(string))
 	})
 	return _c
 }
@@ -176,7 +179,7 @@ func (_c *StorageService_SetCopiedMessageId_Call) Return() *StorageService_SetCo
 	return _c
 }
 
-func (_c *StorageService_SetCopiedMessageId_Call) RunAndReturn(run func(string, string)) *StorageService_SetCopiedMessageId_Call {
+func (_c *StorageService_SetCopiedMessageId_Call) RunAndReturn(run func(int64, int64, string)) *StorageService_SetCopiedMessageId_Call {
 	_c.Run(run)
 	return _c
 }

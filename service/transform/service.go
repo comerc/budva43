@@ -25,7 +25,7 @@ type telegramRepo interface {
 //go:generate mockery --name=storageService --exported
 type storageService interface {
 	GetNewMessageId(chatId, tmpMessageId int64) int64
-	GetCopiedMessageIds(fromChatMessageId string) []string
+	GetCopiedMessageIds(chatId, messageId int64) []string
 }
 
 //go:generate mockery --name=messageService --exported
@@ -109,8 +109,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText, srcCha
 			continue
 		}
 		isReplaced := false
-		fromChatMessageId := fmt.Sprintf("%d:%d", src.ChatId, src.Id)
-		toChatMessageIds := s.storageService.GetCopiedMessageIds(fromChatMessageId)
+		toChatMessageIds := s.storageService.GetCopiedMessageIds(src.ChatId, src.Id)
 		var tmpMessageId int64 = 0
 		for _, toChatMessageId := range toChatMessageIds {
 			a := strings.Split(toChatMessageId, ":")
