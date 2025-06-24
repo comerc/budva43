@@ -75,10 +75,8 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 					// Нет файлов для перезаписи - это нормально, выходим
 					err = nil
 				}
-				if err != nil {
-					// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
-					r.log.ErrorOrDebug(&err, "")
-				}
+				// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
+				r.log.ErrorOrDebug(&err, "GC completed")
 				break // Выходим из внутреннего цикла, ждем следующего тика
 			}
 		}
