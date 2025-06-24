@@ -6,3 +6,4 @@ bin/
 vendor/
 _try/
 .coverage.out
+**/mocks/**
