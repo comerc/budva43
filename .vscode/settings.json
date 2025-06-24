@@ -2,9 +2,6 @@
 	"go.testEnvVars": {
 		"GOEXPERIMENT": "synctest",
 	},
-	"go.testFlags": [
-		"-count=1",
-	],
 	"go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
 	// "go.useLanguageServer": true,

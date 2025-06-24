@@ -24,7 +24,7 @@ jobs:
 
       - name: Run tests and generate coverage
         run: |
-          GOEXPERIMENT=synctest go test -count=1 -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
+          GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
           go tool cover -func=.coverage.out -o=.coverage.out
 
       - name: Go Coverage Badge
