@@ -16,6 +16,12 @@ run:
 log:
 	@tail -f .data/log/app.log | PROJECT_ROOT=$(shell pwd)/ pplog
 
+cover:
+	@./scripts/cover.sh
+
+view-coverage:
+	@go tool cover -html=.coverage.out
+
 kill-port:
 	lsof -ti:7070 | xargs kill -9
 

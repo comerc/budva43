@@ -1,0 +1,8 @@
+# .ignore file for ripgrep
+config/.private/
+.git/
+.data/
+bin/
+vendor/
+_try/
+.coverage.out
