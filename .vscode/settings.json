@@ -6,7 +6,7 @@
 	// 	"-count=1",
 	// ],
 	"go.testTimeout": "36s",
-	// "go.buildTags": "goexperiment.synctest",
+	"go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
 	// "go.useLanguageServer": true,
 	// "go.gopath": "",
@@ -31,6 +31,9 @@
 		"coveredGutterStyle": "blockblue",
 		"uncoveredGutterStyle": "blockred"
 	},
+	"excludeMockFiles.patterns": [
+		"**/mocks/*.go"
+	],
 	// "go.toolsGopath": "",
 	// "go.testEnvFile": null,
 	// "go.gocodeAutoBuild": true,
@@ -55,6 +58,12 @@
 	"files.watcherExclude": {
 		"**/.coverage.out": true,
 	},
+	// "files.exclude": {
+	// 	"**/mocks/**": true
+	// },
+	// "search.exclude": {
+	// 	"**/mocks/**": true
+	// },
 	// "[go]": {
 	// 	"editor.formatOnSave": true,
 	// 	"editor.codeActionsOnSave": {
@@ -71,6 +80,9 @@
 	// 	}
 	// },
 	// "gopls": {
+	// 	"directoryFilters": [
+	// 		"-**/mocks/**",
+	// 	],
 	// 	"completeUnimported": true,
 	// 	"usePlaceholders": true,
 	// 	"deepCompletion": true,
