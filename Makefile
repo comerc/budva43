@@ -17,7 +17,7 @@ log:
 	@tail -f .data/log/app.log | PROJECT_ROOT=$(shell pwd)/ pplog
 
 cover:
-	@./scripts/cover.sh
+	@./script/cover.sh
 
 view-coverage:
 	@go tool cover -html=.coverage.out
