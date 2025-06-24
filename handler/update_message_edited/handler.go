@@ -27,9 +27,9 @@ type queueRepo interface {
 
 //go:generate mockery --name=storageService --exported
 type storageService interface {
-	GetCopiedMessageIds(fromChatMessageId string) []string
+	GetCopiedMessageIds(chatId, messageId int64) []string
 	GetNewMessageId(chatId, tmpMessageId int64) int64
-	SetAnswerMessageId(dstChatId, tmpMessageId int64, fromChatMessageId string)
+	SetAnswerMessageId(dstChatId, tmpMessageId, chatId, messageId int64)
 	DeleteAnswerMessageId(dstChatId, tmpMessageId int64)
 }
 
@@ -136,8 +136,7 @@ type data struct {
 
 // collectData собирает данные для редактирования сообщений
 func (h *Handler) collectData(chatId, messageId int64) *data {
-	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
-	toChatMessageIds := h.storageService.GetCopiedMessageIds(fromChatMessageId)
+	toChatMessageIds := h.storageService.GetCopiedMessageIds(chatId, messageId)
 	result := &data{
 		copiedMessageIds: toChatMessageIds,
 		newMessageIds:    make(map[string]int64),
@@ -176,7 +175,6 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		"result", &result,
 	)
 
-	fromChatMessageId := fmt.Sprintf("%d:%d", chatId, messageId)
 	toChatMessageIds := data.copiedMessageIds
 
 	var src *client.Message
@@ -200,7 +198,8 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			var err error
 			forwardRuleId := ""
 			defer h.log.ErrorOrDebug(&err, "editMessages",
-				"fromChatMessageId", fromChatMessageId,
+				"chatId", chatId,
+				"messageId", messageId,
 				"toChatMessageId", toChatMessageId,
 				"forwardRuleId", &forwardRuleId,
 			)
@@ -307,7 +306,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			}
 			// TODO: isAnswer
 			if len(replyMarkupData) > 0 {
-				h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, fromChatMessageId)
+				h.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, chatId, messageId)
 			} else {
 				h.storageService.DeleteAnswerMessageId(dstChatId, tmpMessageId)
 			}

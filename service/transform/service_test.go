@@ -402,7 +402,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
 					"rule1:-10114:789",
 				})
 
@@ -448,7 +448,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{})
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{})
 				return New(telegramRepo, storageService, nil)
 			},
 		},
@@ -485,7 +485,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{})
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{})
 				return New(telegramRepo, storageService, nil)
 			},
 		},
@@ -522,7 +522,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
 					"rule1:-10114:789",
 				})
 
@@ -564,7 +564,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 
-				storageService.EXPECT().GetCopiedMessageIds("-10100:123").Return([]string{
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
 					"rule1:-10114:789",
 				})
 
