@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -54,8 +53,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	addr := net.JoinHostPort(config.Web.Host, config.Web.Port)
 	if !isPortFree(addr) {
-		err := fmt.Errorf("port %s is busy -> make kill-port", addr)
-		return log.WrapError(err)
+		return log.NewError("port is busy -> make kill-port", "addr", addr)
 	}
 
 	t.authService.Subscribe(t.newFuncNotify())
@@ -77,7 +75,7 @@ func (t *Transport) Close() error {
 
 	err = t.server.Shutdown(ctx)
 	if err != nil {
-		return log.WrapError(err)
+		return log.WrapError(err) // внешняя ошибка
 	}
 
 	return nil
