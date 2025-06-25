@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+ознакомься и применяй (кроме помеченных как "deprecated", кроме помеченных как "draft", кроме файлов _*.md)
+
+doc/ARCHITECTURE-V2.md
+doc/CONVENTIONS.md
+doc/ERRORS.md
+doc/LOG.md
+doc/TRANSPORT.md
+doc/WATCH-CONFIG.md
