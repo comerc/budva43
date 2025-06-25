@@ -61,7 +61,7 @@ func TestTransformService_Transform(t *testing.T) {
 				chatService := mocks.NewChatService(t)
 				messageService := mocks.NewMessageService(t)
 
-				// Mock для addSources - sign
+				// Mock для addSourceSign
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
 					Text: "*Test Source*",
 					ParseMode: &client.TextParseModeMarkdown{
@@ -72,7 +72,7 @@ func TestTransformService_Transform(t *testing.T) {
 					Entities: []*client.TextEntity{},
 				}, nil)
 
-				// Mock для addSources - link
+				// Mock для addSourceLink
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
 					ChatId:    -10121,
 					MessageId: 123,
@@ -115,7 +115,7 @@ func TestTransformService_Transform(t *testing.T) {
 				chatService := mocks.NewChatService(t)
 				messageService := mocks.NewMessageService(t)
 
-				// Mock для addSources - sign
+				// Mock для addSourceSign
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
 					Text: "Test Source\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|",
 					ParseMode: &client.TextParseModeMarkdown{
@@ -126,7 +126,7 @@ func TestTransformService_Transform(t *testing.T) {
 					Entities: nil,
 				}, nil)
 
-				// Mock для addSources - link
+				// Mock для addSourceLink
 				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
 					ChatId:    -10122,
 					MessageId: 123,
@@ -942,7 +942,7 @@ func TestTransformService_addSourceSign(t *testing.T) {
 			name:          "sign not for this chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: -10103, // sign.for = [10108], а не 10109
+				ChatId: -10103, // sign.for = [-10108], а не -10109
 				Id:     123,
 			},
 			dstChatId:        -10109,
@@ -974,7 +974,7 @@ func TestTransformService_addSourceSign(t *testing.T) {
 			name:          "successful sign addition",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId: -10100, // sign для dstChatId 10109
+				ChatId: -10100, // sign для dstChatId -10109
 				Id:     123,
 			},
 			dstChatId:        -10109,
@@ -1079,7 +1079,7 @@ func TestTransformService_addSourceLink(t *testing.T) {
 			name:          "link not for this chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       -10100, // у этого source нет link для dstChatId 10109
+				ChatId:       -10100, // у этого source нет link для dstChatId -10109
 				Id:           123,
 				MediaAlbumId: 0,
 			},
@@ -1113,7 +1113,7 @@ func TestTransformService_addSourceLink(t *testing.T) {
 			name:          "successful link addition",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
-				ChatId:       -10101, // link для dstChatId 10109
+				ChatId:       -10101, // link для dstChatId -10109
 				Id:           123,
 				MediaAlbumId: 0,
 			},
