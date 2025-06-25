@@ -21,7 +21,6 @@ type mediaAlbum struct {
 type Service struct {
 	log *log.Logger
 	//
-	// telegramRepo telegramRepo, // YAGNI
 	mu          sync.Mutex
 	mediaAlbums map[entity.MediaAlbumKey]*mediaAlbum
 }

@@ -135,7 +135,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	}
 }
 
-// getMessageByLink получает сообщение по ссылке - YAGNI
+// getMessageByLink получает сообщение по ссылке - YAGNI (это просто вызов tdlib с логированием)
 func (s *Service) getMessageByLink(url string) *client.Message {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "getMessageByLink")
