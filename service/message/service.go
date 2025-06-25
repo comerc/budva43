@@ -6,40 +6,18 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
-//go:generate mockery --name=telegramRepo --exported
-type telegramRepo interface {
-	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
-}
-
 // Service предоставляет методы для обработки и преобразования сообщений
 type Service struct {
 	log *log.Logger
 	//
-	telegramRepo telegramRepo
 }
 
 // New создает новый экземпляр сервиса для работы с сообщениями
-func New(telegramRepo telegramRepo) *Service {
+func New() *Service {
 	return &Service{
 		log: log.NewLogger("service.message"),
 		//
-		telegramRepo: telegramRepo,
 	}
-}
-
-// GetMessageByLink получает сообщение по ссылке
-func (s *Service) GetMessageByLink(url string) *client.Message {
-	var err error
-	defer s.log.ErrorOrDebug(&err, "GetMessageByLink")
-
-	var messageLinkInfo *client.MessageLinkInfo
-	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
-		Url: url,
-	})
-	if err != nil {
-		return nil
-	}
-	return messageLinkInfo.Message
 }
 
 // GetFormattedText извлекает содержимое сообщения для поддерживаемых типов
