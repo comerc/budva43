@@ -11,17 +11,22 @@ import (
 
 func setDefaultConfig(config *config) {
 	logDir := filepath.Join(util.ProjectRoot, ".data", "log")
+	testing := os.Getenv("GOEXPERIMENT") == "synctest"
+	logLevel := slog.LevelDebug
+	if testing {
+		logLevel = slog.LevelError // !! в тестах проверяем только ошибки
+	}
 
 	config.General.EngineConfigFile = "engine.yml"
 
-	config.General.Log.Level = slog.LevelDebug
+	config.General.Log.Level = logLevel
 	config.General.Log.Directory = logDir
 	config.General.Log.MaxFileSize = 10 // MB
 
 	config.ErrorSource.Type = "more"
 	config.ErrorSource.RelativePath = true
 
-	config.Telegram.UseTestDc = os.Getenv("GOEXPERIMENT") == "synctest"
+	config.Telegram.UseTestDc = testing
 	config.Telegram.UseFileDatabase = true
 	config.Telegram.UseChatInfoDatabase = true
 	config.Telegram.UseMessageDatabase = true

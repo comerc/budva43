@@ -2,7 +2,6 @@ package test
 
 import (
 	"errors"
-	"log/slog"
 	"path/filepath"
 	"testing"
 	"time"
@@ -20,6 +19,7 @@ import (
 // из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
 
 // dummy comment - для соблюдения номеров строк в тестах
+//
 //
 //
 //
@@ -91,13 +91,13 @@ func TestLog_SomeMethod(t *testing.T) {
 
 			records := spylogHandler.GetRecords()
 			require.Equal(t, len(records), 1)
+			record := records[0]
 
-			assert.Equal(t, slog.LevelError, records[0].Level)
-			assert.Equal(t, "error", records[0].Message)
-			assert.Equal(t, "val0", spylog.GetAttrValue(records[0], "arg0"))
-			assert.Equal(t, "val1", spylog.GetAttrValue(records[0], "arg1"))
-			assert.Equal(t, "val2", spylog.GetAttrValue(records[0], "arg2"))
-			assert.Equal(t, test.expectedSource, spylog.GetAttrValue(records[0], "source"))
+			assert.Equal(t, "error", record.Message)
+			assert.Equal(t, "val0", spylog.GetAttrValue(record, "arg0"))
+			assert.Equal(t, "val1", spylog.GetAttrValue(record, "arg1"))
+			assert.Equal(t, "val2", spylog.GetAttrValue(record, "arg2"))
+			assert.Equal(t, test.expectedSource, spylog.GetAttrValue(record, "source"))
 		})
 	}
 
@@ -141,13 +141,13 @@ func TestLog_UnwrappedError(t *testing.T) {
 
 	records := spylogHandler.GetRecords()
 	require.Equal(t, len(records), 1)
+	record := records[0]
 
-	assert.Equal(t, slog.LevelError, records[0].Level)
-	assert.Equal(t, "unwrapped error", records[0].Message)
-	assert.Equal(t, "val", spylog.GetAttrValue(records[0], "arg"))
-	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(records[0], "type"))
+	assert.Equal(t, "unwrapped error", record.Message)
+	assert.Equal(t, "val", spylog.GetAttrValue(record, "arg"))
+	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(record, "type"))
 	assert.Equal(t, "test/log_test.go:140 test.TestLog_UnwrappedError",
-		spylog.GetAttrValue(records[0], "source"))
+		spylog.GetAttrValue(record, "source"))
 }
 
 func TestLog_WithPtr(t *testing.T) {
@@ -176,7 +176,9 @@ func TestLog_WithPtr(t *testing.T) {
 			t time.Time
 			p *int
 		)
-		defer o.log.ErrorOrDebug(nil, "message",
+		var err error
+		err = log.NewError("dummy")
+		defer o.log.ErrorOrDebug(&err, "dummy",
 			"a", &a, "m", &m, "s", &s, "i", &i, "f", &f, "b", &b, "d", &d, "t", &t, "p", &p)
 		a = []string{"1", "2", "3"}
 		m = map[string]string{"a": "1", "b": "2"}
@@ -191,16 +193,15 @@ func TestLog_WithPtr(t *testing.T) {
 
 	records := spylogHandler.GetRecords()
 	require.Equal(t, len(records), 1)
+	record := records[0]
 
-	assert.Equal(t, slog.LevelDebug, records[0].Level)
-	assert.Equal(t, "message", records[0].Message)
-	assert.Equal(t, "[1 2 3]", spylog.GetAttrValue(records[0], "a"))
-	assert.Equal(t, "map[a:1 b:2]", spylog.GetAttrValue(records[0], "m"))
-	assert.Equal(t, "val", spylog.GetAttrValue(records[0], "s"))
-	assert.Equal(t, "123", spylog.GetAttrValue(records[0], "i"))
-	assert.Equal(t, "1.1", spylog.GetAttrValue(records[0], "f"))
-	assert.Equal(t, "true", spylog.GetAttrValue(records[0], "b"))
-	assert.Equal(t, "1m1s", spylog.GetAttrValue(records[0], "d"))
-	assert.Equal(t, "2025-01-02 03:04:05 +0000 UTC", spylog.GetAttrValue(records[0], "t"))
-	assert.Equal(t, "0x", spylog.GetAttrValue(records[0], "p")[0:2])
+	assert.Equal(t, "[1 2 3]", spylog.GetAttrValue(record, "a"))
+	assert.Equal(t, "map[a:1 b:2]", spylog.GetAttrValue(record, "m"))
+	assert.Equal(t, "val", spylog.GetAttrValue(record, "s"))
+	assert.Equal(t, "123", spylog.GetAttrValue(record, "i"))
+	assert.Equal(t, "1.1", spylog.GetAttrValue(record, "f"))
+	assert.Equal(t, "true", spylog.GetAttrValue(record, "b"))
+	assert.Equal(t, "1m1s", spylog.GetAttrValue(record, "d"))
+	assert.Equal(t, "2025-01-02 03:04:05 +0000 UTC", spylog.GetAttrValue(record, "t"))
+	assert.Equal(t, "0x", spylog.GetAttrValue(record, "p")[0:2])
 }

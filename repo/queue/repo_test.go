@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"log/slog"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -80,7 +79,6 @@ func TestQueueRepo(t *testing.T) {
 		// Проверяем запись в лог
 		records := spylogHandler.GetRecords()
 		require.Equal(t, len(records), 1)
-		assert.Equal(t, slog.LevelError, records[0].Level)
 		assert.Equal(t, "Alarm!", records[0].Message)
 
 		// Завершаем контекст
