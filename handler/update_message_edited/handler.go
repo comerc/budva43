@@ -183,7 +183,6 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		MessageId: messageId,
 	})
 	if err != nil {
-		err = log.WrapError(err)
 		return
 	}
 	// TODO: isAnswer
@@ -221,7 +220,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			var formattedText *client.FormattedText
 			formattedText, err = util.DeepCopy(srcFormattedText)
 			if err != nil {
-				err = log.WrapError(err)
+				err = log.WrapError(err) // внешняя ошибка
 				return
 			}
 			if (forwardRule.SendCopy || src.CanBeSaved) &&
@@ -289,18 +288,18 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 					// 	return nil
 					// }(),
 				})
-				if err != nil {
-					err = log.WrapError(err)
-				}
+				// if err != nil {
+				//   //ничего не делаем, просто логируем ошибку
+				// }
 			case *client.MessageVoiceNote:
 				_, err = h.telegramRepo.EditMessageCaption(&client.EditMessageCaptionRequest{
 					ChatId:    dstChatId,
 					MessageId: newMessageId,
 					Caption:   formattedText,
 				})
-				if err != nil {
-					err = log.WrapError(err)
-				}
+				// if err != nil {
+				//   //ничего не делаем, просто логируем ошибку
+				// }
 			default:
 				return
 			}

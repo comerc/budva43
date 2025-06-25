@@ -190,7 +190,6 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 					Revoke:     true,
 				})
 				if err != nil {
-					err = log.WrapError(err)
 					return
 				}
 

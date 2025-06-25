@@ -90,7 +90,7 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 			var tdlibClient *client.Client
 			tdlibClient, err = client.NewClient(authorizationStateHandler)
 			if err != nil {
-				err = log.WrapError(err)
+				err = log.WrapError(err) // внешняя ошибка
 				return false
 			}
 
@@ -115,7 +115,7 @@ func (r *Repo) Close() error {
 	}
 	_, err = r.client.Close()
 	if err != nil {
-		return log.WrapError(err)
+		return log.WrapError(err) // внешняя ошибка
 	}
 	r.client = nil
 	// иногда при выходе наблюдаю ошибку в консоли (не зависит от service/engine):
@@ -151,13 +151,13 @@ func (r *Repo) setupClientLog() error {
 		},
 	})
 	if err != nil {
-		return log.WrapError(err)
+		return log.WrapError(err) // внешняя ошибка
 	}
 	_, err = client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 		NewVerbosityLevel: config.Telegram.LogVerbosityLevel,
 	})
 	if err != nil {
-		return log.WrapError(err)
+		return log.WrapError(err) // внешняя ошибка
 	}
 	return nil
 }

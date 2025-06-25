@@ -49,7 +49,7 @@ func (r *Repo) Close() error {
 	if r.db != nil {
 		err := r.db.Close()
 		if err != nil {
-			return log.WrapError(err)
+			return log.WrapError(err) // внешняя ошибка
 		}
 	}
 	return nil

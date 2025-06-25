@@ -142,7 +142,6 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 				Limit: 200,
 			})
 			if err != nil {
-				err = log.WrapError(err)
 				return false
 			}
 			for _, dstChatId := range destinations {
@@ -195,7 +194,6 @@ func (s *Service) newFuncInitializeDestinationsV2() initializeDestinations {
 				Limit: 200,
 			})
 			if err != nil {
-				err = log.WrapError(err)
 				return
 			}
 		}

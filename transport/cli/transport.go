@@ -239,5 +239,5 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 func (t *Transport) hiddenReadLine() (string, error) {
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
-	return string(password), log.WrapError(err)
+	return string(password), log.WrapError(err) // внешняя ошибка
 }

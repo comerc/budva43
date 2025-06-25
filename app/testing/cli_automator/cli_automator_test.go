@@ -3,7 +3,7 @@ package cli_automator
 import (
 	"bufio"
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"os"
 	"strings"
@@ -486,7 +486,7 @@ func (m *mockReadWriter) Read(p []byte) (int, error) {
 
 func (m *mockReadWriter) Write(p []byte) (int, error) {
 	if m.closed {
-		return 0, fmt.Errorf("write to closed pipe")
+		return 0, errors.New("write to closed pipe")
 	}
 	m.writeData += string(p)
 	return len(p), nil

@@ -33,7 +33,7 @@ func Reload(initializeDestinations initializeDestinations) error {
 	if err != nil {
 		var emptyConfigData *ErrEmptyConfigData
 		if !errors.As(err, &emptyConfigData) {
-			return log.WrapError(err)
+			return err
 		}
 	}
 
@@ -60,18 +60,18 @@ func Watch(reloadCallback func()) {
 // load загружает конфигурацию из engine.yml
 func load() (*entity.EngineConfig, error) {
 	if err := engineViper.ReadInConfig(); err != nil {
-		return nil, log.WrapError(err)
+		return nil, log.WrapError(err) // внешняя ошибка
 	}
 
 	engineConfig := &entity.EngineConfig{}
 	if err := engineViper.Unmarshal(engineConfig, util.GetConfigOptions()); err != nil {
-		return nil, log.WrapError(err)
+		return nil, log.WrapError(err) // внешняя ошибка
 	}
 
 	Initialize(engineConfig)
 
 	if err := validate(engineConfig); err != nil {
-		return nil, log.WrapError(err)
+		return nil, err
 	}
 
 	transform(engineConfig)
@@ -79,7 +79,7 @@ func load() (*entity.EngineConfig, error) {
 	enrich(engineConfig)
 
 	if err := check(engineConfig); err != nil {
-		return engineConfig, log.WrapError(err)
+		return engineConfig, err
 	}
 
 	return engineConfig, nil

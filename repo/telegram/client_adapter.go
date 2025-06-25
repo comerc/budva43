@@ -1,6 +1,9 @@
 package telegram
 
-import "github.com/zelenin/go-tdlib/client"
+import (
+	"github.com/comerc/budva43/app/log"
+	"github.com/zelenin/go-tdlib/client"
+)
 
 // clientAdapter - tdlibClient methods (для моков в юнит-тестах)
 type clientAdapter interface {
@@ -19,9 +22,12 @@ type clientAdapter interface {
 	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
 	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
 
-	// Other operations
+	// Chat operations
 	LoadChats(*client.LoadChatsRequest) (*client.Ok, error)
 	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
+	GetChat(*client.GetChatRequest) (*client.Chat, error)
+
+	// Other operations
 	GetListener() *client.Listener
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
@@ -31,57 +37,110 @@ type clientAdapter interface {
 
 // GetMessage выводит информацию о сообщении
 func (r *Repo) GetMessage(req *client.GetMessageRequest) (*client.Message, error) {
-	return r.getClient().GetMessage(req)
+	msg, err := r.getClient().GetMessage(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return msg, nil
 }
 
 // SendMessage отправляет сообщение
 func (r *Repo) SendMessage(req *client.SendMessageRequest) (*client.Message, error) {
-	return r.getClient().SendMessage(req)
+	msg, err := r.getClient().SendMessage(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return msg, nil
 }
 
 // SendMessageAlbum отправляет альбом сообщений
 func (r *Repo) SendMessageAlbum(req *client.SendMessageAlbumRequest) (*client.Messages, error) {
-	return r.getClient().SendMessageAlbum(req)
+	messages, err := r.getClient().SendMessageAlbum(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return messages, nil
 }
 
 // EditMessageText редактирует текст сообщения
 func (r *Repo) EditMessageText(req *client.EditMessageTextRequest) (*client.Message, error) {
-	return r.getClient().EditMessageText(req)
+	msg, err := r.getClient().EditMessageText(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return msg, nil
 }
 
 // EditMessageCaption редактирует подпись сообщения
 func (r *Repo) EditMessageCaption(req *client.EditMessageCaptionRequest) (*client.Message, error) {
-	return r.getClient().EditMessageCaption(req)
+	msg, err := r.getClient().EditMessageCaption(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return msg, nil
 }
 
 // DeleteMessages удаляет сообщения
 func (r *Repo) DeleteMessages(req *client.DeleteMessagesRequest) (*client.Ok, error) {
-	return r.getClient().DeleteMessages(req)
+	ok, err := r.getClient().DeleteMessages(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return ok, nil
 }
 
 // ForwardMessages пересылает сообщения
 func (r *Repo) ForwardMessages(req *client.ForwardMessagesRequest) (*client.Messages, error) {
-	return r.getClient().ForwardMessages(req)
+	messages, err := r.getClient().ForwardMessages(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return messages, nil
 }
 
 // GetMessageLink выводит ссылку на сообщение
 func (r *Repo) GetMessageLink(req *client.GetMessageLinkRequest) (*client.MessageLink, error) {
-	return r.getClient().GetMessageLink(req)
+	link, err := r.getClient().GetMessageLink(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return link, nil
 }
 
 // GetMessageLinkInfo выводит информацию о ссылке на сообщение
 func (r *Repo) GetMessageLinkInfo(req *client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error) {
-	return r.getClient().GetMessageLinkInfo(req)
+	info, err := r.getClient().GetMessageLinkInfo(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return info, nil
 }
 
 // LoadChats загружает чаты
 func (r *Repo) LoadChats(req *client.LoadChatsRequest) (*client.Ok, error) {
-	return r.getClient().LoadChats(req)
+	ok, err := r.getClient().LoadChats(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return ok, nil
 }
 
 // GetChatHistory выводит историю сообщений
 func (r *Repo) GetChatHistory(req *client.GetChatHistoryRequest) (*client.Messages, error) {
-	return r.getClient().GetChatHistory(req)
+	messages, err := r.getClient().GetChatHistory(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return messages, nil
+}
+
+// GetChat выводит информацию о чате
+func (r *Repo) GetChat(req *client.GetChatRequest) (*client.Chat, error) {
+	chat, err := r.getClient().GetChat(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return chat, nil
 }
 
 // GetListener возвращает слушателя TDLib
@@ -91,20 +150,36 @@ func (r *Repo) GetListener() *client.Listener {
 
 // ParseTextEntities парсит текст сообщения
 func (r *Repo) ParseTextEntities(req *client.ParseTextEntitiesRequest) (*client.FormattedText, error) {
-	return r.getClient().ParseTextEntities(req)
+	formattedText, err := r.getClient().ParseTextEntities(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return formattedText, nil
 }
 
 // GetCallbackQueryAnswer выводит информацию о ответе на callback-запрос
 func (r *Repo) GetCallbackQueryAnswer(req *client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error) {
-	return r.getClient().GetCallbackQueryAnswer(req)
+	answer, err := r.getClient().GetCallbackQueryAnswer(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return answer, nil
 }
 
 // GetOption выводит информацию о параметрах TDLib
 func (r *Repo) GetOption(req *client.GetOptionRequest) (client.OptionValue, error) {
-	return r.getClient().GetOption(req)
+	option, err := r.getClient().GetOption(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return option, nil
 }
 
 // GetMe выводит информацию о пользователе
 func (r *Repo) GetMe() (*client.User, error) {
-	return r.getClient().GetMe()
+	user, err := r.getClient().GetMe()
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return user, nil
 }

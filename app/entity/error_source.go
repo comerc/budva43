@@ -6,6 +6,8 @@ type ErrorSource struct {
 	RelativePath bool
 }
 
+// TODO: убрать, т.к. противоречит соглашению по ошибкам - интересует только "more"-режим
+
 type ErrorSourceType = string
 
 var TypeErrorSourceNone ErrorSourceType = ""

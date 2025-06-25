@@ -82,7 +82,6 @@ func (s *Service) GetStatus() string {
 		Name: "version",
 	})
 	if err != nil {
-		err = log.WrapError(err)
 		return ""
 	}
 	version := versionOption.(*client.OptionValueString).Value
@@ -90,7 +89,6 @@ func (s *Service) GetStatus() string {
 	var me *client.User
 	me, err = s.telegramRepo.GetMe()
 	if err != nil {
-		err = log.WrapError(err)
 		return ""
 	}
 
