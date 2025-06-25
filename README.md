@@ -58,6 +58,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] SOLID
 - [x] DRY
 - [x] KISS
+- [x] YAGNI
 - [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
 - [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
 - [x] Notations Start & Run
