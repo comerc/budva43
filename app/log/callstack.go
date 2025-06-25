@@ -173,7 +173,7 @@ func getRelativePath(fullPath string) string {
 
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
-func GetCallStack(skip int) []*CallInfo {
+func GetCallStack(skip int, all bool) []*CallInfo {
 	var result []*CallInfo
 
 	for i := skip; ; i++ {
@@ -213,6 +213,10 @@ func GetCallStack(skip int) []*CallInfo {
 				Line:     line,
 			},
 		}, result...)
+
+		if !all {
+			break
+		}
 	}
 
 	return result

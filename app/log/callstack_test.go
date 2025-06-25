@@ -11,7 +11,7 @@ import (
 
 // GetCaller возвращает информацию о вызывающем
 func GetCaller() string {
-	callStack := GetCallStack(2) // Пропускаем GetCaller и getCallStack
+	callStack := GetCallStack(2, true) // Пропускаем GetCaller и getCallStack
 	if len(callStack) > 0 {
 		return callStack[0].String()
 	}
@@ -22,7 +22,7 @@ func GetCaller() string {
 func GetCallers(depth int) []string {
 	// TODO: depth - deprecated, remove it
 
-	callStack := GetCallStack(2) // Пропускаем GetCallers и getCallStack
+	callStack := GetCallStack(2, true) // Пропускаем GetCallers и getCallStack
 
 	if len(callStack) == 0 {
 		return []string{}
