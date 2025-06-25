@@ -1,0 +1,12 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+```go
+	testing := os.Getenv("GOEXPERIMENT") == "synctest"
+	logLevel := slog.LevelDebug
+	if testing {
+		logLevel = slog.LevelError // !! в тестах проверяем только ошибки
+	}
+```

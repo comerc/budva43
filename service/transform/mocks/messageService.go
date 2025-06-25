@@ -20,6 +20,54 @@ func (_m *MessageService) EXPECT() *MessageService_Expecter {
 	return &MessageService_Expecter{mock: &_m.Mock}
 }
 
+// GetMessageByLink provides a mock function with given fields: url
+func (_m *MessageService) GetMessageByLink(url string) *client.Message {
+	ret := _m.Called(url)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMessageByLink")
+	}
+
+	var r0 *client.Message
+	if rf, ok := ret.Get(0).(func(string) *client.Message); ok {
+		r0 = rf(url)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Message)
+		}
+	}
+
+	return r0
+}
+
+// MessageService_GetMessageByLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessageByLink'
+type MessageService_GetMessageByLink_Call struct {
+	*mock.Call
+}
+
+// GetMessageByLink is a helper method to define mock.On call
+//   - url string
+func (_e *MessageService_Expecter) GetMessageByLink(url interface{}) *MessageService_GetMessageByLink_Call {
+	return &MessageService_GetMessageByLink_Call{Call: _e.mock.On("GetMessageByLink", url)}
+}
+
+func (_c *MessageService_GetMessageByLink_Call) Run(run func(url string)) *MessageService_GetMessageByLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *MessageService_GetMessageByLink_Call) Return(_a0 *client.Message) *MessageService_GetMessageByLink_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MessageService_GetMessageByLink_Call) RunAndReturn(run func(string) *client.Message) *MessageService_GetMessageByLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetReplyMarkupData provides a mock function with given fields: message
 func (_m *MessageService) GetReplyMarkupData(message *client.Message) []byte {
 	ret := _m.Called(message)
