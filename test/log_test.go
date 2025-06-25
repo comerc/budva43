@@ -72,7 +72,7 @@ func TestLog_SomeMethod(t *testing.T) {
 			name:           "more",
 			sourceType:     entity.TypeErrorSourceMore,
 			relativePath:   true,
-			expectedSource: "[0=test/log_test.go:90 test.TestLog_SomeMethod.func2 1=test/log_test.go:33 test.(*SomeObject).SomeMethod 2=test/log_test.go:42 test.(*SomeObject).NestedMethod]",
+			expectedSource: "[0=test/log_test.go:90 test.TestLog_SomeMethod.func2 1=test/log_test.go:33 test.(*SomeObject).SomeMethod 2=test/log_test.go:40 test.(*SomeObject).NestedMethod]",
 		},
 	}
 
