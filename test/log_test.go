@@ -60,19 +60,19 @@ func TestLog_SomeMethod(t *testing.T) {
 			name:           "simple with absolute path",
 			sourceType:     entity.TypeErrorSourceOne,
 			relativePath:   false,
-			expectedSource: filepath.Join(util.ProjectRoot, "test/log_test.go:40 test.(*SomeObject).NestedMethod"),
+			expectedSource: filepath.Join(util.ProjectRoot, "test/log_test.go:90 test.TestLog_SomeMethod.func2"),
 		},
 		{
 			name:           "one",
 			sourceType:     entity.TypeErrorSourceOne,
 			relativePath:   true,
-			expectedSource: "test/log_test.go:40 test.(*SomeObject).NestedMethod",
+			expectedSource: "test/log_test.go:90 test.TestLog_SomeMethod.func2",
 		},
 		{
 			name:           "more",
 			sourceType:     entity.TypeErrorSourceMore,
 			relativePath:   true,
-			expectedSource: "[0=test/log_test.go:40 test.(*SomeObject).NestedMethod 1=test/log_test.go:33 test.(*SomeObject).SomeMethod 2=test/log_test.go:90 test.TestLog_SomeMethod.func2]",
+			expectedSource: "[0=test/log_test.go:90 test.TestLog_SomeMethod.func2 1=test/log_test.go:33 test.(*SomeObject).SomeMethod 2=test/log_test.go:42 test.(*SomeObject).NestedMethod]",
 		},
 	}
 

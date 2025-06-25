@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
 )
 
 var (
@@ -174,16 +173,10 @@ func getRelativePath(fullPath string) string {
 
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
-// depth - количество фреймов для сбора после пропуска (0 = все доступные фреймы проекта)
 func GetCallStack(skip int) []*CallInfo {
 	var result []*CallInfo
 
-	depth := 10
-	if config.ErrorSource.Type == entity.TypeErrorSourceOne {
-		depth = 1
-	}
-
-	for i := skip; i < skip+depth; i++ {
+	for i := skip; ; i++ {
 		pc, fullPath, line, ok := runtime.Caller(i)
 		if !ok {
 			break
@@ -212,11 +205,14 @@ func GetCallStack(skip int) []*CallInfo {
 			fileName = getRelativePath(fullPath)
 		}
 
-		result = append(result, &CallInfo{
-			FuncName: funcName,
-			FileName: fileName,
-			Line:     line,
-		})
+		// Добавляем в начало стека (в обратном порядке)
+		result = append([]*CallInfo{
+			{
+				FuncName: funcName,
+				FileName: fileName,
+				Line:     line,
+			},
+		}, result...)
 	}
 
 	return result
