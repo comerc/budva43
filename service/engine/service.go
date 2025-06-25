@@ -115,7 +115,7 @@ func (s *Service) handleConfigReload() {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "handleConfigReload")
 
-	err = engine_config.Reload(s.newFuncInitializeDestinationsV2())
+	err = engine_config.Reload(s.newFuncInitializeDestinations())
 
 	var emptyConfigData *engine_config.ErrEmptyConfigData
 	if errors.As(err, &emptyConfigData) {
@@ -126,8 +126,8 @@ func (s *Service) handleConfigReload() {
 
 type initializeDestinations = func([]entity.ChatId)
 
-// newFuncInitializeDestinations создает колбек для загрузки чатов
-func (s *Service) newFuncInitializeDestinations() initializeDestinations {
+// _newFuncInitializeDestinations создает колбек для загрузки чатов (не используется)
+func (s *Service) _newFuncInitializeDestinations() initializeDestinations {
 	var fn initializeDestinations
 	level := 0
 	notFound := make(map[entity.ChatId]struct{})
@@ -182,8 +182,8 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 	return fn
 }
 
-// newFuncInitializeDestinationsV2 создает колбек для загрузки чатов
-func (s *Service) newFuncInitializeDestinationsV2() initializeDestinations {
+// newFuncInitializeDestinations создает колбек для загрузки чатов
+func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 	return func(destinations []entity.ChatId) {
 		var err error
 		defer s.log.ErrorOrDebug(&err, "initializeDestinations")
