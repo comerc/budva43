@@ -16,6 +16,7 @@ import (
 	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	authService "github.com/comerc/budva43/service/auth"
+	chatService "github.com/comerc/budva43/service/chat"
 	engineService "github.com/comerc/budva43/service/engine"
 	filtersModeService "github.com/comerc/budva43/service/filters_mode"
 	forwardedToService "github.com/comerc/budva43/service/forwarded_to"
@@ -95,11 +96,13 @@ func (a *App) Run() error {
 
 	// - Инициализация вспомогательных сервисов
 	storageService := storageService.New(storageRepo)
-	messageService := messageService.New()
+	chatService := chatService.New(telegramRepo)
+	messageService := messageService.New(telegramRepo)
 	mediaAlbumService := mediaAlbumService.New()
 	transformService := transformService.New(
 		telegramRepo,
 		storageService,
+		chatService,
 		messageService,
 	)
 	rateLimiterService := rateLimiterService.New()
