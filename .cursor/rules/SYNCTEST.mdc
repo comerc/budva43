@@ -3,4 +3,4 @@ description:
 globs:
 alwaysApply: true
 ---
-synctest настроено через "GOEXPERIMENT=synctest go test"
+synctest настроено через "GOEXPERIMENT=synctest go test" - запускай тесты с этой переменной окружения.
