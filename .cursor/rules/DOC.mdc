@@ -1,7 +1,7 @@
 ---
 description:
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 ознакомься и применяй (кроме помеченных как "deprecated", кроме помеченных как "draft", кроме файлов _*.md)
 
