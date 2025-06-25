@@ -68,6 +68,8 @@ sources:
       title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
       for: [10123]
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
+  10118: # for other source test in replaceMyselfLinks - message not from source chat
+    dummy: true
 destinations:
   # data for service.transform - 101xx
   10110: # for replace fragments test
@@ -98,10 +100,20 @@ destinations:
     replace-myself-links:
       run: true
       delete-external: false
+  10108: # for sign not for this chat test - wrong destination
+    dummy: true
+  10109: # for addSourceSign and addSourceLink tests - general destination
+    dummy: true
+  10117: # for empty replace myself links test
+    replace-myself-links:
+      run: false
+      # deleteExternal не указан (значит false)
   10123: # for Transform test - minimal success config
     replace-myself-links:
       run: false # чтобы replaceMyselfLinks не выдавал ошибку
     replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
+  10119: # for other destination test in replaceMyselfLinks - tmp message id zero
+    dummy: true
 forward-rules:
   "Id1":
     from: 111

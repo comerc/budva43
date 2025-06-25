@@ -16,11 +16,11 @@ import (
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	// tdlibClient methods
+	GetChat(*client.GetChatRequest) (*client.Chat, error)
 	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
 	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
-	GetChat(*client.GetChatRequest) (*client.Chat, error)
 }
 
 //go:generate mockery --name=storageService --exported
@@ -29,14 +29,8 @@ type storageService interface {
 	GetCopiedMessageIds(chatId, messageId int64) []string
 }
 
-//go:generate mockery --name=chatService --exported
-type chatService interface {
-	IsBasicGroup(chatId int64) (bool, error)
-}
-
 //go:generate mockery --name=messageService --exported
 type messageService interface {
-	GetMessageByLink(url string) *client.Message
 	GetReplyMarkupData(message *client.Message) []byte
 }
 
@@ -46,7 +40,6 @@ type Service struct {
 	//
 	telegramRepo   telegramRepo
 	storageService storageService
-	chatService    chatService
 	messageService messageService
 }
 
@@ -54,7 +47,6 @@ type Service struct {
 func New(
 	telegramRepo telegramRepo,
 	storageService storageService,
-	chatService chatService,
 	messageService messageService,
 ) *Service {
 	return &Service{
@@ -62,7 +54,6 @@ func New(
 		//
 		telegramRepo:   telegramRepo,
 		storageService: storageService,
-		chatService:    chatService,
 		messageService: messageService,
 	}
 }
@@ -114,11 +105,14 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 		return
 	}
 
-	var isBasicGroup bool
-	isBasicGroup, err = s.chatService.IsBasicGroup(srcChatId)
+	var chat *client.Chat
+	chat, err = s.telegramRepo.GetChat(&client.GetChatRequest{
+		ChatId: srcChatId,
+	})
 	if err != nil {
 		return
 	}
+	_, isBasicGroup := chat.Type.(*client.ChatTypeBasicGroup)
 
 	for _, entity := range formattedText.Entities {
 		if replaceMyselfLinks.Run && !isBasicGroup {
@@ -126,7 +120,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 			if !ok {
 				continue
 			}
-			src := s.messageService.GetMessageByLink(textUrl.Url)
+			src := s.getMessageByLink(textUrl.Url)
 			if src == nil || srcChatId != src.ChatId {
 				continue
 			}
@@ -139,6 +133,21 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 			entity.Type = &client.TextEntityTypeStrikethrough{}
 		}
 	}
+}
+
+// getMessageByLink получает сообщение по ссылке - YAGNI
+func (s *Service) getMessageByLink(url string) *client.Message {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "getMessageByLink")
+
+	var messageLinkInfo *client.MessageLinkInfo
+	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+		Url: url,
+	})
+	if err != nil {
+		return nil
+	}
+	return messageLinkInfo.Message
 }
 
 // justReplaceMyselfLinks заменяет ссылки исходного чата ссылками на копии в целевом чате
