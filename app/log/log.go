@@ -55,7 +55,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		args = append(args, "type", typeName)
 		if config.ErrorSource.Type != entity.TypeErrorSourceNone {
 			if stack == nil {
-				stack = GetCallStack(3)
+				stack = GetCallStack(3, true)
 			}
 			switch config.ErrorSource.Type {
 			case entity.TypeErrorSourceMore:
