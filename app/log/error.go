@@ -31,10 +31,8 @@ func WrapError(err error, args ...any) error {
 		newArgs := make([]any, 0, len(existing.Args)+len(args))
 		newArgs = append(newArgs, existing.Args...)
 		newArgs = append(newArgs, args...)
-		// newStack := make([]*CallInfo, 0, len(existing.Stack))
-		// newStack = append(newStack, existing.Stack...)
-		var newStack []*CallInfo
-		copy(newStack, existing.Stack)
+		newStack := make([]*CallInfo, 0, len(existing.Stack))
+		newStack = append(newStack, existing.Stack...)
 		return &CustomError{
 			error: existing.Unwrap(),
 			Args:  newArgs,
