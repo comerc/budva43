@@ -16,7 +16,7 @@ type Service struct {
 
 func New() *Service {
 	return &Service{
-		log: log.NewLogger("service.filters_mode"),
+		log: log.NewLogger(),
 	}
 }
 

@@ -21,7 +21,7 @@ type Service struct {
 // New создает новый сервис для управления скоростью пересылки сообщений
 func New() *Service {
 	return &Service{
-		log: log.NewLogger("service.rate_limiter"),
+		log: log.NewLogger(),
 		//
 		lastForwarded: make(map[int64]time.Time),
 	}

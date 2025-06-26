@@ -50,7 +50,7 @@ func New(
 	messageService messageService,
 ) *Service {
 	return &Service{
-		log: log.NewLogger("service.transform"),
+		log: log.NewLogger(),
 		//
 		telegramRepo:   telegramRepo,
 		storageService: storageService,

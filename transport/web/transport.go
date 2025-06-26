@@ -41,7 +41,7 @@ func New(
 	authService authService,
 ) *Transport {
 	return &Transport{
-		log: log.NewLogger("transport.web"),
+		log: log.NewLogger(),
 		//
 		authService: authService,
 	}

@@ -31,7 +31,7 @@ type Options struct {
 // New создает новый экземпляр репозитория Telegram
 func New() *Repo {
 	r := &Repo{
-		log: log.NewLogger("repo.telegram"),
+		log: log.NewLogger(),
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
 		clientDone: make(chan any), // закроется, когда клиент авторизован

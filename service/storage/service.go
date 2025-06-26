@@ -37,7 +37,7 @@ type Service struct {
 // New создает новый экземпляр сервиса хранения данных
 func New(repo storageRepo) *Service {
 	return &Service{
-		log: log.NewLogger("service.storage"),
+		log: log.NewLogger(),
 		//
 		repo: repo,
 	}

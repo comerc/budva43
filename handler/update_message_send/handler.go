@@ -29,7 +29,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: log.NewLogger("handler.update_message_send"),
+		log: log.NewLogger(),
 		//
 		queueRepo:      queueRepo,
 		storageService: storageService,

@@ -77,7 +77,7 @@ func New(
 	forwarderService forwarderService,
 ) *Handler {
 	return &Handler{
-		log: log.NewLogger("handler.update_message_edited"),
+		log: log.NewLogger(),
 		//
 		telegramRepo:       telegramRepo,
 		queueRepo:          queueRepo,

@@ -38,7 +38,7 @@ type Service struct {
 // New создает новый экземпляр сервиса авторизации
 func New(telegramRepo telegramRepo) *Service {
 	return &Service{
-		log: log.NewLogger("service.auth"),
+		log: log.NewLogger(),
 		//
 		telegramRepo: telegramRepo,
 		inputChan:    make(chan string, 1),

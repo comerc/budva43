@@ -170,7 +170,7 @@ type UserService struct {
 
 func NewUserService() *UserService {
     return &UserService{
-        log: slog.With("package", "user_service"),
+        log: log.NewLogger(),
     }
 }
 
@@ -192,7 +192,7 @@ func (s *UserService) ProcessUsers(users []User) {
 // Тест
 func TestProcessUsers(t *testing.T) {
     var service *UserService
-    logHandler := spylog.GetHandler("user_service", t.Name(), func() {
+    logHandler := spylog.GetHandler(t.Name(), func() {
         service = NewUserService()
     })
 

@@ -15,7 +15,7 @@ type Service struct {
 // New создает новый экземпляр сервиса для работы с сообщениями
 func New() *Service {
 	return &Service{
-		log: log.NewLogger("service.message"),
+		log: log.NewLogger(),
 		//
 	}
 }

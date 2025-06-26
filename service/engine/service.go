@@ -62,7 +62,7 @@ func New(
 	updateMessageSendHandler updateMessageSendHandler,
 ) *Service {
 	return &Service{
-		log: log.NewLogger("service.engine"),
+		log: log.NewLogger(),
 		//
 		telegramRepo:                telegramRepo,
 		updateNewMessageHandler:     updateNewMessageHandler,
