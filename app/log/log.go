@@ -15,12 +15,12 @@ import (
 // из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
 
 type Logger struct {
-	slog.Logger
+	*slog.Logger
 }
 
 func NewLogger(moduleName string) *Logger {
 	return &Logger{
-		Logger: *slog.With("module", moduleName),
+		Logger: slog.With("module", moduleName),
 	}
 }
 
