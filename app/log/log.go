@@ -18,9 +18,9 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger(moduleName string) *Logger {
+func NewLogger(packageName string) *Logger {
 	return &Logger{
-		Logger: slog.With("module", moduleName),
+		Logger: slog.With("package", packageName),
 	}
 }
 

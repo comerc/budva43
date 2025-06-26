@@ -48,7 +48,7 @@ func TestLog_SomeMethod(t *testing.T) {
 	config.LogSource.RelativePath = true
 
 	var o *SomeObject
-	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+	spylogHandler := spylog.GetHandler("module_name", t.Name(), func() {
 		o = &SomeObject{
 			log: log.NewLogger("module_name"),
 		}
@@ -73,7 +73,7 @@ func TestLog_UnwrappedError(t *testing.T) {
 
 	var logger *log.Logger
 
-	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+	spylogHandler := spylog.GetHandler("module_name", t.Name(), func() {
 		logger = log.NewLogger("module_name")
 	})
 
@@ -102,7 +102,7 @@ func TestLog_WrappedError(t *testing.T) {
 
 	var logger *log.Logger
 
-	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+	spylogHandler := spylog.GetHandler("module_name", t.Name(), func() {
 		logger = log.NewLogger("module_name")
 	})
 
@@ -130,7 +130,7 @@ func TestLog_WithPtr(t *testing.T) {
 	t.Parallel()
 
 	var logger *log.Logger
-	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+	spylogHandler := spylog.GetHandler("module_name", t.Name(), func() {
 		logger = log.NewLogger("module_name")
 	})
 
