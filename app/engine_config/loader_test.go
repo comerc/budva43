@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,12 +14,15 @@ func TestCheck(t *testing.T) {
 	t.Parallel()
 
 	err := check(&entity.EngineConfig{})
-	var emptyConfigData *ErrEmptyConfigData
-	ok := errors.As(err, &emptyConfigData)
-	require.True(t, ok)
+	is := errors.Is(err, ErrEmptyConfigData)
+	require.True(t, is)
+
+	var customError *log.CustomError
+	as := errors.As(err, &customError)
+	require.True(t, as)
 
 	assert.Equal(t, err.Error(), "отсутствуют данные")
-	assert.Equal(t, emptyConfigData.Args, []any{
+	assert.Equal(t, customError.Args, []any{
 		"path.0",
 		"config.Engine.UniqueSources",
 		"path.1",

@@ -25,14 +25,13 @@ func initEngineViper(projectRoot string) {
 	engineViper.SetConfigFile(path)
 }
 
-type initializeDestinations = func([]entity.ChatId)
+type initDestinations = func([]entity.ChatId)
 
 // Reload перезагружает конфигурацию config.Engine из engine.yml
-func Reload(initializeDestinations initializeDestinations) error {
+func Reload(initDestinations initDestinations) error {
 	newEngineConfig, err := load()
 	if err != nil {
-		var emptyConfigData *ErrEmptyConfigData
-		if !errors.As(err, &emptyConfigData) {
+		if !errors.Is(err, ErrEmptyConfigData) {
 			return err
 		}
 	}
@@ -41,7 +40,7 @@ func Reload(initializeDestinations initializeDestinations) error {
 	for dstChatId := range newEngineConfig.UniqueDestinations {
 		destinations = append(destinations, dstChatId)
 	}
-	initializeDestinations(destinations)
+	initDestinations(destinations)
 
 	// Атомарно заменяем глобальную конфигурацию
 	config.Engine = newEngineConfig
@@ -282,9 +281,7 @@ func enrich(engineConfig *entity.EngineConfig) {
 	engineConfig.OrderedForwardRules = util.Distinct(tmpOrderedForwardRules)
 }
 
-type ErrEmptyConfigData struct {
-	log.CustomError
-}
+var ErrEmptyConfigData = errors.New("отсутствуют данные")
 
 // check проверяет, что конфигурация не пуста
 func check(engineConfig *entity.EngineConfig) error {
@@ -303,9 +300,7 @@ func check(engineConfig *entity.EngineConfig) error {
 	}
 
 	if len(args) > 0 {
-		return &ErrEmptyConfigData{
-			CustomError: *log.NewError("отсутствуют данные", args...),
-		}
+		return log.WrapError(ErrEmptyConfigData, args...)
 	}
 
 	return nil
