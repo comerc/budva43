@@ -56,13 +56,13 @@ func validateUser(id string) error {
     if err != nil {
         return err // передаём как есть, без обёртки
     }
-    
+
     if user.Status != "active" {
         return ErrUserInactive // возвращаем типизированную ошибку
     }
-    
+
     if user.Info == nil {
-        return fmt.Errorf("%w", &ErrUserInfo{data: "data"}) 
+        return fmt.Errorf("%w", &ErrUserInfo{data: "data"})
         // уточняем ошибку - добавляем data
     }
 
@@ -79,7 +79,7 @@ func handleRequest(userID string) {
         if errors.As(err, &userInfoErr) {
             // обработка для ErrUserInfo
         }
-        log.Error("validation failed", "error", err) 
+        log.Error("validation failed", "error", err)
         // логируем ошибку, только когда не передаём выше по стеку
         return
     }
@@ -130,7 +130,7 @@ if errors.Is(err, ErrUserNotFound) {
 func processInBackground(items []Item) {
     for _, item := range items {
         if err := process(item); err != nil {
-            log.Error("item processing failed", 
+            log.Error("item processing failed",
                 "item_id", item.ID,
                 "error", err,
                 "retry_count", item.RetryCount)
@@ -170,7 +170,7 @@ type UserService struct {
 
 func NewUserService() *UserService {
     return &UserService{
-        log: slog.With("module", "user_service"),
+        log: slog.With("package", "user_service"),
     }
 }
 
@@ -178,7 +178,7 @@ func (s *UserService) ProcessUsers(users []User) {
     for _, user := range users {
         if err := s.validateUser(user); err != nil {
             // Логируем ошибку по месту, не возвращаем вверх
-            s.log.Error("user validation failed", 
+            s.log.Error("user validation failed",
                 "user_id", user.ID,
                 "email", user.Email,
                 "error", err,
@@ -192,21 +192,21 @@ func (s *UserService) ProcessUsers(users []User) {
 // Тест
 func TestProcessUsers(t *testing.T) {
     var service *UserService
-    logHandler := spylog.GetModuleLogHandler("user_service", t.Name(), func() {
+    logHandler := spylog.GetHandler("user_service", t.Name(), func() {
         service = NewUserService()
     })
-    
+
     users := []User{
         {ID: "1", Email: "valid@example.com"},
         {ID: "2", Email: "invalid-email"}, // невалидный
     }
-    
+
     service.ProcessUsers(users)
-    
+
     // Проверяем что залогирована одна ошибка
     require.Len(t, logHandler.Records, 1)
     record := logHandler.Records[0]
-    
+
     assert.Equal(t, "user validation failed", record.Message)
     assert.Equal(t, "2", spylog.GetAttrValue(record, "user_id"))
     assert.Equal(t, "invalid-email", spylog.GetAttrValue(record, "email"))
@@ -217,7 +217,7 @@ func TestProcessUsers(t *testing.T) {
 ### Преимущества подхода
 
 - **Разделение ответственности**: ошибки для ветвления vs ошибки для отладки
-- **Простота тестирования**: проверяем логи вместо возвращаемых ошибок  
+- **Простота тестирования**: проверяем логи вместо возвращаемых ошибок
 - **Меньше шаблонного кода**: не нужно передавать ошибки вверх по стеку
 
 P.S. проблема тестирования асинхронного кода так же решается с применением этого подхода через другую надстройку - [synctest-experiment](https://danp.net/posts/synctest-experiment/).

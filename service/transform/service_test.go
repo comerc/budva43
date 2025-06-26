@@ -716,7 +716,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 			t.Parallel()
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = test.setup(t)
 			})
 
@@ -815,7 +815,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			t.Parallel()
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = New(nil, nil, nil)
 			})
 
@@ -987,7 +987,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			t.Parallel()
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = test.setup(t, test.src)
 			})
 
@@ -1121,7 +1121,7 @@ func TestTransformService_addSourceSign(t *testing.T) {
 			t.Parallel()
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = test.setup(t, test.src)
 			})
 
@@ -1296,7 +1296,7 @@ func TestTransformService_addSourceLink(t *testing.T) {
 			t.Parallel()
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = test.setup(t, test.src)
 			})
 
@@ -1398,7 +1398,7 @@ func TestTransformService_addText(t *testing.T) {
 			}, test.expectedError)
 
 			var transformService *Service
-			spylogHandler := spylog.GetModuleLogHandler("service.transform", t.Name(), func() {
+			spylogHandler := spylog.GetHandler("service.transform", t.Name(), func() {
 				transformService = New(telegramRepo, nil, nil)
 			})
 
