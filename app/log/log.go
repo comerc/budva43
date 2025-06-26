@@ -37,9 +37,17 @@ func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
 }
 
 func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) {
-	if len(args)%2 != 0 {
-		args = append([]any{}, "warn", "args must be even, only dump shown",
-			slog.Group("args", args...))
+	count := 0
+	for _, arg := range args {
+		if attr, ok := arg.(slog.Attr); ok {
+			if attr.Value.Kind() == slog.KindGroup {
+				continue
+			}
+		}
+		count++
+	}
+	if count%2 != 0 {
+		args = append([]any{}, "warn", "args must be even")
 	}
 	var stack []*CallInfo
 	if errPtr != nil && *errPtr != nil {
