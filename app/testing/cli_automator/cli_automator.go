@@ -47,7 +47,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	}
 
 	automator := &CLIAutomator{
-		log: log.NewLogger("app.util.cli_automator"),
+		log: log.NewLogger(),
 		//
 		originalStdin:  originalStdin,
 		originalStdout: originalStdout,

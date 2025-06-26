@@ -21,7 +21,7 @@ type Repo struct {
 // New создает новый экземпляр репозитория для BadgerDB
 func New() *Repo {
 	return &Repo{
-		log: log.NewLogger("repo.storage"),
+		log: log.NewLogger(),
 		//
 		db: nil,
 	}

@@ -51,7 +51,7 @@ type App struct {
 
 func NewApp() *App {
 	return &App{
-		log: log.NewLogger("main"),
+		log: log.NewLogger(),
 	}
 }
 

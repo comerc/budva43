@@ -21,7 +21,7 @@ type Repo struct {
 // New создает новый экземпляр сервиса очереди
 func New() *Repo {
 	return &Repo{
-		log: log.NewLogger("repo.queue"),
+		log: log.NewLogger(),
 		//
 		queue: list.New(),
 	}

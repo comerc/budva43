@@ -47,7 +47,7 @@ func New(
 	storageService storageService,
 ) *Handler {
 	return &Handler{
-		log: log.NewLogger("handler.update_delete_messages"),
+		log: log.NewLogger(),
 		//
 		telegramRepo:   telegramRepo,
 		queueRepo:      queueRepo,

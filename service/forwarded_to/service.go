@@ -14,7 +14,7 @@ type Service struct {
 
 func New() *Service {
 	return &Service{
-		log: log.NewLogger("service.forwarded_to"),
+		log: log.NewLogger(),
 	}
 }
 

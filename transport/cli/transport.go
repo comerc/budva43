@@ -50,7 +50,7 @@ type command struct {
 // New создает новый экземпляр CLI
 func New(authService authService) *Transport {
 	cli := &Transport{
-		log: log.NewLogger("transport.cli"),
+		log: log.NewLogger(),
 		//
 		authService:   authService,
 		authStateChan: make(chan client.AuthorizationState, 10),

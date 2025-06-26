@@ -22,7 +22,7 @@ func TestQueueRepo(t *testing.T) {
 	synctest.Run(func() {
 		// Создаем репозиторий очереди
 		var queueRepo *Repo
-		spylogHandler := spylog.GetHandler("repo.queue", t.Name(), func() {
+		spylogHandler := spylog.GetHandler(t.Name(), func() {
 			queueRepo = New() // вызываем функцию-конструктор в обёртке spylogHandler
 		})
 

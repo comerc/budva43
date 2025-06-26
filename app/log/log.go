@@ -18,9 +18,9 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger(packageName string) *Logger {
+func newLogger(loggerName string) *Logger {
 	return &Logger{
-		Logger: slog.With("package", packageName),
+		Logger: slog.With("logger", loggerName),
 	}
 }
 
@@ -63,6 +63,7 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		stack = GetCallStack(3, false)
 		args = append(args, "source", stack[0].String())
 	}
+	// TODO: добавить проверку на парные args
 	l.Log(context.Background(), level, message, args...)
 }
 

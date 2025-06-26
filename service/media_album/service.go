@@ -28,7 +28,7 @@ type Service struct {
 // New создает новый сервис для управления медиа-альбомами
 func New() *Service {
 	return &Service{
-		log: log.NewLogger("service.media_album"),
+		log: log.NewLogger(),
 		//
 		mediaAlbums: make(map[entity.MediaAlbumKey]*mediaAlbum),
 	}

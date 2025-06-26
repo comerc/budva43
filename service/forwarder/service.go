@@ -66,7 +66,7 @@ func New(
 	rateLimiterService rateLimiterService,
 ) *Service {
 	return &Service{
-		log: log.NewLogger("service.forwarder"),
+		log: log.NewLogger(),
 		//
 		telegramRepo:       telegramRepo,
 		storageService:     storageService,

@@ -31,25 +31,23 @@ type commonHandler struct {
 	handler  slog.Handler
 }
 
-// TODO: ?? сделать определение moduleName динамическим через slog.With("package", "name")
-
-func GetHandler(moduleName, testName string, init func()) *PackageLogHandler {
+func getHandler(loggerName, testName string, init func()) *PackageLogHandler {
 	h := handlerInstance
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.current.Store(getGID(), testName) // need for WithAttrs
-	handlers, ok := h.handlers[moduleName]
+	handlers, ok := h.handlers[loggerName]
 	if !ok {
 		handlers = make(map[string]*PackageLogHandler)
-		h.handlers[moduleName] = handlers
+		h.handlers[loggerName] = handlers
 	}
 	handler, ok := handlers[testName]
 	if !ok {
 		handler = &PackageLogHandler{}
-		h.handlers[moduleName][testName] = handler
+		h.handlers[loggerName][testName] = handler
 	}
 	slog.SetDefault(slog.New(h))
-	init() // for slog.With("package", "name")
+	init() // for slog.With("logger", "name")
 	return handler
 }
 
@@ -61,8 +59,7 @@ func (h *commonHandler) Handle(ctx context.Context, r slog.Record) error {
 func (h *commonHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	var module string
 	for _, attr := range attrs {
-		// TODO: вместо module записывать имя пакета в качестве ключа
-		if attr.Key == "package" {
+		if attr.Key == "logger" {
 			module = attr.Value.String()
 			break
 		}

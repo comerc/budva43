@@ -160,7 +160,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
-			log:         log.NewLogger("app.util.cli_automator.test"),
+			log:         log.NewLogger(),
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -190,7 +190,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 
 		// Создаем отдельный автоматор для этого подтеста
 		automator := &CLIAutomator{
-			log:         log.NewLogger("app.util.cli_automator.test"),
+			log:         log.NewLogger(),
 			outputLines: make(chan string, 10),
 		}
 		t.Cleanup(func() {
@@ -509,7 +509,7 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 
 	// Создаем экземпляр CLIAutomator вручную для тестирования с моками
 	automator := &CLIAutomator{
-		log:         log.NewLogger("app.util.cli_automator.test"),
+		log:         log.NewLogger(),
 		outputLines: make(chan string, 10),
 	}
 
