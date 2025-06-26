@@ -299,6 +299,8 @@ func check(engineConfig *entity.EngineConfig) error {
 		args = append(args, getKey(), "config.Engine.OrderedForwardRules")
 	}
 
+	args = append(args, "key1", "val1", "key2", "val2")
+
 	if len(args) > 0 {
 		return log.WrapError(ErrEmptyConfigData, args...)
 	}

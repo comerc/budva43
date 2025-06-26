@@ -37,9 +37,13 @@ func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
 }
 
 func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) {
-	var err error
+	if len(args)%2 != 0 {
+		args = append([]any{}, "warn", "args must be even, only dump shown",
+			slog.Group("args", args...))
+	}
 	var stack []*CallInfo
 	if errPtr != nil && *errPtr != nil {
+		var err error
 		err = *errPtr
 		level = slog.LevelError
 		message = err.Error()
@@ -63,7 +67,6 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		stack = GetCallStack(3, false)
 		args = append(args, "source", stack[0].String())
 	}
-	// TODO: добавить проверку на парные args
 	l.Log(context.Background(), level, message, args...)
 }
 
