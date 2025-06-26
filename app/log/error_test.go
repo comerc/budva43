@@ -56,3 +56,31 @@ func TestWrapError(t *testing.T) {
 		})
 	}
 }
+
+type SomeError struct {
+	*CustomError
+}
+
+func (e *SomeError) Unwrap() error {
+	return e.CustomError
+}
+
+func TestEmbeddedCustomError(t *testing.T) {
+	var args []any
+	args = append(args, "key", "val")
+
+	err := &SomeError{
+		CustomError: NewError("err", args...).(*CustomError),
+	}
+
+	var someError *SomeError
+	assert.True(t, errors.As(err, &someError))
+
+	var customError *CustomError
+	assert.True(t, errors.As(someError, &customError))
+
+	assert.Equal(t, "err", customError.Error())
+	assert.Equal(t, "key", customError.Args[0])
+	assert.Equal(t, "val", customError.Args[1])
+	assert.NotNil(t, customError.Stack)
+}

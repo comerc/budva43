@@ -14,7 +14,7 @@ func (e *CustomError) Unwrap() error {
 	return e.error
 }
 
-func NewError(text string, args ...any) *CustomError {
+func NewError(text string, args ...any) error {
 	return &CustomError{
 		error: errors.New(text),
 		Args:  args,

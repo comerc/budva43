@@ -2,10 +2,10 @@ package test
 
 import (
 	"errors"
-	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -18,13 +18,6 @@ import (
 
 // из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
 
-// dummy comment - для соблюдения номеров строк в тестах
-//
-//
-//
-//
-//
-
 type SomeObject struct {
 	log *log.Logger
 }
@@ -35,133 +28,110 @@ func (s *SomeObject) SomeMethod() {
 
 func (s *SomeObject) NestedMethod() {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "message", "arg2", "val2")
+	defer s.log.ErrorOrDebug(&err, "", "arg2", "val2")
 
-	err = log.NewError("error", "arg0", "val0")
+	err = log.NewError("error message", "arg0", "val0")
 	err = log.WrapError(err, "arg1", "val1")
 }
 
 func TestLog_SomeMethod(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
-	copy, err := util.DeepCopy(config.ErrorSource)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		config.ErrorSource = copy
-	})
-
-	tests := []struct {
-		name           string
-		sourceType     entity.ErrorSourceType
-		relativePath   bool
-		expectedSource string
-	}{
-		{
-			name:           "simple with absolute path",
-			sourceType:     entity.TypeErrorSourceOne,
-			relativePath:   false,
-			expectedSource: filepath.Join(util.ProjectRoot, "test/log_test.go:90 test.TestLog_SomeMethod.func2"),
-		},
-		{
-			name:           "one",
-			sourceType:     entity.TypeErrorSourceOne,
-			relativePath:   true,
-			expectedSource: "test/log_test.go:90 test.TestLog_SomeMethod.func2",
-		},
-		{
-			name:           "more",
-			sourceType:     entity.TypeErrorSourceMore,
-			relativePath:   true,
-			expectedSource: "[0=test/log_test.go:90 test.TestLog_SomeMethod.func2 1=test/log_test.go:33 test.(*SomeObject).SomeMethod 2=test/log_test.go:40 test.(*SomeObject).NestedMethod]",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			config.ErrorSource.Type = test.sourceType
-			config.ErrorSource.RelativePath = test.relativePath
-
-			var o *SomeObject
-			spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
-				o = &SomeObject{
-					log: log.NewLogger("module_name"),
-				}
-			})
-			o.SomeMethod()
-
-			records := spylogHandler.GetRecords()
-			require.Equal(t, len(records), 1)
-			record := records[0]
-
-			assert.Equal(t, "error", record.Message)
-			assert.Equal(t, "val0", spylog.GetAttrValue(record, "arg0"))
-			assert.Equal(t, "val1", spylog.GetAttrValue(record, "arg1"))
-			assert.Equal(t, "val2", spylog.GetAttrValue(record, "arg2"))
-			assert.Equal(t, test.expectedSource, spylog.GetAttrValue(record, "source"))
-		})
-	}
-
-}
-
-type SomeError struct {
-	error
-}
-
-func TestLog_UnwrappedError(t *testing.T) {
-	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
-
-	{
-		copy, err := util.DeepCopy(config.ErrorSource)
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			config.ErrorSource = copy
-		})
-
-		config.ErrorSource.Type = entity.TypeErrorSourceOne
-		config.ErrorSource.RelativePath = true
-	}
-
-	type OtherObject struct {
-		log *log.Logger
-	}
-
 	var err error
 
-	var o *OtherObject
+	var copy *entity.LogSource
+	copy, err = util.DeepCopy(config.LogSource)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		config.LogSource = copy
+	})
+	config.LogSource.RelativePath = true
+
+	var o *SomeObject
 	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
-		o = &OtherObject{
+		o = &SomeObject{
 			log: log.NewLogger("module_name"),
 		}
 	})
+	o.SomeMethod()
+
+	records := spylogHandler.GetRecords()
+	require.Equal(t, len(records), 1)
+	record := records[0]
+
+	assert.Equal(t, "error message", record.Message)
+	assert.Equal(t, "val0", spylog.GetAttrValue(record, "arg0"))
+	assert.Equal(t, "val1", spylog.GetAttrValue(record, "arg1"))
+	assert.Equal(t, "val2", spylog.GetAttrValue(record, "arg2"))
+	snaps.MatchSnapshot(t, spylog.GetAttrValue(record, "source"))
+}
+
+func TestLog_UnwrappedError(t *testing.T) {
+	t.Parallel()
+
+	var err error
+
+	var logger *log.Logger
+
+	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+		logger = log.NewLogger("module_name")
+	})
+
+	type SomeError struct {
+		error
+	}
 
 	err = &SomeError{
 		error: errors.New("unwrapped error"),
 	}
-	o.log.ErrorOrInfo(&err, "message", "arg", "val")
+
+	logger.ErrorOrDebug(&err, "")
 
 	records := spylogHandler.GetRecords()
 	require.Equal(t, len(records), 1)
 	record := records[0]
 
 	assert.Equal(t, "unwrapped error", record.Message)
-	assert.Equal(t, "val", spylog.GetAttrValue(record, "arg"))
 	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(record, "type"))
-	assert.Equal(t, "test/log_test.go:140 test.TestLog_UnwrappedError",
-		spylog.GetAttrValue(record, "source"))
+}
+
+func TestLog_WrappedError(t *testing.T) {
+	t.Parallel()
+
+	var err error
+
+	var logger *log.Logger
+
+	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
+		logger = log.NewLogger("module_name")
+	})
+
+	type SomeError struct {
+		error
+	}
+
+	err = &SomeError{
+		error: errors.New("wrapped error"),
+	}
+
+	err = log.WrapError(err) // !! обёртка
+
+	logger.ErrorOrDebug(&err, "")
+
+	records := spylogHandler.GetRecords()
+	require.Equal(t, len(records), 1)
+	record := records[0]
+
+	assert.Equal(t, "wrapped error", record.Message)
+	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(record, "type"))
 }
 
 func TestLog_WithPtr(t *testing.T) {
 	t.Parallel()
 
-	type object struct {
-		log *log.Logger
-	}
-
-	var o *object
+	var logger *log.Logger
 	spylogHandler := spylog.GetModuleLogHandler("module_name", t.Name(), func() {
-		o = &object{
-			log: log.NewLogger("module_name"),
-		}
+		logger = log.NewLogger("module_name")
 	})
 
 	func() {
@@ -177,8 +147,8 @@ func TestLog_WithPtr(t *testing.T) {
 			p *int
 		)
 		var err error
-		err = log.NewError("dummy")
-		defer o.log.ErrorOrDebug(&err, "dummy",
+		err = log.NewError("")
+		defer logger.ErrorOrDebug(&err, "",
 			"a", &a, "m", &m, "s", &s, "i", &i, "f", &f, "b", &b, "d", &d, "t", &t, "p", &p)
 		a = []string{"1", "2", "3"}
 		m = map[string]string{"a": "1", "b": "2"}
