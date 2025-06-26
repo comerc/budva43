@@ -75,7 +75,7 @@ func (h *Handler) Run(update *client.UpdateDeleteMessages) {
 	var fn func()
 	fn = func() {
 		var err error
-		defer h.log.ErrorOrDebug(&err, "Run",
+		defer h.log.ErrorOrDebug(&err, "",
 			"retryCount", &retryCount,
 			"chatId", chatId,
 			"messageIds", messageIds,
@@ -140,7 +140,7 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, engineConfig *entity.EngineConfig) {
 	var err error
 	result := []string{}
-	defer h.log.ErrorOrDebug(&err, "deleteMessages",
+	defer h.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"messageIds", messageIds,
 		"result", &result,
@@ -154,7 +154,7 @@ func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, e
 			func() {
 				var err error
 				forwardRuleId := ""
-				defer h.log.ErrorOrDebug(&err, "deleteMessages",
+				defer h.log.ErrorOrDebug(&err, "",
 					"chatId", chatId,
 					"messageId", messageId,
 					"toChatMessageId", toChatMessageId,

@@ -113,87 +113,87 @@ func (s *Service) loadConfig() {
 // handleConfigReload обрабатывает изменения конфигурации
 func (s *Service) handleConfigReload() {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "handleConfigReload")
+	defer s.log.ErrorOrDebug(&err, "")
 
-	err = engine_config.Reload(s.newFuncInitializeDestinations())
+	err = engine_config.Reload(newFuncInitDestinations(s))
 
-	var emptyConfigData *engine_config.ErrEmptyConfigData
-	if errors.As(err, &emptyConfigData) {
-		s.log.Warn(err.Error(), emptyConfigData.Args...)
+	if errors.Is(err, engine_config.ErrEmptyConfigData) {
+		var customError *log.CustomError
+		if errors.As(err, &customError) {
+			s.log.ErrorOrWarn(nil, err.Error(), customError.Args...)
+		}
 		err = nil
 	}
 }
 
-type initializeDestinations = func([]entity.ChatId)
+type initDestinations = func([]entity.ChatId)
 
-// _newFuncInitializeDestinations создает колбек для загрузки чатов (не используется)
-func (s *Service) _newFuncInitializeDestinations() initializeDestinations {
-	var fn initializeDestinations
-	level := 0
-	notFound := make(map[entity.ChatId]struct{})
+// _newFuncInitDestinations создает колбек для загрузки чатов (не используется)
+// func _newFuncInitDestinations(s *Service) initDestinations {
+// 	var fn initDestinations
+// 	level := 0
+// 	notFound := make(map[entity.ChatId]struct{})
 
-	fn = func(destinations []entity.ChatId) {
+// 	fn = func(destinations []entity.ChatId) {
 
-		repeat := func() bool {
-			var err error
-			defer s.log.ErrorOrDebug(&err, "initializeDestinations", "level", level)
+// 		repeat := func() bool {
+// 			var err error
+// 			defer s.log.ErrorOrDebug(&err, "", "level", level)
 
-			_, err = s.telegramRepo.LoadChats(&client.LoadChatsRequest{
-				Limit: 200,
-			})
-			if err != nil {
-				return false
-			}
-			for _, dstChatId := range destinations {
-				_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
-					ChatId:    dstChatId,
-					Limit:     1,
-					OnlyLocal: true,
-				})
-				if err != nil {
-					notFound[dstChatId] = struct{}{}
-					continue
-				}
-				delete(notFound, dstChatId)
-			}
-			if len(notFound) == 0 {
-				return false
-			}
-			// TODO: было "level == 0", но рекурсия пока что отключена,
-			// LoadChats() нельзя вызывать дважды, только если перезапускать клиент,
-			// а это может привести к потере сообщений
-			if level == 0 {
-				a := []entity.ChatId{}
-				for k := range notFound {
-					a = append(a, k)
-				}
-				err = log.NewError("not found", "destinations", a)
-				return false
-			}
-			level++
-			return true
-		}()
-		if !repeat {
-			return
-		}
+// 			_, err = s.telegramRepo.LoadChats(&client.LoadChatsRequest{
+// 				Limit: 200,
+// 			})
+// 			if err != nil {
+// 				return false
+// 			}
+// 			for _, dstChatId := range destinations {
+// 				_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
+// 					ChatId:    dstChatId,
+// 					Limit:     1,
+// 					OnlyLocal: true,
+// 				})
+// 				if err != nil {
+// 					notFound[dstChatId] = struct{}{}
+// 					continue
+// 				}
+// 				delete(notFound, dstChatId)
+// 			}
+// 			if len(notFound) == 0 {
+// 				return false
+// 			}
+// 			// TODO: было "level == 0", но рекурсия пока что отключена,
+// 			// LoadChats() нельзя вызывать дважды, только если перезапускать клиент,
+// 			// а это может привести к потере сообщений
+// 			if level == 0 {
+// 				a := []entity.ChatId{}
+// 				for k := range notFound {
+// 					a = append(a, k)
+// 				}
+// 				err = log.NewError("not found", "destinations", a)
+// 				return false
+// 			}
+// 			level++
+// 			return true
+// 		}()
+// 		if !repeat {
+// 			return
+// 		}
 
-		fn(destinations) // !! хвостовая рекурсия
-	}
-	return fn
-}
+// 		fn(destinations) // !! хвостовая рекурсия
+// 	}
+// 	return fn
+// }
 
-// newFuncInitializeDestinations создает колбек для загрузки чатов
-func (s *Service) newFuncInitializeDestinations() initializeDestinations {
+// newFuncInitDestinations создает колбек для загрузки чатов
+func newFuncInitDestinations(s *Service) initDestinations {
 	return func(destinations []entity.ChatId) {
-		var err error
-		defer s.log.ErrorOrDebug(&err, "initializeDestinations")
-
 		if !s.loadChatsDone {
 			s.loadChatsDone = true
-			_, err = s.telegramRepo.LoadChats(&client.LoadChatsRequest{
+			_, err := s.telegramRepo.LoadChats(&client.LoadChatsRequest{
 				Limit: 200,
 			})
 			if err != nil {
+				s.log.ErrorOrDebug(&err, "")
 				return
 			}
 		}
@@ -209,7 +209,9 @@ func (s *Service) newFuncInitializeDestinations() initializeDestinations {
 			}
 		}
 		if len(notFound) > 0 {
+			var err error
 			err = log.NewError("not found", "destinations", notFound)
+			s.log.ErrorOrDebug(&err, "")
 		}
 	}
 }

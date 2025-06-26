@@ -64,7 +64,7 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 ) {
 	// Чтобы не дублировать входные параметры в дочерних функциях,
 	// хотя это и нарушает атомарность сообщений в логе - компромисс
-	defer s.log.Debug("Transform",
+	defer s.log.ErrorOrDebug(nil, "",
 		"withSources", withSources,
 		"srcChatId", src.ChatId,
 		"srcId", src.Id,
@@ -88,7 +88,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	srcChatId, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "replaceMyselfLinks")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -138,7 +138,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 // getMessageByLink получает сообщение по ссылке - YAGNI (это просто вызов tdlib с логированием)
 func (s *Service) getMessageByLink(url string) *client.Message {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "getMessageByLink")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	var messageLinkInfo *client.MessageLinkInfo
 	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
@@ -155,7 +155,7 @@ func (s *Service) justReplaceMyselfLinks(
 	entity *client.TextEntity, src *client.Message, dstChatId int64,
 ) bool {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "justReplaceMyselfLinks")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	toChatMessageIds := s.storageService.GetCopiedMessageIds(src.ChatId, src.Id)
 	var tmpMessageId int64 = 0
@@ -194,7 +194,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText,
 	dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "replaceFragments")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -223,7 +223,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
 	src *client.Message, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "addAutoAnswer")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -259,7 +259,7 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "addSourceSign")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -279,7 +279,7 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "addSourceLink")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -309,7 +309,7 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 // addText добавляет новый текст в конец форматированного текста
 func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "addText")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	var parsedText *client.FormattedText
 	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{

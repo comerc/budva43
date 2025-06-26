@@ -44,7 +44,7 @@ func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	tmpMessageId := update.OldMessageId
 
 	fn := func() {
-		defer h.log.Debug("Run",
+		defer h.log.ErrorOrDebug(nil, "",
 			"chatId", message.ChatId,
 			"messageId", message.Id,
 			"tmpMessageId", tmpMessageId,

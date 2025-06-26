@@ -9,8 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -40,11 +38,11 @@ func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
 
 func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) {
 	var err error
+	var stack []*CallInfo
 	if errPtr != nil && *errPtr != nil {
 		err = *errPtr
 		level = slog.LevelError
 		message = err.Error()
-		var stack []*CallInfo
 		var customError *CustomError
 		if errors.As(err, &customError) {
 			args = append(customError.Args, args...)
@@ -53,21 +51,17 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		}
 		typeName := strings.TrimPrefix(fmt.Sprintf("%T", err), "*")
 		args = append(args, "type", typeName)
-		if config.ErrorSource.Type != entity.TypeErrorSourceNone {
-			if stack == nil {
-				stack = GetCallStack(3, true)
-			}
-			switch config.ErrorSource.Type {
-			case entity.TypeErrorSourceMore:
-				var groupArgs []any
-				for i, item := range stack {
-					groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
-				}
-				args = append(args, slog.Group("source", groupArgs...))
-			case entity.TypeErrorSourceOne:
-				args = append(args, "source", stack[0].String())
-			}
+		if stack == nil {
+			stack = GetCallStack(3, true)
 		}
+		var groupArgs []any
+		for i, item := range stack {
+			groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
+		}
+		args = append(args, slog.Group("source", groupArgs...))
+	} else {
+		stack = GetCallStack(3, false)
+		args = append(args, "source", stack[0].String())
 	}
 	l.Log(context.Background(), level, message, args...)
 }

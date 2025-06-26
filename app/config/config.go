@@ -8,25 +8,25 @@ import (
 )
 
 var (
-	cfg         = &config{}
-	General     = &cfg.General
-	ErrorSource = &cfg.ErrorSource
-	Storage     = &cfg.Storage
-	Telegram    = &cfg.Telegram
-	Web         = &cfg.Web
-	Engine      = &cfg.Engine
+	cfg       = &config{}
+	General   = &cfg.General
+	LogSource = &cfg.LogSource
+	Storage   = &cfg.Storage
+	Telegram  = &cfg.Telegram
+	Web       = &cfg.Web
+	Engine    = &cfg.Engine
 	// Reports = &cfg.Reports
 )
 
 type (
 	// Настройки приложения
 	config struct {
-		General     general
-		ErrorSource entity.ErrorSource
-		Storage     storage
-		Telegram    telegram
-		Web         web
-		Engine      entity.EngineConfig
+		General   general
+		LogSource entity.LogSource
+		Storage   storage
+		Telegram  telegram
+		Web       web
+		Engine    entity.EngineConfig
 		// Reports reports
 	}
 

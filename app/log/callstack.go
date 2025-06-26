@@ -200,7 +200,7 @@ func GetCallStack(skip int, all bool) []*CallInfo {
 		funcName := getFuncName(fullFnName)
 
 		fileName := fullPath
-		if config.ErrorSource.RelativePath {
+		if config.LogSource.RelativePath {
 			// Получаем относительный путь к файлу от корня проекта
 			fileName = getRelativePath(fullPath)
 		}

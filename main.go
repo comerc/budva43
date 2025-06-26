@@ -62,7 +62,7 @@ func (a *App) Run() error {
 	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
 	defer a.log.ErrorOrDebug(&err, "Приложение завершило работу")
 
-	a.log.Debug("Запуск приложения")
+	a.log.ErrorOrDebug(&err, "Запуск приложения")
 
 	// Создаем контекст, который будет отменен при сигнале остановки
 	ctx, cancel := context.WithCancel(context.Background())
@@ -183,7 +183,7 @@ func (a *App) Run() error {
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
-	a.log.Debug("Начинаем graceful shutdown")
+	a.log.ErrorOrDebug(nil, "Начинаем graceful shutdown")
 
 	return nil
 }
@@ -195,7 +195,7 @@ func (a *App) setupSignalHandler(shutdown func()) {
 
 	go func() {
 		sig := <-sigs
-		a.log.Debug("Получен сигнал остановки", "sig", sig)
+		a.log.ErrorOrDebug(nil, "Получен сигнал остановки", "sig", sig)
 		shutdown()
 	}()
 }

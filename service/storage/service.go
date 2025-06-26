@@ -50,7 +50,7 @@ func (s *Service) SetCopiedMessageId(chatId, messageId int64, toChatMessageId st
 		val    string
 		result []string
 	)
-	defer s.log.ErrorOrDebug(&err, "SetCopiedMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"messageId", messageId,
 		"toChatMessageId", toChatMessageId,
@@ -80,7 +80,7 @@ func (s *Service) GetCopiedMessageIds(chatId, messageId int64) []string {
 		val    string
 		result []string
 	)
-	defer s.log.ErrorOrDebug(&err, "GetCopiedMessageIds",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"messageId", messageId,
 		"result", &result,
@@ -103,7 +103,7 @@ func (s *Service) GetCopiedMessageIds(chatId, messageId int64) []string {
 // DeleteCopiedMessageIds удаляет связь между оригинальным и скопированными сообщениями
 func (s *Service) DeleteCopiedMessageIds(chatId, messageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "DeleteCopiedMessageIds",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"messageId", messageId,
 	)
@@ -115,7 +115,7 @@ func (s *Service) DeleteCopiedMessageIds(chatId, messageId int64) {
 // SetNewMessageId сохраняет соответствие между временным и постоянным Id сообщения
 func (s *Service) SetNewMessageId(chatId, tmpMessageId, newMessageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "SetNewMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"tmpMessageId", tmpMessageId,
 		"newMessageId", newMessageId,
@@ -132,7 +132,7 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) int64 {
 		val    string
 		result int64
 	)
-	defer s.log.ErrorOrDebug(&err, "GetNewMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"tmpMessageId", tmpMessageId,
 		"result", &result,
@@ -151,7 +151,7 @@ func (s *Service) GetNewMessageId(chatId, tmpMessageId int64) int64 {
 // DeleteNewMessageId удаляет соответствие между временным и постоянным Id сообщения
 func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "DeleteNewMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"tmpMessageId", tmpMessageId,
 	)
@@ -163,7 +163,7 @@ func (s *Service) DeleteNewMessageId(chatId, tmpMessageId int64) {
 // SetTmpMessageId сохраняет соответствие между постоянным и временным Id сообщения
 func (s *Service) SetTmpMessageId(chatId, newMessageId, tmpMessageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "SetTmpMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"newMessageId", newMessageId,
 		"tmpMessageId", tmpMessageId,
@@ -180,7 +180,7 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) int64 {
 		val    string
 		result int64
 	)
-	defer s.log.ErrorOrDebug(&err, "GetTmpMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"newMessageId", newMessageId,
 		"result", &result,
@@ -199,7 +199,7 @@ func (s *Service) GetTmpMessageId(chatId, newMessageId int64) int64 {
 // DeleteTmpMessageId удаляет соответствие между постоянным и временным Id сообщения
 func (s *Service) DeleteTmpMessageId(chatId, newMessageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "DeleteTmpMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"newMessageId", newMessageId,
 	)
@@ -214,7 +214,7 @@ func (s *Service) IncrementViewedMessages(toChatId int64, date string) {
 		err    error
 		result uint64
 	)
-	defer s.log.ErrorOrDebug(&err, "IncrementViewedMessages",
+	defer s.log.ErrorOrDebug(&err, "",
 		"toChatId", toChatId,
 		"date", date,
 		"result", &result,
@@ -234,7 +234,7 @@ func (s *Service) GetViewedMessages(toChatId int64, date string) int64 {
 		val    string
 		result int64
 	)
-	defer s.log.ErrorOrDebug(&err, "GetViewedMessages",
+	defer s.log.ErrorOrDebug(&err, "",
 		"toChatId", toChatId,
 		"date", date,
 		"result", &result,
@@ -256,7 +256,7 @@ func (s *Service) IncrementForwardedMessages(toChatId int64, date string) {
 		err    error
 		result uint64
 	)
-	defer s.log.ErrorOrDebug(&err, "IncrementForwardedMessages",
+	defer s.log.ErrorOrDebug(&err, "",
 		"toChatId", toChatId,
 		"date", date,
 		"result", &result,
@@ -276,7 +276,7 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) int64 {
 		val    string
 		result int64
 	)
-	defer s.log.ErrorOrDebug(&err, "GetForwardedMessages",
+	defer s.log.ErrorOrDebug(&err, "",
 		"toChatId", toChatId,
 		"date", date,
 		"result", &result,
@@ -298,7 +298,7 @@ func (s *Service) GetForwardedMessages(toChatId int64, date string) int64 {
 // SetAnswerMessageId устанавливает идентификатор сообщения ответа
 func (s *Service) SetAnswerMessageId(dstChatId, tmpMessageId, chatId, messageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "SetAnswerMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"dstChatId", dstChatId,
 		"tmpMessageId", tmpMessageId,
 		"chatId", chatId,
@@ -316,7 +316,7 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
 		err    error
 		result string
 	)
-	defer s.log.ErrorOrDebug(&err, "GetAnswerMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"dstChatId", dstChatId,
 		"tmpMessageId", tmpMessageId,
 		"result", &result,
@@ -334,7 +334,7 @@ func (s *Service) GetAnswerMessageId(dstChatId, tmpMessageId int64) string {
 // DeleteAnswerMessageId удаляет идентификатор сообщения ответа
 func (s *Service) DeleteAnswerMessageId(dstChatId, tmpMessageId int64) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "DeleteAnswerMessageId",
+	defer s.log.ErrorOrDebug(&err, "",
 		"dstChatId", dstChatId,
 		"tmpMessageId", tmpMessageId,
 	)

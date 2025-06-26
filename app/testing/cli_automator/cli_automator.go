@@ -68,7 +68,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 // Run запускает обработку вывода CLI
 func (a *CLIAutomator) Run() {
 	var err error
-	defer a.log.ErrorOrDebug(&err, "Run")
+	defer a.log.ErrorOrDebug(&err, "")
 
 	scanner := bufio.NewScanner(a.stdoutReader)
 	for scanner.Scan() {

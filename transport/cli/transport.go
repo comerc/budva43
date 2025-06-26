@@ -75,7 +75,7 @@ func (t *Transport) WithPhoneNumber(v string) *Transport {
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	t.shutdown = shutdown
 
-	t.authService.Subscribe(t.newFuncNotify())
+	t.authService.Subscribe(newFuncNotify(t))
 
 	go t.runInputLoop(ctx)
 
@@ -114,7 +114,7 @@ func (t *Transport) runInputLoop(ctx context.Context) {
 }
 
 // newFuncNotify создает функцию для отправки состояния авторизации
-func (t *Transport) newFuncNotify() notify {
+func newFuncNotify(t *Transport) notify {
 	return func(state client.AuthorizationState) {
 		select {
 		case t.authStateChan <- state:
@@ -149,7 +149,7 @@ func (t *Transport) registerCommands() {
 // processCommand обрабатывает введенную команду
 func (t *Transport) processCommand(input string) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "processCommand")
+	defer t.log.ErrorOrDebug(&err, "")
 
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -191,7 +191,7 @@ func (t *Transport) handleExit(args []string) {
 // processAuth обрабатывает состояние авторизации
 func (t *Transport) processAuth(state client.AuthorizationState) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "processAuth")
+	defer t.log.ErrorOrDebug(&err, "")
 
 	if state == nil {
 		err = log.NewError("state is nil")

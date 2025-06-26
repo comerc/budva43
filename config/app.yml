@@ -8,9 +8,8 @@ general:
   #   directory: "./.data/log"
   #   max-file-size: 10 # MB
 
-# Настройки источника ошибок
-error-source:
-  # type: "more"
+# Настройки источника стека вызовов при логировании
+log-source:
   # relative-path: true
 
 # Настройки Telegram
