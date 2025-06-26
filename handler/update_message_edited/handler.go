@@ -105,7 +105,7 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 	var fn func()
 	fn = func() {
 		var err error
-		defer h.log.ErrorOrDebug(&err, "Run",
+		defer h.log.ErrorOrDebug(&err, "",
 			"retryCount", &retryCount,
 			"chatId", chatId,
 			"messageId", messageId,
@@ -168,7 +168,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		mediaAlbumId int64
 		result       []string
 	)
-	defer h.log.ErrorOrDebug(&err, "editMessages",
+	defer h.log.ErrorOrDebug(&err, "",
 		"chatId", chatId,
 		"messageId", messageId,
 		"mediaAlbumId", &mediaAlbumId,
@@ -196,7 +196,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		func() {
 			var err error
 			forwardRuleId := ""
-			defer h.log.ErrorOrDebug(&err, "editMessages",
+			defer h.log.ErrorOrDebug(&err, "",
 				"chatId", chatId,
 				"messageId", messageId,
 				"toChatMessageId", toChatMessageId,

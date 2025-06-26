@@ -49,7 +49,7 @@ func New(telegramRepo telegramRepo) *Service {
 // Start запускает процесс авторизации
 func (s *Service) Start(ctx context.Context) error {
 
-	go s.telegramRepo.CreateClient(s.newFuncRunAuthorizationStateHandler(ctx))
+	go s.telegramRepo.CreateClient(newFuncRunAuthorizationStateHandler(s, ctx))
 
 	return nil
 }
@@ -75,7 +75,7 @@ func (s *Service) GetClientDone() <-chan any {
 // GetStatus возвращает статус авторизации
 func (s *Service) GetStatus() string {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "GetStatus")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	var versionOption client.OptionValue
 	versionOption, err = s.telegramRepo.GetOption(&client.GetOptionRequest{
@@ -112,7 +112,7 @@ func (s *Service) broadcast(state client.AuthorizationState) {
 }
 
 // newFuncRunAuthorizationStateHandler обрабатывает состояния авторизации
-func (s *Service) newFuncRunAuthorizationStateHandler(ctx context.Context) runAuthorizationStateHandler {
+func newFuncRunAuthorizationStateHandler(s *Service, ctx context.Context) runAuthorizationStateHandler {
 	return func() client.AuthorizationStateHandler {
 
 		tdlibParameters := s.telegramRepo.CreateTdlibParameters()

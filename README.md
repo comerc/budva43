@@ -108,6 +108,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] structured logs and errors
 - [x] cliAutomator
 - [ ] codecov.io (as uber/atomic)
+- [x] snapshot tests
 
 ## .env
 

@@ -83,7 +83,7 @@ func (s *Service) ForwardMessages(
 	engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "ForwardMessages",
+	defer s.log.ErrorOrDebug(&err, "",
 		"filtersMode", filtersMode,
 		"srcChatId", srcChatId,
 		"dstChatId", dstChatId,
@@ -154,10 +154,10 @@ func (s *Service) ForwardMessages(
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения
 func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "getOriginMessage")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	if message.ForwardInfo == nil {
-		s.log.Warn("message.ForwardInfo is nil")
+		err = log.NewError("message.ForwardInfo is nil")
 		return nil
 	}
 
@@ -195,7 +195,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 	for i, message := range messages {
 		func() {
 			var err error
-			defer s.log.ErrorOrDebug(&err, "prepareMessageContents",
+			defer s.log.ErrorOrDebug(&err, "",
 				"i", i,
 				"chatId", message.ChatId,
 				"messageId", message.Id,
@@ -230,7 +230,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 // getReplyToMessageId получает ID сообщения для ответа
 func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "getReplyToMessageId")
+	defer s.log.ErrorOrDebug(&err, "")
 
 	var replyToMessageId int64
 	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)

@@ -22,8 +22,8 @@ import (
 // data for service.transform - -101xx
 
 func TestMain(m *testing.M) {
-	initializeDestinations := func([]entity.ChatId) {}
-	engine_config.Reload(initializeDestinations)
+	initDestinations := func([]entity.ChatId) {}
+	engine_config.Reload(initDestinations)
 	os.Exit(m.Run())
 }
 

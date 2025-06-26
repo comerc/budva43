@@ -76,7 +76,7 @@ func (r *Repo) runGarbageCollection(ctx context.Context) {
 					err = nil
 				}
 				// Серьезная ошибка (ErrRejected, закрытая БД и т.д.)
-				r.log.ErrorOrDebug(&err, "runGarbageCollection")
+				r.log.ErrorOrDebug(&err, "")
 				break // Выходим из внутреннего цикла, ждем следующего тика
 			}
 		}

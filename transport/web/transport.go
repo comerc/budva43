@@ -56,7 +56,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 		return log.NewError("port is busy -> make kill-port", "addr", addr)
 	}
 
-	t.authService.Subscribe(t.newFuncNotify())
+	t.authService.Subscribe(newFuncNotify(t))
 
 	t.createServer()
 
@@ -82,7 +82,7 @@ func (t *Transport) Close() error {
 }
 
 // newFuncNotify создает функцию для отправки состояния авторизации
-func (t *Transport) newFuncNotify() notify {
+func newFuncNotify(t *Transport) notify {
 	return func(state client.AuthorizationState) {
 		t.authState = state
 	}
@@ -106,7 +106,7 @@ func (t *Transport) createServer() {
 
 func (t *Transport) runServer() {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "runServer", "addr", t.server.Addr)
+	defer t.log.ErrorOrDebug(&err, "", "addr", t.server.Addr)
 
 	err = t.server.ListenAndServe()
 
@@ -132,17 +132,15 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "app/static/favicon.ico")
 }
 
-// logHandler логирует ошибку и время выполнения функции
-func (t *Transport) logHandler(message string, errPtr *error, now time.Time) {
-	t.log.ErrorOrDebug(errPtr, message,
-		"took", time.Since(now),
-	)
-}
-
 // handleRoot обрабатывает запросы к корневому маршруту
 func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	var err error
-	defer t.logHandler("handleRoot", &err, time.Now())
+	now := time.Now()
+	defer func() {
+		t.log.ErrorOrDebug(&err, "",
+			"took", time.Since(now),
+		)
+	}()
 
 	w.Header().Set("Content-Type", "text/plain")
 	_, err = w.Write([]byte("Budva43 API Server"))
@@ -151,7 +149,12 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler("handleAuthState", &err, time.Now())
+	now := time.Now()
+	defer func() {
+		t.log.ErrorOrDebug(&err, "",
+			"took", time.Since(now),
+		)
+	}()
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -174,7 +177,12 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPhone обработчик для отправки номера телефона
 func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler("handleSubmitPhone", &err, time.Now())
+	now := time.Now()
+	defer func() {
+		t.log.ErrorOrDebug(&err, "",
+			"took", time.Since(now),
+		)
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -203,7 +211,12 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 // handleSubmitCode обработчик для отправки кода подтверждения
 func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler("handleSubmitCode", &err, time.Now())
+	now := time.Now()
+	defer func() {
+		t.log.ErrorOrDebug(&err, "",
+			"took", time.Since(now),
+		)
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -232,7 +245,12 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPassword обработчик для отправки пароля
 func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.logHandler("handleSubmitPassword", &err, time.Now())
+	now := time.Now()
+	defer func() {
+		t.log.ErrorOrDebug(&err, "",
+			"took", time.Since(now),
+		)
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

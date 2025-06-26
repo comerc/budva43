@@ -101,7 +101,7 @@ func New(
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	h.ctx = ctx
 	src := update.Message
-	defer h.log.Debug("Run",
+	defer h.log.ErrorOrDebug(nil, "",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 	)
@@ -162,7 +162,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	fn := func() {
 		h.addStatistics(forwardedTo)
 		for check, fn := range checkFns {
-			h.log.Debug("fn",
+			h.log.ErrorOrDebug(nil, "",
 				"check", check,
 				"isNil", fn == nil,
 			)
@@ -172,7 +172,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 			fn()
 		}
 		for other, fn := range otherFns {
-			h.log.Debug("fn",
+			h.log.ErrorOrDebug(nil, "",
 				"other", other,
 				"isNil", fn == nil,
 			)
@@ -188,7 +188,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 // deleteSystemMessage удаляет системное сообщение
 func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *entity.EngineConfig) {
 	var err error
-	defer h.log.ErrorOrDebug(&err, "deleteSystemMessage",
+	defer h.log.ErrorOrDebug(&err, "",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 	)
@@ -218,7 +218,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 		result      []int64
 	)
 	src := messages[0]
-	defer h.log.ErrorOrDebug(&err, "processMessage",
+	defer h.log.ErrorOrDebug(&err, "",
 		"chatId", src.ChatId,
 		"messageId", src.Id,
 		"mediaAlbumId", src.MediaAlbumId,
