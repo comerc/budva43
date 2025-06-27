@@ -33,6 +33,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Configure git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git config --global --add safe.directory /__w/budva43/budva43
+
       - name: Create empty .env file for tests
         run: |
           mkdir -p config/.private
