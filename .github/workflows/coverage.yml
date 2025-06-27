@@ -82,8 +82,7 @@ jobs:
           filename: .coverage.out
           green: 80
           yellow: 60
-          target: README.md
-          text: Coverage
+          text: coverage
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
