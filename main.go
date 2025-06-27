@@ -29,6 +29,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
 // TODO: реализовать storage.BackupEnabled
 // TODO: проверить на Race Condition
 // TODO: заменить примитивы синхронизации на [CSP](../go-secrets/README_V2/Communicating Sequential Processes (CSP) и потокобезопасный счетчик.md)
