@@ -1,5 +1,4 @@
-# budva43 [![Go Report Card][reportcard-img]][reportcard] [![Coverage][coverage-img]][coverage-url]
-![Coverage](https://img.shields.io/badge/Coverage-61.2%25-yellow)
+# budva43 [![Go Report Card][reportcard-img]][reportcard] [![Coverage][coverage-img]]
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
