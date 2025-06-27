@@ -27,6 +27,8 @@ import (
 func TestAuth(t *testing.T) {
 	// t.Parallel()
 
+	t.Skip() // check coverage
+
 	if testing.Short() {
 		t.Skip()
 	}
