@@ -67,6 +67,13 @@ jobs:
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
           go tool cover -html=.coverage.out -o=.coverage.html
 
+      - name: Debug coverage files
+        run: |
+          echo "Coverage files:"
+          ls -la .coverage.*
+          echo "Coverage content preview:"
+          head -5 .coverage.out
+
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
         with:
@@ -74,23 +81,25 @@ jobs:
           text: coverage
           link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage.html
 
+      - name: Commit coverage files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .coverage.out .coverage.html
+          git diff --staged --quiet || git commit -m "chore: Updated coverage files"
+
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
         id: verify-changed-files
         with:
           files: README.md
 
-      - name: Commit changes
+      - name: Commit README changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add README.md .coverage.out .coverage.html
-          git diff --staged --quiet || git commit -m "chore: Updated coverage badge and files"
+          git add README.md
+          git diff --staged --quiet || git commit -m "chore: Updated coverage badge"
 
       - name: Push changes
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ github.token }}
-          branch: ${{ github.head_ref }}
+        run: |
+          git push origin main
