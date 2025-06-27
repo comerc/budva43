@@ -66,13 +66,14 @@ jobs:
         run: |
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
           go tool cover -func=.coverage.out -o=.coverage.out
+          go tool cover -html=.coverage.out -o=.coverage.html
 
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
         with:
           filename: .coverage.out
           text: coverage
-          link: https://github.com/comerc/budva43/blob/main/.coverage.out
+          link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage.html
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
