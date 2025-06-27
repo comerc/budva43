@@ -15,7 +15,7 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
-// TODO: Добавить автодополнение команд
+// TODO: Добавить автодополнение команд go-prompt
 
 type notify = func(state client.AuthorizationState)
 
