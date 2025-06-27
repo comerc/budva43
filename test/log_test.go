@@ -180,31 +180,43 @@ func TestLog_WithPtr(t *testing.T) {
 func TestLoggerName(t *testing.T) {
 	t.Parallel()
 
+	var test = func(t *testing.T) {
+		t.Helper()
+		t.Parallel() // запускаем параллельно 10 горутин
+
+		var spylogHandler *spylog.Handler
+		var logger *log.Logger
+		var loggerName string
+
+		setup := func() {
+			logger = log.NewLogger()
+			loggerName = log.GetLoggerName()
+		}
+
+		run := func() string {
+			expectedMessage := t.Name()
+			err := errors.New(expectedMessage)
+			logger.ErrorOrInfo(&err, "")
+			records := spylogHandler.GetRecords()
+			require.Equal(t, 1, len(records))
+			record := records[0]
+			assert.Equal(t, expectedMessage, record.Message)
+			return loggerName
+		}
+
+		// Вызываем из разных мест в одной горутине
+		spylogHandler = spylog.GetHandler(t.Name(), setup)
+		loggerName0 := run()
+
+		// Вызываем из разных мест в одной горутине
+		spylogHandler = spylog.GetHandler(t.Name(), setup)
+		loggerName1 := run()
+
+		// Проверяем, что loggerName разный
+		assert.NotEqual(t, loggerName0, loggerName1)
+	}
+
 	for i := range 10 {
-		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			t.Parallel() // запускаем параллельно 10 горутин
-
-			var logger1 *log.Logger
-			// Вызываем из разных мест в одной горутине
-			spylogHandler1 := spylog.GetHandler(t.Name(), func() {
-				logger1 = log.NewLogger()
-			})
-			err1 := errors.New("test1")
-			logger1.ErrorOrInfo(&err1, "")
-			records1 := spylogHandler1.GetRecords()
-			require.Equal(t, 1, len(records1))
-			assert.Equal(t, "test1", records1[0].Message)
-
-			var logger2 *log.Logger
-			// Вызываем из разных мест в одной горутине
-			spylogHandler2 := spylog.GetHandler(t.Name(), func() {
-				logger2 = log.NewLogger()
-			})
-			err2 := errors.New("test2")
-			logger2.ErrorOrInfo(&err2, "")
-			records2 := spylogHandler2.GetRecords()
-			require.Equal(t, 1, len(records2))
-			assert.Equal(t, "test2", records2[0].Message)
-		})
+		t.Run(fmt.Sprintf("test %d", i), test)
 	}
 }
