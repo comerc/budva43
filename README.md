@@ -11,9 +11,9 @@ Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored cha
 ## How to clone project with submodules
 
 ```bash
-git clone https://github.com/comerc/budva43.git
-git submodule init
-git submodule update
+$ git clone https://github.com/comerc/budva43.git
+$ git submodule init
+$ git submodule update
 ```
 
 ## How to Dev Start
@@ -31,7 +31,7 @@ Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.
 
 only first time:
 ```bash
-docker-compose build
+$ docker-compose build
 ```
 ...then "Reopen in Container"
 
