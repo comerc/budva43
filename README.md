@@ -1,5 +1,6 @@
-# budva43 [![go report card][reportcard-img]][reportcard]
+# budva43
 
+[![go report card](https://goreportcard.com/badge/github.com/comerc/budva43)](https://goreportcard.com/report/github.com/comerc/budva43)
 [![coverage](https://img.shields.io/badge/coverage-61.2%25-yellow)](https://github.com/comerc/budva43/blob/main/.coverage.out)
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
@@ -288,6 +289,3 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
-
-[reportcard-img]: https://goreportcard.com/badge/github.com/comerc/budva43
-[reportcard]: https://goreportcard.com/report/github.com/comerc/budva43
