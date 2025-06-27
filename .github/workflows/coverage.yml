@@ -36,22 +36,15 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      # - name: Create cache directories
-      #   run: |
-      #     mkdir -p /go/pkg/mod
-      #     mkdir -p ~/.cache/go-build
-      #     chmod -R 777 /go/pkg/mod
-      #     chmod -R 777 ~/.cache
-
       - name: Cache Go modules
         uses: actions/cache@v4
         with:
           path: |
-            /go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-alpine-go-${{ hashFiles('**/go.sum') }}
+            /github/home/go/pkg/mod
+            /github/home/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-alpine-go-
+            ${{ runner.os }}-go-
 
       - name: Configure git
         run: |
