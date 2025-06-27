@@ -23,28 +23,35 @@ jobs:
       - name: Install dependencies
         run: |
           apk update
-          apk add --no-cache git curl build-base linux-headers openssl-dev zlib-dev libstdc++ bash
+          apk add --no-cache git curl build-base linux-headers openssl-dev zlib-dev libstdc++ bash tar
 
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.24.2'
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            /go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: true
           fetch-depth: 0
+
+      # - name: Create cache directories
+      #   run: |
+      #     mkdir -p /go/pkg/mod
+      #     mkdir -p ~/.cache/go-build
+      #     chmod -R 777 /go/pkg/mod
+      #     chmod -R 777 ~/.cache
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            /go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-alpine-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-alpine-go-
 
       - name: Configure git
         run: |
@@ -80,8 +87,6 @@ jobs:
         uses: tj-actions/coverage-badge-go@v2
         with:
           filename: .coverage.out
-          green: 80
-          yellow: 60
           text: coverage
           link: https://github.com/comerc/budva43/blob/main/.coverage.out
 
