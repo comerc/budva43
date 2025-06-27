@@ -35,6 +35,13 @@ jobs:
           mkdir -p config/.private
           touch config/.private/.env
 
+      - name: Debug environment variables
+        run: |
+          echo "Checking environment variables:"
+          echo "BUDVA43__TELEGRAM__API_ID: ${BUDVA43__TELEGRAM__API_ID:-'NOT SET'}"
+          echo "BUDVA43__TELEGRAM__API_HASH: ${BUDVA43__TELEGRAM__API_HASH:-'NOT SET'}"
+          echo "BUDVA43__TELEGRAM__PHONE_NUMBER: ${BUDVA43__TELEGRAM__PHONE_NUMBER:-'NOT SET'}"
+
       - name: Set CGO environment variables
         run: |
           export CGO_CFLAGS="-I/usr/local/include"
