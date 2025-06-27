@@ -64,29 +64,16 @@ jobs:
 
       - name: Run tests and generate coverage
         run: |
-          GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
-          go tool cover -func=.coverage.out -o=.coverage.txt
-          go tool cover -html=.coverage.out -o=.coverage.html
-
-      - name: Install lcov for better HTML reports
-        run: |
-          apk add --no-cache perl lcov
-
-      - name: Convert to LCOV and generate HTML with navigation
-        run: |
-          go install github.com/jandelgado/gcov2lcov@latest
-          gcov2lcov -infile=.coverage.out -outfile=.coverage.lcov
-
-          genhtml .coverage.lcov -o .coverage-tree --branch-coverage --function-coverage --legend
-
-          cp .coverage-tree/index.html .coverage-tree.html
+          GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage/.out -coverpkg=./... ./test/
+          go tool cover -func=.coverage/.out -o=.coverage/.txt
+          go tool cover -html=.coverage/.out -o=.coverage/.html
 
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
         with:
-          filename: .coverage.txt
+          filename: .coverage/.txt
           text: coverage
-          link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage-tree.html
+          link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage/.html
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
@@ -94,14 +81,14 @@ jobs:
         with:
           files: |
             README.md
-            .coverage.out
+            .coverage/.out
 
       - name: Commit changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add README.md .coverage.out .coverage.txt .coverage.html .coverage-tree.html
+          git add README.md .coverage/.out .coverage/.txt .coverage/.html
           git commit -m "chore: Updated coverage files"
 
       - name: Push changes

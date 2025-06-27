@@ -5,5 +5,5 @@ config/.private/
 bin/
 vendor/
 _try/
-.coverage.out
+.coverage/
 **/mocks/**
