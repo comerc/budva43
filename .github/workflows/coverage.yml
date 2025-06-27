@@ -74,19 +74,27 @@ jobs:
           text: coverage
           link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage.html
 
+      - name: Commit coverage files
+        run: |
+          git add .coverage.out .coverage.html
+          git diff --staged --quiet || git commit -m "chore: Updated coverage files"
+
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
         id: verify-changed-files
         with:
-          files: README.md
+          files: |
+            README.md
+            .coverage.out
+            .coverage.html
 
-      - name: Commit changes
+      - name: Commit README changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
-          git commit -m "chore: Updated coverage badge."
+          git commit -m "chore: Updated coverage badge." || true
 
       - name: Push changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
