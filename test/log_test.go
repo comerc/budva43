@@ -181,7 +181,7 @@ func TestLoggerName(t *testing.T) {
 	t.Parallel()
 
 	var test = func(t *testing.T) {
-		t.Parallel() // запускаем параллельно 10 горутин
+		t.Parallel()
 
 		var spylogHandler *spylog.Handler
 		var logger *log.Logger
@@ -218,6 +218,7 @@ func TestLoggerName(t *testing.T) {
 	}
 
 	for i := range 10 {
+		// Запускаем параллельно 10 горутин
 		t.Run(fmt.Sprintf("test %d", i), test)
 	}
 }
