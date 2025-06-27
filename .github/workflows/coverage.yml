@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           apk update
-          apk add --no-cache git curl build-base linux-headers
+          apk add --no-cache git curl build-base linux-headers openssl-dev zlib-dev libstdc++
 
       - name: Setup Go
         uses: actions/setup-go@v4
