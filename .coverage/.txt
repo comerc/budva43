@@ -31,7 +31,7 @@ github.com/comerc/budva43/app/log/log_auto.go:44:				GetLoggerName				100.0%
 github.com/comerc/budva43/app/log/log_auto.go:51:				GetPackageFileNameWithLine		100.0%
 github.com/comerc/budva43/app/log/log_auto.go:57:				NewLogger				83.3%
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:32:	NewCLIAutomator				83.3%
-github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:69:	Run					58.8%
+github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:69:	Run					47.1%
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:109:	SendInput				100.0%
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:115:	WaitForOutput				77.8%
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:145:	Close					100.0%
@@ -128,4 +128,4 @@ github.com/comerc/budva43/transport/web/transport.go:178:			handleSubmitPhone			
 github.com/comerc/budva43/transport/web/transport.go:212:			handleSubmitCode			0.0%
 github.com/comerc/budva43/transport/web/transport.go:246:			handleSubmitPassword			0.0%
 github.com/comerc/budva43/transport/web/transport.go:280:			isPortFree				60.0%
-total:										(statements)				61.2%
+total:										(statements)				61.0%
