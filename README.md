@@ -1,7 +1,10 @@
 # budva43
 
+[![Go version](https://img.shields.io/github/go-mod/go-version/comerc/budva43)](https://go.dev/doc/install)
 [![go report card](https://goreportcard.com/badge/github.com/comerc/budva43)](https://goreportcard.com/report/github.com/comerc/budva43)
 [![coverage](https://img.shields.io/badge/coverage-61.2%25-yellow)](https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage/.html)
+[![Last Commit](https://img.shields.io/github/last-commit/comerc/budva43)](https://github.com/comerc/budva43/commits/main/)
+[![Project status](https://img.shields.io/github/release/comerc/budva43.svg?123)](https://github.com/comerc/budva43/releases/latest)
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
@@ -112,6 +115,12 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] cliAutomator
 - [ ] codecov.io (as uber/atomic)
 - [x] snapshot tests
+- [ ] [LocalAI](https://github.com/mudler/LocalAI)
+- [ ] [go-prompt](https://github.com/c-bata/go-prompt)
+- [ ] Gemma for NLP?
+- [ ] uber-go/automaxprocs
+- [ ] uber-go/goleak
+- [ ] magefile/mage
 
 ## .env
 
