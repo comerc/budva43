@@ -192,24 +192,26 @@ func TestLoggerName(t *testing.T) {
 			loggerName = log.GetLoggerName()
 		}
 
-		run := func() string {
+		run := func() {
 			expectedMessage := t.Name()
 			err := errors.New(expectedMessage)
 			logger.ErrorOrInfo(&err, "")
+
 			records := spylogHandler.GetRecords()
 			require.Equal(t, 1, len(records))
 			record := records[0]
 			assert.Equal(t, expectedMessage, record.Message)
-			return loggerName
 		}
 
 		// Вызываем из разных мест в одной горутине
 		spylogHandler = spylog.GetHandler(t.Name(), setup)
-		loggerName0 := run()
+		loggerName0 := loggerName
+		run()
 
 		// Вызываем из разных мест в одной горутине
 		spylogHandler = spylog.GetHandler(t.Name(), setup)
-		loggerName1 := run()
+		loggerName1 := loggerName
+		run()
 
 		// Проверяем, что loggerName разный
 		assert.NotEqual(t, loggerName0, loggerName1)
