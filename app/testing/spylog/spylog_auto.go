@@ -6,7 +6,7 @@ import (
 )
 
 // GetHandler автоматически определяет loggerName из стека вызовов
-func GetHandler(testName string, init func()) *PackageLogHandler {
+func GetHandler(testName string, init func()) *Handler {
 	loggerName := log.GetPackageFileNameWithLine()
 	// Устанавливаем loggerName для использования в NewLogger()
 	log.SetLoggerName(loggerName)
