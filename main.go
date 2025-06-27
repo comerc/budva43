@@ -29,6 +29,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: при старте проверять новые необработанныесообщения в чатах
 // TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
 // TODO: реализовать storage.BackupEnabled
 // TODO: проверить на Race Condition
