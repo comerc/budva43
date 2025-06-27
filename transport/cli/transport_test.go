@@ -21,7 +21,8 @@ func TestCliTransport(t *testing.T) {
 
 	var err error
 
-	automator, err := cli_automator.NewCLIAutomator()
+	var automator *cli_automator.CLIAutomator
+	automator, err = cli_automator.NewCLIAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()
