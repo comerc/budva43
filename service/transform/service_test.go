@@ -725,7 +725,8 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
 				require.Equal(t, 1, len(records))
-				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
 			}
 
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
@@ -824,7 +825,8 @@ func TestTransformService_replaceFragments(t *testing.T) {
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
 				require.Equal(t, len(records), 1)
-				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
 			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
@@ -996,7 +998,8 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
 				require.Equal(t, len(records), 1)
-				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
 			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
@@ -1130,7 +1133,8 @@ func TestTransformService_addSourceSign(t *testing.T) {
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
 				require.Equal(t, 1, len(records))
-				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
 			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
@@ -1305,7 +1309,8 @@ func TestTransformService_addSourceLink(t *testing.T) {
 			if test.expectedError != nil {
 				records := spylogHandler.GetRecords()
 				require.Equal(t, 1, len(records))
-				assert.Equal(t, test.expectedError.Error(), records[0].Message)
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
 			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
