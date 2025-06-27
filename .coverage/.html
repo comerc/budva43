@@ -105,7 +105,7 @@
 				
 				<option value="file24">github.com/comerc/budva43/transport/cli/transport.go (50.0%)</option>
 				
-				<option value="file25">github.com/comerc/budva43/transport/web/transport.go (41.9%)</option>
+				<option value="file25">github.com/comerc/budva43/transport/web/transport.go (47.5%)</option>
 				
 				</select>
 			</div>
@@ -334,7 +334,7 @@ type CallInfo struct {
 }
 
 // String возвращает компактное строковое представление информации о вызове
-func (c CallInfo) String() string <span class="cov7" title="53">{
+func (c CallInfo) String() string <span class="cov7" title="54">{
         return fmt.Sprintf("%s:%d %s", c.FileName, c.Line, c.FuncName)
 }</span>
 
@@ -389,43 +389,43 @@ func readModuleName(goModPath string) string <span class="cov1" title="1">{
 }
 
 // initProjectInfo инициализирует информацию о проекте (кешируется)
-func initProjectInfo() <span class="cov10" title="255">{
+func initProjectInfo() <span class="cov10" title="258">{
         projectRootOnce.Do(func() </span><span class="cov1" title="1">{
                 projectRoot, projectModule = findProjectRootAndModule()
         }</span>)
 }
 
 // getProjectRoot возвращает корень проекта
-func getProjectRoot() string <span class="cov8" title="77">{
+func getProjectRoot() string <span class="cov8" title="78">{
         initProjectInfo()
         return projectRoot
 }</span>
 
 // getProjectModule возвращает имя модуля проекта
-func getProjectModule() string <span class="cov9" title="178">{
+func getProjectModule() string <span class="cov9" title="180">{
         initProjectInfo()
         return projectModule
 }</span>
 
 // getFuncName извлекает короткое имя функции, убирая путь модуля
-func getFuncName(fullFnName string) string <span class="cov8" title="77">{
+func getFuncName(fullFnName string) string <span class="cov8" title="78">{
         module := getProjectModule()
         if module == "" </span><span class="cov0" title="0">{
                 return fullFnName
         }</span>
 
         // Убираем префикс модуля (например, "github.com/comerc/budva43/")
-        <span class="cov8" title="77">if strings.HasPrefix(fullFnName, module+"/") </span><span class="cov8" title="77">{
+        <span class="cov8" title="78">if strings.HasPrefix(fullFnName, module+"/") </span><span class="cov8" title="78">{
                 funcName := strings.TrimPrefix(fullFnName, module+"/")
 
                 // Убираем путь до пакета, оставляя только пакет.функция
                 // Например: "app/log.(*SomeObject).NestedMethod" -&gt; "log.(*SomeObject).NestedMethod"
                 lastSlashIndex := strings.LastIndex(funcName, "/")
-                if lastSlashIndex != -1 </span><span class="cov3" title="6">{
+                if lastSlashIndex != -1 </span><span class="cov4" title="7">{
                         funcName = funcName[lastSlashIndex+1:]
                 }</span>
 
-                <span class="cov8" title="77">return funcName</span>
+                <span class="cov8" title="78">return funcName</span>
         }
 
         // Если это прямо модуль без подпакетов
@@ -442,14 +442,14 @@ func getFuncName(fullFnName string) string <span class="cov8" title="77">{
 }
 
 // isProjectPath проверяет, принадлежит ли путь к текущему проекту
-func isProjectPath(fullFnName string) bool <span class="cov8" title="101">{
+func isProjectPath(fullFnName string) bool <span class="cov8" title="102">{
         module := getProjectModule()
         if module == "" </span><span class="cov0" title="0">{
                 return false
         }</span>
 
         // Проверяем функции из подпакетов модуля
-        <span class="cov8" title="101">if strings.HasPrefix(fullFnName, module) </span><span class="cov8" title="77">{
+        <span class="cov8" title="102">if strings.HasPrefix(fullFnName, module) </span><span class="cov8" title="78">{
                 return true
         }</span>
 
@@ -462,7 +462,7 @@ func isProjectPath(fullFnName string) bool <span class="cov8" title="101">{
 }
 
 // getRelativePath возвращает относительный путь к файлу относительно корня проекта
-func getRelativePath(fullPath string) string <span class="cov8" title="77">{
+func getRelativePath(fullPath string) string <span class="cov8" title="78">{
         root := getProjectRoot()
         if root == "" </span><span class="cov0" title="0">{
                 // Если не нашли корень проекта, возвращаем только имя файла
@@ -470,7 +470,7 @@ func getRelativePath(fullPath string) string <span class="cov8" title="77">{
         }</span>
 
         // Пытаемся получить относительный путь от корня проекта
-        <span class="cov8" title="77">if rel, err := filepath.Rel(root, fullPath); err == nil </span><span class="cov8" title="77">{
+        <span class="cov8" title="78">if rel, err := filepath.Rel(root, fullPath); err == nil </span><span class="cov8" title="78">{
                 return rel
         }</span>
 
@@ -480,22 +480,22 @@ func getRelativePath(fullPath string) string <span class="cov8" title="77">{
 
 // getCallStack возвращает стек вызовов для логирования (только из текущего проекта)
 // skip - количество фреймов для пропуска (обычно 1, чтобы пропустить саму эту функцию)
-func GetCallStack(skip int, all bool) []*CallInfo <span class="cov7" title="54">{
+func GetCallStack(skip int, all bool) []*CallInfo <span class="cov7" title="55">{
         var result []*CallInfo
 
-        for i := skip; ; i++ </span><span class="cov8" title="101">{
+        for i := skip; ; i++ </span><span class="cov8" title="102">{
                 pc, fullPath, line, ok := runtime.Caller(i)
                 if !ok </span><span class="cov0" title="0">{
                         break</span>
                 }
 
                 // Получаем информацию о функции
-                <span class="cov8" title="101">fn := runtime.FuncForPC(pc)
+                <span class="cov8" title="102">fn := runtime.FuncForPC(pc)
                 if fn == nil </span><span class="cov0" title="0">{
                         continue</span>
                 }
 
-                <span class="cov8" title="101">fullFnName := fn.Name()
+                <span class="cov8" title="102">fullFnName := fn.Name()
                 isProject := isProjectPath(fullFnName)
 
                 // Если это не код проекта, прерываем поиск
@@ -504,16 +504,16 @@ func GetCallStack(skip int, all bool) []*CallInfo <span class="cov7" title="54">
                 }
 
                 // Получаем короткое имя функции без полного пути модуля
-                <span class="cov8" title="77">funcName := getFuncName(fullFnName)
+                <span class="cov8" title="78">funcName := getFuncName(fullFnName)
 
                 fileName := fullPath
-                if config.LogSource.RelativePath </span><span class="cov8" title="77">{
+                if config.LogSource.RelativePath </span><span class="cov8" title="78">{
                         // Получаем относительный путь к файлу от корня проекта
                         fileName = getRelativePath(fullPath)
                 }</span>
 
                 // Добавляем в начало стека (в обратном порядке)
-                <span class="cov8" title="77">result = append([]*CallInfo{
+                <span class="cov8" title="78">result = append([]*CallInfo{
                         {
                                 FuncName: funcName,
                                 FileName: fileName,
@@ -521,12 +521,12 @@ func GetCallStack(skip int, all bool) []*CallInfo <span class="cov7" title="54">
                         },
                 }, result...)
 
-                if !all </span><span class="cov6" title="30">{
+                if !all </span><span class="cov6" title="31">{
                         break</span>
                 }
         }
 
-        <span class="cov7" title="54">return result</span>
+        <span class="cov7" title="55">return result</span>
 }
 </pre>
 		
@@ -638,7 +638,7 @@ func newLogger(loggerName string) *Logger <span class="cov8" title="29">{
         }
 }</span>
 
-func (l *Logger) ErrorOrDebug(errPtr *error, message string, args ...any) <span class="cov6" title="10">{
+func (l *Logger) ErrorOrDebug(errPtr *error, message string, args ...any) <span class="cov6" title="11">{
         l.logWithError(slog.LevelDebug, errPtr, message, args...)
 }</span>
 
@@ -650,20 +650,20 @@ func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) <span c
         l.logWithError(slog.LevelWarn, errPtr, message, args...)
 }</span>
 
-func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) <span class="cov8" title="30">{
+func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) <span class="cov9" title="31">{
         count := 0
-        for _, arg := range args </span><span class="cov8" title="24">{
+        for _, arg := range args </span><span class="cov8" title="28">{
                 if attr, ok := arg.(slog.Attr); ok </span><span class="cov0" title="0">{
                         if attr.Value.Kind() == slog.KindGroup </span><span class="cov0" title="0">{
                                 continue</span>
                         }
                 }
-                <span class="cov8" title="24">count++</span>
+                <span class="cov8" title="28">count++</span>
         }
-        <span class="cov8" title="30">if count%2 != 0 </span><span class="cov0" title="0">{
+        <span class="cov9" title="31">if count%2 != 0 </span><span class="cov0" title="0">{
                 args = append([]any{}, "warn", "args must be even")
         }</span>
-        <span class="cov8" title="30">var stack []*CallInfo
+        <span class="cov9" title="31">var stack []*CallInfo
         if errPtr != nil &amp;&amp; *errPtr != nil </span><span class="cov8" title="24">{
                 var err error
                 err = *errPtr
@@ -685,11 +685,11 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
                         groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
                 }</span>
                 <span class="cov8" title="24">args = append(args, slog.Group("source", groupArgs...))</span>
-        } else<span class="cov5" title="6"> {
+        } else<span class="cov5" title="7"> {
                 stack = GetCallStack(3, false)
                 args = append(args, "source", stack[0].String())
         }</span>
-        <span class="cov8" title="30">l.Log(context.Background(), level, message, args...)</span>
+        <span class="cov9" title="31">l.Log(context.Background(), level, message, args...)</span>
 }
 
 func NewWriter(filePath string, maxSize int) io.Writer <span class="cov1" title="1">{
@@ -2212,6 +2212,22 @@ func New(
         }
 }</span>
 
+// logMiddleware добавляет логирование времени выполнения запросов
+func (t *Transport) logMiddleware(next http.Handler) http.Handler <span class="cov1" title="1">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov1" title="1">{
+                now := time.Now()
+                defer func() </span><span class="cov1" title="1">{
+                        t.log.ErrorOrDebug(nil, "",
+                                "method", r.Method,
+                                "path", r.URL.Path,
+                                "took", time.Since(now),
+                        )
+                }</span>()
+
+                <span class="cov1" title="1">next.ServeHTTP(w, r)</span>
+        })
+}
+
 // Start запускает HTTP-сервер
 func (t *Transport) Start(ctx context.Context, shutdown func()) error <span class="cov1" title="1">{
         _ = shutdown // не используется
@@ -2260,10 +2276,13 @@ func (t *Transport) createServer() <span class="cov1" title="1">{
         // Настраиваем маршруты
         t.setupRoutes(mux)
 
+        // Оборачиваем весь мультиплексор в middleware для логирования
+        handler := t.logMiddleware(mux)
+
         // Настраиваем HTTP-сервер
         t.server = &amp;http.Server{
                 Addr:         net.JoinHostPort(config.Web.Host, config.Web.Port),
-                Handler:      mux,
+                Handler:      handler,
                 ReadTimeout:  config.Web.ReadTimeout,
                 WriteTimeout: config.Web.WriteTimeout,
         }
@@ -2300,28 +2319,18 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) <span 
 // handleRoot обрабатывает запросы к корневому маршруту
 func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) <span class="cov0" title="0">{
         var err error
-        now := time.Now()
-        defer func() </span><span class="cov0" title="0">{
-                t.log.ErrorOrDebug(&amp;err, "",
-                        "took", time.Since(now),
-                )
-        }</span>()
+        defer t.log.ErrorOrDebug(&amp;err, "")
 
-        <span class="cov0" title="0">w.Header().Set("Content-Type", "text/plain")
-        _, err = w.Write([]byte("Budva43 API Server"))</span>
-}
+        w.Header().Set("Content-Type", "text/plain")
+        _, err = w.Write([]byte("Budva43 API Server"))
+}</span>
 
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) <span class="cov1" title="1">{
         var err error
-        now := time.Now()
-        defer func() </span><span class="cov1" title="1">{
-                t.log.ErrorOrDebug(&amp;err, "",
-                        "took", time.Since(now),
-                )
-        }</span>()
+        defer t.log.ErrorOrDebug(&amp;err, "")
 
-        <span class="cov1" title="1">if r.Method != http.MethodGet </span><span class="cov0" title="0">{
+        if r.Method != http.MethodGet </span><span class="cov0" title="0">{
                 http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
                 return
         }</span>
@@ -2342,14 +2351,9 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) <spa
 // handleSubmitPhone обработчик для отправки номера телефона
 func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
         var err error
-        now := time.Now()
-        defer func() </span><span class="cov0" title="0">{
-                t.log.ErrorOrDebug(&amp;err, "",
-                        "took", time.Since(now),
-                )
-        }</span>()
+        defer t.log.ErrorOrDebug(&amp;err, "")
 
-        <span class="cov0" title="0">if r.Method != http.MethodPost </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov0" title="0">{
                 http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
                 return
         }</span>
@@ -2376,14 +2380,9 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) <s
 // handleSubmitCode обработчик для отправки кода подтверждения
 func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
         var err error
-        now := time.Now()
-        defer func() </span><span class="cov0" title="0">{
-                t.log.ErrorOrDebug(&amp;err, "",
-                        "took", time.Since(now),
-                )
-        }</span>()
+        defer t.log.ErrorOrDebug(&amp;err, "")
 
-        <span class="cov0" title="0">if r.Method != http.MethodPost </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov0" title="0">{
                 http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
                 return
         }</span>
@@ -2410,14 +2409,9 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) <sp
 // handleSubmitPassword обработчик для отправки пароля
 func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
         var err error
-        now := time.Now()
-        defer func() </span><span class="cov0" title="0">{
-                t.log.ErrorOrDebug(&amp;err, "",
-                        "took", time.Since(now),
-                )
-        }</span>()
+        defer t.log.ErrorOrDebug(&amp;err, "")
 
-        <span class="cov0" title="0">if r.Method != http.MethodPost </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov0" title="0">{
                 http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
                 return
         }</span>
