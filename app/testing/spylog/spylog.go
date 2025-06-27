@@ -15,48 +15,47 @@ import (
 
 // ready for t.Parallel() and multiple t.Run()
 
-var handlerInstance *commonHandler
+var root *rootHandler
 
-func CreateHandler(logger *slog.Logger) {
-	handlerInstance = &commonHandler{
-		handlers: make(map[string]map[string]*PackageLogHandler),
+func createRootHandler(logger *slog.Logger) {
+	root = &rootHandler{
+		handlers: make(map[string]map[string]*Handler),
 		handler:  logger.Handler(),
 	}
 }
 
-type commonHandler struct {
+type rootHandler struct {
 	mu       sync.Mutex
 	current  sync.Map
-	handlers map[string]map[string]*PackageLogHandler
+	handlers map[string]map[string]*Handler
 	handler  slog.Handler
 }
 
-func getHandler(loggerName, testName string, init func()) *PackageLogHandler {
-	h := handlerInstance
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	h.current.Store(getGID(), testName) // need for WithAttrs
-	handlers, ok := h.handlers[loggerName]
+func getHandler(loggerName, testName string, init func()) *Handler {
+	root.mu.Lock()
+	defer root.mu.Unlock()
+	root.current.Store(getGID(), testName) // need for WithAttrs
+	handlers, ok := root.handlers[loggerName]
 	if !ok {
-		handlers = make(map[string]*PackageLogHandler)
-		h.handlers[loggerName] = handlers
+		handlers = make(map[string]*Handler)
+		root.handlers[loggerName] = handlers
 	}
 	handler, ok := handlers[testName]
 	if !ok {
-		handler = &PackageLogHandler{}
-		h.handlers[loggerName][testName] = handler
+		handler = &Handler{}
+		root.handlers[loggerName][testName] = handler
 	}
-	slog.SetDefault(slog.New(h))
+	slog.SetDefault(slog.New(root))
 	init() // for slog.With("logger", "name")
 	return handler
 }
 
-func (h *commonHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *rootHandler) Handle(ctx context.Context, r slog.Record) error {
 	h.handler.Handle(ctx, r)
 	return nil
 }
 
-func (h *commonHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *rootHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	var module string
 	for _, attr := range attrs {
 		if attr.Key == "logger" {
@@ -86,38 +85,38 @@ func getGID() uint64 {
 	return n
 }
 
-func (h *commonHandler) WithGroup(name string) slog.Handler {
+func (h *rootHandler) WithGroup(name string) slog.Handler {
 	return h
 }
 
-func (h *commonHandler) Enabled(ctx context.Context, level slog.Level) bool {
+func (h *rootHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.handler.Enabled(ctx, level)
 }
 
-type PackageLogHandler struct {
+type Handler struct {
 	records []*slog.Record
 }
 
-func (h *PackageLogHandler) GetRecords() []*slog.Record {
+func (h *Handler) GetRecords() []*slog.Record {
 	return h.records
 }
 
-func (h *PackageLogHandler) Handle(ctx context.Context, r slog.Record) error {
-	handlerInstance.handler.Handle(ctx, r)
+func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
+	root.handler.Handle(ctx, r)
 	h.records = append(h.records, &r)
 	return nil
 }
 
-func (h *PackageLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return h
 }
 
-func (h *PackageLogHandler) WithGroup(name string) slog.Handler {
+func (h *Handler) WithGroup(name string) slog.Handler {
 	return h
 }
 
-func (h *PackageLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return handlerInstance.handler.Enabled(ctx, level)
+func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
+	return root.handler.Enabled(ctx, level)
 }
 
 func GetAttrValue(record *slog.Record, key string) string {

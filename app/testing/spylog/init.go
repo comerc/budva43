@@ -13,6 +13,6 @@ var once sync.Once
 // но подходит для реализации синглтона
 func init() {
 	once.Do(func() {
-		CreateHandler(slog.Default())
+		createRootHandler(slog.Default())
 	})
 }
