@@ -47,6 +47,22 @@ func New(
 	}
 }
 
+// logMiddleware добавляет логирование времени выполнения запросов
+func (t *Transport) logMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now()
+		defer func() {
+			t.log.ErrorOrDebug(nil, "",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"took", time.Since(now),
+			)
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 // Start запускает HTTP-сервер
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	_ = shutdown // не используется
@@ -95,10 +111,13 @@ func (t *Transport) createServer() {
 	// Настраиваем маршруты
 	t.setupRoutes(mux)
 
+	// Оборачиваем весь мультиплексор в middleware для логирования
+	handler := t.logMiddleware(mux)
+
 	// Настраиваем HTTP-сервер
 	t.server = &http.Server{
 		Addr:         net.JoinHostPort(config.Web.Host, config.Web.Port),
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  config.Web.ReadTimeout,
 		WriteTimeout: config.Web.WriteTimeout,
 	}
@@ -135,12 +154,7 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
 // handleRoot обрабатывает запросы к корневому маршруту
 func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	var err error
-	now := time.Now()
-	defer func() {
-		t.log.ErrorOrDebug(&err, "",
-			"took", time.Since(now),
-		)
-	}()
+	defer t.log.ErrorOrDebug(&err, "")
 
 	w.Header().Set("Content-Type", "text/plain")
 	_, err = w.Write([]byte("Budva43 API Server"))
@@ -149,12 +163,7 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
-	now := time.Now()
-	defer func() {
-		t.log.ErrorOrDebug(&err, "",
-			"took", time.Since(now),
-		)
-	}()
+	defer t.log.ErrorOrDebug(&err, "")
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -177,12 +186,7 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPhone обработчик для отправки номера телефона
 func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 	var err error
-	now := time.Now()
-	defer func() {
-		t.log.ErrorOrDebug(&err, "",
-			"took", time.Since(now),
-		)
-	}()
+	defer t.log.ErrorOrDebug(&err, "")
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -211,12 +215,7 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 // handleSubmitCode обработчик для отправки кода подтверждения
 func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 	var err error
-	now := time.Now()
-	defer func() {
-		t.log.ErrorOrDebug(&err, "",
-			"took", time.Since(now),
-		)
-	}()
+	defer t.log.ErrorOrDebug(&err, "")
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -245,12 +244,7 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPassword обработчик для отправки пароля
 func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) {
 	var err error
-	now := time.Now()
-	defer func() {
-		t.log.ErrorOrDebug(&err, "",
-			"took", time.Since(now),
-		)
-	}()
+	defer t.log.ErrorOrDebug(&err, "")
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
