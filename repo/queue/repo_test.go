@@ -79,7 +79,8 @@ func TestQueueRepo(t *testing.T) {
 		// Проверяем запись в лог
 		records := spylogHandler.GetRecords()
 		require.Equal(t, len(records), 1)
-		assert.Equal(t, "Alarm!", records[0].Message)
+		record := records[0]
+		assert.Equal(t, "Alarm!", record.Message)
 
 		// Завершаем контекст
 		cancel()
