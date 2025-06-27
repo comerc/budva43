@@ -209,8 +209,7 @@ func newFuncInitDestinations(s *Service) initDestinations {
 			}
 		}
 		if len(notFound) > 0 {
-			var err error
-			err = log.NewError("not found", "destinations", notFound)
+			err := log.NewError("not found", "destinations", notFound)
 			s.log.ErrorOrDebug(&err, "")
 		}
 	}

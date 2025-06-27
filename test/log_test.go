@@ -70,8 +70,6 @@ func TestLog_SomeMethod(t *testing.T) {
 func TestLog_UnwrappedError(t *testing.T) {
 	t.Parallel()
 
-	var err error
-
 	var logger *log.Logger
 
 	spylogHandler := spylog.GetHandler(t.Name(), func() {
@@ -81,11 +79,10 @@ func TestLog_UnwrappedError(t *testing.T) {
 	type SomeError struct {
 		error
 	}
-
+	var err error
 	err = &SomeError{
 		error: errors.New("unwrapped error"),
 	}
-
 	logger.ErrorOrDebug(&err, "")
 
 	records := spylogHandler.GetRecords()
@@ -99,8 +96,6 @@ func TestLog_UnwrappedError(t *testing.T) {
 func TestLog_WrappedError(t *testing.T) {
 	t.Parallel()
 
-	var err error
-
 	var logger *log.Logger
 
 	spylogHandler := spylog.GetHandler(t.Name(), func() {
@@ -110,13 +105,11 @@ func TestLog_WrappedError(t *testing.T) {
 	type SomeError struct {
 		error
 	}
-
+	var err error
 	err = &SomeError{
 		error: errors.New("wrapped error"),
 	}
-
 	err = log.WrapError(err) // !! обёртка
-
 	logger.ErrorOrDebug(&err, "")
 
 	records := spylogHandler.GetRecords()
@@ -147,8 +140,7 @@ func TestLog_WithPtr(t *testing.T) {
 			t time.Time
 			p *int
 		)
-		var err error
-		err = log.NewError("")
+		err := log.NewError("")
 		defer logger.ErrorOrDebug(&err, "",
 			"a", &a, "m", &m, "s", &s, "i", &i, "f", &f, "b", &b, "d", &d, "t", &t, "p", &p)
 		a = []string{"1", "2", "3"}
