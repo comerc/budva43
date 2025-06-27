@@ -121,6 +121,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] uber-go/automaxprocs
 - [ ] uber-go/goleak
 - [ ] magefile/mage
+- [ ] oklog/ulid
 
 ## .env
 
