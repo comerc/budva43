@@ -10,9 +10,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Update coverage badge
-    environment: test # ложная ошибка линтера - игнорируем
     container:
       image: ghcr.io/zelenin/tdlib-docker:b498497-alpine
+    env:
+      BUDVA43__TELEGRAM__API_ID: ${{ secrets.BUDVA43__TELEGRAM__API_ID }}
+      BUDVA43__TELEGRAM__API_HASH: ${{ secrets.BUDVA43__TELEGRAM__API_HASH }}
+      BUDVA43__TELEGRAM__PHONE_NUMBER: ${{ secrets.BUDVA43__TELEGRAM__PHONE_NUMBER }}
     steps:
       - name: Install dependencies
         run: |
