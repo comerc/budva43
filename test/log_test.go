@@ -181,7 +181,6 @@ func TestLoggerName(t *testing.T) {
 	t.Parallel()
 
 	var test = func(t *testing.T) {
-		t.Helper()
 		t.Parallel() // запускаем параллельно 10 горутин
 
 		var spylogHandler *spylog.Handler
