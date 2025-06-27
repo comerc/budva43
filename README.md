@@ -17,7 +17,14 @@ git submodule update
 
 ## How to Dev Start
 
-Use DevContainer (some restrictions) for build on Ubuntu or direct install TDLib on host machine for best dev experience.
+Direct install TDLib on host machine for best dev experience or use DevContainer (some restrictions) for build on Ubuntu.
+
+### With direct TDLib
+
+Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this options:
+
+- Install built TDLib to /usr/local instead of placing the files to td/tdlib.
+- Choose which compiler you want to use to build TDLib: clang (recommended)
 
 ### With DevContainer
 
@@ -26,13 +33,6 @@ only first time:
 docker-compose build
 ```
 ...then "Reopen in Container"
-
-### With direct TDLib
-
-Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this options:
-
-- Install built TDLib to /usr/local instead of placing the files to td/tdlib.
-- Choose which compiler you want to use to build TDLib: clang (recommended)
 
 ### Install Mockery V2
 
@@ -169,60 +169,11 @@ http://localhost:7007?limit=10
 ## Examples for go-tdlib
 
 ```go
-func getMessageLink(srcChatId, srcMessageId int) {
-	src, err := tdlibClient.GetMessage(&client.GetMessageRequest{
-		ChatId:    int64(srcChatId),
-		MessageId: int64(srcMessageId),
-	})
-	if err != nil {
-		slog.Error("GetMessage src", "err", err)
-	} else {
-		messageLink, err := tdlibClient.GetMessageLink(&client.GetMessageLinkRequest{
-			ChatId:     src.ChatId,
-			MessageId:  src.Id,
-			ForAlbum:   src.MediaAlbumId != 0,
-			ForComment: false,
-		})
-		if err != nil {
-			slog.Error("GetMessageLink", "err", err)
-		} else {
-			slog.Info("GetMessageLink", "link", messageLink.Link)
-		}
-	}
-}
-
-// How to use update?
-
-	for update := range listener.Updates {
-		if update.GetClass() == client.ClassUpdate {
-			if updateNewMessage, ok := update.(*client.UpdateNewMessage); ok {
-				//
-			}
-		}
-	}
-
-// etc
-// https://github.com/zelenin/go-tdlib/blob/ec36320d03ff5c891bb45be1c14317c195eeadb9/client/type.go#L1028-L1108
-
-// How to use markdown?
-
-	formattedText, err := tdlibClient.ParseTextEntities(&client.ParseTextEntitiesRequest{
-		Text: "*bold* _italic_ `code`",
-		ParseMode: &client.TextParseModeMarkdown{
-			Version: 2,
-		},
-	})
-	if err != nil {
-		log.Print(err)
-	} else {
-		log.Printf("%#v", formattedText)
-	}
-
 // How to add InlineKeyboardButton
 
 	row := make([]*client.InlineKeyboardButton, 0)
 	row = append(row, &client.InlineKeyboardButton{
-		Text: "1234",
+		Text: "123",
 		Type: &client.InlineKeyboardButtonTypeUrl{
 			Url: "https://google.com",
 		},
