@@ -81,6 +81,13 @@ jobs:
           text: coverage
           link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage.html
 
+      - name: Debug README changes
+        run: |
+          echo "Git status after coverage badge:"
+          git status
+          echo "README.md content:"
+          grep -A2 -B2 "coverage" README.md || echo "No coverage found in README.md"
+
       - name: Commit coverage files
         run: |
           git config --local user.email "action@github.com"
