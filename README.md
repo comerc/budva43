@@ -8,8 +8,6 @@
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
-[PLAN](./docs/PLAN.md)
-
 ## How to clone project with submodules
 
 ```bash
