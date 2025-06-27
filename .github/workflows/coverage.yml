@@ -65,48 +65,35 @@ jobs:
       - name: Run tests and generate coverage
         run: |
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage.out -coverpkg=./... ./test/
+          go tool cover -func=.coverage.out -o=.coverage.txt
           go tool cover -html=.coverage.out -o=.coverage.html
-
-      - name: Debug coverage files
-        run: |
-          echo "Coverage files:"
-          ls -la .coverage.*
-          echo "Coverage content preview:"
-          head -5 .coverage.out
 
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
         with:
-          filename: .coverage.out
+          filename: .coverage.txt
           text: coverage
           link: https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage.html
-
-      - name: Debug README changes
-        run: |
-          echo "Git status after coverage badge:"
-          git status
-          echo "README.md content:"
-          grep -A2 -B2 "coverage" README.md || echo "No coverage found in README.md"
-
-      - name: Commit coverage files
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .coverage.out .coverage.html
-          git diff --staged --quiet || git commit -m "chore: Updated coverage files"
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
         id: verify-changed-files
         with:
-          files: README.md
+          files: |
+            README.md
+            .coverage.out
 
-      - name: Commit README changes
+      - name: Commit changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          git add README.md
-          git diff --staged --quiet || git commit -m "chore: Updated coverage badge"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md .coverage.out .coverage.txt .coverage.html
+          git commit -m "chore: Updated coverage files"
 
       - name: Push changes
-        run: |
-          git push origin main
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ github.head_ref }}
