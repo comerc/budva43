@@ -1,2 +1,2 @@
 # Исключаем из статистики языков
-.coverage/* linguist-generated=true
+.coverage/.html linguist-generated=true
