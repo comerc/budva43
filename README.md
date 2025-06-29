@@ -4,7 +4,7 @@
 [![go report card](https://goreportcard.com/badge/github.com/comerc/budva43)](https://goreportcard.com/report/github.com/comerc/budva43)
 [![coverage](https://img.shields.io/badge/coverage-62.1%25-yellow)](https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage/.html)
 [![Last Commit](https://img.shields.io/github/last-commit/comerc/budva43)](https://github.com/comerc/budva43/commits/main/)
-[![Project status](https://img.shields.io/github/release/comerc/budva43.svg?123)](https://github.com/comerc/budva43/releases/latest)
+[![Project status](https://img.shields.io/github/release/comerc/budva43.svg)](https://github.com/comerc/budva43/releases/latest)
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
@@ -120,6 +120,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] uber-go/goleak
 - [ ] magefile/mage
 - [ ] oklog/ulid
+- [x] [Go to Implementation](https://github.com/comerc/golang-go-to-impl)
 
 ## .env
 
