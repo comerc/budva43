@@ -31,10 +31,6 @@
 		"coveredGutterStyle": "blockblue",
 		"uncoveredGutterStyle": "blockred"
 	},
-	// FIXME: https://github.com/ZihxS/exclude-mocks-go-to-impl/issues/1
-	"excludeMockFiles.patterns": [
-		"**/mocks/*.go"
-	],
 	// "go.toolsGopath": "",
 	// "go.testEnvFile": null,
 	// "go.gocodeAutoBuild": true,
@@ -105,4 +101,8 @@
 	// 	}
 	// }
 	// "go.useGoProxyToCheckForToolUpdates": true,
+	"golangGoToImplementation.excludePatterns": [
+		"**/mocks/**/*.go",
+		"**/go-tdlib*/client/function.go"
+	]
 }
