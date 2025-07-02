@@ -99,6 +99,9 @@ jobs:
           github_token: ${{ github.token }}
           branch: ${{ github.head_ref }}
 
+      - name: Run tests
+        run: GOEXPERIMENT=synctest go test -coverprofile=coverage.txt -coverpkg=./... ./test/
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
