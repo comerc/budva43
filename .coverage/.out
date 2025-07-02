@@ -127,9 +127,9 @@ github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:80.11,86.39
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:86.39,88.5 1 0
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:91.4,92.29 2 0
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:96.2,96.37 1 1
-github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:96.37,97.53 1 1
+github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:96.37,97.53 1 0
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:97.53,99.4 1 0
-github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:99.9,101.4 1 1
+github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:99.9,101.4 1 0
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:105.2,105.22 1 1
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:109.54,112.2 2 2
 github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go:115.103,120.6 3 2
