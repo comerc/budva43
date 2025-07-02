@@ -5,5 +5,4 @@ config/.private/
 bin/
 vendor/
 _try/
-.coverage/
 **/mocks/**
