@@ -107,3 +107,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: comerc/budva43
+          override_branch: main
