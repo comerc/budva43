@@ -64,11 +64,8 @@ jobs:
 
       - name: Run unused-interface-methods
         run: |
-          CGO_ENABLED=0 go install github.com/unused-interface-methods/unused-interface-methods@latest
-          ls -la $(go env GOPATH)/bin/
-          file $(go env GOPATH)/bin/*
-          chmod +x $(go env GOPATH)/bin/unused_interface_methods
-          $(go env GOPATH)/bin/unused_interface_methods ./...
+          go install github.com/unused-interface-methods/unused-interface-methods@latest
+          unused-interface-methods ./...
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2
