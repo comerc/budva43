@@ -66,6 +66,7 @@ jobs:
         run: |
           go install github.com/unused-interface-methods/unused-interface-methods@latest
           unused_interface_methods ./...
+          ~/go/bin/unused_interface_methods ./...
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2
