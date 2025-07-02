@@ -1818,7 +1818,7 @@ func New(telegramRepo telegramRepo) *Service <span class="cov1" title="1">{
 // Start запускает процесс авторизации
 func (s *Service) Start(ctx context.Context) error <span class="cov1" title="1">{
 
-        go s.telegramRepo.CreateClient(newFuncRunAuthorizationStateHandler(s, ctx))
+        go s.telegramRepo.CreateClient(newFuncRunAuthorizationStateHandler(ctx, s))
 
         return nil
 }</span>
@@ -1881,7 +1881,7 @@ func (s *Service) broadcast(state client.AuthorizationState) <span class="cov6" 
 }
 
 // newFuncRunAuthorizationStateHandler обрабатывает состояния авторизации
-func newFuncRunAuthorizationStateHandler(s *Service, ctx context.Context) runAuthorizationStateHandler <span class="cov1" title="1">{
+func newFuncRunAuthorizationStateHandler(ctx context.Context, s *Service) runAuthorizationStateHandler <span class="cov1" title="1">{
         return func() client.AuthorizationStateHandler </span><span class="cov1" title="1">{
 
                 tdlibParameters := s.telegramRepo.CreateTdlibParameters()
