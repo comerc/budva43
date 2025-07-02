@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update coverage badge
     container:
-      image: ghcr.io/zelenin/tdlib-docker:b498497-alpine
+      image: ghcr.io/zelenin/tdlib-docker:bb474a2-alpine
     env:
       BUDVA43__TELEGRAM__API_ID: ${{ secrets.BUDVA43__TELEGRAM__API_ID }}
       BUDVA43__TELEGRAM__API_HASH: ${{ secrets.BUDVA43__TELEGRAM__API_HASH }}
