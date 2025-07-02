@@ -13,20 +13,15 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/zelenin/tdlib-docker:bb474a2-alpine
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24.2'
-          cache: true
-
-      - name: Install unused-interface-methods
-        run: go install github.com/unused-interface-methods/unused-interface-methods@latest
-
-      - name: Check unused interface methods
-        run: unused-interface-methods ./...
+      - name: Install and run unused-interface-methods
+        run: |
+          go install github.com/unused-interface-methods/unused-interface-methods@latest
+          unused-interface-methods ./...
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
