@@ -65,16 +65,16 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run unused-interface-methods
-        run: |
-          go install github.com/unused-interface-methods/unused-interface-methods@latest
-          GOEXPERIMENT=synctest unused-interface-methods $(go list ./... | grep -v "/mocks")
-
       - name: Run tests and generate coverage
         run: |
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage/.out -coverpkg=./... ./test/
           go tool cover -func=.coverage/.out -o=.coverage/.txt
           go tool cover -html=.coverage/.out -o=.coverage/.html
+
+      - name: Run unused-interface-methods
+        run: |
+          go install github.com/unused-interface-methods/unused-interface-methods@latest
+          GOEXPERIMENT=synctest unused-interface-methods $(go list ./... | grep -v "/mocks")
 
       - name: Go Coverage Badge
         uses: tj-actions/coverage-badge-go@v2
