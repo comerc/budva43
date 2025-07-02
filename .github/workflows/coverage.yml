@@ -65,6 +65,8 @@ jobs:
       - name: Run unused-interface-methods
         run: |
           go install github.com/unused-interface-methods/unused-interface-methods@latest
+          ls -la $(go env GOPATH)/bin/
+          file $(go env GOPATH)/bin/unused_interface_methods
           $(go env GOPATH)/bin/unused_interface_methods ./...
 
       - name: Run golangci-lint
