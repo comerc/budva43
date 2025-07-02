@@ -62,9 +62,6 @@ jobs:
           echo "CGO_CFLAGS=-I/usr/local/include" >> $GITHUB_ENV
           echo "CGO_LDFLAGS=-L/usr/local/lib -ltdjson" >> $GITHUB_ENV
 
-      - name: Download dependencies
-        run: go mod download
-
       - name: Run tests and generate coverage
         run: |
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage/.out -coverpkg=./... ./test/
