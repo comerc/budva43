@@ -65,7 +65,7 @@ jobs:
       - name: Run unused-interface-methods
         run: |
           go install github.com/unused-interface-methods/unused-interface-methods@latest
-          GOEXPERIMENT=synctest unused-interface-methods $(go list -f '{{range .GoFiles}}{{$.Dir}}/{{.}} {{end}}' ./... | tr ' ' '\n' | grep -v "_test.go\|/mocks/\|^$")
+          GOEXPERIMENT=synctest unused-interface-methods $(go list ./... | grep -v "/mocks")
 
       - name: Run tests and generate coverage
         run: |
