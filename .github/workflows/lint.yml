@@ -18,6 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.2'
+          cache: false # TODO: выключил - почему ругается на кеш?
+
       - name: Install and run unused-interface-methods
         run: |
           go install github.com/unused-interface-methods/unused-interface-methods@latest
