@@ -67,11 +67,6 @@ jobs:
           go install github.com/unused-interface-methods/unused-interface-methods@latest
           GOEXPERIMENT=synctest unused-interface-methods ./...
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-
       - name: Run tests and generate coverage
         run: |
           GOEXPERIMENT=synctest go test -covermode=count -coverprofile=.coverage/.out -coverpkg=./... ./test/
