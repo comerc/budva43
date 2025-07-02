@@ -2,7 +2,7 @@
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/comerc/budva43)](https://go.dev/doc/install)
 [![Go Report Card](https://goreportcard.com/badge/github.com/comerc/budva43)](https://goreportcard.com/report/github.com/comerc/budva43)
-[![coverage](https://img.shields.io/badge/coverage-62.1%25-yellow)](https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage/.html)
+[![coverage](https://img.shields.io/badge/coverage-61.8%25-yellow)](https://htmlpreview.github.io/?https://github.com/comerc/budva43/blob/main/.coverage/.html)
 [![Last Commit](https://img.shields.io/github/last-commit/comerc/budva43)](https://github.com/comerc/budva43/commits/main/)
 [![Project Status](https://img.shields.io/github/release/comerc/budva43.svg)](https://github.com/comerc/budva43/releases/latest)
 [![codecov](https://codecov.io/gh/comerc/budva43/branch/master/graph/badge.svg)](https://codecov.io/gh/comerc/budva43)
