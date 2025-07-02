@@ -73,7 +73,7 @@
 				
 				<option value="file8">github.com/comerc/budva43/app/log/log_auto.go (95.7%)</option>
 				
-				<option value="file9">github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go (75.9%)</option>
+				<option value="file9">github.com/comerc/budva43/app/testing/cli_automator/cli_automator.go (79.6%)</option>
 				
 				<option value="file10">github.com/comerc/budva43/app/testing/spylog/init.go (100.0%)</option>
 				
@@ -870,10 +870,10 @@ func (a *CLIAutomator) Run() <span class="cov1" title="1">{
                 }
         }
 
-        <span class="cov1" title="1">if err = scanner.Err(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov1" title="1">if err = scanner.Err(); err != nil </span><span class="cov1" title="1">{
                 if err != io.EOF &amp;&amp; !errors.Is(err, os.ErrClosed) </span><span class="cov0" title="0">{
                         err = log.WrapError(err) // внешняя ошибка
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov1" title="1"> {
                         err = nil
                 }</span>
         }
