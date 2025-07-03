@@ -53,7 +53,7 @@
 	"files.trimFinalNewlines": true,
 	"files.insertFinalNewline": true,
 	"files.watcherExclude": {
-		"**/.coverage.out": true,
+		".coverage/**": true,
 	},
 	// "files.exclude": {
 	// 	"**/mocks/**": true

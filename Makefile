@@ -20,7 +20,7 @@ cover:
 	@./script/cover.sh
 
 view-coverage:
-	@go tool cover -html=.coverage.out
+	@go tool cover -html=.coverage/.txt
 
 kill-port:
 	lsof -ti:7070 | xargs kill -9

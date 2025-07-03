@@ -6,3 +6,4 @@ bin/
 vendor/
 _try/
 **/mocks/**
+.coverage/
