@@ -1,4 +1,5 @@
 ignore:
   - "**/*_test.go"
   - "test/**"
-  - "**/mock/**"
+  - "**/mocks/*.go"
+  - "**/github/home/.cache/go-build/**"
