@@ -1,0 +1,4 @@
+ignore:
+  - "**/*_test.go"
+  - "test/**"
+  - "**/mock/**"
