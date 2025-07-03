@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  default:
+    # Эта задача выполняется по умолчанию при вызове 'task' без аргументов.
+    # Она скрыта из списка, так как у нее нет 'desc'.
+    cmds:
+      - task --list
+      - echo "task <name> --summary"
+    silent: true
+
+  log:
+    desc: "Лог с фильтром"
+    summary: |
+      Просмотр логов в реальном времени с jq-фильтром.
+
+      ПРИМЕНЕНИЕ:
+        task log -- '[jq-фильтр]'
+
+      ДОСТУПНЫЕ ПОЛЯ: .level, .msg, .source
+
+      ПРИМЕРЫ:
+        task log -- '.level != "DEBUG"'
+        task log -- 'select(.msg | contains("error"))'
+
+      СОВЕТ: Для разработки фильтров используйте jqp.
+    cmds:
+      # Запускаем скрипт в фоне (&) и ждем его завершения (wait).
+      # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
+      - ./script/log.sh {{.CLI_ARGS}} & wait
+    silent: true
