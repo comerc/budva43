@@ -1,30 +1,3 @@
-all: lint check build
-
-lint:
-	@GOEXPERIMENT=synctest golangci-lint run
-
-check:
-	@GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
-
-build:
-	@rm -f bin/app && go build -o bin/app main.go
-
-run:
-	@BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml \
-	go run main.go
-
-log:
-	@tail -f .data/log/app.log | PROJECT_ROOT=$(shell pwd)/ pplog
-
-cover:
-	@./script/cover.sh
-
-view-coverage:
-	@go tool cover -html=.coverage/.txt
-
-kill-port:
-	lsof -ti:7070 | xargs kill -9
-
 test-auth-telegram-state:
 	curl http://localhost:7070/api/auth/telegram/state
 

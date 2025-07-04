@@ -10,14 +10,14 @@ tasks:
     silent: true
 
   log:
-    desc: "Лог с фильтром"
+    desc: "Load and filter log (next lines)"
     summary: |
       Просмотр логов в реальном времени с jq-фильтром.
 
       ПРИМЕНЕНИЕ:
         task log -- '[jq-фильтр]'
 
-      ДОСТУПНЫЕ ПОЛЯ: .level, .msg, .source
+      ДОСТУПНЫЕ ПОЛЯ: .level, .msg, .source etc.
 
       ПРИМЕРЫ:
         task log -- '.level != "DEBUG"'
@@ -27,5 +27,91 @@ tasks:
     cmds:
       # Запускаем скрипт в фоне (&) и ждем его завершения (wait).
       # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
-      - ./script/log.sh {{.CLI_ARGS}} & wait
+      - TAIL_ARGS="-0" ./script/log.sh {{.CLI_ARGS}} & wait
     silent: true
+
+  log-all:
+    desc: "Load and filter log (all lines)"
+    summary: |
+      Просмотр логов в реальном времени с jq-фильтром.
+
+      ПРИМЕНЕНИЕ:
+        task log-all -- '[jq-фильтр]'
+
+      ДОСТУПНЫЕ ПОЛЯ: .level, .msg, .source etc.
+
+      ПРИМЕРЫ:
+        task log-all -- '.level != "DEBUG"'
+        task log-all -- 'select(.msg | contains("error"))'
+
+      СОВЕТ: Для разработки фильтров используйте jqp.
+    cmds:
+      # Запускаем скрипт в фоне (&) и ждем его завершения (wait).
+      # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
+      - TAIL_ARGS="-n +1" ./script/log.sh {{.CLI_ARGS}} & wait
+    silent: true
+
+  jqp:
+    desc: "Run jqp on app.log"
+    summary: |
+      Run jqp on app.log file.
+    cmds:
+      - jqp -f .data/log/app.log
+
+  lint:
+    desc: "Run golangci-lint"
+    summary: |
+      Run golangci-lint.
+    cmds:
+      - GOEXPERIMENT=synctest golangci-lint run
+
+  check:
+    desc: "Run go test"
+    summary: |
+      Run go test.
+    cmds:
+      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
+
+  build:
+    desc: "Build app"
+    summary: |
+      Build app.
+    cmds:
+      - rm -f bin/app && go build -o bin/app main.go
+
+  run:
+    desc: "Run app"
+    summary: |
+      Run app.
+    cmds:
+      - BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml go run main.go
+
+  cover:
+    desc: "Run coverage"
+    summary: |
+      Run coverage.
+    cmds:
+      - ./script/cover.sh
+
+  coverage:
+    desc: "View coverage"
+    summary: |
+      View coverage.
+    cmds:
+      - go tool cover -html=.coverage/.txt
+
+  kill-port:
+    desc: "Kill port 7070"
+    summary: |
+      Kill port 7070.
+    cmds:
+      - lsof -ti:7070 | xargs kill -9
+
+  all:
+    desc: "Run tasks: lint -> check -> build"
+    summary: |
+      Выполнить все задачи: lint -> check -> build.
+    cmds:
+      - task lint
+      - task check
+      - task build

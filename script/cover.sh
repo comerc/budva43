@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Скрипт для создания и применения coverage профайла в VS Code/Cursor
 
