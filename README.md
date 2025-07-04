@@ -123,6 +123,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [Go to Implementation](https://github.com/comerc/golang-go-to-impl)
 - [x] [jq](https://jqlang.org/)
 - [x] [task](https://taskfile.dev/)
+- [x] [unused-interface-methods](https://github.com/unused-interface-methods/unused-interface-methods)
 
 ## .env
 
