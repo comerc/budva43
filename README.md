@@ -121,6 +121,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] magefile/mage
 - [ ] oklog/ulid
 - [x] [Go to Implementation](https://github.com/comerc/golang-go-to-impl)
+- [x] [jq](https://jqlang.org/)
+- [x] [task](https://taskfile.dev/)
 
 ## .env
 
@@ -136,11 +138,12 @@ BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
 
 ## Config example
 
-`./config/*.yml`
+```bash
+./config/app.yml
+./config/engine.yml
+```
 
 ## First start for Telegram auth
-
-from console:
 
 ```bash
 $ make run
@@ -249,3 +252,16 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
+
+## Dependencies
+
+- [task](https://taskfile.dev/)
+- [pplog](https://github.com/michurin/human-readable-json-logging)
+- [tail](https://github.com/uutils/coreutils) (cross platform)
+- [gojq](https://github.com/itchyny/gojq)
+- [jqp](https://github.com/noahgorstein/jqp)
+- [golangci-lint](https://github.com/golangci/golangci-lint) (V2)
+
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@V2
+```
