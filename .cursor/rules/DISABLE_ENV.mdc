@@ -1,6 +1,6 @@
 ---
 description:
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 Никогда не читай и не показывай содержимое .env файлов
