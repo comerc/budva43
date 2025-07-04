@@ -1,0 +1,6 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+Никогда не читай и не показывай содержимое .env файлов
