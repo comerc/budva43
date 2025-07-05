@@ -57,6 +57,7 @@ tasks:
       Run jqp on app.log file.
     cmds:
       - jqp -f .data/log/app.log
+    silent: true
 
   lint:
     desc: "Run golangci-lint"
@@ -64,6 +65,7 @@ tasks:
       Run golangci-lint.
     cmds:
       - GOEXPERIMENT=synctest golangci-lint run
+    silent: true
 
   check:
     desc: "Run go test"
@@ -71,6 +73,7 @@ tasks:
       Run go test.
     cmds:
       - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
+    silent: true
 
   build:
     desc: "Build app"
@@ -78,13 +81,15 @@ tasks:
       Build app.
     cmds:
       - rm -f bin/app && go build -o bin/app main.go
+    silent: true
 
   run:
     desc: "Run app"
     summary: |
       Run app.
     cmds:
-      - BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml go run main.go
+      - BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml go run main.go & wait
+    silent: true
 
   cover:
     desc: "Run coverage"
@@ -92,6 +97,7 @@ tasks:
       Run coverage.
     cmds:
       - ./script/cover.sh
+    silent: true
 
   coverage:
     desc: "View coverage"
@@ -99,6 +105,7 @@ tasks:
       View coverage.
     cmds:
       - go tool cover -html=.coverage/.txt
+    silent: true
 
   kill-port:
     desc: "Kill port 7070"
