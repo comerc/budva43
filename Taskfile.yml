@@ -72,7 +72,15 @@ tasks:
     summary: |
       Run go test.
     cmds:
-      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./...
+      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 $(go list ./... | grep -v test_e2e)
+    silent: true
+
+  test-e2e:
+    desc: "Run e2e tests"
+    summary: |
+      Run e2e tests.
+    cmds:
+      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./test_e2e/...
     silent: true
 
   build:

@@ -48,10 +48,10 @@
 	// 	"serve",
 	// 	"--debug=localhost:6060"
 	// ],
-	"files.eol": "\n",
-	"files.trimTrailingWhitespace": true,
-	"files.trimFinalNewlines": true,
-	"files.insertFinalNewline": true,
+	// "files.eol": "\n",
+	// "files.trimTrailingWhitespace": true,
+	// "files.trimFinalNewlines": true,
+	// "files.insertFinalNewline": true,
 	"files.watcherExclude": {
 		".coverage/**": true,
 	},
