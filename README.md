@@ -124,6 +124,8 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [jq](https://jqlang.org/)
 - [x] [task](https://taskfile.dev/)
 - [x] [unused-interface-methods](https://github.com/unused-interface-methods/unused-interface-methods)
+- [x] BDD
+- [x] [godog](github.com/cucumber/godog)
 
 ## .env
 
@@ -261,8 +263,12 @@ To -
 - [tail](https://github.com/uutils/coreutils) (cross platform)
 - [gojq](https://github.com/itchyny/gojq)
 - [jqp](https://github.com/noahgorstein/jqp)
-- [golangci-lint](https://github.com/golangci/golangci-lint) (V2)
+- [golangci-lint](https://github.com/golangci/golangci-lint)
+- [godog](github.com/cucumber/godog)
+
 
 ```bash
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@V2
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/cucumber/godog/cmd/godog@latest
 ```
+
