@@ -11,7 +11,7 @@ mkdir -p .coverage
 # Создаем coverage профайл
 GOEXPERIMENT=synctest go test -covermode=atomic -coverprofile=.coverage/.out -coverpkg=./... ./... > /dev/null || true
 
-COVERAGE_EXCLUDE="(mocks|_easyjson\.go)"
+COVERAGE_EXCLUDE="(/mocks/|_easyjson\.go|/graph/)"
 grep -vE "$COVERAGE_EXCLUDE" .coverage/.out > .coverage/.txt
 rm .coverage/.out
 
