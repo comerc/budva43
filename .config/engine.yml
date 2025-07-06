@@ -1,0 +1,142 @@
+# Файл конфигурации Budva43 - динамические правила форвардинга
+
+# При чтении из конфига:
+# - цифровые ключи лишаются минуса
+# - именные ключи преобразуются в PascalCase
+# - пустой элемент не добавляется в результат, назначаю `dummy: true`
+
+sources:
+  111:
+    sign:
+      title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+      for: [888]
+    link:
+      title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+      for: [321]
+  123:
+    sign:
+      title: "*Source*" # for SendCopy (with markdown)
+      for: [888]
+    link:
+      title: "*Source*" # for SendCopy (with markdown)
+      for: [321]
+    auto-answer: true
+    delete-system-messages: true
+  # data for service.transform - 101xx
+  10100: # for sign only test
+    sign:
+      title: "Test Source"
+      for: [10109]
+  10101: # for link only test
+    link:
+      title: "Source Link"
+      for: [10109]
+  10102: # for sign and link test
+    sign:
+      title: "Test Source"
+      for: [10109]
+    link:
+      title: "Source Link"
+      for: [10109]
+  10103: # for sign not for this chat test
+    sign:
+      title: "Test Source"
+      for: [10108] # не для чата 10109
+  10104: # for empty source test
+    dummy: true
+  10105: # for get message link error test
+    link:
+      title: "Source Link"
+      for: [10109]
+  10106: # for auto answer true test
+    auto-answer: true
+  10107: # for auto answer false test
+    auto-answer: false
+  10121: # for Transform test (with markdown)
+    sign:
+      title: "*Test Source*"
+      for: [10123]
+    link:
+      title: "*Source Link*"
+      for: [10123]
+    auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
+  10122: # for Transform test (with escaped markdown)
+    sign:
+      title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
+      for: [10123]
+    link:
+      title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
+      for: [10123]
+    auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
+  10118: # for other source test in replaceMyselfLinks - message not from source chat
+    dummy: true
+destinations:
+  # data for service.transform - 101xx
+  10110: # for replace fragments test
+    replace-fragments: # must be equal length
+      - from: "hello"
+        to: "12345"
+      - from: "world"
+        to: "67890"
+  10111: # for case insensitive test
+    replace-fragments: # must be equal length
+      - from: "Test"
+        to: "Тест"
+  10112: # for multiple replacements test
+    replace-fragments: # must be equal length
+      - from: "old"
+        to: "new"
+  10113: # for no fragments test
+    dummy: true
+  10114: # for replace myself links test
+    replace-myself-links:
+      run: true
+      delete-external: true
+  10115: # for replace myself links disabled test
+    replace-myself-links:
+      run: false
+      delete-external: true
+  10116: # for replace myself links no delete external test
+    replace-myself-links:
+      run: true
+      delete-external: false
+  10108: # for sign not for this chat test - wrong destination
+    dummy: true
+  10109: # for addSourceSign and addSourceLink tests - general destination
+    dummy: true
+  10117: # for empty replace myself links test
+    replace-myself-links:
+      run: false
+      # deleteExternal не указан (значит false)
+  10123: # for Transform test - minimal success config
+    replace-myself-links:
+      run: false # чтобы replaceMyselfLinks не выдавал ошибку
+    replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
+  10119: # for other destination test in replaceMyselfLinks - tmp message id zero
+    dummy: true
+forward-rules:
+  "Id1":
+    from: 111
+    to: [222]
+  "Id2":
+    from: 123
+    to: [321, 888]
+    send-copy: true
+    copy-once: true # wo edit-sync
+    indelible: true # wo delete-sync
+    exclude: 'Крамер|#УТРЕННИЙ_ОБЗОР'
+    include: '#ARK|#Идеи_покупок|#ОТЧЕТЫ'
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['F', 'GM', 'TSLA']
+    other: 444 # after include (copy only)
+    check: 777 # after exclude (forward only)
+
+# report:
+#   template: "За *24 часа* отобрал: *%d* из *%d* 😎\n\\#ForwarderStats" # (with markdown)
+#   for: [
+#       -222,
+#       -321,
+#       -888,
+#     ]
