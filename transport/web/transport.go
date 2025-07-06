@@ -70,7 +70,7 @@ func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 
 	addr := net.JoinHostPort(config.Web.Host, config.Web.Port)
 	if !isPortFree(addr) {
-		return log.NewError("port is busy -> make kill-port", "addr", addr)
+		return log.NewError("port is busy -> task kill-port", "addr", addr)
 	}
 
 	t.authService.Subscribe(newFuncNotify(t))
