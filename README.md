@@ -71,7 +71,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [ ] CQRS
 - [x] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)
-- [ ] [gqlgen](https://gqlgen.com/)
+- [x] [gqlgen](https://gqlgen.com/)
 - [ ] Grafana + Prometheus
 - [ ] ClickHouse
 - [ ] [fiber](https://gofiber.io/)
