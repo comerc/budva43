@@ -110,7 +110,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] separate config for e2e tests
 - [x] dynamic config engine.yml
 - [x] structured logs and errors
-- [x] cliAutomator
+- [x] termAutomator
 - [ ] codecov.io (as uber/atomic)
 - [x] snapshot tests
 - [ ] [LocalAI](https://github.com/mudler/LocalAI)
