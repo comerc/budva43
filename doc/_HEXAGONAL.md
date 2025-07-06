@@ -98,7 +98,7 @@ app/
 │   ├── inbound/        # Входящие адаптеры
 │   │   ├── telegram/   # TelegramAdapter (бывший serviceEngine)
 │   │   ├── web/        # HTTP адаптер
-│   │   └── cli/        # CLI адаптер
+│   │   └── term/       # term адаптер
 │   └── outbound/       # Исходящие адаптеры
 │       ├── storage/    # StorageAdapter
 │       └── telegram/   # TelegramRepoAdapter

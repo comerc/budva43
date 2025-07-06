@@ -1,4 +1,4 @@
-package cli_automator
+package term_automator
 
 import (
 	"bufio"
@@ -15,8 +15,8 @@ import (
 
 // TODO: переделать на использование goroutine-local stdin/stdout
 
-// CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
-type CLIAutomator struct {
+// TermAutomator - структура для эмуляции ввода/вывода при тестировании терминала
+type TermAutomator struct {
 	log *log.Logger
 	//
 	originalStdin  *os.File
@@ -28,8 +28,8 @@ type CLIAutomator struct {
 	outputLines    chan string // Канал для вывода строк
 }
 
-// NewCLIAutomator создает экземпляр эмулятора CLI для интеграционного тестирования
-func NewCLIAutomator() (*CLIAutomator, error) {
+// NewTermAutomator создает экземпляр эмулятора терминала для интеграционного тестирования
+func NewTermAutomator() (*TermAutomator, error) {
 	// Сохраняем оригинальные потоки ввода-вывода
 	originalStdin := os.Stdin
 	originalStdout := os.Stdout
@@ -46,7 +46,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 		return nil, err
 	}
 
-	automator := &CLIAutomator{
+	automator := &TermAutomator{
 		log: log.NewLogger(),
 		//
 		originalStdin:  originalStdin,
@@ -66,7 +66,7 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 }
 
 // Run запускает обработку вывода CLI
-func (a *CLIAutomator) Run() {
+func (a *TermAutomator) Run() {
 	var err error
 	defer a.log.ErrorOrDebug(&err, "")
 
@@ -106,13 +106,13 @@ func (a *CLIAutomator) Run() {
 }
 
 // SendInput отправляет ввод в stdin CLI
-func (a *CLIAutomator) SendInput(input string) error {
+func (a *TermAutomator) SendInput(input string) error {
 	_, err := fmt.Fprintln(a.stdinWriter, input)
 	return err
 }
 
 // WaitForOutput ожидает указанный вывод в течение таймаута
-func (a *CLIAutomator) WaitForOutput(ctx context.Context, pattern string, timeout time.Duration) bool {
+func (a *TermAutomator) WaitForOutput(ctx context.Context, pattern string, timeout time.Duration) bool {
 	// Создаем контекст с таймаутом
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -142,7 +142,7 @@ func (a *CLIAutomator) WaitForOutput(ctx context.Context, pattern string, timeou
 }
 
 // Close останавливает работу CLIAutomator и восстанавливает стандартные потоки ввода-вывода
-func (a *CLIAutomator) Close() {
+func (a *TermAutomator) Close() {
 	// Восстанавливаем оригинальные стандартные потоки ввода-вывода
 	os.Stdin = a.originalStdin
 	os.Stdout = a.originalStdout

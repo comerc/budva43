@@ -41,7 +41,7 @@ switch state.AuthorizationStateType() {
 
 2. В `Transport.handleAuth()` мы также обрабатываем эти состояния:
 ```go
-// transport/cli/transport.go
+// transport/term/transport.go
 switch state.AuthorizationStateType() {
     case client.TypeAuthorizationStateWaitPhoneNumber:
         // запрос телефона

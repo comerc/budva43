@@ -1,4 +1,4 @@
-package cli
+package term
 
 import (
 	"context"
@@ -9,22 +9,24 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/testing/cli_automator"
+	"github.com/comerc/budva43/app/testing/term_automator"
 	realTermRepo "github.com/comerc/budva43/repo/term"
-	"github.com/comerc/budva43/transport/cli/mocks"
+	"github.com/comerc/budva43/transport/term/mocks"
 )
 
-func TestCliTransport(t *testing.T) {
-	// t.Parallel() // !! нельзя параллелить, т.к. тестирую через cli_automator
-	// TODO: включить после переделки cli_automator
+func TestTermTransport(t *testing.T) {
+	// t.Parallel() // !! нельзя параллелить, т.к. тестирую через term_automator
+	// TODO: включить после переделки term_automator
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
 
 	var err error
 
-	var automator *cli_automator.CLIAutomator
-	automator, err = cli_automator.NewCLIAutomator()
+	//TODO: выпилить term_automator из юнит-теста
+
+	var automator *term_automator.TermAutomator
+	automator, err = term_automator.NewTermAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()
@@ -34,10 +36,10 @@ func TestCliTransport(t *testing.T) {
 
 	realTermRepo := realTermRepo.New()
 
-	termRepo := mocks.NewTermRepo(t)
-	termRepo.EXPECT().ReadLine().
-		RunAndReturn(realTermRepo.ReadLine).
-		Times(2)
+	// termRepo := mocks.NewTermRepo(t)
+	// termRepo.EXPECT().ReadLine().
+	// 	RunAndReturn(realTermRepo.ReadLine).
+	// 	Times(2)
 
 	authService := mocks.NewAuthService(t)
 	authService.EXPECT().GetClientDone().
@@ -51,12 +53,12 @@ func TestCliTransport(t *testing.T) {
 	authService.EXPECT().GetStatus().
 		Return(client.TypeAuthorizationStateWaitPhoneNumber)
 
-	cliTransport := New(
-		termRepo,
+	termTransport := New(
+		realTermRepo,
 		authService,
 	)
-	cliTransport.shutdown = cancel
-	go cliTransport.runInputLoop(ctx)
+	termTransport.shutdown = cancel
+	go termTransport.runInputLoop(ctx)
 
 	var found bool
 

@@ -1,4 +1,4 @@
-package cli
+package term
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type authService interface {
 	GetStatus() string
 }
 
-// Transport представляет интерфейс командной строки
+// Transport представляет терминальный интерфейс
 type Transport struct {
 	log *log.Logger
 	//
@@ -48,9 +48,9 @@ type command struct {
 	handler     func(args []string)
 }
 
-// New создает новый экземпляр CLI
+// New создает новый экземпляр терминального транспорта
 func New(termRepo termRepo, authService authService) *Transport {
-	cli := &Transport{
+	term := &Transport{
 		log: log.NewLogger(),
 		//
 		termRepo:      termRepo,
@@ -61,9 +61,9 @@ func New(termRepo termRepo, authService authService) *Transport {
 	}
 
 	// Регистрация команд
-	cli.registerCommands()
+	term.registerCommands()
 
-	return cli
+	return term
 }
 
 // WithPhoneNumber устанавливает номер телефона для авторизации
@@ -72,7 +72,7 @@ func (t *Transport) WithPhoneNumber(v string) *Transport {
 	return t
 }
 
-// Start запускает CLI интерфейс
+// Start запускает терминальный интерфейс
 func (t *Transport) Start(ctx context.Context, shutdown func()) error {
 	t.shutdown = shutdown
 

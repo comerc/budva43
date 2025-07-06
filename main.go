@@ -26,7 +26,7 @@ import (
 	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
-	cliTransport "github.com/comerc/budva43/transport/cli"
+	termTransport "github.com/comerc/budva43/transport/term"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
@@ -174,15 +174,15 @@ func (a *App) Run() error {
 
 	// - Инициализация транспортных адаптеров
 
-	cliTransport := cliTransport.New(
+	termTransport := termTransport.New(
 		termRepo,
 		authService,
 	)
-	err = cliTransport.Start(ctx, cancel)
+	err = termTransport.Start(ctx, cancel)
 	if err != nil {
 		return err
 	}
-	defer a.gracefulShutdown(cliTransport)
+	defer a.gracefulShutdown(termTransport)
 
 	webTransport := webTransport.New(
 		authService,

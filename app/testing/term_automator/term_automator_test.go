@@ -1,4 +1,4 @@
-package cli_automator
+package term_automator
 
 import (
 	"bufio"
@@ -16,8 +16,8 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
-// TestNewCLIAutomator проверяет корректность создания экземпляра CLIAutomator
-func TestNewCLIAutomator(t *testing.T) {
+// TestNewTermAutomator проверяет корректность создания экземпляра TermAutomator
+func TestNewTermAutomator(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
@@ -32,7 +32,7 @@ func TestNewCLIAutomator(t *testing.T) {
 
 	// Создаем временный файл для перенаправления вывода
 	// Это нужно для подавления нежелательного вывода в консоль при запуске тестов
-	tmpFile, err := os.CreateTemp("", "test_new_cli_automator")
+	tmpFile, err := os.CreateTemp("", "test_new_term_automator")
 	require.NoError(t, err, "Не удалось создать временный файл")
 	t.Cleanup(func() {
 		os.Remove(tmpFile.Name())
@@ -45,9 +45,9 @@ func TestNewCLIAutomator(t *testing.T) {
 		os.Stdout = oldStdout
 	})
 
-	// Создаем экземпляр CLIAutomator
-	automator, err := NewCLIAutomator()
-	require.NoError(t, err, "Не удалось создать CLIAutomator")
+	// Создаем экземпляр TermAutomator
+	automator, err := NewTermAutomator()
+	require.NoError(t, err, "Не удалось создать TermAutomator")
 
 	// Проверяем, что stdin и stdout были перенаправлены
 	assert.NotEqual(t, origStdin, os.Stdin, "stdin должен быть перенаправлен")
@@ -66,8 +66,8 @@ func TestNewCLIAutomator(t *testing.T) {
 	automator.Close()
 }
 
-// TestCLIAutomatorRunAndSendInput проверяет работу методов Run и SendInput
-func TestCLIAutomatorRunAndSendInput(t *testing.T) {
+// TestTermAutomatorRunAndSendInput проверяет работу методов Run и SendInput
+func TestTermAutomatorRunAndSendInput(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -99,8 +99,8 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	})
 
 	// Создаем автоматор
-	automator, err := NewCLIAutomator()
-	require.NoError(t, err, "Не удалось создать CLIAutomator")
+	automator, err := NewTermAutomator()
+	require.NoError(t, err, "Не удалось создать TermAutomator")
 	t.Cleanup(func() {
 		automator.Close()
 	})
@@ -130,8 +130,8 @@ func TestCLIAutomatorRunAndSendInput(t *testing.T) {
 	assert.True(t, found, "WaitForOutput должен обнаружить вывод")
 }
 
-// TestCLIAutomatorWaitForOutput проверяет работу метода WaitForOutput
-func TestCLIAutomatorWaitForOutput(t *testing.T) {
+// TestTermAutomatorWaitForOutput проверяет работу метода WaitForOutput
+func TestTermAutomatorWaitForOutput(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -159,7 +159,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста
-		automator := &CLIAutomator{
+		automator := &TermAutomator{
 			log:         log.NewLogger(),
 			outputLines: make(chan string, 10),
 		}
@@ -189,7 +189,7 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста
-		automator := &CLIAutomator{
+		automator := &TermAutomator{
 			log:         log.NewLogger(),
 			outputLines: make(chan string, 10),
 		}
@@ -225,8 +225,8 @@ func TestCLIAutomatorWaitForOutput(t *testing.T) {
 	})
 }
 
-// TestCLIAutomatorClose проверяет корректность метода Close
-func TestCLIAutomatorClose(t *testing.T) {
+// TestTermAutomatorClose проверяет корректность метода Close
+func TestTermAutomatorClose(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
@@ -247,8 +247,8 @@ func TestCLIAutomatorClose(t *testing.T) {
 	})
 
 	// Создаем автоматор
-	automator, err := NewCLIAutomator()
-	require.NoError(t, err, "Не удалось создать CLIAutomator")
+	automator, err := NewTermAutomator()
+	require.NoError(t, err, "Не удалось создать TermAutomator")
 
 	// Проверяем, что все поля автоматора были инициализированы
 	assert.NotNil(t, automator.stdinReader, "stdinReader должен быть инициализирован")
@@ -296,8 +296,8 @@ func TestCLIAutomatorClose(t *testing.T) {
 	// Не проверяем конкретную ошибку, т.к. реализация может отличаться
 }
 
-// TestCLIAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
-func TestCLIAutomatorBufferResize(t *testing.T) {
+// TestTermAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
+func TestTermAutomatorBufferResize(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -314,8 +314,8 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	})
 
 	// Создаем автоматор
-	automator, err := NewCLIAutomator()
-	require.NoError(t, err, "Не удалось создать CLIAutomator")
+	automator, err := NewTermAutomator()
+	require.NoError(t, err, "Не удалось создать TermAutomator")
 	t.Cleanup(func() {
 		automator.Close()
 	})
@@ -348,8 +348,8 @@ func TestCLIAutomatorBufferResize(t *testing.T) {
 	assert.True(t, found, "Должна быть найдена тестовая строка")
 }
 
-// TestCLIAutomatorErrorHandling проверяет корректность обработки ошибок
-func TestCLIAutomatorErrorHandling(t *testing.T) {
+// TestTermAutomatorErrorHandling проверяет корректность обработки ошибок
+func TestTermAutomatorErrorHandling(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -384,8 +384,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
-		automator, err := NewCLIAutomator()
-		require.NoError(t, err, "Не удалось создать CLIAutomator")
+		automator, err := NewTermAutomator()
+		require.NoError(t, err, "Не удалось создать TermAutomator")
 		t.Cleanup(func() {
 			automator.Close()
 		})
@@ -399,8 +399,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
-		automator, err := NewCLIAutomator()
-		require.NoError(t, err, "Не удалось создать CLIAutomator")
+		automator, err := NewTermAutomator()
+		require.NoError(t, err, "Не удалось создать TermAutomator")
 		t.Cleanup(func() {
 			automator.Close()
 		})
@@ -423,14 +423,14 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
-		automator, err := NewCLIAutomator()
-		require.NoError(t, err, "Не удалось создать CLIAutomator")
+		automator, err := NewTermAutomator()
+		require.NoError(t, err, "Не удалось создать TermAutomator")
 		t.Cleanup(func() {
 			automator.Close()
 		})
 
 		// Создаем мок для ручного контроля канала вывода
-		mockAutomator := &CLIAutomator{
+		mockAutomator := &TermAutomator{
 			log:         automator.log,
 			outputLines: make(chan string),
 			// Остальные поля не используются в этом тесте
@@ -452,8 +452,8 @@ func TestCLIAutomatorErrorHandling(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
-		automator, err := NewCLIAutomator()
-		require.NoError(t, err, "Не удалось создать CLIAutomator")
+		automator, err := NewTermAutomator()
+		require.NoError(t, err, "Не удалось создать TermAutomator")
 
 		// Останавливаем автоматор
 		automator.Close()
@@ -497,8 +497,8 @@ func (m *mockReadWriter) Close() error {
 	return nil
 }
 
-// TestCLIAutomatorWithMocks проверяет CLIAutomator с использованием моков для stdin/stdout
-func TestCLIAutomatorWithMocks(t *testing.T) {
+// TestTermAutomatorWithMocks проверяет TermAutomator с использованием моков для stdin/stdout
+func TestTermAutomatorWithMocks(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -507,8 +507,8 @@ func TestCLIAutomatorWithMocks(t *testing.T) {
 	// Этот тест не использует реальные stdin/stdout, а создает моки
 	// В реальной ситуации мы бы использовали gomock или testify/mock для более сложных моков
 
-	// Создаем экземпляр CLIAutomator вручную для тестирования с моками
-	automator := &CLIAutomator{
+	// Создаем экземпляр TermAutomator вручную для тестирования с моками
+	automator := &TermAutomator{
 		log:         log.NewLogger(),
 		outputLines: make(chan string, 10),
 	}

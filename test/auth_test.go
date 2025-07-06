@@ -16,13 +16,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/testing/cli_automator"
+	"github.com/comerc/budva43/app/testing/term_automator"
 	"github.com/comerc/budva43/app/util"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	realTermRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
-	cliTransport "github.com/comerc/budva43/transport/cli"
-	mockTermRepo "github.com/comerc/budva43/transport/cli/mocks"
+	termTransport "github.com/comerc/budva43/transport/term"
+	mockTermRepo "github.com/comerc/budva43/transport/term/mocks"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
@@ -49,7 +49,7 @@ func TestAuth(t *testing.T) {
 
 	var err error
 
-	automator, err := cli_automator.NewCLIAutomator()
+	automator, err := term_automator.NewTermAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()
@@ -103,14 +103,14 @@ func TestAuth(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	cliTransport := cliTransport.New(
+	termTransport := termTransport.New(
 		mockTermRepo,
 		authService,
 	).WithPhoneNumber("")
-	err = cliTransport.Start(ctx, cancel)
+	err = termTransport.Start(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := cliTransport.Close()
+		err := termTransport.Close()
 		require.NoError(t, err)
 	})
 
