@@ -115,6 +115,14 @@ tasks:
       - go tool cover -html=.coverage/.txt
     silent: true
 
+  gqlgen:
+    desc: "Run gqlgen"
+    summary: |
+      Run gqlgen.
+    cmds:
+      - go run github.com/99designs/gqlgen generate --config .gqlgen.yml
+    silent: true
+
   kill-port:
     desc: "Kill port 7070"
     summary: |
