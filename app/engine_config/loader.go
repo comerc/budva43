@@ -21,7 +21,7 @@ var (
 
 func initEngineViper(projectRoot string) {
 	engineViper = viper.New()
-	path := filepath.Join(projectRoot, ".config", config.General.EngineConfigFile)
+	path := filepath.Join(projectRoot, "config", config.General.EngineConfigFile)
 	engineViper.SetConfigFile(path)
 }
 

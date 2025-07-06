@@ -136,7 +136,7 @@
 		"docker-compose.loki.yml": false,
 		"pplog.env": false,
 		".cursorignore": false,
-		".config/.private/": false,
+		"config/.private/": false,
 		".coverage/": false,
 		".ignore": false,
 		"script/": false,
@@ -145,6 +145,6 @@
 		"Taskfile.yml": false,
 		".gqlgen.yml": false,
 		"tools.go": false,
-		".config/": false
+		"config/": false
 	},
 }
