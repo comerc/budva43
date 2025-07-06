@@ -12,7 +12,7 @@ import (
 )
 
 func load() *config {
-	envPath := filepath.Join(util.ProjectRoot, "config", ".private", ".env")
+	envPath := filepath.Join(util.ProjectRoot, ".config", ".private", ".env")
 	if err := godotenv.Load(envPath); err != nil {
 		log.Panic("не удалось загрузить .env файл: ", err)
 	}
@@ -20,7 +20,7 @@ func load() *config {
 	// Настройка Viper для чтения конфигурации из файла
 	viper.SetConfigName("app") // имя конфигурационного файла без расширения
 	viper.SetConfigType("yml") // расширение файла конфигурации
-	viper.AddConfigPath(filepath.Join(util.ProjectRoot, "config"))
+	viper.AddConfigPath(filepath.Join(util.ProjectRoot, ".config"))
 
 	// Настраиваем Viper для правильной обработки имен полей и секций
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__", "-", "_"))
