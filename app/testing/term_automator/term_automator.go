@@ -65,7 +65,7 @@ func NewTermAutomator() (*TermAutomator, error) {
 	return automator, nil
 }
 
-// Run запускает обработку вывода CLI
+// Run запускает обработку вывода
 func (a *TermAutomator) Run() {
 	var err error
 	defer a.log.ErrorOrDebug(&err, "")
@@ -105,7 +105,7 @@ func (a *TermAutomator) Run() {
 	close(a.outputLines)
 }
 
-// SendInput отправляет ввод в stdin CLI
+// SendInput отправляет ввод в stdin
 func (a *TermAutomator) SendInput(input string) error {
 	_, err := fmt.Fprintln(a.stdinWriter, input)
 	return err
@@ -141,7 +141,7 @@ func (a *TermAutomator) WaitForOutput(ctx context.Context, pattern string, timeo
 	}
 }
 
-// Close останавливает работу CLIAutomator и восстанавливает стандартные потоки ввода-вывода
+// Close останавливает работу и восстанавливает стандартные потоки ввода-вывода
 func (a *TermAutomator) Close() {
 	// Восстанавливаем оригинальные стандартные потоки ввода-вывода
 	os.Stdin = a.originalStdin
