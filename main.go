@@ -29,6 +29,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: pkg/tdlib-buntu - в какой папке лучше держать?
 // TODO: при старте проверять новые необработанныесообщения в чатах
 // TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
 // TODO: реализовать storage.BackupEnabled
