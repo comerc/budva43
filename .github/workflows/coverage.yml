@@ -45,8 +45,8 @@ jobs:
 
       - name: Create empty .env file for tests
         run: |
-          mkdir -p config/.private
-          touch config/.private/.env
+          mkdir -p .config/.private
+          touch .config/.private/.env
 
       - name: Debug environment variables
         run: |
