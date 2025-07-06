@@ -4,7 +4,6 @@ go 1.24.2
 
 require (
 	github.com/99designs/gqlgen v0.17.76
-	github.com/creack/pty v1.1.24
 	github.com/cucumber/godog v0.15.0
 	github.com/dgraph-io/badger/v4 v4.7.0
 	github.com/fsnotify/fsnotify v1.8.0
