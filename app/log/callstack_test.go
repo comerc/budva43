@@ -3,6 +3,7 @@ package log
 import (
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -98,7 +99,7 @@ func TestGetCaller(t *testing.T) {
 
 	// Проверяем, что путь содержит app/log/callstack_test.go
 	prefix := "app/log/callstack_test.go"
-	assert.Equal(t, prefix, caller[:len(prefix)])
+	assert.Equal(t, prefix, filepath.ToSlash(caller[:len(prefix)]))
 
 	t.Logf("Caller: %s", caller)
 }
@@ -214,7 +215,7 @@ func TestRelativePaths(t *testing.T) {
 
 	// Проверяем, что путь содержит app/log/callstack_test.go
 	prefix := "app/log/callstack_test.go"
-	assert.Equal(t, prefix, caller[:len(prefix)])
+	assert.Equal(t, prefix, filepath.ToSlash(caller[:len(prefix)]))
 
 	// Проверяем, что путь заканчивается на .go
 	parts := strings.Split(caller, " ")
