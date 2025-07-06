@@ -35,6 +35,13 @@ func (r *Repo) Close() error {
 
 // HiddenReadLine считывает консоль без отображения введенных символов
 func (r *Repo) HiddenReadLine() (string, error) {
+	testing := os.Getenv("GOEXPERIMENT") == "synctest"
+	if testing {
+		// Подмена term.ReadPassword для тестов на Windows
+		// без PTY - для реализации termAutomator через os.Pipe()
+		return r.ReadLine()
+	}
+
 	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
 	return string(password), log.WrapError(err) // внешняя ошибка
@@ -47,4 +54,12 @@ func (r *Repo) ReadLine() (string, error) {
 	}
 	input := r.scanner.Text()
 	return input, nil
+}
+
+func (r *Repo) Println(v ...any) {
+	fmt.Println(v...)
+}
+
+func (r *Repo) Printf(format string, v ...any) {
+	fmt.Printf(format, v...)
 }

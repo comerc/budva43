@@ -72,6 +72,92 @@ func (_c *TermRepo_HiddenReadLine_Call) RunAndReturn(run func() (string, error))
 	return _c
 }
 
+// Printf provides a mock function with given fields: format, v
+func (_m *TermRepo) Printf(format string, v ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, format)
+	_ca = append(_ca, v...)
+	_m.Called(_ca...)
+}
+
+// TermRepo_Printf_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Printf'
+type TermRepo_Printf_Call struct {
+	*mock.Call
+}
+
+// Printf is a helper method to define mock.On call
+//   - format string
+//   - v ...interface{}
+func (_e *TermRepo_Expecter) Printf(format interface{}, v ...interface{}) *TermRepo_Printf_Call {
+	return &TermRepo_Printf_Call{Call: _e.mock.On("Printf",
+		append([]interface{}{format}, v...)...)}
+}
+
+func (_c *TermRepo_Printf_Call) Run(run func(format string, v ...interface{})) *TermRepo_Printf_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]interface{}, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(interface{})
+			}
+		}
+		run(args[0].(string), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *TermRepo_Printf_Call) Return() *TermRepo_Printf_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *TermRepo_Printf_Call) RunAndReturn(run func(string, ...interface{})) *TermRepo_Printf_Call {
+	_c.Run(run)
+	return _c
+}
+
+// Println provides a mock function with given fields: v
+func (_m *TermRepo) Println(v ...interface{}) {
+	var _ca []interface{}
+	_ca = append(_ca, v...)
+	_m.Called(_ca...)
+}
+
+// TermRepo_Println_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Println'
+type TermRepo_Println_Call struct {
+	*mock.Call
+}
+
+// Println is a helper method to define mock.On call
+//   - v ...interface{}
+func (_e *TermRepo_Expecter) Println(v ...interface{}) *TermRepo_Println_Call {
+	return &TermRepo_Println_Call{Call: _e.mock.On("Println",
+		append([]interface{}{}, v...)...)}
+}
+
+func (_c *TermRepo_Println_Call) Run(run func(v ...interface{})) *TermRepo_Println_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]interface{}, len(args)-0)
+		for i, a := range args[0:] {
+			if a != nil {
+				variadicArgs[i] = a.(interface{})
+			}
+		}
+		run(variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *TermRepo_Println_Call) Return() *TermRepo_Println_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *TermRepo_Println_Call) RunAndReturn(run func(...interface{})) *TermRepo_Println_Call {
+	_c.Run(run)
+	return _c
+}
+
 // ReadLine provides a mock function with no fields
 func (_m *TermRepo) ReadLine() (string, error) {
 	ret := _m.Called()

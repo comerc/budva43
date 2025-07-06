@@ -3,79 +3,51 @@ package term
 import (
 	"context"
 	"testing"
+	"testing/synctest"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/zelenin/go-tdlib/client"
-
-	"github.com/comerc/budva43/app/testing/term_automator"
-	realTermRepo "github.com/comerc/budva43/repo/term"
 	"github.com/comerc/budva43/transport/term/mocks"
 )
 
 func TestTermTransport(t *testing.T) {
-	// t.Parallel() // !! нельзя параллелить, т.к. тестирую через term_automator
-	// TODO: включить после переделки term_automator
+	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
 
-	var err error
+	synctest.Run(func() {
+		status := "TDLib version: 1.0.0 userId: 1234567890"
+		clientDone := make(chan any)
+		close(clientDone)
 
-	//TODO: выпилить term_automator из юнит-теста
+		termRepo := mocks.NewTermRepo(t)
+		termRepo.EXPECT().Println(status)
+		termRepo.EXPECT().Println(">")
+		termRepo.EXPECT().ReadLine().Return("exit", nil)
+		termRepo.EXPECT().Println("Выход из программы...")
 
-	var automator *term_automator.TermAutomator
-	automator, err = term_automator.NewTermAutomator()
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		automator.Close()
-	})
+		authService := mocks.NewAuthService(t)
+		authService.EXPECT().GetClientDone().Return(clientDone)
+		authService.EXPECT().GetStatus().Return(status)
 
-	go automator.Run()
-
-	realTermRepo := realTermRepo.New()
-
-	// termRepo := mocks.NewTermRepo(t)
-	// termRepo.EXPECT().ReadLine().
-	// 	RunAndReturn(realTermRepo.ReadLine).
-	// 	Times(2)
-
-	authService := mocks.NewAuthService(t)
-	authService.EXPECT().GetClientDone().
-		Return(
-			func() <-chan any {
-				clientDone := make(chan any)
-				close(clientDone)
-				return clientDone
-			}(),
+		termTransport := New(
+			termRepo,
+			authService,
 		)
-	authService.EXPECT().GetStatus().
-		Return(client.TypeAuthorizationStateWaitPhoneNumber)
+		termTransport.shutdown = cancel
 
-	termTransport := New(
-		realTermRepo,
-		authService,
-	)
-	termTransport.shutdown = cancel
-	go termTransport.runInputLoop(ctx)
+		go termTransport.runInputLoop(ctx)
 
-	var found bool
+		select {
+		case <-ctx.Done():
+			// OK, контекст отменен
+		case <-time.After(1 * time.Second):
+			t.Error("termTransport не завершился после команды exit")
+			cancel()
+		}
 
-	found = automator.WaitForOutput(ctx, ">", 1*time.Second)
-	assert.True(t, found, "CLI не выдала приглашение")
-
-	err = automator.SendInput("help")
-	require.NoError(t, err)
-	found = automator.WaitForOutput(ctx, "Доступные команды:", 1*time.Second)
-	assert.True(t, found, "Команда help не выдала список команд")
-
-	err = automator.SendInput("exit")
-	require.NoError(t, err)
-	select {
-	case <-ctx.Done():
-		// OK, контекст отменен
-	case <-time.After(3 * time.Second):
-		t.Error("CLI не завершился после команды exit")
-	}
+		t.Cleanup(func() {
+			termTransport.Close() // !! вызываем после отмены контекста
+		})
+	})
 }

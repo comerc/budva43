@@ -15,14 +15,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/testing/term_automator"
-	"github.com/comerc/budva43/app/util"
+	config "github.com/comerc/budva43/app/config"
+	termAutomator "github.com/comerc/budva43/app/testing/term_automator"
+	util "github.com/comerc/budva43/app/util"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
-	realTermRepo "github.com/comerc/budva43/repo/term"
+	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	termTransport "github.com/comerc/budva43/transport/term"
-	mockTermRepo "github.com/comerc/budva43/transport/term/mocks"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
@@ -49,7 +48,7 @@ func TestAuth(t *testing.T) {
 
 	var err error
 
-	automator, err := term_automator.NewTermAutomator()
+	automator, err := termAutomator.NewTermAutomator()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		automator.Close()
@@ -73,18 +72,13 @@ func TestAuth(t *testing.T) {
 		util.MakeDir(dir)
 	}
 
-	realTermRepo := realTermRepo.New()
-	err = realTermRepo.Start()
+	termRepo := termRepo.New()
+	err = termRepo.Start()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := realTermRepo.Close()
+		err := termRepo.Close()
 		require.NoError(t, err)
 	})
-
-	mockTermRepo := mockTermRepo.NewTermRepo(t)
-	mockTermRepo.EXPECT().HiddenReadLine().
-		RunAndReturn(realTermRepo.ReadLine)
-	// !! подмена term.ReadPassword для тестов на Windows без PTY - через os.Pipe()
 
 	telegramRepo := telegramRepo.New().WithOptions(options)
 	err = telegramRepo.Start(ctx)
@@ -104,7 +98,7 @@ func TestAuth(t *testing.T) {
 	})
 
 	termTransport := termTransport.New(
-		mockTermRepo,
+		termRepo,
 		authService,
 	).WithPhoneNumber("")
 	err = termTransport.Start(ctx, cancel)

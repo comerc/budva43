@@ -2,7 +2,6 @@ package term
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/zelenin/go-tdlib/client"
@@ -16,6 +15,8 @@ import (
 type termRepo interface {
 	HiddenReadLine() (string, error)
 	ReadLine() (string, error)
+	Println(v ...any)
+	Printf(format string, v ...any)
 }
 
 type notify = func(state client.AuthorizationState)
@@ -41,7 +42,7 @@ type Transport struct {
 	phoneNumber   string
 }
 
-// command представляет команду CLI
+// command представляет команду терминала
 type command struct {
 	name        string
 	description string
@@ -99,16 +100,17 @@ func (t *Transport) runInputLoop(ctx context.Context) {
 			return
 		case <-t.authService.GetClientDone():
 			if !isAuth {
-				fmt.Println(t.authService.GetStatus())
+				t.termRepo.Println(t.authService.GetStatus())
 				isAuth = true
 			}
-			fmt.Println(">")
+			t.termRepo.Println(">")
 			input, err := t.termRepo.ReadLine()
 			if err != nil {
 				return
 			}
 			t.processCommand(input)
 		case state := <-t.authStateChan:
+			// <-ctx.Done()
 			t.processAuth(state)
 		}
 	}
@@ -168,7 +170,7 @@ func (t *Transport) processCommand(input string) {
 	command, ok := t.commandMap[cmd]
 	if !ok {
 		err = log.NewError("unknown command", "cmd", cmd)
-		fmt.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
+		t.termRepo.Printf("Неизвестная команда: %s. Введите 'help' для просмотра доступных команд.\n", cmd)
 		return
 	}
 
@@ -177,15 +179,15 @@ func (t *Transport) processCommand(input string) {
 
 // handleHelp обрабатывает команду help
 func (t *Transport) handleHelp(args []string) {
-	fmt.Println("Доступные команды:")
+	t.termRepo.Println("Доступные команды:")
 	for _, cmd := range t.commands {
-		fmt.Printf("  %-15s - %s\n", cmd.name, cmd.description)
+		t.termRepo.Printf("  %-15s - %s\n", cmd.name, cmd.description)
 	}
 }
 
 // handleExit обрабатывает команду exit
 func (t *Transport) handleExit(args []string) {
-	fmt.Println("Выход из программы...")
+	t.termRepo.Println("Выход из программы...")
 	t.shutdown()
 }
 
@@ -205,18 +207,18 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 	case client.TypeAuthorizationStateWaitPhoneNumber:
 		phoneNumber := t.phoneNumber
 		if phoneNumber == "" {
-			fmt.Println("Введите номер телефона: ")
+			t.termRepo.Println("Введите номер телефона: ")
 			phoneNumber, err = t.termRepo.HiddenReadLine()
 			if err != nil {
 				return
 			}
 		} else {
-			fmt.Println("Номер телефона:", util.MaskPhoneNumber(phoneNumber))
+			t.termRepo.Println("Номер телефона:", util.MaskPhoneNumber(phoneNumber))
 		}
 		t.authService.GetInputChan() <- phoneNumber
 
 	case client.TypeAuthorizationStateWaitCode:
-		fmt.Println("Введите код подтверждения: ")
+		t.termRepo.Println("Введите код подтверждения: ")
 		var code string
 		code, err = t.termRepo.HiddenReadLine()
 		if err != nil {
@@ -225,7 +227,7 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		t.authService.GetInputChan() <- code
 
 	case client.TypeAuthorizationStateWaitPassword:
-		fmt.Println("Введите пароль: ")
+		t.termRepo.Println("Введите пароль: ")
 		var password string
 		password, err = t.termRepo.HiddenReadLine()
 		if err != nil {
