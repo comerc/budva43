@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/creack/pty"
-
 	"github.com/comerc/budva43/app/log"
 )
+
+// TODO: переделать на использование goroutine-local stdin/stdout
 
 // CLIAutomator - структура для эмуляции ввода/вывода при тестировании CLI
 type CLIAutomator struct {
@@ -34,8 +34,8 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 	originalStdin := os.Stdin
 	originalStdout := os.Stdout
 
-	// Создаем псевдо-терминал для term.ReadPassword
-	stdinWriter, stdinReader, err := pty.Open()
+	// Создаем пайпы для stdin
+	stdinReader, stdinWriter, err := os.Pipe()
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func NewCLIAutomator() (*CLIAutomator, error) {
 		//
 		originalStdin:  originalStdin,
 		originalStdout: originalStdout,
-		stdinReader:    stdinReader, // Подчиненная часть PTY (pseudo-terminal slave)
-		stdinWriter:    stdinWriter, // Главная часть PTY (pseudo-terminal master)
+		stdinReader:    stdinReader,
+		stdinWriter:    stdinWriter,
 		stdoutReader:   stdoutReader,
 		stdoutWriter:   stdoutWriter,
 		outputLines:    make(chan string, 100),

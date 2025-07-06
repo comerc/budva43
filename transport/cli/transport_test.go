@@ -10,11 +10,13 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/testing/cli_automator"
+	realTermRepo "github.com/comerc/budva43/repo/term"
 	"github.com/comerc/budva43/transport/cli/mocks"
 )
 
 func TestCliTransport(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, т.к. тестирую через cli_automator
+	// TODO: включить после переделки cli_automator
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	t.Cleanup(cancel)
@@ -30,6 +32,13 @@ func TestCliTransport(t *testing.T) {
 
 	go automator.Run()
 
+	realTermRepo := realTermRepo.New()
+
+	termRepo := mocks.NewTermRepo(t)
+	termRepo.EXPECT().ReadLine().
+		RunAndReturn(realTermRepo.ReadLine).
+		Times(2)
+
 	authService := mocks.NewAuthService(t)
 	authService.EXPECT().GetClientDone().
 		Return(
@@ -43,6 +52,7 @@ func TestCliTransport(t *testing.T) {
 		Return(client.TypeAuthorizationStateWaitPhoneNumber)
 
 	cliTransport := New(
+		termRepo,
 		authService,
 	)
 	cliTransport.shutdown = cancel

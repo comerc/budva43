@@ -19,8 +19,10 @@ import (
 	"github.com/comerc/budva43/app/testing/cli_automator"
 	"github.com/comerc/budva43/app/util"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
+	realTermRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	cliTransport "github.com/comerc/budva43/transport/cli"
+	mockTermRepo "github.com/comerc/budva43/transport/cli/mocks"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
@@ -71,6 +73,19 @@ func TestAuth(t *testing.T) {
 		util.MakeDir(dir)
 	}
 
+	realTermRepo := realTermRepo.New()
+	err = realTermRepo.Start()
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		err := realTermRepo.Close()
+		require.NoError(t, err)
+	})
+
+	mockTermRepo := mockTermRepo.NewTermRepo(t)
+	mockTermRepo.EXPECT().HiddenReadLine().
+		RunAndReturn(realTermRepo.ReadLine)
+	// !! подмена term.ReadPassword для тестов на Windows без PTY - через os.Pipe()
+
 	telegramRepo := telegramRepo.New().WithOptions(options)
 	err = telegramRepo.Start(ctx)
 	require.NoError(t, err)
@@ -89,6 +104,7 @@ func TestAuth(t *testing.T) {
 	})
 
 	cliTransport := cliTransport.New(
+		mockTermRepo,
 		authService,
 	).WithPhoneNumber("")
 	err = cliTransport.Start(ctx, cancel)

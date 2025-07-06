@@ -1,21 +1,22 @@
 package cli
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/zelenin/go-tdlib/client"
-	"golang.org/x/term"
 
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
 
-// TODO: Добавить автодополнение команд go-prompt
+//go:generate mockery --name=termRepo --exported
+type termRepo interface {
+	HiddenReadLine() (string, error)
+	ReadLine() (string, error)
+}
 
 type notify = func(state client.AuthorizationState)
 
@@ -31,9 +32,9 @@ type authService interface {
 type Transport struct {
 	log *log.Logger
 	//
+	termRepo      termRepo
 	authService   authService
 	authStateChan chan client.AuthorizationState
-	scanner       *bufio.Scanner
 	commands      []command
 	commandMap    map[string]*command
 	shutdown      func()
@@ -48,13 +49,13 @@ type command struct {
 }
 
 // New создает новый экземпляр CLI
-func New(authService authService) *Transport {
+func New(termRepo termRepo, authService authService) *Transport {
 	cli := &Transport{
 		log: log.NewLogger(),
 		//
+		termRepo:      termRepo,
 		authService:   authService,
 		authStateChan: make(chan client.AuthorizationState, 10),
-		scanner:       bufio.NewScanner(os.Stdin),
 		commands:      []command{},
 		phoneNumber:   config.Telegram.PhoneNumber,
 	}
@@ -102,10 +103,10 @@ func (t *Transport) runInputLoop(ctx context.Context) {
 				isAuth = true
 			}
 			fmt.Println(">")
-			if !t.scanner.Scan() {
+			input, err := t.termRepo.ReadLine()
+			if err != nil {
 				return
 			}
-			input := t.scanner.Text()
 			t.processCommand(input)
 		case state := <-t.authStateChan:
 			t.processAuth(state)
@@ -205,7 +206,7 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		phoneNumber := t.phoneNumber
 		if phoneNumber == "" {
 			fmt.Println("Введите номер телефона: ")
-			phoneNumber, err = t.hiddenReadLine()
+			phoneNumber, err = t.termRepo.HiddenReadLine()
 			if err != nil {
 				return
 			}
@@ -217,7 +218,7 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 	case client.TypeAuthorizationStateWaitCode:
 		fmt.Println("Введите код подтверждения: ")
 		var code string
-		code, err = t.hiddenReadLine()
+		code, err = t.termRepo.HiddenReadLine()
 		if err != nil {
 			return
 		}
@@ -226,18 +227,11 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 	case client.TypeAuthorizationStateWaitPassword:
 		fmt.Println("Введите пароль: ")
 		var password string
-		password, err = t.hiddenReadLine()
+		password, err = t.termRepo.HiddenReadLine()
 		if err != nil {
 			return
 		}
 		t.authService.GetInputChan() <- password
 
 	}
-}
-
-// hiddenReadLine считывает консоль без отображения введенных символов
-func (t *Transport) hiddenReadLine() (string, error) {
-	password, err := term.ReadPassword(int(os.Stdin.Fd()))
-	fmt.Println()
-	return string(password), log.WrapError(err) // внешняя ошибка
 }

@@ -67,21 +67,19 @@ tasks:
       - GOEXPERIMENT=synctest golangci-lint run
     silent: true
 
-  check:
-    desc: "Run go test"
+  test-short:
+    desc: "Run short tests"
     summary: |
-      Run go test.
+      Run short tests.
     cmds:
-      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 $(go list ./... | grep -v test_e2e)
-    silent: true
+      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 $(go list ./... | grep -v mocks)
 
-  test-e2e:
-    desc: "Run e2e tests"
+  test:
+    desc: "Run all tests"
     summary: |
-      Run e2e tests.
+      Run all tests.
     cmds:
-      - GOEXPERIMENT=synctest go test -short -failfast -race -count=1 ./test_e2e/...
-    silent: true
+      - GOEXPERIMENT=synctest go test -failfast -count=1 $(go list ./... | grep -v mocks)
 
   build:
     desc: "Build app"
@@ -131,10 +129,10 @@ tasks:
       - lsof -ti:7070 | xargs kill -9
 
   all:
-    desc: "Run tasks: lint -> check -> build"
+    desc: "Run tasks: lint -> test -> build"
     summary: |
-      Выполнить все задачи: lint -> check -> build.
+      Выполнить все задачи: lint -> test -> build.
     cmds:
       - task lint
-      - task check
+      - task test
       - task build

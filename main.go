@@ -15,6 +15,7 @@ import (
 	queueRepo "github.com/comerc/budva43/repo/queue"
 	storageRepo "github.com/comerc/budva43/repo/storage"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
+	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
 	filtersModeService "github.com/comerc/budva43/service/filters_mode"
@@ -96,6 +97,13 @@ func (a *App) Run() error {
 	}
 	defer a.gracefulShutdown(queueRepo)
 
+	termRepo := termRepo.New()
+	err = termRepo.Start()
+	if err != nil {
+		return err
+	}
+	defer a.gracefulShutdown(termRepo)
+
 	// - Инициализация вспомогательных сервисов
 	storageService := storageService.New(storageRepo)
 	messageService := messageService.New()
@@ -167,6 +175,7 @@ func (a *App) Run() error {
 	// - Инициализация транспортных адаптеров
 
 	cliTransport := cliTransport.New(
+		termRepo,
 		authService,
 	)
 	err = cliTransport.Start(ctx, cancel)
