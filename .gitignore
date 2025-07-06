@@ -22,13 +22,13 @@ go.work.sum
 .env
 
 # private secrets folder
-.config/.private/
+config/.private/
 
 bin/
 .data/
 vendor/
 _try/
 _*.go
-.config/engine.e2e.yml
+config/engine.e2e.yml
 .coverage/
 ___.md
