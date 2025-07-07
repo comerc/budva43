@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// TODO: unused interface methods ругается на методы facadeGRPC, хотя они используются
+
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {
 	GetClientDone() <-chan any
