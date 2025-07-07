@@ -17,7 +17,7 @@ type telegramRepo interface {
 	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
 	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
-	GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
+	// GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
 }
 
 type Service struct {
