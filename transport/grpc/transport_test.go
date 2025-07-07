@@ -15,12 +15,6 @@ import (
 
 const bufSize = 1024 * 1024
 
-func bufconnDialer(lis *bufconn.Listener) func(context.Context, string) (net.Conn, error) {
-	return func(ctx context.Context, s string) (net.Conn, error) {
-		return lis.Dial()
-	}
-}
-
 func startTestGRPCServer(t *testing.T, facade *mocks.FacadeGRPC) (*grpc.ClientConn, func()) {
 	lis := bufconn.Listen(bufSize)
 	server := grpc.NewServer()
@@ -29,7 +23,12 @@ func startTestGRPCServer(t *testing.T, facade *mocks.FacadeGRPC) (*grpc.ClientCo
 	go func() {
 		_ = server.Serve(lis)
 	}()
-	conn, err := grpc.DialContext(context.Background(), "bufnet", grpc.WithContextDialer(bufconnDialer(lis)), grpc.WithInsecure())
+	conn, err := grpc.DialContext(context.Background(), "bufnet",
+		grpc.WithContextDialer(func(ctx context.Context, s string) (net.Conn, error) {
+			return lis.Dial()
+		}),
+		grpc.WithInsecure(), // TODO: deprecated
+	)
 	assert.NoError(t, err)
 	return conn, func() {
 		server.GracefulStop()
@@ -38,6 +37,8 @@ func startTestGRPCServer(t *testing.T, facade *mocks.FacadeGRPC) (*grpc.ClientCo
 }
 
 func TestCreateMessage(t *testing.T) {
+	t.Parallel()
+
 	facade := mocks.NewFacadeGRPC(t)
 	in := &dto.NewMessage{ChatId: 1, Content: "hi"}
 	out := &dto.Message{Id: 42, ChatId: 1, Content: "hi"}
@@ -55,6 +56,8 @@ func TestCreateMessage(t *testing.T) {
 }
 
 func TestGetMessages(t *testing.T) {
+	t.Parallel()
+
 	facade := mocks.NewFacadeGRPC(t)
 	facade.EXPECT().GetMessages(int64(1)).Return([]*dto.Message{
 		{Id: 1, ChatId: 1, Content: "a"},
@@ -73,6 +76,8 @@ func TestGetMessages(t *testing.T) {
 }
 
 func TestGetMessage(t *testing.T) {
+	t.Parallel()
+
 	facade := mocks.NewFacadeGRPC(t)
 	out := &dto.Message{Id: 42, ChatId: 1, Content: "hi"}
 	facade.EXPECT().GetMessage(int64(42)).Return(out, nil)
@@ -89,6 +94,8 @@ func TestGetMessage(t *testing.T) {
 }
 
 func TestUpdateMessage(t *testing.T) {
+	t.Parallel()
+
 	facade := mocks.NewFacadeGRPC(t)
 	in := &dto.Message{Id: 42, ChatId: 1, Content: "upd"}
 	out := &dto.Message{Id: 42, ChatId: 1, Content: "upd"}
@@ -106,6 +113,8 @@ func TestUpdateMessage(t *testing.T) {
 }
 
 func TestDeleteMessage(t *testing.T) {
+	t.Parallel()
+
 	facade := mocks.NewFacadeGRPC(t)
 	in := &dto.Message{Id: 42}
 	out := &dto.Message{Id: 42}
@@ -121,6 +130,7 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestGetClientDone(t *testing.T) {
+	t.Parallel()
 	facade := mocks.NewFacadeGRPC(t)
 	ch := make(chan any)
 	facade.EXPECT().GetClientDone().Return((<-chan any)(ch))
