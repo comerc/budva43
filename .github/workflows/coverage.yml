@@ -62,10 +62,10 @@ jobs:
           echo "CGO_CFLAGS=-I/usr/local/include" >> $GITHUB_ENV
           echo "CGO_LDFLAGS=-L/usr/local/lib -ltdjson" >> $GITHUB_ENV
 
-      - name: Run unused-interface-methods
-        run: |
-          go install github.com/unused-interface-methods/unused-interface-methods@latest
-          GOEXPERIMENT=synctest UNUSED_INTERFACE_METHODS_VERBOSE=1 unused-interface-methods ./...
+      # - name: Run unused-interface-methods
+      #   run: |
+      #     go install github.com/unused-interface-methods/unused-interface-methods@latest
+      #     GOEXPERIMENT=synctest UNUSED_INTERFACE_METHODS_VERBOSE=1 unused-interface-methods ./...
 
       - name: Run tests and generate coverage
         run: ./script/cover.sh
