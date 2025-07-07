@@ -126,6 +126,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [unused-interface-methods](https://github.com/unused-interface-methods/unused-interface-methods)
 - [x] BDD
 - [x] [godog](github.com/cucumber/godog)
+- [x] grpc
 
 ## .env
 
@@ -265,10 +266,16 @@ To -
 - [jqp](https://github.com/noahgorstein/jqp)
 - [golangci-lint](https://github.com/golangci/golangci-lint)
 - [godog](github.com/cucumber/godog)
-
+- [protobuf](https://github.com/protocolbuffers/protobuf-go)
 
 ```bash
+# golangci-lint
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-go install github.com/cucumber/godog/cmd/godog@latest
-```
 
+# godog
+go install github.com/cucumber/godog/cmd/godog@latest
+
+# protobuf
+brew install protobuf
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```

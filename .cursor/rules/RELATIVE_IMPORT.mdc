@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+не надо делать локальные импорты через относительные пути:
+
+```go
+// плохо
+import "../../config"
+
+// хорошо
+import "github.com/comerc/budva43/some/path/config"
+```

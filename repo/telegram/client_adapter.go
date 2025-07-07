@@ -14,6 +14,7 @@ type clientAdapter interface {
 	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
 	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
+	GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
 
 	// Forward operations
 	ForwardMessages(*client.ForwardMessagesRequest) (*client.Messages, error)
@@ -26,6 +27,8 @@ type clientAdapter interface {
 	LoadChats(*client.LoadChatsRequest) (*client.Ok, error)
 	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
 	GetChat(*client.GetChatRequest) (*client.Chat, error)
+	GetChats(*client.GetChatsRequest) (*client.Chats, error)
+	GetChatMessageCount(*client.GetChatMessageCountRequest) (*client.Count, error)
 
 	// Other operations
 	GetListener() *client.Listener
