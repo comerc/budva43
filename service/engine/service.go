@@ -43,7 +43,6 @@ type updateMessageSendHandler interface {
 // Service предоставляет функциональность движка пересылки сообщений
 type Service struct {
 	log *log.Logger
-	ctx context.Context
 	//
 	telegramRepo                telegramRepo
 	updateNewMessageHandler     updateNewMessageHandler
@@ -72,12 +71,10 @@ func New(
 	}
 }
 
-// Start запускает обработчик обновлений от Telegram
-func (s *Service) Start(ctx context.Context) error {
+// StartContext запускает обработчик обновлений от Telegram
+func (s *Service) StartContext(ctx context.Context) error {
 
-	s.ctx = ctx
-
-	go s.run()
+	go s.run(ctx)
 
 	return nil
 }
@@ -88,16 +85,16 @@ func (s *Service) Close() error {
 }
 
 // run запускает обработчик обновлений от Telegram
-func (s *Service) run() {
+func (s *Service) run(ctx context.Context) {
 	// Ждём авторизации клиента и получаем канал обновлений от Telegram
 	select {
-	case <-s.ctx.Done():
+	case <-ctx.Done():
 		return
 	case <-s.telegramRepo.GetClientDone():
 		s.loadConfig()
 		listener := s.telegramRepo.GetListener()
 		defer listener.Close()
-		s.handleUpdates(listener)
+		s.handleUpdates(ctx, listener)
 	}
 }
 
@@ -216,10 +213,10 @@ func newFuncInitDestinations(s *Service) initDestinations {
 }
 
 // handleUpdates обрабатывает обновления от Telegram
-func (s *Service) handleUpdates(listener *client.Listener) {
+func (s *Service) handleUpdates(ctx context.Context, listener *client.Listener) {
 	for {
 		select {
-		case <-s.ctx.Done():
+		case <-ctx.Done():
 			return
 		case update, ok := <-listener.Updates:
 			if !ok {
@@ -232,7 +229,7 @@ func (s *Service) handleUpdates(listener *client.Listener) {
 
 			switch updateByType := update.(type) {
 			case *client.UpdateNewMessage:
-				s.updateNewMessageHandler.Run(s.ctx, updateByType)
+				s.updateNewMessageHandler.Run(ctx, updateByType)
 			case *client.UpdateMessageEdited:
 				s.updateMessageEditedHandler.Run(updateByType)
 			case *client.UpdateDeleteMessages:

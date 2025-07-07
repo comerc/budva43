@@ -81,7 +81,7 @@ func TestAuth(t *testing.T) {
 	})
 
 	telegramRepo := telegramRepo.New().WithOptions(options)
-	err = telegramRepo.Start(ctx)
+	err = telegramRepo.Start()
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := telegramRepo.Close()
@@ -90,7 +90,7 @@ func TestAuth(t *testing.T) {
 
 	authService := authService.New(telegramRepo)
 
-	err = authService.Start(ctx)
+	err = authService.StartContext(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := authService.Close()
@@ -101,7 +101,7 @@ func TestAuth(t *testing.T) {
 		termRepo,
 		authService,
 	).WithPhoneNumber("")
-	err = termTransport.Start(ctx, cancel)
+	err = termTransport.StartContext(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := termTransport.Close()
@@ -111,7 +111,7 @@ func TestAuth(t *testing.T) {
 	webTransport := webTransport.New(
 		authService,
 	)
-	err = webTransport.Start(ctx, cancel)
+	err = webTransport.StartContext(ctx, cancel)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := webTransport.Close()

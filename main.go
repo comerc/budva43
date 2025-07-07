@@ -77,21 +77,21 @@ func (a *App) Run() error {
 
 	// - Инициализация репозиториев
 	storageRepo := storageRepo.New()
-	err = storageRepo.Start(ctx)
+	err = storageRepo.StartContext(ctx)
 	if err != nil {
 		return err
 	}
 	defer a.gracefulShutdown(storageRepo)
 
 	telegramRepo := telegramRepo.New()
-	err = telegramRepo.Start(ctx)
+	err = telegramRepo.Start()
 	if err != nil {
 		return (err)
 	}
 	defer a.gracefulShutdown(telegramRepo)
 
 	queueRepo := queueRepo.New()
-	err = queueRepo.Start(ctx)
+	err = queueRepo.StartContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (a *App) Run() error {
 		rateLimiterService,
 	)
 	authService := authService.New(telegramRepo)
-	err = authService.Start(ctx)
+	err = authService.StartContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,7 @@ func (a *App) Run() error {
 		updateDeleteMessagesHandler,
 		updateMessageSendHandler,
 	)
-	err = engineService.Start(ctx)
+	err = engineService.StartContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (a *App) Run() error {
 		termRepo,
 		authService,
 	)
-	err = termTransport.Start(ctx, cancel)
+	err = termTransport.StartContext(ctx, cancel)
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func (a *App) Run() error {
 	webTransport := webTransport.New(
 		authService,
 	)
-	err = webTransport.Start(ctx, cancel)
+	err = webTransport.StartContext(ctx, cancel)
 	if err != nil {
 		return err
 	}

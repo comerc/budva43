@@ -61,7 +61,6 @@ type forwarderService interface {
 
 type Handler struct {
 	log *log.Logger
-	ctx context.Context
 	//
 	telegramRepo       telegramRepo
 	queueRepo          queueRepo
@@ -99,7 +98,6 @@ func New(
 
 // Run выполняет обрабатку обновления о новом сообщении
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
-	h.ctx = ctx
 	src := update.Message
 	defer h.log.ErrorOrDebug(nil, "",
 		"chatId", src.ChatId,
@@ -151,7 +149,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 				h.processMessage(messages, forwardRule, forwardedTo, checkFns, otherFns, engineConfig)
 			}
 			fn := func() {
-				h.processMediaAlbum(key, cb)
+				h.processMediaAlbum(ctx, key, cb)
 			}
 			h.queueRepo.Add(fn)
 		}
@@ -269,17 +267,17 @@ func (h *Handler) processMessage(messages []*client.Message,
 const waitForMediaAlbum = 3 * time.Second
 
 // processMediaAlbum обрабатывает медиа-альбом
-func (h *Handler) processMediaAlbum(key entity.MediaAlbumKey, cb func([]*client.Message)) {
+func (h *Handler) processMediaAlbum(ctx context.Context, key entity.MediaAlbumKey, cb func([]*client.Message)) {
 	diff := h.mediaAlbumsService.GetLastReceivedDiff(key)
 	if diff < waitForMediaAlbum {
 		timer := time.NewTimer(waitForMediaAlbum - diff)
 		defer timer.Stop()
 
 		select {
-		case <-h.ctx.Done():
+		case <-ctx.Done():
 			return
 		case <-timer.C:
-			h.processMediaAlbum(key, cb)
+			h.processMediaAlbum(ctx, key, cb)
 		}
 		return
 	}

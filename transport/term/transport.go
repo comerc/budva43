@@ -73,8 +73,8 @@ func (t *Transport) WithPhoneNumber(v string) *Transport {
 	return t
 }
 
-// Start запускает терминальный интерфейс
-func (t *Transport) Start(ctx context.Context, shutdown func()) error {
+// StartContext запускает терминальный интерфейс
+func (t *Transport) StartContext(ctx context.Context, shutdown func()) error {
 	t.shutdown = shutdown
 
 	t.authService.Subscribe(newFuncNotify(t))
