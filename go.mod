@@ -18,6 +18,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.30
 	github.com/zelenin/go-tdlib v0.7.6
 	golang.org/x/term v0.32.0
+	google.golang.org/grpc v1.69.2
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 

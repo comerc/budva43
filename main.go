@@ -18,6 +18,7 @@ import (
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
+	facadeGRPC "github.com/comerc/budva43/service/facade_grpc"
 	filtersModeService "github.com/comerc/budva43/service/filters_mode"
 	forwardedToService "github.com/comerc/budva43/service/forwarded_to"
 	forwarderService "github.com/comerc/budva43/service/forwarder"
@@ -26,6 +27,7 @@ import (
 	rateLimiterService "github.com/comerc/budva43/service/rate_limiter"
 	storageService "github.com/comerc/budva43/service/storage"
 	transformService "github.com/comerc/budva43/service/transform"
+	grpcTransport "github.com/comerc/budva43/transport/grpc"
 	termTransport "github.com/comerc/budva43/transport/term"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
@@ -105,6 +107,9 @@ func (a *App) Run() error {
 	defer a.gracefulShutdown(termRepo)
 
 	// - Инициализация вспомогательных сервисов
+	facadeGRPC := facadeGRPC.New(
+		telegramRepo,
+	)
 	storageService := storageService.New(storageRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
@@ -192,6 +197,15 @@ func (a *App) Run() error {
 		return err
 	}
 	defer a.gracefulShutdown(webTransport)
+
+	grpcTransport := grpcTransport.New(
+		facadeGRPC,
+	)
+	err = grpcTransport.Start()
+	if err != nil {
+		return err
+	}
+	defer a.gracefulShutdown(grpcTransport)
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
