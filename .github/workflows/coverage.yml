@@ -68,7 +68,11 @@ jobs:
       #     GOEXPERIMENT=synctest UNUSED_INTERFACE_METHODS_VERBOSE=1 unused-interface-methods ./...
 
       - name: Run tests and generate coverage
-        run: ./script/cover.sh
+        run: |
+          ./script/cover.sh
+          cp .coverage/.txt coverage.txt 
+
+      # codecov ожидает файл coverage.txt
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
