@@ -101,9 +101,10 @@ tasks:
     desc: "Run coverage"
     summary: |
       Run coverage.
-    cmds:
+    cmds: 
       - ./script/cover.sh
-    silent: true
+      - ./script/after_cover.sh
+    # silent: true
 
   coverage:
     desc: "View coverage"

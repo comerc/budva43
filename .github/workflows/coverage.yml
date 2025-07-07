@@ -68,11 +68,7 @@ jobs:
           GOEXPERIMENT=synctest UNUSED_INTERFACE_METHODS_VERBOSE=1 unused-interface-methods ./...
 
       - name: Run tests and generate coverage
-        run: |
-          GOEXPERIMENT=synctest go test -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
-          COVERAGE_EXCLUDE="(/mocks/|_easyjson\.go|/graph/)"
-          grep -vE "$COVERAGE_EXCLUDE" coverage.out > coverage.txt
-          rm coverage.out
+        run: ./script/cover.sh
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
