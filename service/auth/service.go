@@ -46,8 +46,8 @@ func New(telegramRepo telegramRepo) *Service {
 	}
 }
 
-// Start запускает процесс авторизации
-func (s *Service) Start(ctx context.Context) error {
+// StartContext запускает процесс авторизации
+func (s *Service) StartContext(ctx context.Context) error {
 
 	go s.telegramRepo.CreateClient(newFuncRunAuthorizationStateHandler(ctx, s))
 

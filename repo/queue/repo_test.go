@@ -26,7 +26,7 @@ func TestQueueRepo(t *testing.T) {
 			queueRepo = New() // вызываем функцию-конструктор в обёртке spylogHandler
 		})
 
-		err := queueRepo.Start(ctx)
+		err := queueRepo.StartContext(ctx)
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			queueRepo.Close()

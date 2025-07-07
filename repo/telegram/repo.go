@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"context"
 	"path/filepath"
 	"time"
 
@@ -51,7 +50,7 @@ func (r *Repo) WithOptions(options Options) *Repo {
 }
 
 // Start устанавливает соединение с Telegram API
-func (r *Repo) Start(_ context.Context) error {
+func (r *Repo) Start() error {
 	err := r.setupClientLog()
 	if err != nil {
 		return err

@@ -27,8 +27,8 @@ func New() *Repo {
 	}
 }
 
-// Start запускает обработчик очереди
-func (s *Repo) Start(ctx context.Context) error {
+// StartContext запускает обработчик очереди
+func (s *Repo) StartContext(ctx context.Context) error {
 
 	go s.run(ctx)
 
