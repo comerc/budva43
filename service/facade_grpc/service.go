@@ -1,8 +1,6 @@
 package facade_grpc
 
 import (
-	"github.com/zelenin/go-tdlib/client"
-
 	"github.com/comerc/budva43/app/dto/grpc/dto"
 	"github.com/comerc/budva43/app/log"
 )
@@ -11,12 +9,12 @@ import (
 type telegramRepo interface {
 	GetClientDone() <-chan any
 	// tdlibClient methods
-	GetMessage(*client.GetMessageRequest) (*client.Message, error)
-	SendMessage(*client.SendMessageRequest) (*client.Message, error)
-	SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
-	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
-	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
-	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
+	// GetMessage(*client.GetMessageRequest) (*client.Message, error)
+	// SendMessage(*client.SendMessageRequest) (*client.Message, error)
+	// SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
+	// EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
+	// EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
+	// DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
 	// GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
 }
 
