@@ -8,33 +8,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/comerc/budva43/graph/model"
+	"github.com/comerc/budva43/app/dto/gql/dto"
 )
 
 // Messages is the resolver for the messages field.
-func (r *chatResolver) Messages(ctx context.Context, obj *model.Chat) ([]*model.Message, error) {
-	return []*model.Message{
-		{
-			ID:      "1",
-			Content: "Hello, how are you?",
-			Chat:    obj,
-		},
-	}, nil
+func (r *chatResolver) Messages(ctx context.Context, obj *dto.Chat) ([]*dto.Message, error) {
+	panic(fmt.Errorf("not implemented: Messages - messages"))
 }
 
 // CreateMessage is the resolver for the createMessage field.
-func (r *mutationResolver) CreateMessage(ctx context.Context, input model.NewMessage) (*model.Message, error) {
+func (r *mutationResolver) CreateMessage(ctx context.Context, input dto.NewMessage) (*dto.Message, error) {
 	panic(fmt.Errorf("not implemented: CreateMessage - createMessage"))
 }
 
 // Chats is the resolver for the chats field.
-func (r *queryResolver) Chats(ctx context.Context) ([]*model.Chat, error) {
-	return []*model.Chat{
-		{
-			ID:   "1",
-			Name: "Chat 1",
-		},
-	}, nil
+func (r *queryResolver) Chats(ctx context.Context) ([]*dto.Chat, error) {
+	panic(fmt.Errorf("not implemented: Chats - chats"))
 }
 
 // Chat returns ChatResolver implementation.

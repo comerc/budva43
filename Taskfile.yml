@@ -115,12 +115,20 @@ tasks:
       - go tool cover -html=.coverage/.txt
     silent: true
 
-  gqlgen:
-    desc: "Run gqlgen"
+  gql:
+    desc: "Generage GraphQL"
     summary: |
-      Run gqlgen.
+      Generage GraphQL.
     cmds:
-      - go run github.com/99designs/gqlgen generate --config .gqlgen.yml
+      - go run github.com/99designs/gqlgen generate
+    silent: true
+
+  grpc:
+    desc: "Generage GRPC"
+    summary: |
+      Generage GRPC.
+    cmds:
+      - protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. transport/grpc/pb/telegram.proto
     silent: true
 
   kill-port:

@@ -9,10 +9,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/vektah/gqlparser/v2/ast"
 
-	"github.com/comerc/budva43/graph"
+	"github.com/comerc/budva43/transport/web/graph"
 )
 
-func newFuncHandleGraphql() func(w http.ResponseWriter, r *http.Request) {
+func newFuncHandleGraph() func(w http.ResponseWriter, r *http.Request) {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
 	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))

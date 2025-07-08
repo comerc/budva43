@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
@@ -142,8 +141,8 @@ func (t *Transport) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/telegram/code", t.handleSubmitCode)
 	mux.HandleFunc("/api/auth/telegram/password", t.handleSubmitPassword)
 
-	mux.HandleFunc("/graphql", newFuncHandleGraphql())
-	mux.HandleFunc("/playground", playground.Handler("GraphQL playground", "/graphql"))
+	// mux.HandleFunc("/graphql", newFuncHandleGraph())
+	// mux.HandleFunc("/playground", playground.Handler("GraphQL playground", "/graphql"))
 
 	mux.HandleFunc("/favicon.ico", t.handleFavicon)
 	mux.HandleFunc("/", t.handleRoot)
