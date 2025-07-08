@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/dto/gql/dto"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -26,11 +28,17 @@ type authService interface {
 	// GetStatus() string
 }
 
+//go:generate mockery --name=facadeGQL --exported
+type facadeGQL interface {
+	GetStatus() (*dto.Status, error)
+}
+
 // Transport представляет HTTP маршрутизатор для API
 type Transport struct {
 	log *log.Logger
 	//
 	authService authService
+	facadeGQL   facadeGQL
 	authState   client.AuthorizationState
 	server      *http.Server
 }
@@ -38,11 +46,13 @@ type Transport struct {
 // New создает новый экземпляр HTTP маршрутизатора
 func New(
 	authService authService,
+	facadeGQL facadeGQL,
 ) *Transport {
 	return &Transport{
 		log: log.NewLogger(),
 		//
 		authService: authService,
+		facadeGQL:   facadeGQL,
 	}
 }
 
@@ -141,8 +151,8 @@ func (t *Transport) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/telegram/code", t.handleSubmitCode)
 	mux.HandleFunc("/api/auth/telegram/password", t.handleSubmitPassword)
 
-	// mux.HandleFunc("/graphql", newFuncHandleGraph())
-	// mux.HandleFunc("/playground", playground.Handler("GraphQL playground", "/graphql"))
+	mux.HandleFunc("/graphql", newFuncHandleGraph(t.facadeGQL))
+	mux.HandleFunc("/playground", playground.Handler("GraphQL playground", "/graphql"))
 
 	mux.HandleFunc("/favicon.ico", t.handleFavicon)
 	mux.HandleFunc("/", t.handleRoot)

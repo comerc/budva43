@@ -2,6 +2,12 @@
 #
 # https://gqlgen.com/getting-started/
 
+type Status {
+  mainVersion: String!
+  tdlibVersion: String!
+  userId: Int64!
+}
+
 type Chat {
   id: ID!
   name: String!
@@ -15,6 +21,7 @@ type Message {
 }
 
 type Query {
+  status: Status!
   chats: [Chat!]!
 }
 
@@ -26,3 +33,6 @@ input NewMessage {
 type Mutation {
   createMessage(input: NewMessage!): Message!
 }
+
+scalar Int32
+scalar Int64

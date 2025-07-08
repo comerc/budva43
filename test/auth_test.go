@@ -110,6 +110,7 @@ func TestAuth(t *testing.T) {
 
 	webTransport := webTransport.New(
 		authService,
+		nil,
 	)
 	err = webTransport.StartContext(ctx, cancel)
 	require.NoError(t, err)

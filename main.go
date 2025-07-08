@@ -19,6 +19,7 @@ import (
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
+	facadeGQL "github.com/comerc/budva43/service/facade_gql"
 	facadeGRPC "github.com/comerc/budva43/service/facade_grpc"
 	filtersModeService "github.com/comerc/budva43/service/filters_mode"
 	forwardedToService "github.com/comerc/budva43/service/forwarded_to"
@@ -110,6 +111,9 @@ func (a *App) Run() error {
 	defer a.gracefulShutdown(termRepo)
 
 	// - Инициализация вспомогательных сервисов
+	facadeGQL := facadeGQL.New(
+		telegramRepo,
+	)
 	facadeGRPC := facadeGRPC.New(
 		telegramRepo,
 	)
@@ -194,6 +198,7 @@ func (a *App) Run() error {
 
 	webTransport := webTransport.New(
 		authService,
+		facadeGQL,
 	)
 	err = webTransport.StartContext(ctx, cancel)
 	if err != nil {

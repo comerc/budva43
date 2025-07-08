@@ -12,10 +12,14 @@ import (
 	"github.com/comerc/budva43/transport/web/graph"
 )
 
-func newFuncHandleGraph() func(w http.ResponseWriter, r *http.Request) {
+func newFuncHandleGraph(facadeGQL facadeGQL) func(w http.ResponseWriter, r *http.Request) {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	h := handler.New(
+		graph.NewExecutableSchema(
+			graph.Config{Resolvers: &graph.Resolver{
+				Facade: facadeGQL,
+			}}))
 
 	// Server setup:
 	h.AddTransport(transport.Options{})
