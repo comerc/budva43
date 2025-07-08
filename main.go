@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/comerc/budva43/app/log"
@@ -63,6 +65,8 @@ func NewApp() *App {
 
 // Run запускает основные компоненты приложения
 func (a *App) Run() error {
+	showVersion()
+
 	var err error
 	// Исключение: логируем ошибку на этом уровне, но передаём выше
 	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
@@ -230,5 +234,14 @@ func (a *App) setupSignalHandler(shutdown func()) {
 func (a *App) gracefulShutdown(closer io.Closer) {
 	if err := closer.Close(); err != nil {
 		a.log.ErrorOrDebug(&err, "")
+	}
+}
+
+func showVersion() {
+	info, ok := debug.ReadBuildInfo()
+	if ok && info.Main.Version != "" {
+		fmt.Println("Budva43 version:", info.Main.Version)
+	} else {
+		fmt.Println("Budva43 version: unknown")
 	}
 }
