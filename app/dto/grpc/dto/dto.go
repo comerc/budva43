@@ -13,6 +13,7 @@ type Message struct {
 }
 
 type NewMessage struct {
-	Text   string
-	ChatId int64
+	Text             string
+	ChatId           int64
+	ReplyToMessageId int64
 }

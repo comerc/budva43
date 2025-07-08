@@ -92,6 +92,14 @@ func (r *Repo) DeleteMessages(req *client.DeleteMessagesRequest) (*client.Ok, er
 	return ok, nil
 }
 
+func (r *Repo) GetMessages(req *client.GetMessagesRequest) (*client.Messages, error) {
+	messages, err := r.getClient().GetMessages(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return messages, nil
+}
+
 // ForwardMessages пересылает сообщения
 func (r *Repo) ForwardMessages(req *client.ForwardMessagesRequest) (*client.Messages, error) {
 	messages, err := r.getClient().ForwardMessages(req)

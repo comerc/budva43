@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FacadeGRPC_GetClientDone_FullMethodName = "/pb.FacadeGRPC/GetClientDone"
-	FacadeGRPC_GetMessages_FullMethodName   = "/pb.FacadeGRPC/GetMessages"
-	FacadeGRPC_CreateMessage_FullMethodName = "/pb.FacadeGRPC/CreateMessage"
-	FacadeGRPC_GetMessage_FullMethodName    = "/pb.FacadeGRPC/GetMessage"
-	FacadeGRPC_UpdateMessage_FullMethodName = "/pb.FacadeGRPC/UpdateMessage"
-	FacadeGRPC_DeleteMessage_FullMethodName = "/pb.FacadeGRPC/DeleteMessage"
+	FacadeGRPC_GetClientDone_FullMethodName  = "/pb.FacadeGRPC/GetClientDone"
+	FacadeGRPC_GetMessages_FullMethodName    = "/pb.FacadeGRPC/GetMessages"
+	FacadeGRPC_GetLastMessage_FullMethodName = "/pb.FacadeGRPC/GetLastMessage"
+	FacadeGRPC_CreateMessage_FullMethodName  = "/pb.FacadeGRPC/CreateMessage"
+	FacadeGRPC_GetMessage_FullMethodName     = "/pb.FacadeGRPC/GetMessage"
+	FacadeGRPC_UpdateMessage_FullMethodName  = "/pb.FacadeGRPC/UpdateMessage"
+	FacadeGRPC_DeleteMessages_FullMethodName = "/pb.FacadeGRPC/DeleteMessages"
 )
 
 // FacadeGRPCClient is the client API for FacadeGRPC service.
@@ -33,10 +34,11 @@ const (
 type FacadeGRPCClient interface {
 	GetClientDone(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ClientDoneResponse, error)
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
+	GetLastMessage(ctx context.Context, in *GetLastMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-	DeleteMessage(ctx context.Context, in *DeleteMessageRequest, opts ...grpc.CallOption) (*DeleteMessageResponse, error)
+	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error)
 }
 
 type facadeGRPCClient struct {
@@ -61,6 +63,16 @@ func (c *facadeGRPCClient) GetMessages(ctx context.Context, in *GetMessagesReque
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetMessagesResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_GetMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *facadeGRPCClient) GetLastMessage(ctx context.Context, in *GetLastMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, FacadeGRPC_GetLastMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,10 +109,10 @@ func (c *facadeGRPCClient) UpdateMessage(ctx context.Context, in *UpdateMessageR
 	return out, nil
 }
 
-func (c *facadeGRPCClient) DeleteMessage(ctx context.Context, in *DeleteMessageRequest, opts ...grpc.CallOption) (*DeleteMessageResponse, error) {
+func (c *facadeGRPCClient) DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteMessageResponse)
-	err := c.cc.Invoke(ctx, FacadeGRPC_DeleteMessage_FullMethodName, in, out, cOpts...)
+	out := new(DeleteMessagesResponse)
+	err := c.cc.Invoke(ctx, FacadeGRPC_DeleteMessages_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,10 +125,11 @@ func (c *facadeGRPCClient) DeleteMessage(ctx context.Context, in *DeleteMessageR
 type FacadeGRPCServer interface {
 	GetClientDone(context.Context, *EmptyRequest) (*ClientDoneResponse, error)
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
+	GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error)
 	CreateMessage(context.Context, *CreateMessageRequest) (*MessageResponse, error)
 	GetMessage(context.Context, *GetMessageRequest) (*MessageResponse, error)
 	UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error)
-	DeleteMessage(context.Context, *DeleteMessageRequest) (*DeleteMessageResponse, error)
+	DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error)
 	mustEmbedUnimplementedFacadeGRPCServer()
 }
 
@@ -133,6 +146,9 @@ func (UnimplementedFacadeGRPCServer) GetClientDone(context.Context, *EmptyReques
 func (UnimplementedFacadeGRPCServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
+func (UnimplementedFacadeGRPCServer) GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLastMessage not implemented")
+}
 func (UnimplementedFacadeGRPCServer) CreateMessage(context.Context, *CreateMessageRequest) (*MessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMessage not implemented")
 }
@@ -142,8 +158,8 @@ func (UnimplementedFacadeGRPCServer) GetMessage(context.Context, *GetMessageRequ
 func (UnimplementedFacadeGRPCServer) UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMessage not implemented")
 }
-func (UnimplementedFacadeGRPCServer) DeleteMessage(context.Context, *DeleteMessageRequest) (*DeleteMessageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessage not implemented")
+func (UnimplementedFacadeGRPCServer) DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessages not implemented")
 }
 func (UnimplementedFacadeGRPCServer) mustEmbedUnimplementedFacadeGRPCServer() {}
 func (UnimplementedFacadeGRPCServer) testEmbeddedByValue()                    {}
@@ -202,6 +218,24 @@ func _FacadeGRPC_GetMessages_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FacadeGRPC_GetLastMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLastMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FacadeGRPCServer).GetLastMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FacadeGRPC_GetLastMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FacadeGRPCServer).GetLastMessage(ctx, req.(*GetLastMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _FacadeGRPC_CreateMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateMessageRequest)
 	if err := dec(in); err != nil {
@@ -256,20 +290,20 @@ func _FacadeGRPC_UpdateMessage_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _FacadeGRPC_DeleteMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteMessageRequest)
+func _FacadeGRPC_DeleteMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteMessagesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FacadeGRPCServer).DeleteMessage(ctx, in)
+		return srv.(FacadeGRPCServer).DeleteMessages(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FacadeGRPC_DeleteMessage_FullMethodName,
+		FullMethod: FacadeGRPC_DeleteMessages_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FacadeGRPCServer).DeleteMessage(ctx, req.(*DeleteMessageRequest))
+		return srv.(FacadeGRPCServer).DeleteMessages(ctx, req.(*DeleteMessagesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -290,6 +324,10 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _FacadeGRPC_GetMessages_Handler,
 		},
 		{
+			MethodName: "GetLastMessage",
+			Handler:    _FacadeGRPC_GetLastMessage_Handler,
+		},
+		{
 			MethodName: "CreateMessage",
 			Handler:    _FacadeGRPC_CreateMessage_Handler,
 		},
@@ -302,8 +340,8 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _FacadeGRPC_UpdateMessage_Handler,
 		},
 		{
-			MethodName: "DeleteMessage",
-			Handler:    _FacadeGRPC_DeleteMessage_Handler,
+			MethodName: "DeleteMessages",
+			Handler:    _FacadeGRPC_DeleteMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

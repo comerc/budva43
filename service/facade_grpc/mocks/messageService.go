@@ -69,6 +69,55 @@ func (_c *MessageService_GetFormattedText_Call) RunAndReturn(run func(*client.Me
 	return _c
 }
 
+// GetInputMessageContent provides a mock function with given fields: _a0, _a1
+func (_m *MessageService) GetInputMessageContent(_a0 *client.Message, _a1 *client.FormattedText) client.InputMessageContent {
+	ret := _m.Called(_a0, _a1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInputMessageContent")
+	}
+
+	var r0 client.InputMessageContent
+	if rf, ok := ret.Get(0).(func(*client.Message, *client.FormattedText) client.InputMessageContent); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(client.InputMessageContent)
+		}
+	}
+
+	return r0
+}
+
+// MessageService_GetInputMessageContent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInputMessageContent'
+type MessageService_GetInputMessageContent_Call struct {
+	*mock.Call
+}
+
+// GetInputMessageContent is a helper method to define mock.On call
+//   - _a0 *client.Message
+//   - _a1 *client.FormattedText
+func (_e *MessageService_Expecter) GetInputMessageContent(_a0 interface{}, _a1 interface{}) *MessageService_GetInputMessageContent_Call {
+	return &MessageService_GetInputMessageContent_Call{Call: _e.mock.On("GetInputMessageContent", _a0, _a1)}
+}
+
+func (_c *MessageService_GetInputMessageContent_Call) Run(run func(_a0 *client.Message, _a1 *client.FormattedText)) *MessageService_GetInputMessageContent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.Message), args[1].(*client.FormattedText))
+	})
+	return _c
+}
+
+func (_c *MessageService_GetInputMessageContent_Call) Return(_a0 client.InputMessageContent) *MessageService_GetInputMessageContent_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MessageService_GetInputMessageContent_Call) RunAndReturn(run func(*client.Message, *client.FormattedText) client.InputMessageContent) *MessageService_GetInputMessageContent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMessageService creates a new instance of MessageService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMessageService(t interface {

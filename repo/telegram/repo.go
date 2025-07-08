@@ -14,7 +14,7 @@ import (
 
 // Repo предоставляет методы для взаимодействия с Telegram API через TDLib
 type Repo struct {
-	clientAdapter
+	// clientAdapter - !! отключил, Repo реализует интерфейс clientAdapter
 	log *log.Logger
 	//
 	client     *client.Client
