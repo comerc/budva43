@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+применяй это правило для очерёдности импортов:
+
+```yml
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/comerc/budva43)
+      custom-order: true
+```
