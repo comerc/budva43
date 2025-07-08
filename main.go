@@ -113,12 +113,6 @@ func (a *App) Run() error {
 	defer a.gracefulShutdown(termRepo)
 
 	// - Инициализация вспомогательных сервисов
-	facadeGQL := facadeGQL.New(
-		telegramRepo,
-	)
-	facadeGRPC := facadeGRPC.New(
-		telegramRepo,
-	)
 	storageService := storageService.New(storageRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
@@ -185,6 +179,16 @@ func (a *App) Run() error {
 		return err
 	}
 	defer a.gracefulShutdown(engineService)
+
+	// - Инициализация фасадов
+
+	facadeGQL := facadeGQL.New(
+		telegramRepo,
+	)
+	facadeGRPC := facadeGRPC.New(
+		telegramRepo,
+		messageService,
+	)
 
 	// - Инициализация транспортных адаптеров
 

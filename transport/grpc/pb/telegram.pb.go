@@ -105,7 +105,7 @@ type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	ChatId        int64                  `protobuf:"varint,2,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	Text          string                 `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -154,9 +154,9 @@ func (x *Message) GetChatId() int64 {
 	return 0
 }
 
-func (x *Message) GetContent() string {
+func (x *Message) GetText() string {
 	if x != nil {
-		return x.Content
+		return x.Text
 	}
 	return ""
 }
@@ -252,7 +252,7 @@ func (x *GetMessagesResponse) GetMessages() []*Message {
 type CreateMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
-	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -294,9 +294,9 @@ func (x *CreateMessageRequest) GetChatId() int64 {
 	return 0
 }
 
-func (x *CreateMessageRequest) GetContent() string {
+func (x *CreateMessageRequest) GetText() string {
 	if x != nil {
-		return x.Content
+		return x.Text
 	}
 	return ""
 }
@@ -393,7 +393,7 @@ type UpdateMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	ChatId        int64                  `protobuf:"varint,2,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	Text          string                 `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -442,9 +442,9 @@ func (x *UpdateMessageRequest) GetChatId() int64 {
 	return 0
 }
 
-func (x *UpdateMessageRequest) GetContent() string {
+func (x *UpdateMessageRequest) GetText() string {
 	if x != nil {
-		return x.Content
+		return x.Text
 	}
 	return ""
 }
@@ -544,29 +544,29 @@ const file_transport_grpc_pb_telegram_proto_rawDesc = "" +
 	" transport/grpc/pb/telegram.proto\x12\x02pb\"\x0e\n" +
 	"\fEmptyRequest\"(\n" +
 	"\x12ClientDoneResponse\x12\x12\n" +
-	"\x04done\x18\x01 \x01(\bR\x04done\"[\n" +
+	"\x04done\x18\x01 \x01(\bR\x04done\"U\n" +
 	"\aMessage\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\x03R\tmessageId\x12\x17\n" +
-	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"-\n" +
+	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x12\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\"-\n" +
 	"\x12GetMessagesRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\">\n" +
 	"\x13GetMessagesResponse\x12'\n" +
-	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"I\n" +
+	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"C\n" +
 	"\x14CreateMessageRequest\x12\x17\n" +
-	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\"8\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x12\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"8\n" +
 	"\x0fMessageResponse\x12%\n" +
 	"\amessage\x18\x01 \x01(\v2\v.pb.MessageR\amessage\"2\n" +
 	"\x11GetMessageRequest\x12\x1d\n" +
 	"\n" +
-	"message_id\x18\x01 \x01(\x03R\tmessageId\"h\n" +
+	"message_id\x18\x01 \x01(\x03R\tmessageId\"b\n" +
 	"\x14UpdateMessageRequest\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\x03R\tmessageId\x12\x17\n" +
-	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"5\n" +
+	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x12\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\"5\n" +
 	"\x14DeleteMessageRequest\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\x03R\tmessageId\"1\n" +

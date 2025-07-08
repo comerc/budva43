@@ -300,6 +300,64 @@ func (_c *TelegramRepo_GetMessage_Call) RunAndReturn(run func(*client.GetMessage
 	return _c
 }
 
+// GetMessages provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetMessages(_a0 *client.GetMessagesRequest) (*client.Messages, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMessages")
+	}
+
+	var r0 *client.Messages
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.GetMessagesRequest) (*client.Messages, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.GetMessagesRequest) *client.Messages); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Messages)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.GetMessagesRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_GetMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessages'
+type TelegramRepo_GetMessages_Call struct {
+	*mock.Call
+}
+
+// GetMessages is a helper method to define mock.On call
+//   - _a0 *client.GetMessagesRequest
+func (_e *TelegramRepo_Expecter) GetMessages(_a0 interface{}) *TelegramRepo_GetMessages_Call {
+	return &TelegramRepo_GetMessages_Call{Call: _e.mock.On("GetMessages", _a0)}
+}
+
+func (_c *TelegramRepo_GetMessages_Call) Run(run func(_a0 *client.GetMessagesRequest)) *TelegramRepo_GetMessages_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.GetMessagesRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_GetMessages_Call) Return(_a0 *client.Messages, _a1 error) *TelegramRepo_GetMessages_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_GetMessages_Call) RunAndReturn(run func(*client.GetMessagesRequest) (*client.Messages, error)) *TelegramRepo_GetMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SendMessage provides a mock function with given fields: _a0
 func (_m *TelegramRepo) SendMessage(_a0 *client.SendMessageRequest) (*client.Message, error) {
 	ret := _m.Called(_a0)
