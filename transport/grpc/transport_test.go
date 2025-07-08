@@ -40,19 +40,19 @@ func TestCreateMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	in := &dto.NewMessage{ChatId: 1, Content: "hi"}
-	out := &dto.Message{Id: 42, ChatId: 1, Content: "hi"}
+	in := &dto.NewMessage{ChatId: 1, Text: "hi"}
+	out := &dto.Message{Id: 42, ChatId: 1, Text: "hi"}
 	facade.EXPECT().CreateMessage(in).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
 	defer cleanup()
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.CreateMessage(context.Background(), &pb.CreateMessageRequest{ChatId: 1, Content: "hi"})
+	resp, err := client.CreateMessage(context.Background(), &pb.CreateMessageRequest{ChatId: 1, Text: "hi"})
 	assert.NoError(t, err)
 	assert.Equal(t, int64(42), resp.Message.MessageId)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
-	assert.Equal(t, "hi", resp.Message.Content)
+	assert.Equal(t, "hi", resp.Message.Text)
 }
 
 func TestGetMessages(t *testing.T) {
@@ -60,8 +60,8 @@ func TestGetMessages(t *testing.T) {
 
 	facade := mocks.NewFacadeGRPC(t)
 	facade.EXPECT().GetMessages(int64(1)).Return([]*dto.Message{
-		{Id: 1, ChatId: 1, Content: "a"},
-		{Id: 2, ChatId: 1, Content: "b"},
+		{Id: 1, ChatId: 1, Text: "a"},
+		{Id: 2, ChatId: 1, Text: "b"},
 	}, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
@@ -71,15 +71,15 @@ func TestGetMessages(t *testing.T) {
 	resp, err := client.GetMessages(context.Background(), &pb.GetMessagesRequest{ChatId: 1})
 	assert.NoError(t, err)
 	assert.Len(t, resp.Messages, 2)
-	assert.Equal(t, "a", resp.Messages[0].Content)
-	assert.Equal(t, "b", resp.Messages[1].Content)
+	assert.Equal(t, "a", resp.Messages[0].Text)
+	assert.Equal(t, "b", resp.Messages[1].Text)
 }
 
 func TestGetMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	out := &dto.Message{Id: 42, ChatId: 1, Content: "hi"}
+	out := &dto.Message{Id: 42, ChatId: 1, Text: "hi"}
 	facade.EXPECT().GetMessage(int64(42)).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
@@ -90,26 +90,26 @@ func TestGetMessage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(42), resp.Message.MessageId)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
-	assert.Equal(t, "hi", resp.Message.Content)
+	assert.Equal(t, "hi", resp.Message.Text)
 }
 
 func TestUpdateMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	in := &dto.Message{Id: 42, ChatId: 1, Content: "upd"}
-	out := &dto.Message{Id: 42, ChatId: 1, Content: "upd"}
+	in := &dto.Message{Id: 42, ChatId: 1, Text: "upd"}
+	out := &dto.Message{Id: 42, ChatId: 1, Text: "upd"}
 	facade.EXPECT().UpdateMessage(in).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
 	defer cleanup()
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{MessageId: 42, ChatId: 1, Content: "upd"})
+	resp, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{MessageId: 42, ChatId: 1, Text: "upd"})
 	assert.NoError(t, err)
 	assert.Equal(t, int64(42), resp.Message.MessageId)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
-	assert.Equal(t, "upd", resp.Message.Content)
+	assert.Equal(t, "upd", resp.Message.Text)
 }
 
 func TestDeleteMessage(t *testing.T) {

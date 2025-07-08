@@ -72,7 +72,7 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 		res.Messages = append(res.Messages, &pb.Message{
 			MessageId: m.Id,
 			ChatId:    m.ChatId,
-			Content:   m.Content,
+			Text:      m.Text,
 		})
 	}
 	return res, nil
@@ -80,8 +80,8 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 
 func (t *Transport) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.MessageResponse, error) {
 	res, err := t.facade.CreateMessage(&dto.NewMessage{
-		ChatId:  req.ChatId,
-		Content: req.Content,
+		ChatId: req.ChatId,
+		Text:   req.Text,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -89,7 +89,7 @@ func (t *Transport) CreateMessage(ctx context.Context, req *pb.CreateMessageRequ
 	return &pb.MessageResponse{Message: &pb.Message{
 		MessageId: res.Id,
 		ChatId:    res.ChatId,
-		Content:   res.Content,
+		Text:      res.Text,
 	}}, nil
 }
 
@@ -101,15 +101,15 @@ func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (
 	return &pb.MessageResponse{Message: &pb.Message{
 		MessageId: res.Id,
 		ChatId:    res.ChatId,
-		Content:   res.Content,
+		Text:      res.Text,
 	}}, nil
 }
 
 func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequest) (*pb.MessageResponse, error) {
 	res, err := t.facade.UpdateMessage(&dto.Message{
-		Id:      req.MessageId,
-		ChatId:  req.ChatId,
-		Content: req.Content,
+		Id:     req.MessageId,
+		ChatId: req.ChatId,
+		Text:   req.Text,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -117,7 +117,7 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 	return &pb.MessageResponse{Message: &pb.Message{
 		MessageId: res.Id,
 		ChatId:    res.ChatId,
-		Content:   res.Content,
+		Text:      res.Text,
 	}}, nil
 }
 

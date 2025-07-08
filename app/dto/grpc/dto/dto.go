@@ -7,12 +7,12 @@ type Chat struct {
 }
 
 type Message struct {
-	Id      int64
-	Content string
-	ChatId  int64
+	Id     int64
+	Text   string
+	ChatId int64
 }
 
 type NewMessage struct {
-	Content string
-	ChatId  int64
+	Text   string
+	ChatId int64
 }

@@ -55,9 +55,9 @@ type ComplexityRoot struct {
 	}
 
 	Message struct {
-		Chat    func(childComplexity int) int
-		Content func(childComplexity int) int
-		Id      func(childComplexity int) int
+		Chat func(childComplexity int) int
+		Id   func(childComplexity int) int
+		Text func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -134,19 +134,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Message.Chat(childComplexity), true
 
-	case "Message.content":
-		if e.complexity.Message.Content == nil {
-			break
-		}
-
-		return e.complexity.Message.Content(childComplexity), true
-
 	case "Message.id":
 		if e.complexity.Message.Id == nil {
 			break
 		}
 
 		return e.complexity.Message.Id(childComplexity), true
+
+	case "Message.text":
+		if e.complexity.Message.Text == nil {
+			break
+		}
+
+		return e.complexity.Message.Text(childComplexity), true
 
 	case "Mutation.createMessage":
 		if e.complexity.Mutation.CreateMessage == nil {
@@ -595,8 +595,8 @@ func (ec *executionContext) fieldContext_Chat_messages(_ context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Message_id(ctx, field)
-			case "content":
-				return ec.fieldContext_Message_content(ctx, field)
+			case "text":
+				return ec.fieldContext_Message_text(ctx, field)
 			case "chat":
 				return ec.fieldContext_Message_chat(ctx, field)
 			}
@@ -650,8 +650,8 @@ func (ec *executionContext) fieldContext_Message_id(_ context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _Message_content(ctx context.Context, field graphql.CollectedField, obj *dto.Message) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Message_content(ctx, field)
+func (ec *executionContext) _Message_text(ctx context.Context, field graphql.CollectedField, obj *dto.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_text(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -664,7 +664,7 @@ func (ec *executionContext) _Message_content(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Content, nil
+		return obj.Text, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -681,7 +681,7 @@ func (ec *executionContext) _Message_content(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Message_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Message_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Message",
 		Field:      field,
@@ -787,8 +787,8 @@ func (ec *executionContext) fieldContext_Mutation_createMessage(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Message_id(ctx, field)
-			case "content":
-				return ec.fieldContext_Message_content(ctx, field)
+			case "text":
+				return ec.fieldContext_Message_text(ctx, field)
 			case "chat":
 				return ec.fieldContext_Message_chat(ctx, field)
 			}
@@ -3265,8 +3265,8 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "content":
-			out.Values[i] = ec._Message_content(ctx, field, obj)
+		case "text":
+			out.Values[i] = ec._Message_text(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

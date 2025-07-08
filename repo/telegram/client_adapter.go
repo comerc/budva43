@@ -14,7 +14,7 @@ type clientAdapter interface {
 	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
 	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
-	// GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
+	GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
 
 	// Forward operations
 	ForwardMessages(*client.ForwardMessagesRequest) (*client.Messages, error)

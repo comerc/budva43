@@ -9,9 +9,9 @@ type Chat struct {
 }
 
 type Message struct {
-	Id      string `json:"id"`
-	Content string `json:"content"`
-	Chat    *Chat  `json:"chat"`
+	Id   string `json:"id"`
+	Text string `json:"text"`
+	Chat *Chat  `json:"chat"`
 }
 
 type Mutation struct {
