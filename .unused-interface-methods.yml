@@ -3,3 +3,4 @@ ignore:
   - "test/**"
   - "**/mocks/*.go"
   - "**/github/home/.cache/go-build/**"
+  - "**/pb/*.pb.go"
