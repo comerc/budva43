@@ -1,4 +1,4 @@
-package facade_graph
+package facade_gql
 
 import (
 	"github.com/zelenin/go-tdlib/client"
