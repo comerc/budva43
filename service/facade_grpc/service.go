@@ -83,6 +83,8 @@ func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
 
+	// TODO: GetChatHistory() + Offset -1 будет лучше, там есть OnlyLocal
+
 	var chat *client.Chat
 	chat, err = s.telegramRepo.GetChat(&client.GetChatRequest{
 		ChatId: chatId,
