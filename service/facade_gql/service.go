@@ -63,6 +63,6 @@ func (s *Service) GetStatus() (*dto.Status, error) {
 	return &dto.Status{
 		ReleaseVersion: util.GetReleaseVersion(),
 		TdlibVersion:   version,
-		UserID:         me.Id,
+		UserId:         me.Id,
 	}, nil
 }

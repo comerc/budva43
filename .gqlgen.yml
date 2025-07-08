@@ -112,11 +112,11 @@ call_argument_directives_with_null: true
 #  - enterprise
 
 # Optional: set to modify the initialisms regarded for Go names
-# go_initialisms:
-#   replace_defaults: false # if true, the default initialisms will get dropped in favor of the new ones instead of being added
-#   initialisms: # List of initialisms to for Go names
-#     - 'CC'
-#     - 'BCC'
+go_initialisms:
+  replace_defaults: true # if true, the default initialisms will get dropped in favor of the new ones instead of being added
+  # initialisms: # List of initialisms to for Go names
+  #   - 'CC'
+  #   - 'BCC'
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
@@ -159,6 +159,8 @@ models:
   Int64:
     model:
       - github.com/99designs/gqlgen/graphql.Int64
+
+  # Custom fields    
   Chat:
     fields:
       messages:
