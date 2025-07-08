@@ -5,8 +5,6 @@ import (
 	"net/http"
 )
 
-// TODO: unused interface methods ругается, если часть методов перенести в другой файл
-
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
