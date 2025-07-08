@@ -16,7 +16,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	test_e2e.RegisterCommonSteps(ctx, &state.CommonState)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "forward", InitializeScenario)

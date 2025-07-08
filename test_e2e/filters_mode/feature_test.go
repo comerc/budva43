@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^пользователь отправляет сообщение с тегом "#УТРЕННИЙ_ОБЗОР"$`, state.sendMessageWithExcludeTag)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "filters_mode", InitializeScenario)

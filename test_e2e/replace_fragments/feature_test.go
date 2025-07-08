@@ -31,7 +31,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^сообщение появляется в целевом чате с текстом "([^"]*)"$`, state.messageAppearsWithText)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "replace_fragments", InitializeScenario)

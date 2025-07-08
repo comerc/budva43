@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^сообщение появляется в целевом чате с заголовком источника$`, state.messageAppearsWithSourceLinkTitle)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "sources_link_title", InitializeScenario)

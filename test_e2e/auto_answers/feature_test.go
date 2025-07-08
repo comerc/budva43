@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^бот автоматически отвечает на сообщение$`, state.botRepliesAutomatically)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "auto_answers", InitializeScenario)

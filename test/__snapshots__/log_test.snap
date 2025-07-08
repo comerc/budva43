@@ -2,3 +2,7 @@
 [TestLog_SomeMethod - 1]
 [0=test/log_test.go:57 test.TestLog_SomeMethod 1=test/log_test.go:27 test.(*SomeObject).SomeMethod 2=test/log_test.go:34 test.(*SomeObject).NestedMethod]
 ---
+
+[TestSomeMethod - 1]
+[0=test/log_test.go:57 test.TestSomeMethod 1=test/log_test.go:27 test.(*SomeObject).SomeMethod 2=test/log_test.go:34 test.(*SomeObject).NestedMethod]
+---

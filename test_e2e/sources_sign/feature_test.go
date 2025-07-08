@@ -21,7 +21,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^сообщение появляется в целевом чате с подписью источника$`, state.messageAppearsWithSourceSign)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "sources_sign", InitializeScenario)

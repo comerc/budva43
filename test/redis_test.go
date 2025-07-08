@@ -10,7 +10,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
-func TestRunRedis(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	if testing.Short() {

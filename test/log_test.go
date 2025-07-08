@@ -35,7 +35,7 @@ func (s *SomeObject) NestedMethod() {
 	err = log.WrapError(err, "arg1", "val1")
 }
 
-func TestLog_SomeMethod(t *testing.T) {
+func TestSomeMethod(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	var err error
@@ -67,7 +67,7 @@ func TestLog_SomeMethod(t *testing.T) {
 	snaps.MatchSnapshot(t, spylog.GetAttrValue(record, "source"))
 }
 
-func TestLog_UnwrappedError(t *testing.T) {
+func TestUnwrappedError(t *testing.T) {
 	t.Parallel()
 
 	var logger *log.Logger
@@ -93,7 +93,7 @@ func TestLog_UnwrappedError(t *testing.T) {
 	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(record, "type"))
 }
 
-func TestLog_WrappedError(t *testing.T) {
+func TestWrappedError(t *testing.T) {
 	t.Parallel()
 
 	var logger *log.Logger
@@ -120,7 +120,7 @@ func TestLog_WrappedError(t *testing.T) {
 	assert.Equal(t, "test.SomeError", spylog.GetAttrValue(record, "type"))
 }
 
-func TestLog_WithPtr(t *testing.T) {
+func TestWithPtr(t *testing.T) {
 	t.Parallel()
 
 	var logger *log.Logger

@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^альбом появляется в целевом чате и не может быть удалён$`, state.albumAppearsAndCannotBeDeleted)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "media_album_indelible", InitializeScenario)

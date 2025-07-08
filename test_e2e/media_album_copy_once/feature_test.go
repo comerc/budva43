@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^альбом появляется в целевом чате только один раз$`, state.albumAppearsOnlyOnce)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "media_album_copy_once", InitializeScenario)

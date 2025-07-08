@@ -13,7 +13,7 @@ import (
 	"github.com/comerc/budva43/service/auth/mocks"
 )
 
-func TestAuthService_GetStatus(t *testing.T) {
+func TestGetStatus(t *testing.T) {
 	t.Parallel()
 
 	telegramRepo := mocks.NewTelegramRepo(t)
@@ -27,7 +27,7 @@ func TestAuthService_GetStatus(t *testing.T) {
 	assert.Equal(t, "TDLib version: 1.2.3 userId: 123", status)
 }
 
-func TestAuthService_Subscribe(t *testing.T) {
+func TestSubscribe(t *testing.T) {
 	t.Parallel()
 
 	telegramRepo := mocks.NewTelegramRepo(t)
@@ -58,7 +58,7 @@ func TestAuthService_Subscribe(t *testing.T) {
 	assert.False(t, called2)
 }
 
-func TestAuthService_broadcast(t *testing.T) {
+func Test_broadcast(t *testing.T) {
 	t.Parallel()
 
 	// Тестирование concurrent code

@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^пользователь отправляет сообщение с тикером "([^"]*)"$`, state.sendMessageWithOtherTicker)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "include_submatch", InitializeScenario)

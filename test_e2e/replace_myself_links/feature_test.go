@@ -41,7 +41,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^внешняя ссылка удаляется$`, state.externalLinkIsRemoved)
 }
 
-func TestFeature(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	test_e2e.RunFeature(t, "replace_myself_links", InitializeScenario)
