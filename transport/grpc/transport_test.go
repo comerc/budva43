@@ -5,12 +5,13 @@ import (
 	"net"
 	"testing"
 
-	"github.com/comerc/budva43/app/dto/grpc/dto"
-	"github.com/comerc/budva43/transport/grpc/mocks"
-	pb "github.com/comerc/budva43/transport/grpc/pb"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
+
+	"github.com/comerc/budva43/app/dto/grpc/dto"
+	"github.com/comerc/budva43/transport/grpc/mocks"
+	pb "github.com/comerc/budva43/transport/grpc/pb"
 )
 
 const bufSize = 1024 * 1024
@@ -45,7 +46,7 @@ func TestCreateMessage(t *testing.T) {
 	facade.EXPECT().CreateMessage(in).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
 	resp, err := client.CreateMessage(context.Background(), &pb.CreateMessageRequest{ChatId: 1, Text: "hi"})
@@ -59,20 +60,36 @@ func TestGetMessages(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	facade.EXPECT().GetMessages(int64(1)).Return([]*dto.Message{
+	facade.EXPECT().GetMessages(int64(1), []int64{1, 2}).Return([]*dto.Message{
 		{Id: 1, ChatId: 1, Text: "a"},
 		{Id: 2, ChatId: 1, Text: "b"},
 	}, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.GetMessages(context.Background(), &pb.GetMessagesRequest{ChatId: 1})
+	resp, err := client.GetMessages(context.Background(), &pb.GetMessagesRequest{ChatId: 1, MessageIds: []int64{1, 2}})
 	assert.NoError(t, err)
 	assert.Len(t, resp.Messages, 2)
 	assert.Equal(t, "a", resp.Messages[0].Text)
 	assert.Equal(t, "b", resp.Messages[1].Text)
+}
+
+func TestGetLastMessage(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	facade.EXPECT().GetLastMessage(int64(1)).Return(&dto.Message{Id: 42, ChatId: 1, Text: "hi"}, nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+	resp, err := client.GetLastMessage(context.Background(), &pb.GetLastMessageRequest{ChatId: 1})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), resp.Message.MessageId)
+	assert.Equal(t, int64(1), resp.Message.ChatId)
+	assert.Equal(t, "hi", resp.Message.Text)
 }
 
 func TestGetMessage(t *testing.T) {
@@ -80,13 +97,13 @@ func TestGetMessage(t *testing.T) {
 
 	facade := mocks.NewFacadeGRPC(t)
 	out := &dto.Message{Id: 42, ChatId: 1, Text: "hi"}
-	facade.EXPECT().GetMessage(int64(42)).Return(out, nil)
+	facade.EXPECT().GetMessage(int64(1), int64(42)).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.GetMessage(context.Background(), &pb.GetMessageRequest{MessageId: 42})
+	resp, err := client.GetMessage(context.Background(), &pb.GetMessageRequest{ChatId: 1, MessageId: 42})
 	assert.NoError(t, err)
 	assert.Equal(t, int64(42), resp.Message.MessageId)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
@@ -102,7 +119,7 @@ func TestUpdateMessage(t *testing.T) {
 	facade.EXPECT().UpdateMessage(in).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
 	resp, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{MessageId: 42, ChatId: 1, Text: "upd"})
@@ -116,15 +133,13 @@ func TestDeleteMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	in := &dto.Message{Id: 42}
-	out := &dto.Message{Id: 42}
-	facade.EXPECT().DeleteMessage(in).Return(out, nil)
+	facade.EXPECT().DeleteMessages(int64(1), []int64{42}).Return(true, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.DeleteMessage(context.Background(), &pb.DeleteMessageRequest{MessageId: 42})
+	resp, err := client.DeleteMessages(context.Background(), &pb.DeleteMessagesRequest{ChatId: 1, MessageIds: []int64{42}})
 	assert.NoError(t, err)
 	assert.True(t, resp.Success)
 }
@@ -136,7 +151,7 @@ func TestGetClientDone(t *testing.T) {
 	facade.EXPECT().GetClientDone().Return((<-chan any)(ch))
 
 	conn, cleanup := startTestGRPCServer(t, facade)
-	defer cleanup()
+	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
 	resp, err := client.GetClientDone(context.Background(), &pb.EmptyRequest{})

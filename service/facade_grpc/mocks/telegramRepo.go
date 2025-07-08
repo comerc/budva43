@@ -195,6 +195,64 @@ func (_c *TelegramRepo_EditMessageText_Call) RunAndReturn(run func(*client.EditM
 	return _c
 }
 
+// GetChat provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetChat(_a0 *client.GetChatRequest) (*client.Chat, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetChat")
+	}
+
+	var r0 *client.Chat
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.GetChatRequest) (*client.Chat, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.GetChatRequest) *client.Chat); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Chat)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.GetChatRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_GetChat_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChat'
+type TelegramRepo_GetChat_Call struct {
+	*mock.Call
+}
+
+// GetChat is a helper method to define mock.On call
+//   - _a0 *client.GetChatRequest
+func (_e *TelegramRepo_Expecter) GetChat(_a0 interface{}) *TelegramRepo_GetChat_Call {
+	return &TelegramRepo_GetChat_Call{Call: _e.mock.On("GetChat", _a0)}
+}
+
+func (_c *TelegramRepo_GetChat_Call) Run(run func(_a0 *client.GetChatRequest)) *TelegramRepo_GetChat_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.GetChatRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_GetChat_Call) Return(_a0 *client.Chat, _a1 error) *TelegramRepo_GetChat_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_GetChat_Call) RunAndReturn(run func(*client.GetChatRequest) (*client.Chat, error)) *TelegramRepo_GetChat_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetClientDone provides a mock function with no fields
 func (_m *TelegramRepo) GetClientDone() <-chan interface{} {
 	ret := _m.Called()

@@ -164,6 +164,7 @@ func (x *Message) GetText() string {
 type GetMessagesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	MessageIds    []int64                `protobuf:"varint,2,rep,packed,name=message_ids,json=messageIds,proto3" json:"message_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -205,6 +206,57 @@ func (x *GetMessagesRequest) GetChatId() int64 {
 	return 0
 }
 
+func (x *GetMessagesRequest) GetMessageIds() []int64 {
+	if x != nil {
+		return x.MessageIds
+	}
+	return nil
+}
+
+type GetLastMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLastMessageRequest) Reset() {
+	*x = GetLastMessageRequest{}
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLastMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLastMessageRequest) ProtoMessage() {}
+
+func (x *GetLastMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLastMessageRequest.ProtoReflect.Descriptor instead.
+func (*GetLastMessageRequest) Descriptor() ([]byte, []int) {
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetLastMessageRequest) GetChatId() int64 {
+	if x != nil {
+		return x.ChatId
+	}
+	return 0
+}
+
 type GetMessagesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Messages      []*Message             `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
@@ -214,7 +266,7 @@ type GetMessagesResponse struct {
 
 func (x *GetMessagesResponse) Reset() {
 	*x = GetMessagesResponse{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[4]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -226,7 +278,7 @@ func (x *GetMessagesResponse) String() string {
 func (*GetMessagesResponse) ProtoMessage() {}
 
 func (x *GetMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[4]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -239,7 +291,7 @@ func (x *GetMessagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMessagesResponse.ProtoReflect.Descriptor instead.
 func (*GetMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{4}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetMessagesResponse) GetMessages() []*Message {
@@ -250,16 +302,17 @@ func (x *GetMessagesResponse) GetMessages() []*Message {
 }
 
 type CreateMessageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
-	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ChatId           int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	Text             string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	ReplyToMessageId int64                  `protobuf:"varint,3,opt,name=reply_to_message_id,json=replyToMessageId,proto3" json:"reply_to_message_id,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *CreateMessageRequest) Reset() {
 	*x = CreateMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[5]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -271,7 +324,7 @@ func (x *CreateMessageRequest) String() string {
 func (*CreateMessageRequest) ProtoMessage() {}
 
 func (x *CreateMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[5]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -284,7 +337,7 @@ func (x *CreateMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMessageRequest.ProtoReflect.Descriptor instead.
 func (*CreateMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{5}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateMessageRequest) GetChatId() int64 {
@@ -301,6 +354,13 @@ func (x *CreateMessageRequest) GetText() string {
 	return ""
 }
 
+func (x *CreateMessageRequest) GetReplyToMessageId() int64 {
+	if x != nil {
+		return x.ReplyToMessageId
+	}
+	return 0
+}
+
 type MessageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -310,7 +370,7 @@ type MessageResponse struct {
 
 func (x *MessageResponse) Reset() {
 	*x = MessageResponse{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -322,7 +382,7 @@ func (x *MessageResponse) String() string {
 func (*MessageResponse) ProtoMessage() {}
 
 func (x *MessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -335,7 +395,7 @@ func (x *MessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageResponse.ProtoReflect.Descriptor instead.
 func (*MessageResponse) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{6}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *MessageResponse) GetMessage() *Message {
@@ -347,14 +407,15 @@ func (x *MessageResponse) GetMessage() *Message {
 
 type GetMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	MessageId     int64                  `protobuf:"varint,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetMessageRequest) Reset() {
 	*x = GetMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -366,7 +427,7 @@ func (x *GetMessageRequest) String() string {
 func (*GetMessageRequest) ProtoMessage() {}
 
 func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -379,7 +440,14 @@ func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMessageRequest.ProtoReflect.Descriptor instead.
 func (*GetMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{7}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetMessageRequest) GetChatId() int64 {
+	if x != nil {
+		return x.ChatId
+	}
+	return 0
 }
 
 func (x *GetMessageRequest) GetMessageId() int64 {
@@ -391,8 +459,8 @@ func (x *GetMessageRequest) GetMessageId() int64 {
 
 type UpdateMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	ChatId        int64                  `protobuf:"varint,2,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	MessageId     int64                  `protobuf:"varint,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	Text          string                 `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -400,7 +468,7 @@ type UpdateMessageRequest struct {
 
 func (x *UpdateMessageRequest) Reset() {
 	*x = UpdateMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -412,7 +480,7 @@ func (x *UpdateMessageRequest) String() string {
 func (*UpdateMessageRequest) ProtoMessage() {}
 
 func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -425,19 +493,19 @@ func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *UpdateMessageRequest) GetMessageId() int64 {
-	if x != nil {
-		return x.MessageId
-	}
-	return 0
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateMessageRequest) GetChatId() int64 {
 	if x != nil {
 		return x.ChatId
+	}
+	return 0
+}
+
+func (x *UpdateMessageRequest) GetMessageId() int64 {
+	if x != nil {
+		return x.MessageId
 	}
 	return 0
 }
@@ -449,28 +517,29 @@ func (x *UpdateMessageRequest) GetText() string {
 	return ""
 }
 
-type DeleteMessageRequest struct {
+type DeleteMessagesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	MessageIds    []int64                `protobuf:"varint,2,rep,packed,name=message_ids,json=messageIds,proto3" json:"message_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeleteMessageRequest) Reset() {
-	*x = DeleteMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
+func (x *DeleteMessagesRequest) Reset() {
+	*x = DeleteMessagesRequest{}
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeleteMessageRequest) String() string {
+func (x *DeleteMessagesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteMessageRequest) ProtoMessage() {}
+func (*DeleteMessagesRequest) ProtoMessage() {}
 
-func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
+func (x *DeleteMessagesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -481,40 +550,47 @@ func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteMessageRequest.ProtoReflect.Descriptor instead.
-func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{9}
+// Deprecated: Use DeleteMessagesRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMessagesRequest) Descriptor() ([]byte, []int) {
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *DeleteMessageRequest) GetMessageId() int64 {
+func (x *DeleteMessagesRequest) GetChatId() int64 {
 	if x != nil {
-		return x.MessageId
+		return x.ChatId
 	}
 	return 0
 }
 
-type DeleteMessageResponse struct {
+func (x *DeleteMessagesRequest) GetMessageIds() []int64 {
+	if x != nil {
+		return x.MessageIds
+	}
+	return nil
+}
+
+type DeleteMessagesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeleteMessageResponse) Reset() {
-	*x = DeleteMessageResponse{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
+func (x *DeleteMessagesResponse) Reset() {
+	*x = DeleteMessagesResponse{}
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeleteMessageResponse) String() string {
+func (x *DeleteMessagesResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteMessageResponse) ProtoMessage() {}
+func (*DeleteMessagesResponse) ProtoMessage() {}
 
-func (x *DeleteMessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
+func (x *DeleteMessagesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,12 +601,12 @@ func (x *DeleteMessageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteMessageResponse.ProtoReflect.Descriptor instead.
-func (*DeleteMessageResponse) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{10}
+// Deprecated: Use DeleteMessagesResponse.ProtoReflect.Descriptor instead.
+func (*DeleteMessagesResponse) Descriptor() ([]byte, []int) {
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *DeleteMessageResponse) GetSuccess() bool {
+func (x *DeleteMessagesResponse) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
@@ -549,38 +625,46 @@ const file_transport_grpc_pb_telegram_proto_rawDesc = "" +
 	"\n" +
 	"message_id\x18\x01 \x01(\x03R\tmessageId\x12\x17\n" +
 	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x12\n" +
-	"\x04text\x18\x03 \x01(\tR\x04text\"-\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\"N\n" +
 	"\x12GetMessagesRequest\x12\x17\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1f\n" +
+	"\vmessage_ids\x18\x02 \x03(\x03R\n" +
+	"messageIds\"0\n" +
+	"\x15GetLastMessageRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\">\n" +
 	"\x13GetMessagesResponse\x12'\n" +
-	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"C\n" +
+	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"r\n" +
 	"\x14CreateMessageRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\"8\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\x12-\n" +
+	"\x13reply_to_message_id\x18\x03 \x01(\x03R\x10replyToMessageId\"8\n" +
 	"\x0fMessageResponse\x12%\n" +
-	"\amessage\x18\x01 \x01(\v2\v.pb.MessageR\amessage\"2\n" +
-	"\x11GetMessageRequest\x12\x1d\n" +
+	"\amessage\x18\x01 \x01(\v2\v.pb.MessageR\amessage\"K\n" +
+	"\x11GetMessageRequest\x12\x17\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1d\n" +
 	"\n" +
-	"message_id\x18\x01 \x01(\x03R\tmessageId\"b\n" +
-	"\x14UpdateMessageRequest\x12\x1d\n" +
+	"message_id\x18\x02 \x01(\x03R\tmessageId\"b\n" +
+	"\x14UpdateMessageRequest\x12\x17\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1d\n" +
 	"\n" +
-	"message_id\x18\x01 \x01(\x03R\tmessageId\x12\x17\n" +
-	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x12\n" +
-	"\x04text\x18\x03 \x01(\tR\x04text\"5\n" +
-	"\x14DeleteMessageRequest\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\x03R\tmessageId\"1\n" +
-	"\x15DeleteMessageResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x87\x03\n" +
+	"message_id\x18\x02 \x01(\x03R\tmessageId\x12\x12\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\"Q\n" +
+	"\x15DeleteMessagesRequest\x12\x17\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1f\n" +
+	"\vmessage_ids\x18\x02 \x03(\x03R\n" +
+	"messageIds\"2\n" +
+	"\x16DeleteMessagesResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xcc\x03\n" +
 	"\n" +
 	"FacadeGRPC\x129\n" +
 	"\rGetClientDone\x12\x10.pb.EmptyRequest\x1a\x16.pb.ClientDoneResponse\x12>\n" +
-	"\vGetMessages\x12\x16.pb.GetMessagesRequest\x1a\x17.pb.GetMessagesResponse\x12>\n" +
+	"\vGetMessages\x12\x16.pb.GetMessagesRequest\x1a\x17.pb.GetMessagesResponse\x12@\n" +
+	"\x0eGetLastMessage\x12\x19.pb.GetLastMessageRequest\x1a\x13.pb.MessageResponse\x12>\n" +
 	"\rCreateMessage\x12\x18.pb.CreateMessageRequest\x1a\x13.pb.MessageResponse\x128\n" +
 	"\n" +
 	"GetMessage\x12\x15.pb.GetMessageRequest\x1a\x13.pb.MessageResponse\x12>\n" +
-	"\rUpdateMessage\x12\x18.pb.UpdateMessageRequest\x1a\x13.pb.MessageResponse\x12D\n" +
-	"\rDeleteMessage\x12\x18.pb.DeleteMessageRequest\x1a\x19.pb.DeleteMessageResponseB-Z+github.com/comerc/budva43/transport/grpc/pbb\x06proto3"
+	"\rUpdateMessage\x12\x18.pb.UpdateMessageRequest\x1a\x13.pb.MessageResponse\x12G\n" +
+	"\x0eDeleteMessages\x12\x19.pb.DeleteMessagesRequest\x1a\x1a.pb.DeleteMessagesResponseB-Z+github.com/comerc/budva43/transport/grpc/pbb\x06proto3"
 
 var (
 	file_transport_grpc_pb_telegram_proto_rawDescOnce sync.Once
@@ -594,37 +678,40 @@ func file_transport_grpc_pb_telegram_proto_rawDescGZIP() []byte {
 	return file_transport_grpc_pb_telegram_proto_rawDescData
 }
 
-var file_transport_grpc_pb_telegram_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_transport_grpc_pb_telegram_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_transport_grpc_pb_telegram_proto_goTypes = []any{
-	(*EmptyRequest)(nil),          // 0: pb.EmptyRequest
-	(*ClientDoneResponse)(nil),    // 1: pb.ClientDoneResponse
-	(*Message)(nil),               // 2: pb.Message
-	(*GetMessagesRequest)(nil),    // 3: pb.GetMessagesRequest
-	(*GetMessagesResponse)(nil),   // 4: pb.GetMessagesResponse
-	(*CreateMessageRequest)(nil),  // 5: pb.CreateMessageRequest
-	(*MessageResponse)(nil),       // 6: pb.MessageResponse
-	(*GetMessageRequest)(nil),     // 7: pb.GetMessageRequest
-	(*UpdateMessageRequest)(nil),  // 8: pb.UpdateMessageRequest
-	(*DeleteMessageRequest)(nil),  // 9: pb.DeleteMessageRequest
-	(*DeleteMessageResponse)(nil), // 10: pb.DeleteMessageResponse
+	(*EmptyRequest)(nil),           // 0: pb.EmptyRequest
+	(*ClientDoneResponse)(nil),     // 1: pb.ClientDoneResponse
+	(*Message)(nil),                // 2: pb.Message
+	(*GetMessagesRequest)(nil),     // 3: pb.GetMessagesRequest
+	(*GetLastMessageRequest)(nil),  // 4: pb.GetLastMessageRequest
+	(*GetMessagesResponse)(nil),    // 5: pb.GetMessagesResponse
+	(*CreateMessageRequest)(nil),   // 6: pb.CreateMessageRequest
+	(*MessageResponse)(nil),        // 7: pb.MessageResponse
+	(*GetMessageRequest)(nil),      // 8: pb.GetMessageRequest
+	(*UpdateMessageRequest)(nil),   // 9: pb.UpdateMessageRequest
+	(*DeleteMessagesRequest)(nil),  // 10: pb.DeleteMessagesRequest
+	(*DeleteMessagesResponse)(nil), // 11: pb.DeleteMessagesResponse
 }
 var file_transport_grpc_pb_telegram_proto_depIdxs = []int32{
 	2,  // 0: pb.GetMessagesResponse.messages:type_name -> pb.Message
 	2,  // 1: pb.MessageResponse.message:type_name -> pb.Message
 	0,  // 2: pb.FacadeGRPC.GetClientDone:input_type -> pb.EmptyRequest
 	3,  // 3: pb.FacadeGRPC.GetMessages:input_type -> pb.GetMessagesRequest
-	5,  // 4: pb.FacadeGRPC.CreateMessage:input_type -> pb.CreateMessageRequest
-	7,  // 5: pb.FacadeGRPC.GetMessage:input_type -> pb.GetMessageRequest
-	8,  // 6: pb.FacadeGRPC.UpdateMessage:input_type -> pb.UpdateMessageRequest
-	9,  // 7: pb.FacadeGRPC.DeleteMessage:input_type -> pb.DeleteMessageRequest
-	1,  // 8: pb.FacadeGRPC.GetClientDone:output_type -> pb.ClientDoneResponse
-	4,  // 9: pb.FacadeGRPC.GetMessages:output_type -> pb.GetMessagesResponse
-	6,  // 10: pb.FacadeGRPC.CreateMessage:output_type -> pb.MessageResponse
-	6,  // 11: pb.FacadeGRPC.GetMessage:output_type -> pb.MessageResponse
-	6,  // 12: pb.FacadeGRPC.UpdateMessage:output_type -> pb.MessageResponse
-	10, // 13: pb.FacadeGRPC.DeleteMessage:output_type -> pb.DeleteMessageResponse
-	8,  // [8:14] is the sub-list for method output_type
-	2,  // [2:8] is the sub-list for method input_type
+	4,  // 4: pb.FacadeGRPC.GetLastMessage:input_type -> pb.GetLastMessageRequest
+	6,  // 5: pb.FacadeGRPC.CreateMessage:input_type -> pb.CreateMessageRequest
+	8,  // 6: pb.FacadeGRPC.GetMessage:input_type -> pb.GetMessageRequest
+	9,  // 7: pb.FacadeGRPC.UpdateMessage:input_type -> pb.UpdateMessageRequest
+	10, // 8: pb.FacadeGRPC.DeleteMessages:input_type -> pb.DeleteMessagesRequest
+	1,  // 9: pb.FacadeGRPC.GetClientDone:output_type -> pb.ClientDoneResponse
+	5,  // 10: pb.FacadeGRPC.GetMessages:output_type -> pb.GetMessagesResponse
+	7,  // 11: pb.FacadeGRPC.GetLastMessage:output_type -> pb.MessageResponse
+	7,  // 12: pb.FacadeGRPC.CreateMessage:output_type -> pb.MessageResponse
+	7,  // 13: pb.FacadeGRPC.GetMessage:output_type -> pb.MessageResponse
+	7,  // 14: pb.FacadeGRPC.UpdateMessage:output_type -> pb.MessageResponse
+	11, // 15: pb.FacadeGRPC.DeleteMessages:output_type -> pb.DeleteMessagesResponse
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -641,7 +728,7 @@ func file_transport_grpc_pb_telegram_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transport_grpc_pb_telegram_proto_rawDesc), len(file_transport_grpc_pb_telegram_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

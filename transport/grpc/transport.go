@@ -9,20 +9,24 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/comerc/budva43/app/dto/grpc/dto"
+	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/transport/grpc/pb"
 )
 
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {
 	GetClientDone() <-chan any
-	GetMessages(chatId int64) ([]*dto.Message, error)
+	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
+	GetLastMessage(chatId int64) (*dto.Message, error)
 	CreateMessage(message *dto.NewMessage) (*dto.Message, error)
-	GetMessage(messageId int64) (*dto.Message, error)
+	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
 	UpdateMessage(message *dto.Message) (*dto.Message, error)
-	DeleteMessage(message *dto.Message) (*dto.Message, error)
+	DeleteMessages(chatId int64, messageIds []int64) (bool, error)
 }
 
 type Transport struct {
+	log *log.Logger
+	//
 	pb.UnimplementedFacadeGRPCServer
 	facade facadeGRPC
 	server *grpc.Server
@@ -30,7 +34,11 @@ type Transport struct {
 }
 
 func New(facade facadeGRPC) *Transport {
-	return &Transport{facade: facade}
+	return &Transport{
+		log: log.NewLogger(),
+		//
+		facade: facade,
+	}
 }
 
 func (t *Transport) Start() error {
@@ -63,7 +71,11 @@ func (t *Transport) GetClientDone(ctx context.Context, req *pb.EmptyRequest) (*p
 }
 
 func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest) (*pb.GetMessagesResponse, error) {
-	msgs, err := t.facade.GetMessages(req.ChatId)
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var msgs []*dto.Message
+	msgs, err = t.facade.GetMessages(req.ChatId, req.MessageIds)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -78,8 +90,28 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 	return res, nil
 }
 
+func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRequest) (*pb.MessageResponse, error) {
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var res *dto.Message
+	res, err = t.facade.GetLastMessage(req.ChatId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.MessageResponse{Message: &pb.Message{
+		MessageId: res.Id,
+		ChatId:    res.ChatId,
+		Text:      res.Text,
+	}}, nil
+}
+
 func (t *Transport) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.MessageResponse, error) {
-	res, err := t.facade.CreateMessage(&dto.NewMessage{
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var res *dto.Message
+	res, err = t.facade.CreateMessage(&dto.NewMessage{
 		ChatId: req.ChatId,
 		Text:   req.Text,
 	})
@@ -94,7 +126,11 @@ func (t *Transport) CreateMessage(ctx context.Context, req *pb.CreateMessageRequ
 }
 
 func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (*pb.MessageResponse, error) {
-	res, err := t.facade.GetMessage(req.MessageId)
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var res *dto.Message
+	res, err = t.facade.GetMessage(req.ChatId, req.MessageId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -106,7 +142,11 @@ func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (
 }
 
 func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequest) (*pb.MessageResponse, error) {
-	res, err := t.facade.UpdateMessage(&dto.Message{
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var res *dto.Message
+	res, err = t.facade.UpdateMessage(&dto.Message{
 		Id:     req.MessageId,
 		ChatId: req.ChatId,
 		Text:   req.Text,
@@ -121,10 +161,14 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 	}}, nil
 }
 
-func (t *Transport) DeleteMessage(ctx context.Context, req *pb.DeleteMessageRequest) (*pb.DeleteMessageResponse, error) {
-	res, err := t.facade.DeleteMessage(&dto.Message{Id: req.MessageId})
+func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRequest) (*pb.DeleteMessagesResponse, error) {
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var ok bool
+	ok, err = t.facade.DeleteMessages(req.ChatId, req.MessageIds)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.DeleteMessageResponse{Success: res != nil}, nil
+	return &pb.DeleteMessagesResponse{Success: ok}, nil
 }
