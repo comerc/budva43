@@ -5,6 +5,7 @@ import (
 
 	"github.com/comerc/budva43/app/dto/gql/dto"
 	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 //go:generate mockery --name=telegramRepo --exported
@@ -60,8 +61,8 @@ func (s *Service) GetStatus() (*dto.Status, error) {
 	}
 
 	return &dto.Status{
-		MainVersion:  version,
-		TdlibVersion: version,
-		UserID:       me.Id,
+		ReleaseVersion: util.GetReleaseVersion(),
+		TdlibVersion:   version,
+		UserID:         me.Id,
 	}, nil
 }

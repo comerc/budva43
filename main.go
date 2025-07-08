@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -65,7 +66,8 @@ func NewApp() *App {
 
 // Run запускает основные компоненты приложения
 func (a *App) Run() error {
-	util.ShowVersion()
+	releaseVersion := util.GetReleaseVersion()
+	fmt.Println("Release version:", releaseVersion)
 
 	var err error
 	// Исключение: логируем ошибку на этом уровне, но передаём выше

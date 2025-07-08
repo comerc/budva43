@@ -26,7 +26,7 @@ type Query struct {
 }
 
 type Status struct {
-	MainVersion  string `json:"mainVersion"`
-	TdlibVersion string `json:"tdlibVersion"`
-	UserID       int64  `json:"userId"`
+	ReleaseVersion string `json:"releaseVersion"`
+	TdlibVersion   string `json:"tdlibVersion"`
+	UserID         int64  `json:"userId"`
 }
