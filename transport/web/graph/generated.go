@@ -65,7 +65,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Chats func(childComplexity int) int
+		Chats  func(childComplexity int) int
+		Status func(childComplexity int) int
+	}
+
+	Status struct {
+		MainVersion  func(childComplexity int) int
+		TdlibVersion func(childComplexity int) int
+		UserID       func(childComplexity int) int
 	}
 }
 
@@ -76,6 +83,7 @@ type MutationResolver interface {
 	CreateMessage(ctx context.Context, input dto.NewMessage) (*dto.Message, error)
 }
 type QueryResolver interface {
+	Status(ctx context.Context) (*dto.Status, error)
 	Chats(ctx context.Context) ([]*dto.Chat, error)
 }
 
@@ -158,6 +166,34 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Chats(childComplexity), true
+
+	case "Query.status":
+		if e.complexity.Query.Status == nil {
+			break
+		}
+
+		return e.complexity.Query.Status(childComplexity), true
+
+	case "Status.mainVersion":
+		if e.complexity.Status.MainVersion == nil {
+			break
+		}
+
+		return e.complexity.Status.MainVersion(childComplexity), true
+
+	case "Status.tdlibVersion":
+		if e.complexity.Status.TdlibVersion == nil {
+			break
+		}
+
+		return e.complexity.Status.TdlibVersion(childComplexity), true
+
+	case "Status.userId":
+		if e.complexity.Status.UserID == nil {
+			break
+		}
+
+		return e.complexity.Status.UserID(childComplexity), true
 
 	}
 	return 0, false
@@ -773,6 +809,58 @@ func (ec *executionContext) fieldContext_Mutation_createMessage(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_status(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Status(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*dto.Status)
+	fc.Result = res
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋcomercᚋbudva43ᚋappᚋdtoᚋgqlᚋdtoᚐStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "mainVersion":
+				return ec.fieldContext_Status_mainVersion(ctx, field)
+			case "tdlibVersion":
+				return ec.fieldContext_Status_tdlibVersion(ctx, field)
+			case "userId":
+				return ec.fieldContext_Status_userId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_chats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_chats(ctx, field)
 	if err != nil {
@@ -951,6 +1039,138 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Status_mainVersion(ctx context.Context, field graphql.CollectedField, obj *dto.Status) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Status_mainVersion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MainVersion, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Status_mainVersion(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Status",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Status_tdlibVersion(ctx context.Context, field graphql.CollectedField, obj *dto.Status) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Status_tdlibVersion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TdlibVersion, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Status_tdlibVersion(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Status",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Status_userId(ctx context.Context, field graphql.CollectedField, obj *dto.Status) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Status_userId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt642int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Status_userId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Status",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int64 does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3146,6 +3366,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "status":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_status(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "chats":
 			field := field
 
@@ -3176,6 +3418,55 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var statusImplementors = []string{"Status"}
+
+func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, obj *dto.Status) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, statusImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Status")
+		case "mainVersion":
+			out.Values[i] = ec._Status_mainVersion(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tdlibVersion":
+			out.Values[i] = ec._Status_tdlibVersion(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "userId":
+			out.Values[i] = ec._Status_userId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3620,6 +3911,22 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt642int64(ctx context.Context, v any) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt642int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNMessage2githubᚗcomᚋcomercᚋbudva43ᚋappᚋdtoᚋgqlᚋdtoᚐMessage(ctx context.Context, sel ast.SelectionSet, v dto.Message) graphql.Marshaler {
 	return ec._Message(ctx, sel, &v)
 }
@@ -3681,6 +3988,20 @@ func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋcomercᚋbudva43�
 func (ec *executionContext) unmarshalNNewMessage2githubᚗcomᚋcomercᚋbudva43ᚋappᚋdtoᚋgqlᚋdtoᚐNewMessage(ctx context.Context, v any) (dto.NewMessage, error) {
 	res, err := ec.unmarshalInputNewMessage(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStatus2githubᚗcomᚋcomercᚋbudva43ᚋappᚋdtoᚋgqlᚋdtoᚐStatus(ctx context.Context, sel ast.SelectionSet, v dto.Status) graphql.Marshaler {
+	return ec._Status(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋcomercᚋbudva43ᚋappᚋdtoᚋgqlᚋdtoᚐStatus(ctx context.Context, sel ast.SelectionSet, v *dto.Status) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Status(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

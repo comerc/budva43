@@ -121,7 +121,7 @@ tasks:
       Generage GraphQL.
     cmds:
       - go run github.com/99designs/gqlgen generate
-    silent: true
+    # silent: true
 
   grpc:
     desc: "Generage GRPC"
@@ -129,7 +129,7 @@ tasks:
       Generage GRPC.
     cmds:
       - protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. transport/grpc/pb/telegram.proto
-    silent: true
+    # silent: true
 
   kill-port:
     desc: "Kill port 7070"

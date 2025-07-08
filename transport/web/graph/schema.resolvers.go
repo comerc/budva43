@@ -21,6 +21,11 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input dto.NewMessa
 	panic(fmt.Errorf("not implemented: CreateMessage - createMessage"))
 }
 
+// Status is the resolver for the status field.
+func (r *queryResolver) Status(ctx context.Context) (*dto.Status, error) {
+	return r.Facade.GetStatus()
+}
+
 // Chats is the resolver for the chats field.
 func (r *queryResolver) Chats(ctx context.Context) ([]*dto.Chat, error) {
 	panic(fmt.Errorf("not implemented: Chats - chats"))
