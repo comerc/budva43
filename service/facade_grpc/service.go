@@ -3,7 +3,7 @@ package facade_grpc
 import (
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/dto/grpc"
+	"github.com/comerc/budva43/app/dto/grpc/dto"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -46,22 +46,22 @@ func (s *Service) GetClientDone() <-chan any {
 	return s.telegramRepo.GetClientDone()
 }
 
-func (s *Service) GetMessages(chatId int64) ([]*grpc.Message, error) {
+func (s *Service) GetMessages(chatId int64) ([]*dto.Message, error) {
 	return nil, nil
 }
 
-func (s *Service) CreateMessage(message *grpc.NewMessage) (*grpc.Message, error) {
+func (s *Service) CreateMessage(message *dto.NewMessage) (*dto.Message, error) {
 	return nil, nil
 }
 
-func (s *Service) GetMessage(messageId int64) (*grpc.Message, error) {
+func (s *Service) GetMessage(messageId int64) (*dto.Message, error) {
 	return nil, nil
 }
 
-func (s *Service) UpdateMessage(message *grpc.Message) (*grpc.Message, error) {
+func (s *Service) UpdateMessage(message *dto.Message) (*dto.Message, error) {
 	return nil, nil
 }
 
-func (s *Service) DeleteMessage(message *grpc.Message) (*grpc.Message, error) {
+func (s *Service) DeleteMessage(message *dto.Message) (*dto.Message, error) {
 	return nil, nil
 }

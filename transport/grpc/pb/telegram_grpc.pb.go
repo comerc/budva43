@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: transport/grpc/telegram.proto
+// source: transport/grpc/pb/telegram.proto
 
-package grpc
+package pb
 
 import (
 	context "context"
@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FacadeGRPC_GetClientDone_FullMethodName = "/grpc.FacadeGRPC/GetClientDone"
-	FacadeGRPC_GetMessages_FullMethodName   = "/grpc.FacadeGRPC/GetMessages"
-	FacadeGRPC_CreateMessage_FullMethodName = "/grpc.FacadeGRPC/CreateMessage"
-	FacadeGRPC_GetMessage_FullMethodName    = "/grpc.FacadeGRPC/GetMessage"
-	FacadeGRPC_UpdateMessage_FullMethodName = "/grpc.FacadeGRPC/UpdateMessage"
-	FacadeGRPC_DeleteMessage_FullMethodName = "/grpc.FacadeGRPC/DeleteMessage"
+	FacadeGRPC_GetClientDone_FullMethodName = "/pb.FacadeGRPC/GetClientDone"
+	FacadeGRPC_GetMessages_FullMethodName   = "/pb.FacadeGRPC/GetMessages"
+	FacadeGRPC_CreateMessage_FullMethodName = "/pb.FacadeGRPC/CreateMessage"
+	FacadeGRPC_GetMessage_FullMethodName    = "/pb.FacadeGRPC/GetMessage"
+	FacadeGRPC_UpdateMessage_FullMethodName = "/pb.FacadeGRPC/UpdateMessage"
+	FacadeGRPC_DeleteMessage_FullMethodName = "/pb.FacadeGRPC/DeleteMessage"
 )
 
 // FacadeGRPCClient is the client API for FacadeGRPC service.
@@ -278,7 +278,7 @@ func _FacadeGRPC_DeleteMessage_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.FacadeGRPC",
+	ServiceName: "pb.FacadeGRPC",
 	HandlerType: (*FacadeGRPCServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -307,5 +307,5 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "transport/grpc/telegram.proto",
+	Metadata: "transport/grpc/pb/telegram.proto",
 }

@@ -4,14 +4,13 @@ import (
 	"context"
 	"net"
 
-	dto "github.com/comerc/budva43/app/dto/grpc"
-	pb "github.com/comerc/budva43/transport/grpc/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
 
-// TODO: unused interface methods ругается на методы facadeGRPC, хотя они используются
+	"github.com/comerc/budva43/app/dto/grpc/dto"
+	"github.com/comerc/budva43/transport/grpc/pb"
+)
 
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {

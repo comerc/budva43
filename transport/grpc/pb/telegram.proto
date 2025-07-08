@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package grpc;
+package pb;
 
-option go_package = "github.com/comerc/budva43/transport/grpc/pb;pb";
+option go_package = "github.com/comerc/budva43/transport/grpc/pb";
 
 service FacadeGRPC {
   rpc GetClientDone (EmptyRequest) returns (ClientDoneResponse);

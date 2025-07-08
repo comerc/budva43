@@ -1,4 +1,4 @@
-package grpc
+package dto
 
 type Chat struct {
 	Id       int64
