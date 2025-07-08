@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"os/signal"
-	"runtime/debug"
 	"syscall"
 
 	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
 	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
@@ -65,7 +64,7 @@ func NewApp() *App {
 
 // Run запускает основные компоненты приложения
 func (a *App) Run() error {
-	showVersion()
+	util.ShowVersion()
 
 	var err error
 	// Исключение: логируем ошибку на этом уровне, но передаём выше
@@ -234,14 +233,5 @@ func (a *App) setupSignalHandler(shutdown func()) {
 func (a *App) gracefulShutdown(closer io.Closer) {
 	if err := closer.Close(); err != nil {
 		a.log.ErrorOrDebug(&err, "")
-	}
-}
-
-func showVersion() {
-	info, ok := debug.ReadBuildInfo()
-	if ok && info.Main.Version != "" {
-		fmt.Println("Budva43 version:", info.Main.Version)
-	} else {
-		fmt.Println("Budva43 version: unknown")
 	}
 }
