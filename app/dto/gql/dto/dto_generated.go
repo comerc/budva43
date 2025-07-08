@@ -3,13 +3,13 @@
 package dto
 
 type Chat struct {
-	ID       string     `json:"id"`
+	Id       string     `json:"id"`
 	Name     string     `json:"name"`
 	Messages []*Message `json:"messages"`
 }
 
 type Message struct {
-	ID      string `json:"id"`
+	Id      string `json:"id"`
 	Content string `json:"content"`
 	Chat    *Chat  `json:"chat"`
 }
@@ -19,7 +19,7 @@ type Mutation struct {
 
 type NewMessage struct {
 	Content string `json:"content"`
-	ChatID  string `json:"chatId"`
+	ChatId  string `json:"chatId"`
 }
 
 type Query struct {
@@ -28,5 +28,5 @@ type Query struct {
 type Status struct {
 	ReleaseVersion string `json:"releaseVersion"`
 	TdlibVersion   string `json:"tdlibVersion"`
-	UserID         int64  `json:"userId"`
+	UserId         int64  `json:"userId"`
 }

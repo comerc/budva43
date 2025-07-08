@@ -49,7 +49,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Chat struct {
-		ID       func(childComplexity int) int
+		Id       func(childComplexity int) int
 		Messages func(childComplexity int) int
 		Name     func(childComplexity int) int
 	}
@@ -57,7 +57,7 @@ type ComplexityRoot struct {
 	Message struct {
 		Chat    func(childComplexity int) int
 		Content func(childComplexity int) int
-		ID      func(childComplexity int) int
+		Id      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -72,7 +72,7 @@ type ComplexityRoot struct {
 	Status struct {
 		ReleaseVersion func(childComplexity int) int
 		TdlibVersion   func(childComplexity int) int
-		UserID         func(childComplexity int) int
+		UserId         func(childComplexity int) int
 	}
 }
 
@@ -107,11 +107,11 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	switch typeName + "." + field {
 
 	case "Chat.id":
-		if e.complexity.Chat.ID == nil {
+		if e.complexity.Chat.Id == nil {
 			break
 		}
 
-		return e.complexity.Chat.ID(childComplexity), true
+		return e.complexity.Chat.Id(childComplexity), true
 
 	case "Chat.messages":
 		if e.complexity.Chat.Messages == nil {
@@ -142,11 +142,11 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		return e.complexity.Message.Content(childComplexity), true
 
 	case "Message.id":
-		if e.complexity.Message.ID == nil {
+		if e.complexity.Message.Id == nil {
 			break
 		}
 
-		return e.complexity.Message.ID(childComplexity), true
+		return e.complexity.Message.Id(childComplexity), true
 
 	case "Mutation.createMessage":
 		if e.complexity.Mutation.CreateMessage == nil {
@@ -189,11 +189,11 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		return e.complexity.Status.TdlibVersion(childComplexity), true
 
 	case "Status.userId":
-		if e.complexity.Status.UserID == nil {
+		if e.complexity.Status.UserId == nil {
 			break
 		}
 
-		return e.complexity.Status.UserID(childComplexity), true
+		return e.complexity.Status.UserId(childComplexity), true
 
 	}
 	return 0, false
@@ -480,7 +480,7 @@ func (ec *executionContext) _Chat_id(ctx context.Context, field graphql.Collecte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Id, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -620,7 +620,7 @@ func (ec *executionContext) _Message_id(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Id, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1146,7 +1146,7 @@ func (ec *executionContext) _Status_userId(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
+		return obj.UserId, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3154,7 +3154,7 @@ func (ec *executionContext) unmarshalInputNewMessage(ctx context.Context, obj an
 			if err != nil {
 				return it, err
 			}
-			it.ChatID = data
+			it.ChatId = data
 		}
 	}
 
