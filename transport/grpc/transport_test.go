@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	dto "github.com/comerc/budva43/app/dto/grpc"
+	"github.com/comerc/budva43/app/dto/grpc/dto"
 	"github.com/comerc/budva43/transport/grpc/mocks"
 	pb "github.com/comerc/budva43/transport/grpc/pb"
 	"github.com/stretchr/testify/assert"

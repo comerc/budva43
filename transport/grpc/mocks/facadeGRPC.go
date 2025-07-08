@@ -3,7 +3,8 @@
 package mocks
 
 import (
-	grpc "github.com/comerc/budva43/app/dto/grpc"
+	dto "github.com/comerc/budva43/app/dto/grpc/dto"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,27 +22,27 @@ func (_m *FacadeGRPC) EXPECT() *FacadeGRPC_Expecter {
 }
 
 // CreateMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) CreateMessage(message *grpc.NewMessage) (*grpc.Message, error) {
+func (_m *FacadeGRPC) CreateMessage(message *dto.NewMessage) (*dto.Message, error) {
 	ret := _m.Called(message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateMessage")
 	}
 
-	var r0 *grpc.Message
+	var r0 *dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*grpc.NewMessage) (*grpc.Message, error)); ok {
+	if rf, ok := ret.Get(0).(func(*dto.NewMessage) (*dto.Message, error)); ok {
 		return rf(message)
 	}
-	if rf, ok := ret.Get(0).(func(*grpc.NewMessage) *grpc.Message); ok {
+	if rf, ok := ret.Get(0).(func(*dto.NewMessage) *dto.Message); ok {
 		r0 = rf(message)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*grpc.Message)
+			r0 = ret.Get(0).(*dto.Message)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*grpc.NewMessage) error); ok {
+	if rf, ok := ret.Get(1).(func(*dto.NewMessage) error); ok {
 		r1 = rf(message)
 	} else {
 		r1 = ret.Error(1)
@@ -56,50 +57,50 @@ type FacadeGRPC_CreateMessage_Call struct {
 }
 
 // CreateMessage is a helper method to define mock.On call
-//   - message *grpc.NewMessage
+//   - message *dto.NewMessage
 func (_e *FacadeGRPC_Expecter) CreateMessage(message interface{}) *FacadeGRPC_CreateMessage_Call {
 	return &FacadeGRPC_CreateMessage_Call{Call: _e.mock.On("CreateMessage", message)}
 }
 
-func (_c *FacadeGRPC_CreateMessage_Call) Run(run func(message *grpc.NewMessage)) *FacadeGRPC_CreateMessage_Call {
+func (_c *FacadeGRPC_CreateMessage_Call) Run(run func(message *dto.NewMessage)) *FacadeGRPC_CreateMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*grpc.NewMessage))
+		run(args[0].(*dto.NewMessage))
 	})
 	return _c
 }
 
-func (_c *FacadeGRPC_CreateMessage_Call) Return(_a0 *grpc.Message, _a1 error) *FacadeGRPC_CreateMessage_Call {
+func (_c *FacadeGRPC_CreateMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_CreateMessage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_CreateMessage_Call) RunAndReturn(run func(*grpc.NewMessage) (*grpc.Message, error)) *FacadeGRPC_CreateMessage_Call {
+func (_c *FacadeGRPC_CreateMessage_Call) RunAndReturn(run func(*dto.NewMessage) (*dto.Message, error)) *FacadeGRPC_CreateMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeleteMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) DeleteMessage(message *grpc.Message) (*grpc.Message, error) {
+func (_m *FacadeGRPC) DeleteMessage(message *dto.Message) (*dto.Message, error) {
 	ret := _m.Called(message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteMessage")
 	}
 
-	var r0 *grpc.Message
+	var r0 *dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*grpc.Message) (*grpc.Message, error)); ok {
+	if rf, ok := ret.Get(0).(func(*dto.Message) (*dto.Message, error)); ok {
 		return rf(message)
 	}
-	if rf, ok := ret.Get(0).(func(*grpc.Message) *grpc.Message); ok {
+	if rf, ok := ret.Get(0).(func(*dto.Message) *dto.Message); ok {
 		r0 = rf(message)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*grpc.Message)
+			r0 = ret.Get(0).(*dto.Message)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*grpc.Message) error); ok {
+	if rf, ok := ret.Get(1).(func(*dto.Message) error); ok {
 		r1 = rf(message)
 	} else {
 		r1 = ret.Error(1)
@@ -114,24 +115,24 @@ type FacadeGRPC_DeleteMessage_Call struct {
 }
 
 // DeleteMessage is a helper method to define mock.On call
-//   - message *grpc.Message
+//   - message *dto.Message
 func (_e *FacadeGRPC_Expecter) DeleteMessage(message interface{}) *FacadeGRPC_DeleteMessage_Call {
 	return &FacadeGRPC_DeleteMessage_Call{Call: _e.mock.On("DeleteMessage", message)}
 }
 
-func (_c *FacadeGRPC_DeleteMessage_Call) Run(run func(message *grpc.Message)) *FacadeGRPC_DeleteMessage_Call {
+func (_c *FacadeGRPC_DeleteMessage_Call) Run(run func(message *dto.Message)) *FacadeGRPC_DeleteMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*grpc.Message))
+		run(args[0].(*dto.Message))
 	})
 	return _c
 }
 
-func (_c *FacadeGRPC_DeleteMessage_Call) Return(_a0 *grpc.Message, _a1 error) *FacadeGRPC_DeleteMessage_Call {
+func (_c *FacadeGRPC_DeleteMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_DeleteMessage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_DeleteMessage_Call) RunAndReturn(run func(*grpc.Message) (*grpc.Message, error)) *FacadeGRPC_DeleteMessage_Call {
+func (_c *FacadeGRPC_DeleteMessage_Call) RunAndReturn(run func(*dto.Message) (*dto.Message, error)) *FacadeGRPC_DeleteMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -184,23 +185,23 @@ func (_c *FacadeGRPC_GetClientDone_Call) RunAndReturn(run func() <-chan interfac
 }
 
 // GetMessage provides a mock function with given fields: messageId
-func (_m *FacadeGRPC) GetMessage(messageId int64) (*grpc.Message, error) {
+func (_m *FacadeGRPC) GetMessage(messageId int64) (*dto.Message, error) {
 	ret := _m.Called(messageId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetMessage")
 	}
 
-	var r0 *grpc.Message
+	var r0 *dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64) (*grpc.Message, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64) (*dto.Message, error)); ok {
 		return rf(messageId)
 	}
-	if rf, ok := ret.Get(0).(func(int64) *grpc.Message); ok {
+	if rf, ok := ret.Get(0).(func(int64) *dto.Message); ok {
 		r0 = rf(messageId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*grpc.Message)
+			r0 = ret.Get(0).(*dto.Message)
 		}
 	}
 
@@ -231,34 +232,34 @@ func (_c *FacadeGRPC_GetMessage_Call) Run(run func(messageId int64)) *FacadeGRPC
 	return _c
 }
 
-func (_c *FacadeGRPC_GetMessage_Call) Return(_a0 *grpc.Message, _a1 error) *FacadeGRPC_GetMessage_Call {
+func (_c *FacadeGRPC_GetMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_GetMessage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_GetMessage_Call) RunAndReturn(run func(int64) (*grpc.Message, error)) *FacadeGRPC_GetMessage_Call {
+func (_c *FacadeGRPC_GetMessage_Call) RunAndReturn(run func(int64) (*dto.Message, error)) *FacadeGRPC_GetMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetMessages provides a mock function with given fields: chatId
-func (_m *FacadeGRPC) GetMessages(chatId int64) ([]*grpc.Message, error) {
+func (_m *FacadeGRPC) GetMessages(chatId int64) ([]*dto.Message, error) {
 	ret := _m.Called(chatId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetMessages")
 	}
 
-	var r0 []*grpc.Message
+	var r0 []*dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64) ([]*grpc.Message, error)); ok {
+	if rf, ok := ret.Get(0).(func(int64) ([]*dto.Message, error)); ok {
 		return rf(chatId)
 	}
-	if rf, ok := ret.Get(0).(func(int64) []*grpc.Message); ok {
+	if rf, ok := ret.Get(0).(func(int64) []*dto.Message); ok {
 		r0 = rf(chatId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*grpc.Message)
+			r0 = ret.Get(0).([]*dto.Message)
 		}
 	}
 
@@ -289,38 +290,38 @@ func (_c *FacadeGRPC_GetMessages_Call) Run(run func(chatId int64)) *FacadeGRPC_G
 	return _c
 }
 
-func (_c *FacadeGRPC_GetMessages_Call) Return(_a0 []*grpc.Message, _a1 error) *FacadeGRPC_GetMessages_Call {
+func (_c *FacadeGRPC_GetMessages_Call) Return(_a0 []*dto.Message, _a1 error) *FacadeGRPC_GetMessages_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_GetMessages_Call) RunAndReturn(run func(int64) ([]*grpc.Message, error)) *FacadeGRPC_GetMessages_Call {
+func (_c *FacadeGRPC_GetMessages_Call) RunAndReturn(run func(int64) ([]*dto.Message, error)) *FacadeGRPC_GetMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) UpdateMessage(message *grpc.Message) (*grpc.Message, error) {
+func (_m *FacadeGRPC) UpdateMessage(message *dto.Message) (*dto.Message, error) {
 	ret := _m.Called(message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateMessage")
 	}
 
-	var r0 *grpc.Message
+	var r0 *dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*grpc.Message) (*grpc.Message, error)); ok {
+	if rf, ok := ret.Get(0).(func(*dto.Message) (*dto.Message, error)); ok {
 		return rf(message)
 	}
-	if rf, ok := ret.Get(0).(func(*grpc.Message) *grpc.Message); ok {
+	if rf, ok := ret.Get(0).(func(*dto.Message) *dto.Message); ok {
 		r0 = rf(message)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*grpc.Message)
+			r0 = ret.Get(0).(*dto.Message)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*grpc.Message) error); ok {
+	if rf, ok := ret.Get(1).(func(*dto.Message) error); ok {
 		r1 = rf(message)
 	} else {
 		r1 = ret.Error(1)
@@ -335,24 +336,24 @@ type FacadeGRPC_UpdateMessage_Call struct {
 }
 
 // UpdateMessage is a helper method to define mock.On call
-//   - message *grpc.Message
+//   - message *dto.Message
 func (_e *FacadeGRPC_Expecter) UpdateMessage(message interface{}) *FacadeGRPC_UpdateMessage_Call {
 	return &FacadeGRPC_UpdateMessage_Call{Call: _e.mock.On("UpdateMessage", message)}
 }
 
-func (_c *FacadeGRPC_UpdateMessage_Call) Run(run func(message *grpc.Message)) *FacadeGRPC_UpdateMessage_Call {
+func (_c *FacadeGRPC_UpdateMessage_Call) Run(run func(message *dto.Message)) *FacadeGRPC_UpdateMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*grpc.Message))
+		run(args[0].(*dto.Message))
 	})
 	return _c
 }
 
-func (_c *FacadeGRPC_UpdateMessage_Call) Return(_a0 *grpc.Message, _a1 error) *FacadeGRPC_UpdateMessage_Call {
+func (_c *FacadeGRPC_UpdateMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_UpdateMessage_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_UpdateMessage_Call) RunAndReturn(run func(*grpc.Message) (*grpc.Message, error)) *FacadeGRPC_UpdateMessage_Call {
+func (_c *FacadeGRPC_UpdateMessage_Call) RunAndReturn(run func(*dto.Message) (*dto.Message, error)) *FacadeGRPC_UpdateMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
