@@ -60,11 +60,12 @@ tasks:
     silent: true
 
   lint:
-    desc: "Run golangci-lint"
+    desc: "Run linters"
     summary: |
-      Run golangci-lint.
+      Run linters.
     cmds:
       - GOEXPERIMENT=synctest golangci-lint run
+      - GOEXPERIMENT=synctest unused-interface-methods ./...
     silent: true
 
   test-short:
