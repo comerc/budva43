@@ -17,5 +17,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func TestFeature(t *testing.T) {
+	t.Parallel()
+
 	test_e2e.RunFeature(t, "media_album_send_copy", InitializeScenario)
 }

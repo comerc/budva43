@@ -27,5 +27,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func TestFeature(t *testing.T) {
+	t.Parallel()
+
 	test_e2e.RunFeature(t, "include_submatch", InitializeScenario)
 }

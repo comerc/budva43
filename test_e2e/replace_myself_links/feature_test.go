@@ -42,5 +42,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func TestFeature(t *testing.T) {
+	t.Parallel()
+
 	test_e2e.RunFeature(t, "replace_myself_links", InitializeScenario)
 }
