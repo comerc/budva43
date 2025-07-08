@@ -16,8 +16,8 @@ import (
 	"github.com/comerc/budva43/app/log"
 )
 
-// TestNewTermAutomator проверяет корректность создания экземпляра TermAutomator
-func TestNewTermAutomator(t *testing.T) {
+// TestNew проверяет корректность создания экземпляра TermAutomator
+func TestNew(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
@@ -66,8 +66,8 @@ func TestNewTermAutomator(t *testing.T) {
 	automator.Close()
 }
 
-// TestTermAutomatorRunAndSendInput проверяет работу методов Run и SendInput
-func TestTermAutomatorRunAndSendInput(t *testing.T) {
+// TestRunAndSendInput проверяет работу методов Run и SendInput
+func TestRunAndSendInput(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -130,8 +130,8 @@ func TestTermAutomatorRunAndSendInput(t *testing.T) {
 	assert.True(t, found, "WaitForOutput должен обнаружить вывод")
 }
 
-// TestTermAutomatorWaitForOutput проверяет работу метода WaitForOutput
-func TestTermAutomatorWaitForOutput(t *testing.T) {
+// TestWaitForOutput проверяет работу метода WaitForOutput
+func TestWaitForOutput(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -225,8 +225,8 @@ func TestTermAutomatorWaitForOutput(t *testing.T) {
 	})
 }
 
-// TestTermAutomatorClose проверяет корректность метода Close
-func TestTermAutomatorClose(t *testing.T) {
+// TestClose проверяет корректность метода Close
+func TestClose(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	// Запоминаем исходные stdin и stdout для восстановления после теста
@@ -296,8 +296,8 @@ func TestTermAutomatorClose(t *testing.T) {
 	// Не проверяем конкретную ошибку, т.к. реализация может отличаться
 }
 
-// TestTermAutomatorBufferResize проверяет, что буфер канала расширяется при необходимости
-func TestTermAutomatorBufferResize(t *testing.T) {
+// TestBufferResize проверяет, что буфер канала расширяется при необходимости
+func TestBufferResize(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -348,8 +348,8 @@ func TestTermAutomatorBufferResize(t *testing.T) {
 	assert.True(t, found, "Должна быть найдена тестовая строка")
 }
 
-// TestTermAutomatorErrorHandling проверяет корректность обработки ошибок
-func TestTermAutomatorErrorHandling(t *testing.T) {
+// TestErrorHandling проверяет корректность обработки ошибок
+func TestErrorHandling(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -497,8 +497,8 @@ func (m *mockReadWriter) Close() error {
 	return nil
 }
 
-// TestTermAutomatorWithMocks проверяет TermAutomator с использованием моков для stdin/stdout
-func TestTermAutomatorWithMocks(t *testing.T) {
+// TestWithMocks проверяет TermAutomator с использованием моков для stdin/stdout
+func TestWithMocks(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

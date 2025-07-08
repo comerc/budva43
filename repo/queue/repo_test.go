@@ -13,7 +13,7 @@ import (
 	"github.com/comerc/budva43/app/testing/spylog"
 )
 
-func TestQueueRepo(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

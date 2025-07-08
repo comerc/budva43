@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestTransformService_Transform(t *testing.T) {
+func Test(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -176,7 +176,7 @@ func TestTransformService_Transform(t *testing.T) {
 	}
 }
 
-func TestTransformService_replaceMyselfLinks(t *testing.T) {
+func Test_replaceMyselfLinks(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -734,7 +734,7 @@ func TestTransformService_replaceMyselfLinks(t *testing.T) {
 	}
 }
 
-func TestTransformService_replaceFragments(t *testing.T) {
+func Test_replaceFragments(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -834,7 +834,7 @@ func TestTransformService_replaceFragments(t *testing.T) {
 	}
 }
 
-func TestTransformService_addAutoAnswer(t *testing.T) {
+func Test_addAutoAnswer(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1008,7 +1008,7 @@ func TestTransformService_addAutoAnswer(t *testing.T) {
 	}
 }
 
-func TestTransformService_addSourceSign(t *testing.T) {
+func Test_addSourceSign(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1143,7 +1143,7 @@ func TestTransformService_addSourceSign(t *testing.T) {
 	}
 }
 
-func TestTransformService_addSourceLink(t *testing.T) {
+func Test_addSourceLink(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1319,7 +1319,7 @@ func TestTransformService_addSourceLink(t *testing.T) {
 	}
 }
 
-func TestTransformService_addText(t *testing.T) {
+func Test_addText(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
