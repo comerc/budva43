@@ -70,9 +70,9 @@ type ComplexityRoot struct {
 	}
 
 	Status struct {
-		MainVersion  func(childComplexity int) int
-		TdlibVersion func(childComplexity int) int
-		UserID       func(childComplexity int) int
+		ReleaseVersion func(childComplexity int) int
+		TdlibVersion   func(childComplexity int) int
+		UserID         func(childComplexity int) int
 	}
 }
 
@@ -174,12 +174,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Status(childComplexity), true
 
-	case "Status.mainVersion":
-		if e.complexity.Status.MainVersion == nil {
+	case "Status.releaseVersion":
+		if e.complexity.Status.ReleaseVersion == nil {
 			break
 		}
 
-		return e.complexity.Status.MainVersion(childComplexity), true
+		return e.complexity.Status.ReleaseVersion(childComplexity), true
 
 	case "Status.tdlibVersion":
 		if e.complexity.Status.TdlibVersion == nil {
@@ -848,8 +848,8 @@ func (ec *executionContext) fieldContext_Query_status(_ context.Context, field g
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "mainVersion":
-				return ec.fieldContext_Status_mainVersion(ctx, field)
+			case "releaseVersion":
+				return ec.fieldContext_Status_releaseVersion(ctx, field)
 			case "tdlibVersion":
 				return ec.fieldContext_Status_tdlibVersion(ctx, field)
 			case "userId":
@@ -1044,8 +1044,8 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Status_mainVersion(ctx context.Context, field graphql.CollectedField, obj *dto.Status) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Status_mainVersion(ctx, field)
+func (ec *executionContext) _Status_releaseVersion(ctx context.Context, field graphql.CollectedField, obj *dto.Status) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Status_releaseVersion(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1058,7 +1058,7 @@ func (ec *executionContext) _Status_mainVersion(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MainVersion, nil
+		return obj.ReleaseVersion, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1075,7 +1075,7 @@ func (ec *executionContext) _Status_mainVersion(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Status_mainVersion(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Status_releaseVersion(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Status",
 		Field:      field,
@@ -3452,8 +3452,8 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Status")
-		case "mainVersion":
-			out.Values[i] = ec._Status_mainVersion(ctx, field, obj)
+		case "releaseVersion":
+			out.Values[i] = ec._Status_releaseVersion(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

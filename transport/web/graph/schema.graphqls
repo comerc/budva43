@@ -3,7 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 type Status {
-  mainVersion: String!
+  releaseVersion: String!
   tdlibVersion: String!
   userId: Int64!
 }
