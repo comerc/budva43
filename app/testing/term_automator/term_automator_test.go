@@ -155,7 +155,7 @@ func TestWaitForOutput(t *testing.T) {
 		os.Remove(tmpFile.Name())
 	})
 
-	t.Run("Успешное обнаружение префикса", func(t *testing.T) {
+	t.Run("Successful prefix detection", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста
@@ -185,7 +185,7 @@ func TestWaitForOutput(t *testing.T) {
 		assert.True(t, found, "WaitForOutput должен обнаружить вывод по префиксу")
 	})
 
-	t.Run("Таймаут при отсутствии строки", func(t *testing.T) {
+	t.Run("Timeout when string is missing", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста

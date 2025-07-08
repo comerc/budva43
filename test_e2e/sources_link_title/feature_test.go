@@ -27,7 +27,5 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func Test(t *testing.T) {
-	t.Parallel()
-
 	test_e2e.RunFeature(t, "sources_link_title", InitializeScenario)
 }

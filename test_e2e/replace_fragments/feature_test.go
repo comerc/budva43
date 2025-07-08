@@ -32,7 +32,5 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func Test(t *testing.T) {
-	t.Parallel()
-
 	test_e2e.RunFeature(t, "replace_fragments", InitializeScenario)
 }
