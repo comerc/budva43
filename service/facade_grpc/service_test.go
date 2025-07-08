@@ -4,10 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/comerc/budva43/app/dto/grpc/dto"
-	"github.com/comerc/budva43/service/facade_grpc/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/zelenin/go-tdlib/client"
+
+	"github.com/comerc/budva43/app/dto/grpc/dto"
+	"github.com/comerc/budva43/service/facade_grpc/mocks"
 )
 
 func TestGetMessages(t *testing.T) {

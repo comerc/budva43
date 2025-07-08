@@ -4,11 +4,12 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/zelenin/go-tdlib/client"
+
 	"github.com/comerc/budva43/app/dto/gql/dto"
 	"github.com/comerc/budva43/app/util"
 	"github.com/comerc/budva43/service/facade_gql/mocks"
-	"github.com/stretchr/testify/assert"
-	"github.com/zelenin/go-tdlib/client"
 )
 
 func TestGetStatus(t *testing.T) {
