@@ -14,11 +14,14 @@ type telegramRepo interface {
 	GetMessage(*client.GetMessageRequest) (*client.Message, error)
 	SendMessage(*client.SendMessageRequest) (*client.Message, error)
 	SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
+	ForwardMessages(*client.ForwardMessagesRequest) (*client.Messages, error)
 	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
 	EditMessageCaption(*client.EditMessageCaptionRequest) (*client.Message, error)
 	DeleteMessages(*client.DeleteMessagesRequest) (*client.Ok, error)
 	GetMessages(*client.GetMessagesRequest) (*client.Messages, error)
-	GetChat(*client.GetChatRequest) (*client.Chat, error)
+	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
+	GetMarkdownText(*client.GetMarkdownTextRequest) (*client.FormattedText, error)
+	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 }
 
 //go:generate mockery --name=messageService --exported
@@ -70,10 +73,11 @@ func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message,
 
 	var result []*dto.Message
 	for _, message := range messages.Messages {
-		result = append(result, &dto.Message{
-			Id:   message.Id,
-			Text: s.messageService.GetFormattedText(message).Text,
-		})
+		dtoMessage, err := s.mapMessage(message)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtoMessage)
 	}
 
 	return result, nil
@@ -83,36 +87,54 @@ func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
 
-	// TODO: GetChatHistory() + Offset -1 будет лучше, там есть OnlyLocal
-
-	var chat *client.Chat
-	chat, err = s.telegramRepo.GetChat(&client.GetChatRequest{
-		ChatId: chatId,
+	var messages *client.Messages
+	messages, err = s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
+		ChatId:    chatId,
+		Limit:     1,
+		OnlyLocal: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	var result *dto.Message
-	result = &dto.Message{
-		Id:   chat.LastMessage.Id,
-		Text: s.messageService.GetFormattedText(chat.LastMessage).Text,
+	if messages.TotalCount == 0 {
+		return nil, nil
 	}
 
-	return result, nil
+	return s.mapMessage(messages.Messages[0])
 }
 
-func (s *Service) CreateMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
+// TODO: вынести в messageService?
+func (s *Service) parseTextEntities(text string) (*client.FormattedText, error) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
+
+	var formattedText *client.FormattedText
+	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: text,
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return formattedText, nil
+}
+
+func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	formattedText, err := s.parseTextEntities(newMessage.Text)
+	if err != nil {
+		return nil, err
+	}
 
 	var message *client.Message
 	message, err = s.telegramRepo.SendMessage(&client.SendMessageRequest{
 		ChatId: newMessage.ChatId,
 		InputMessageContent: &client.InputMessageText{
-			Text: &client.FormattedText{
-				Text: newMessage.Text,
-			},
+			Text: formattedText,
 			LinkPreviewOptions: &client.LinkPreviewOptions{
 				IsDisabled: true,
 			},
@@ -126,13 +148,28 @@ func (s *Service) CreateMessage(newMessage *dto.NewMessage) (*dto.Message, error
 		return nil, err
 	}
 
-	var result *dto.Message
-	result = &dto.Message{
-		Id:   message.Id,
-		Text: s.messageService.GetFormattedText(message).Text,
+	// TODO: дожидаться client.UpdateMessageSendSucceeded, подставлять реальный message.Id
+
+	return s.mapMessage(message)
+}
+
+func (s *Service) ForwardMessage(chatId int64, messageId int64) (*dto.Message, error) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	var messages *client.Messages
+	messages, err = s.telegramRepo.ForwardMessages(&client.ForwardMessagesRequest{
+		ChatId:     chatId,
+		MessageIds: []int64{messageId},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if messages.TotalCount == 0 {
+		return nil, nil
 	}
 
-	return result, nil
+	return s.mapMessage(messages.Messages[0])
 }
 
 func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error) {
@@ -148,13 +185,7 @@ func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error
 		return nil, err
 	}
 
-	var result *dto.Message
-	result = &dto.Message{
-		Id:   message.Id,
-		Text: s.messageService.GetFormattedText(message).Text,
-	}
-
-	return result, nil
+	return s.mapMessage(message)
 }
 
 func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error) {
@@ -170,11 +201,14 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		return nil, err
 	}
 
+	formattedText, err := s.parseTextEntities(updateMessage.Text)
+	if err != nil {
+		return nil, err
+	}
+
 	inputMessageContent := s.messageService.GetInputMessageContent(
 		sourceMessage,
-		&client.FormattedText{
-			Text: updateMessage.Text,
-		},
+		formattedText,
 	)
 
 	var message *client.Message
@@ -188,13 +222,7 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		return nil, err
 	}
 
-	var result *dto.Message
-	result = &dto.Message{
-		Id:   message.Id,
-		Text: s.messageService.GetFormattedText(message).Text,
-	}
-
-	return result, nil
+	return s.mapMessage(message)
 }
 
 func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
@@ -210,4 +238,28 @@ func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error)
 	}
 
 	return true, nil
+}
+
+// mapMessage преобразует сообщение из tdlib в dto.Message
+func (s *Service) mapMessage(message *client.Message) (*dto.Message, error) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	var formattedText *client.FormattedText
+	formattedText, err = s.telegramRepo.GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: s.messageService.GetFormattedText(message),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var result *dto.Message
+	result = &dto.Message{
+		Id:      message.Id,
+		Text:    formattedText.Text,
+		ChatId:  message.ChatId,
+		Forward: message.ForwardInfo != nil,
+	}
+
+	return result, nil
 }

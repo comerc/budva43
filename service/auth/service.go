@@ -18,7 +18,7 @@ type telegramRepo interface {
 	CreateClient(runAuthorizationStateHandler)
 	GetClientDone() <-chan any
 	// tdlibClient methods
-	GetOption(req *client.GetOptionRequest) (client.OptionValue, error)
+	GetOption(*client.GetOptionRequest) (client.OptionValue, error)
 	GetMe() (*client.User, error)
 }
 

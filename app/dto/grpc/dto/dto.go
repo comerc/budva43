@@ -7,9 +7,10 @@ type Chat struct {
 }
 
 type Message struct {
-	Id     int64
-	Text   string
-	ChatId int64
+	Id      int64
+	Text    string
+	ChatId  int64
+	Forward bool
 }
 
 type NewMessage struct {

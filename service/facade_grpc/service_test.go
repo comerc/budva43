@@ -45,8 +45,14 @@ func TestGetLastMessage(t *testing.T) {
 
 	chatId := int64(1)
 	msg := &client.Message{Id: 42}
-	chat := &client.Chat{LastMessage: msg}
-	tg.EXPECT().GetChat(&client.GetChatRequest{ChatId: chatId}).Return(chat, nil)
+	tg.EXPECT().GetChatHistory(&client.GetChatHistoryRequest{
+		ChatId:    chatId,
+		Limit:     1,
+		OnlyLocal: true,
+	}).Return(&client.Messages{
+		TotalCount: 1,
+		Messages:   []*client.Message{msg},
+	}, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "last"})
 
 	result, err := s.GetLastMessage(chatId)
@@ -55,7 +61,7 @@ func TestGetLastMessage(t *testing.T) {
 	assert.Equal(t, "last", result.Text)
 }
 
-func TestCreateMessage(t *testing.T) {
+func TestSendMessage(t *testing.T) {
 	t.Parallel()
 
 	tg := mocks.NewTelegramRepo(t)
@@ -75,10 +81,35 @@ func TestCreateMessage(t *testing.T) {
 	}).Return(msg, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "hi"})
 
-	result, err := s.CreateMessage(in)
+	result, err := s.SendMessage(in)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(100), result.Id)
 	assert.Equal(t, "hi", result.Text)
+}
+
+func TestForwardMessage(t *testing.T) {
+	t.Parallel()
+
+	tg := mocks.NewTelegramRepo(t)
+	ms := mocks.NewMessageService(t)
+	s := New(tg, ms)
+
+	chatId := int64(1)
+	msgId := int64(2)
+	msg := &client.Message{Id: msgId}
+	tg.EXPECT().ForwardMessages(&client.ForwardMessagesRequest{
+		ChatId:     chatId,
+		MessageIds: []int64{msgId},
+	}).Return(&client.Messages{
+		TotalCount: 1,
+		Messages:   []*client.Message{msg},
+	}, nil)
+	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "msg"})
+
+	result, err := s.ForwardMessage(chatId, msgId)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), result.Id)
+	assert.Equal(t, "msg", result.Text)
 }
 
 func TestGetMessage(t *testing.T) {
