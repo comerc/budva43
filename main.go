@@ -35,6 +35,7 @@ import (
 	webTransport "github.com/comerc/budva43/transport/web"
 )
 
+// TODO: переделать входные параметры функций на объект *Request (как у go-tdlib)
 // TODO: pkg/tdlib-buntu - в какой папке лучше держать?
 // TODO: при старте проверять новые необработанныесообщения в чатах
 // TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
