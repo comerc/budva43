@@ -5,6 +5,13 @@
 # - именные ключи преобразуются в PascalCase
 # - пустой элемент не добавляется в результат, назначаю `dummy: true`
 
+# Ограничения:
+# - для приватных групп не работает Sorces.Link (только для супергрупп)
+# - sorces.link добавляет превью TODO: сделать опция для превью
+# - только для .SendCopy работает редактирование + .CopyOnce + .Indelible
+# - replace-myself-link: "Message links are available only for messages in supergroups and channel chats"
+# - FIXME: markdown без дублирования: *Sign* превращается в **Sign**
+
 sources:
   111:
     sign:
