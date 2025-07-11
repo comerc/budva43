@@ -11,4 +11,4 @@ else
 fi
 
 # Запускаем основной конвейер с фильтром из аргументов.
-tail $TAIL_ARGS -F .data/log/app.log | gojq -R -r "if (fromjson | ${FILTER}) then . else empty end" | PROJECT_ROOT=$(pwd)/ pplog
+tail $TAIL_ARGS -F .data/engine/log/app.log | gojq -R -r "if (fromjson | ${FILTER}) then . else empty end" | PROJECT_ROOT=$(pwd)/ pplog

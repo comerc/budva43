@@ -5,7 +5,7 @@ general:
   # engine-config-file: "engine.yml" # или .json
   # log:
   #   level: -4 # DEBUG
-  #   directory: "./.data/log"
+  #   directory: "./.data/[SUBPROJECT]/log"
   #   max-file-size: 10 # MB
 
 # Настройки источника стека вызовов при логировании
@@ -17,9 +17,9 @@ telegram:
   # api-id: 0
   # api-hash: ""
   # phone-number: ""
-  # log-directory: "./.data/log"
-  # database-directory: "./.data/telegram/db"
-  # files-directory: "./.data/telegram/files"
+  # log-directory: "./.data/[SUBPROJECT]/log"
+  # database-directory: "./.data/[SUBPROJECT]/telegram/db"
+  # files-directory: "./.data/[SUBPROJECT]/telegram/files"
   # use-test-dc: true # !! если раскоментировать, то переопределит дефолтное значение
   # use-chat-info-database: true
   # use-file-database: true
@@ -34,11 +34,11 @@ telegram:
 # Настройки хранилища данных
 storage:
   # log-level: 0 # INFO
-  # log-directory: "./.data/log"
+  # log-directory: "./.data/[SUBPROJECT]/log"
   # log-max-file-size: 10 # MB
-  # database-directory: "./.data/badger/db"
+  # database-directory: "./.data/[SUBPROJECT]/badger/db"
   # # backup-enabled: true
-  # # backup-directory: "./.data/badger/backup"
+  # # backup-directory: "./.data/[SUBPROJECT]/badger/backup"
   # # backup-frequency: weekly
 
 # Настройки веб-интерфейса
