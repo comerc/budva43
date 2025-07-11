@@ -1,11 +1,13 @@
 {
+	"go.testOnSave": false,
 	"go.testEnvVars": {
 		"GOEXPERIMENT": "synctest",
 	},
-	// "go.testFlags": [
-	// 	"-count=1",
-	// ],
-	"go.testTimeout": "36s",
+	"go.testFlags": [
+		"-short",
+		"-count=1",
+	],
+	"go.testTimeout": "360s",
 	"go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
 	// "go.useLanguageServer": true,

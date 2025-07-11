@@ -26,7 +26,7 @@ import (
 )
 
 func TestAuth(t *testing.T) {
-	// t.Parallel()
+	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
 	if testing.Short() {
 		t.Skip()
