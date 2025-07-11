@@ -4,7 +4,6 @@
 		"GOEXPERIMENT": "synctest",
 	},
 	"go.testFlags": [
-		"-short",
 		"-count=1",
 	],
 	"go.testTimeout": "360s",
