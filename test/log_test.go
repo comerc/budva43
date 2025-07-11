@@ -38,6 +38,10 @@ func (s *SomeObject) NestedMethod() {
 func TestSomeMethod(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить, тестирую с подменой глобальных переменных
 
+	if testing.Short() {
+		t.Skip()
+	}
+
 	var err error
 
 	var copy *entity.LogSource
@@ -70,6 +74,10 @@ func TestSomeMethod(t *testing.T) {
 func TestUnwrappedError(t *testing.T) {
 	t.Parallel()
 
+	if testing.Short() {
+		t.Skip()
+	}
+
 	var logger *log.Logger
 
 	spylogHandler := spylog.GetHandler(t.Name(), func() {
@@ -95,6 +103,10 @@ func TestUnwrappedError(t *testing.T) {
 
 func TestWrappedError(t *testing.T) {
 	t.Parallel()
+
+	if testing.Short() {
+		t.Skip()
+	}
 
 	var logger *log.Logger
 
@@ -122,6 +134,10 @@ func TestWrappedError(t *testing.T) {
 
 func TestWithPtr(t *testing.T) {
 	t.Parallel()
+
+	if testing.Short() {
+		t.Skip()
+	}
 
 	var logger *log.Logger
 	spylogHandler := spylog.GetHandler(t.Name(), func() {
@@ -171,6 +187,10 @@ func TestWithPtr(t *testing.T) {
 
 func TestLoggerName(t *testing.T) {
 	t.Parallel()
+
+	if testing.Short() {
+		t.Skip()
+	}
 
 	var test = func(t *testing.T) {
 		t.Parallel()
