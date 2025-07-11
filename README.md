@@ -127,6 +127,9 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] BDD
 - [x] [godog](github.com/cucumber/godog)
 - [x] grpc
+- [ ] fuzz-test?
+
+
 
 ## .env
 
@@ -279,4 +282,11 @@ go install github.com/cucumber/godog/cmd/godog@latest
 brew install protobuf
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
+
+## How to check grpc
+
+```bash
+brew install grpcurl
+grpcurl -plaintext localhost:50051 list
 ```
