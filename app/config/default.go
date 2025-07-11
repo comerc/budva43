@@ -4,13 +4,15 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/comerc/budva43/app/util"
 )
 
 func setDefaultConfig(config *config) {
-	logDir := filepath.Join(util.ProjectRoot, ".data", "log")
+	subproject := strings.TrimSpace(os.Getenv("SUBPROJECT"))
+	logDir := filepath.Join(util.ProjectRoot, ".data", subproject, "log")
 	testing := os.Getenv("GOEXPERIMENT") == "synctest"
 	logLevel := slog.LevelDebug
 	if testing {
@@ -38,15 +40,15 @@ func setDefaultConfig(config *config) {
 	config.Telegram.LogMaxFileSize = 10 // MB
 
 	config.Telegram.LogDirectory = logDir
-	config.Telegram.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", "telegram", "db")
-	config.Telegram.FilesDirectory = filepath.Join(util.ProjectRoot, ".data", "telegram", "files")
+	config.Telegram.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", subproject, "telegram", "db")
+	config.Telegram.FilesDirectory = filepath.Join(util.ProjectRoot, ".data", subproject, "telegram", "files")
 
 	config.Storage.Log.Level = slog.LevelInfo
 	config.Storage.Log.Directory = logDir
 	config.Storage.Log.MaxFileSize = 10 // MB
-	config.Storage.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", "badger", "db")
+	config.Storage.DatabaseDirectory = filepath.Join(util.ProjectRoot, ".data", subproject, "badger", "db")
 	// config.Storage.BackupEnabled = false
-	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", "badger", "backup")
+	// config.Storage.BackupDirectory = filepath.Join(projectRoot, ".data", subproject, "badger", "backup")
 	// config.Storage.BackupFrequency = "daily"
 
 	config.Web.Port = "7070"

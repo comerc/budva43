@@ -16,7 +16,7 @@ func TestGetMessages(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	chatId := int64(1)
 	msgIds := []int64{10, 20}
@@ -41,7 +41,7 @@ func TestGetLastMessage(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	chatId := int64(1)
 	msg := &client.Message{Id: 42}
@@ -66,7 +66,7 @@ func TestSendMessage(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	in := &dto.NewMessage{ChatId: 1, Text: "hi", ReplyToMessageId: 2}
 	msg := &client.Message{Id: 100}
@@ -92,7 +92,7 @@ func TestForwardMessage(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	chatId := int64(1)
 	msgId := int64(2)
@@ -117,7 +117,7 @@ func TestGetMessage(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	chatId := int64(1)
 	msgId := int64(2)
@@ -136,7 +136,7 @@ func TestUpdateMessage(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	upd := &dto.Message{Id: 2, ChatId: 1, Text: "upd"}
 	orig := &client.Message{Id: 2, ReplyMarkup: &client.ReplyMarkupInlineKeyboard{}} // пример
@@ -164,7 +164,7 @@ func TestDeleteMessages(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	chatId := int64(1)
 	msgIds := []int64{2, 3}
@@ -180,7 +180,7 @@ func TestErrorFromRepo(t *testing.T) {
 
 	tg := mocks.NewTelegramRepo(t)
 	ms := mocks.NewMessageService(t)
-	s := New(tg, ms)
+	s := New(tg, ms, nil)
 
 	tg.EXPECT().GetMessages(&client.GetMessagesRequest{ChatId: 1, MessageIds: []int64{1}}).Return(nil, errors.New("fail"))
 	msgs, err := s.GetMessages(1, []int64{1})

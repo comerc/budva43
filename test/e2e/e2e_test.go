@@ -344,7 +344,7 @@ func Test(t *testing.T) {
 		// "07.1.include_submatch_f",
 		// "07.2.include_submatch_t",
 		// "08.replace_fragments",
-		// "09.sources_link_title",
+		"09.sources_link_title",
 		// "10.sources_sign", // OK
 		// "11.auto_answers",
 		// "12.copy_once",

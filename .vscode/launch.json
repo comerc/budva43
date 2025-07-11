@@ -6,10 +6,11 @@
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/cmd/engine",
 			"cwd": "${workspaceFolder}",
 			"env": {
-				"BUDVA43__GENERAL__ENGINE_CONFIG_FILE": "engine.e2e.yml"
+				"BUDVA43__GENERAL__ENGINE_CONFIG_FILE": "engine.e2e.yml",
+				"SUBPROJECT": "engine",
 			},
 			"args": [],
 			"showLog": true,

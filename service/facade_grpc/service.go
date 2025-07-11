@@ -30,19 +30,30 @@ type messageService interface {
 	GetInputMessageContent(*client.Message, *client.FormattedText) client.InputMessageContent
 }
 
+//go:generate mockery --name=mediaAlbumService --exported
+type mediaAlbumService interface {
+	// TODO: пригодится для реализации API?
+}
+
 type Service struct {
 	log *log.Logger
 	//
-	telegramRepo   telegramRepo
-	messageService messageService
+	telegramRepo      telegramRepo
+	messageService    messageService
+	mediaAlbumService mediaAlbumService
 }
 
-func New(telegramRepo telegramRepo, messageService messageService) *Service {
+func New(
+	telegramRepo telegramRepo,
+	messageService messageService,
+	mediaAlbumService mediaAlbumService,
+) *Service {
 	return &Service{
 		log: log.NewLogger(),
 		//
-		telegramRepo:   telegramRepo,
-		messageService: messageService,
+		telegramRepo:      telegramRepo,
+		messageService:    messageService,
+		mediaAlbumService: mediaAlbumService,
 	}
 }
 

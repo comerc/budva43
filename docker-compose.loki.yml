@@ -12,7 +12,7 @@ services:
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
-      - ./.data/log:/var/log/app:ro
+      - ./.data/engine/log:/var/log/app:ro
       - ./promtail-config.yml:/etc/promtail/config.yml:ro
     command: -config.file=/etc/promtail/config.yml
     depends_on:

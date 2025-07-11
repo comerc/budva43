@@ -56,7 +56,7 @@ tasks:
     summary: |
       Run jqp on app.log file.
     cmds:
-      - jqp -f .data/log/app.log
+      - jqp -f .data/engine/log/app.log
     silent: true
 
   lint:
@@ -83,19 +83,34 @@ tasks:
       - GOEXPERIMENT=synctest go test -failfast -count=1 $(go list ./... | grep -v mocks)
 
   build:
-    desc: "Build app"
+    desc: "Build apps"
     summary: |
-      Build app.
+      Build apps.
     cmds:
-      - rm -f bin/app && go build -o bin/app main.go
+      - mkdir -p bin
+      - rm -f bin/engine && go build -o bin/engine cmd/engine/main.go
+      - rm -f bin/facade && go build -o bin/facade cmd/facade/main.go
     silent: true
 
-  run:
-    desc: "Run app"
+  engine:
+    desc: "Run engine"
     summary: |
-      Run app.
+      Run engine.
     cmds:
-      - BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml go run main.go & wait
+      - |
+        BUDVA43__GENERAL__ENGINE_CONFIG_FILE=engine.e2e.yml \
+        SUBPROJECT=engine \
+        go run cmd/engine/main.go & wait
+    silent: true
+
+  facade:
+    desc: "Run facade"
+    summary: |
+      Run facade.
+    cmds:
+      - |
+        SUBPROJECT=facade \
+        go run cmd/facade/main.go & wait
     silent: true
 
   cover:
