@@ -21,64 +21,6 @@ func (_m *FacadeGRPC) EXPECT() *FacadeGRPC_Expecter {
 	return &FacadeGRPC_Expecter{mock: &_m.Mock}
 }
 
-// CreateMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) CreateMessage(message *dto.NewMessage) (*dto.Message, error) {
-	ret := _m.Called(message)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateMessage")
-	}
-
-	var r0 *dto.Message
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*dto.NewMessage) (*dto.Message, error)); ok {
-		return rf(message)
-	}
-	if rf, ok := ret.Get(0).(func(*dto.NewMessage) *dto.Message); ok {
-		r0 = rf(message)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.Message)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(*dto.NewMessage) error); ok {
-		r1 = rf(message)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FacadeGRPC_CreateMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateMessage'
-type FacadeGRPC_CreateMessage_Call struct {
-	*mock.Call
-}
-
-// CreateMessage is a helper method to define mock.On call
-//   - message *dto.NewMessage
-func (_e *FacadeGRPC_Expecter) CreateMessage(message interface{}) *FacadeGRPC_CreateMessage_Call {
-	return &FacadeGRPC_CreateMessage_Call{Call: _e.mock.On("CreateMessage", message)}
-}
-
-func (_c *FacadeGRPC_CreateMessage_Call) Run(run func(message *dto.NewMessage)) *FacadeGRPC_CreateMessage_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*dto.NewMessage))
-	})
-	return _c
-}
-
-func (_c *FacadeGRPC_CreateMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_CreateMessage_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *FacadeGRPC_CreateMessage_Call) RunAndReturn(run func(*dto.NewMessage) (*dto.Message, error)) *FacadeGRPC_CreateMessage_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // DeleteMessages provides a mock function with given fields: chatId, messageIds
 func (_m *FacadeGRPC) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
 	ret := _m.Called(chatId, messageIds)
@@ -132,6 +74,65 @@ func (_c *FacadeGRPC_DeleteMessages_Call) Return(_a0 bool, _a1 error) *FacadeGRP
 }
 
 func (_c *FacadeGRPC_DeleteMessages_Call) RunAndReturn(run func(int64, []int64) (bool, error)) *FacadeGRPC_DeleteMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ForwardMessage provides a mock function with given fields: chatId, messageId
+func (_m *FacadeGRPC) ForwardMessage(chatId int64, messageId int64) (*dto.Message, error) {
+	ret := _m.Called(chatId, messageId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ForwardMessage")
+	}
+
+	var r0 *dto.Message
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int64, int64) (*dto.Message, error)); ok {
+		return rf(chatId, messageId)
+	}
+	if rf, ok := ret.Get(0).(func(int64, int64) *dto.Message); ok {
+		r0 = rf(chatId, messageId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.Message)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int64, int64) error); ok {
+		r1 = rf(chatId, messageId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FacadeGRPC_ForwardMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ForwardMessage'
+type FacadeGRPC_ForwardMessage_Call struct {
+	*mock.Call
+}
+
+// ForwardMessage is a helper method to define mock.On call
+//   - chatId int64
+//   - messageId int64
+func (_e *FacadeGRPC_Expecter) ForwardMessage(chatId interface{}, messageId interface{}) *FacadeGRPC_ForwardMessage_Call {
+	return &FacadeGRPC_ForwardMessage_Call{Call: _e.mock.On("ForwardMessage", chatId, messageId)}
+}
+
+func (_c *FacadeGRPC_ForwardMessage_Call) Run(run func(chatId int64, messageId int64)) *FacadeGRPC_ForwardMessage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(int64), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *FacadeGRPC_ForwardMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_ForwardMessage_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *FacadeGRPC_ForwardMessage_Call) RunAndReturn(run func(int64, int64) (*dto.Message, error)) *FacadeGRPC_ForwardMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -355,6 +356,64 @@ func (_c *FacadeGRPC_GetMessages_Call) Return(_a0 []*dto.Message, _a1 error) *Fa
 }
 
 func (_c *FacadeGRPC_GetMessages_Call) RunAndReturn(run func(int64, []int64) ([]*dto.Message, error)) *FacadeGRPC_GetMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SendMessage provides a mock function with given fields: message
+func (_m *FacadeGRPC) SendMessage(message *dto.NewMessage) (*dto.Message, error) {
+	ret := _m.Called(message)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SendMessage")
+	}
+
+	var r0 *dto.Message
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*dto.NewMessage) (*dto.Message, error)); ok {
+		return rf(message)
+	}
+	if rf, ok := ret.Get(0).(func(*dto.NewMessage) *dto.Message); ok {
+		r0 = rf(message)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.Message)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*dto.NewMessage) error); ok {
+		r1 = rf(message)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FacadeGRPC_SendMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMessage'
+type FacadeGRPC_SendMessage_Call struct {
+	*mock.Call
+}
+
+// SendMessage is a helper method to define mock.On call
+//   - message *dto.NewMessage
+func (_e *FacadeGRPC_Expecter) SendMessage(message interface{}) *FacadeGRPC_SendMessage_Call {
+	return &FacadeGRPC_SendMessage_Call{Call: _e.mock.On("SendMessage", message)}
+}
+
+func (_c *FacadeGRPC_SendMessage_Call) Run(run func(message *dto.NewMessage)) *FacadeGRPC_SendMessage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*dto.NewMessage))
+	})
+	return _c
+}
+
+func (_c *FacadeGRPC_SendMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_SendMessage_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *FacadeGRPC_SendMessage_Call) RunAndReturn(run func(*dto.NewMessage) (*dto.Message, error)) *FacadeGRPC_SendMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }

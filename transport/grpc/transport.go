@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"github.com/comerc/budva43/app/dto/grpc/dto"
@@ -18,7 +19,8 @@ type facadeGRPC interface {
 	GetClientDone() <-chan any
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
 	GetLastMessage(chatId int64) (*dto.Message, error)
-	CreateMessage(message *dto.NewMessage) (*dto.Message, error)
+	SendMessage(message *dto.NewMessage) (*dto.Message, error)
+	ForwardMessage(chatId int64, messageId int64) (*dto.Message, error)
 	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
 	UpdateMessage(message *dto.Message) (*dto.Message, error)
 	DeleteMessages(chatId int64, messageIds []int64) (bool, error)
@@ -50,6 +52,7 @@ func (t *Transport) Start() error {
 	t.lis = lis
 	t.server = grpc.NewServer()
 	pb.RegisterFacadeGRPCServer(t.server, t)
+	reflection.Register(t.server)
 	go func() {
 		_ = t.server.Serve(lis)
 	}()
@@ -82,9 +85,10 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 	res := &pb.GetMessagesResponse{}
 	for _, m := range msgs {
 		res.Messages = append(res.Messages, &pb.Message{
-			MessageId: m.Id,
-			ChatId:    m.ChatId,
-			Text:      m.Text,
+			Id:      m.Id,
+			ChatId:  m.ChatId,
+			Text:    m.Text,
+			Forward: m.Forward,
 		})
 	}
 	return res, nil
@@ -99,29 +103,57 @@ func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRe
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	if res == nil {
+		return nil, nil
+	}
 	return &pb.MessageResponse{Message: &pb.Message{
-		MessageId: res.Id,
-		ChatId:    res.ChatId,
-		Text:      res.Text,
+		Id:      res.Id,
+		ChatId:  res.ChatId,
+		Text:    res.Text,
+		Forward: res.Forward,
 	}}, nil
 }
 
-func (t *Transport) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.MessageResponse, error) {
+func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.MessageResponse, error) {
 	var err error
 	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
-	res, err = t.facade.CreateMessage(&dto.NewMessage{
+	res, err = t.facade.SendMessage(&dto.NewMessage{
 		ChatId: req.ChatId,
 		Text:   req.Text,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	if res == nil {
+		return nil, nil
+	}
 	return &pb.MessageResponse{Message: &pb.Message{
-		MessageId: res.Id,
-		ChatId:    res.ChatId,
-		Text:      res.Text,
+		Id:      res.Id,
+		ChatId:  res.ChatId,
+		Text:    res.Text,
+		Forward: res.Forward,
+	}}, nil
+}
+
+func (t *Transport) ForwardMessage(ctx context.Context, req *pb.ForwardMessageRequest) (*pb.MessageResponse, error) {
+	var err error
+	defer t.log.ErrorOrDebug(&err, "")
+
+	var res *dto.Message
+	res, err = t.facade.ForwardMessage(req.ChatId, req.MessageId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if res == nil {
+		return nil, nil
+	}
+	return &pb.MessageResponse{Message: &pb.Message{
+		Id:      res.Id,
+		ChatId:  res.ChatId,
+		Text:    res.Text,
+		Forward: res.Forward,
 	}}, nil
 }
 
@@ -135,9 +167,10 @@ func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.MessageResponse{Message: &pb.Message{
-		MessageId: res.Id,
-		ChatId:    res.ChatId,
-		Text:      res.Text,
+		Id:      res.Id,
+		ChatId:  res.ChatId,
+		Text:    res.Text,
+		Forward: res.Forward,
 	}}, nil
 }
 
@@ -155,9 +188,10 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.MessageResponse{Message: &pb.Message{
-		MessageId: res.Id,
-		ChatId:    res.ChatId,
-		Text:      res.Text,
+		Id:      res.Id,
+		ChatId:  res.ChatId,
+		Text:    res.Text,
+		Forward: res.Forward,
 	}}, nil
 }
 

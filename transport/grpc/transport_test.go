@@ -37,21 +37,39 @@ func startTestGRPCServer(t *testing.T, facade *mocks.FacadeGRPC) (*grpc.ClientCo
 	}
 }
 
-func TestCreateMessage(t *testing.T) {
+func TestSendMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
 	in := &dto.NewMessage{ChatId: 1, Text: "hi"}
 	out := &dto.Message{Id: 42, ChatId: 1, Text: "hi"}
-	facade.EXPECT().CreateMessage(in).Return(out, nil)
+	facade.EXPECT().SendMessage(in).Return(out, nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
 	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	resp, err := client.CreateMessage(context.Background(), &pb.CreateMessageRequest{ChatId: 1, Text: "hi"})
+	resp, err := client.SendMessage(context.Background(), &pb.SendMessageRequest{ChatId: 1, Text: "hi"})
 	assert.NoError(t, err)
-	assert.Equal(t, int64(42), resp.Message.MessageId)
+	assert.Equal(t, int64(42), resp.Message.Id)
+	assert.Equal(t, int64(1), resp.Message.ChatId)
+	assert.Equal(t, "hi", resp.Message.Text)
+}
+
+func TestForwardMessage(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	out := &dto.Message{Id: 42, ChatId: 1, Text: "hi"}
+	facade.EXPECT().ForwardMessage(int64(1), int64(42)).Return(out, nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+
+	resp, err := client.ForwardMessage(context.Background(), &pb.ForwardMessageRequest{ChatId: 1, MessageId: 42})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(42), resp.Message.Id)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
 	assert.Equal(t, "hi", resp.Message.Text)
 }
@@ -87,7 +105,7 @@ func TestGetLastMessage(t *testing.T) {
 	client := pb.NewFacadeGRPCClient(conn)
 	resp, err := client.GetLastMessage(context.Background(), &pb.GetLastMessageRequest{ChatId: 1})
 	assert.NoError(t, err)
-	assert.Equal(t, int64(42), resp.Message.MessageId)
+	assert.Equal(t, int64(42), resp.Message.Id)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
 	assert.Equal(t, "hi", resp.Message.Text)
 }
@@ -105,7 +123,7 @@ func TestGetMessage(t *testing.T) {
 
 	resp, err := client.GetMessage(context.Background(), &pb.GetMessageRequest{ChatId: 1, MessageId: 42})
 	assert.NoError(t, err)
-	assert.Equal(t, int64(42), resp.Message.MessageId)
+	assert.Equal(t, int64(42), resp.Message.Id)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
 	assert.Equal(t, "hi", resp.Message.Text)
 }
@@ -124,7 +142,7 @@ func TestUpdateMessage(t *testing.T) {
 
 	resp, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{MessageId: 42, ChatId: 1, Text: "upd"})
 	assert.NoError(t, err)
-	assert.Equal(t, int64(42), resp.Message.MessageId)
+	assert.Equal(t, int64(42), resp.Message.Id)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
 	assert.Equal(t, "upd", resp.Message.Text)
 }

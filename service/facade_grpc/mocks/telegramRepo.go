@@ -195,28 +195,28 @@ func (_c *TelegramRepo_EditMessageText_Call) RunAndReturn(run func(*client.EditM
 	return _c
 }
 
-// GetChat provides a mock function with given fields: _a0
-func (_m *TelegramRepo) GetChat(_a0 *client.GetChatRequest) (*client.Chat, error) {
+// ForwardMessages provides a mock function with given fields: _a0
+func (_m *TelegramRepo) ForwardMessages(_a0 *client.ForwardMessagesRequest) (*client.Messages, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetChat")
+		panic("no return value specified for ForwardMessages")
 	}
 
-	var r0 *client.Chat
+	var r0 *client.Messages
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*client.GetChatRequest) (*client.Chat, error)); ok {
+	if rf, ok := ret.Get(0).(func(*client.ForwardMessagesRequest) (*client.Messages, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(*client.GetChatRequest) *client.Chat); ok {
+	if rf, ok := ret.Get(0).(func(*client.ForwardMessagesRequest) *client.Messages); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*client.Chat)
+			r0 = ret.Get(0).(*client.Messages)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*client.GetChatRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(*client.ForwardMessagesRequest) error); ok {
 		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
@@ -225,30 +225,88 @@ func (_m *TelegramRepo) GetChat(_a0 *client.GetChatRequest) (*client.Chat, error
 	return r0, r1
 }
 
-// TelegramRepo_GetChat_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChat'
-type TelegramRepo_GetChat_Call struct {
+// TelegramRepo_ForwardMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ForwardMessages'
+type TelegramRepo_ForwardMessages_Call struct {
 	*mock.Call
 }
 
-// GetChat is a helper method to define mock.On call
-//   - _a0 *client.GetChatRequest
-func (_e *TelegramRepo_Expecter) GetChat(_a0 interface{}) *TelegramRepo_GetChat_Call {
-	return &TelegramRepo_GetChat_Call{Call: _e.mock.On("GetChat", _a0)}
+// ForwardMessages is a helper method to define mock.On call
+//   - _a0 *client.ForwardMessagesRequest
+func (_e *TelegramRepo_Expecter) ForwardMessages(_a0 interface{}) *TelegramRepo_ForwardMessages_Call {
+	return &TelegramRepo_ForwardMessages_Call{Call: _e.mock.On("ForwardMessages", _a0)}
 }
 
-func (_c *TelegramRepo_GetChat_Call) Run(run func(_a0 *client.GetChatRequest)) *TelegramRepo_GetChat_Call {
+func (_c *TelegramRepo_ForwardMessages_Call) Run(run func(_a0 *client.ForwardMessagesRequest)) *TelegramRepo_ForwardMessages_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*client.GetChatRequest))
+		run(args[0].(*client.ForwardMessagesRequest))
 	})
 	return _c
 }
 
-func (_c *TelegramRepo_GetChat_Call) Return(_a0 *client.Chat, _a1 error) *TelegramRepo_GetChat_Call {
+func (_c *TelegramRepo_ForwardMessages_Call) Return(_a0 *client.Messages, _a1 error) *TelegramRepo_ForwardMessages_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *TelegramRepo_GetChat_Call) RunAndReturn(run func(*client.GetChatRequest) (*client.Chat, error)) *TelegramRepo_GetChat_Call {
+func (_c *TelegramRepo_ForwardMessages_Call) RunAndReturn(run func(*client.ForwardMessagesRequest) (*client.Messages, error)) *TelegramRepo_ForwardMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetChatHistory provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetChatHistory(_a0 *client.GetChatHistoryRequest) (*client.Messages, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetChatHistory")
+	}
+
+	var r0 *client.Messages
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.GetChatHistoryRequest) (*client.Messages, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.GetChatHistoryRequest) *client.Messages); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.Messages)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.GetChatHistoryRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_GetChatHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatHistory'
+type TelegramRepo_GetChatHistory_Call struct {
+	*mock.Call
+}
+
+// GetChatHistory is a helper method to define mock.On call
+//   - _a0 *client.GetChatHistoryRequest
+func (_e *TelegramRepo_Expecter) GetChatHistory(_a0 interface{}) *TelegramRepo_GetChatHistory_Call {
+	return &TelegramRepo_GetChatHistory_Call{Call: _e.mock.On("GetChatHistory", _a0)}
+}
+
+func (_c *TelegramRepo_GetChatHistory_Call) Run(run func(_a0 *client.GetChatHistoryRequest)) *TelegramRepo_GetChatHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.GetChatHistoryRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_GetChatHistory_Call) Return(_a0 *client.Messages, _a1 error) *TelegramRepo_GetChatHistory_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_GetChatHistory_Call) RunAndReturn(run func(*client.GetChatHistoryRequest) (*client.Messages, error)) *TelegramRepo_GetChatHistory_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -296,6 +354,64 @@ func (_c *TelegramRepo_GetClientDone_Call) Return(_a0 <-chan interface{}) *Teleg
 }
 
 func (_c *TelegramRepo_GetClientDone_Call) RunAndReturn(run func() <-chan interface{}) *TelegramRepo_GetClientDone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetMarkdownText provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetMarkdownText(_a0 *client.GetMarkdownTextRequest) (*client.FormattedText, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMarkdownText")
+	}
+
+	var r0 *client.FormattedText
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.GetMarkdownTextRequest) (*client.FormattedText, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.GetMarkdownTextRequest) *client.FormattedText); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.FormattedText)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.GetMarkdownTextRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_GetMarkdownText_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMarkdownText'
+type TelegramRepo_GetMarkdownText_Call struct {
+	*mock.Call
+}
+
+// GetMarkdownText is a helper method to define mock.On call
+//   - _a0 *client.GetMarkdownTextRequest
+func (_e *TelegramRepo_Expecter) GetMarkdownText(_a0 interface{}) *TelegramRepo_GetMarkdownText_Call {
+	return &TelegramRepo_GetMarkdownText_Call{Call: _e.mock.On("GetMarkdownText", _a0)}
+}
+
+func (_c *TelegramRepo_GetMarkdownText_Call) Run(run func(_a0 *client.GetMarkdownTextRequest)) *TelegramRepo_GetMarkdownText_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.GetMarkdownTextRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_GetMarkdownText_Call) Return(_a0 *client.FormattedText, _a1 error) *TelegramRepo_GetMarkdownText_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_GetMarkdownText_Call) RunAndReturn(run func(*client.GetMarkdownTextRequest) (*client.FormattedText, error)) *TelegramRepo_GetMarkdownText_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -412,6 +528,64 @@ func (_c *TelegramRepo_GetMessages_Call) Return(_a0 *client.Messages, _a1 error)
 }
 
 func (_c *TelegramRepo_GetMessages_Call) RunAndReturn(run func(*client.GetMessagesRequest) (*client.Messages, error)) *TelegramRepo_GetMessages_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ParseTextEntities provides a mock function with given fields: _a0
+func (_m *TelegramRepo) ParseTextEntities(_a0 *client.ParseTextEntitiesRequest) (*client.FormattedText, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ParseTextEntities")
+	}
+
+	var r0 *client.FormattedText
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.ParseTextEntitiesRequest) *client.FormattedText); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.FormattedText)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.ParseTextEntitiesRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_ParseTextEntities_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ParseTextEntities'
+type TelegramRepo_ParseTextEntities_Call struct {
+	*mock.Call
+}
+
+// ParseTextEntities is a helper method to define mock.On call
+//   - _a0 *client.ParseTextEntitiesRequest
+func (_e *TelegramRepo_Expecter) ParseTextEntities(_a0 interface{}) *TelegramRepo_ParseTextEntities_Call {
+	return &TelegramRepo_ParseTextEntities_Call{Call: _e.mock.On("ParseTextEntities", _a0)}
+}
+
+func (_c *TelegramRepo_ParseTextEntities_Call) Run(run func(_a0 *client.ParseTextEntitiesRequest)) *TelegramRepo_ParseTextEntities_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.ParseTextEntitiesRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_ParseTextEntities_Call) Return(_a0 *client.FormattedText, _a1 error) *TelegramRepo_ParseTextEntities_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_ParseTextEntities_Call) RunAndReturn(run func(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)) *TelegramRepo_ParseTextEntities_Call {
 	_c.Call.Return(run)
 	return _c
 }

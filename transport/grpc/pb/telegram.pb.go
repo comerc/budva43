@@ -103,9 +103,10 @@ func (x *ClientDoneResponse) GetDone() bool {
 
 type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     int64                  `protobuf:"varint,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	ChatId        int64                  `protobuf:"varint,2,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
 	Text          string                 `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
+	Forward       bool                   `protobuf:"varint,4,opt,name=forward,proto3" json:"forward,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -140,9 +141,9 @@ func (*Message) Descriptor() ([]byte, []int) {
 	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Message) GetMessageId() int64 {
+func (x *Message) GetId() int64 {
 	if x != nil {
-		return x.MessageId
+		return x.Id
 	}
 	return 0
 }
@@ -159,6 +160,13 @@ func (x *Message) GetText() string {
 		return x.Text
 	}
 	return ""
+}
+
+func (x *Message) GetForward() bool {
+	if x != nil {
+		return x.Forward
+	}
+	return false
 }
 
 type GetMessagesRequest struct {
@@ -301,7 +309,7 @@ func (x *GetMessagesResponse) GetMessages() []*Message {
 	return nil
 }
 
-type CreateMessageRequest struct {
+type SendMessageRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	ChatId           int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
 	Text             string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
@@ -310,20 +318,20 @@ type CreateMessageRequest struct {
 	sizeCache        protoimpl.SizeCache
 }
 
-func (x *CreateMessageRequest) Reset() {
-	*x = CreateMessageRequest{}
+func (x *SendMessageRequest) Reset() {
+	*x = SendMessageRequest{}
 	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateMessageRequest) String() string {
+func (x *SendMessageRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateMessageRequest) ProtoMessage() {}
+func (*SendMessageRequest) ProtoMessage() {}
 
-func (x *CreateMessageRequest) ProtoReflect() protoreflect.Message {
+func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -335,28 +343,80 @@ func (x *CreateMessageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateMessageRequest.ProtoReflect.Descriptor instead.
-func (*CreateMessageRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SendMessageRequest.ProtoReflect.Descriptor instead.
+func (*SendMessageRequest) Descriptor() ([]byte, []int) {
 	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *CreateMessageRequest) GetChatId() int64 {
+func (x *SendMessageRequest) GetChatId() int64 {
 	if x != nil {
 		return x.ChatId
 	}
 	return 0
 }
 
-func (x *CreateMessageRequest) GetText() string {
+func (x *SendMessageRequest) GetText() string {
 	if x != nil {
 		return x.Text
 	}
 	return ""
 }
 
-func (x *CreateMessageRequest) GetReplyToMessageId() int64 {
+func (x *SendMessageRequest) GetReplyToMessageId() int64 {
 	if x != nil {
 		return x.ReplyToMessageId
+	}
+	return 0
+}
+
+type ForwardMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChatId        int64                  `protobuf:"varint,1,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`
+	MessageId     int64                  `protobuf:"varint,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ForwardMessageRequest) Reset() {
+	*x = ForwardMessageRequest{}
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ForwardMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ForwardMessageRequest) ProtoMessage() {}
+
+func (x *ForwardMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ForwardMessageRequest.ProtoReflect.Descriptor instead.
+func (*ForwardMessageRequest) Descriptor() ([]byte, []int) {
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ForwardMessageRequest) GetChatId() int64 {
+	if x != nil {
+		return x.ChatId
+	}
+	return 0
+}
+
+func (x *ForwardMessageRequest) GetMessageId() int64 {
+	if x != nil {
+		return x.MessageId
 	}
 	return 0
 }
@@ -370,7 +430,7 @@ type MessageResponse struct {
 
 func (x *MessageResponse) Reset() {
 	*x = MessageResponse{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -382,7 +442,7 @@ func (x *MessageResponse) String() string {
 func (*MessageResponse) ProtoMessage() {}
 
 func (x *MessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[7]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -395,7 +455,7 @@ func (x *MessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageResponse.ProtoReflect.Descriptor instead.
 func (*MessageResponse) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{7}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *MessageResponse) GetMessage() *Message {
@@ -415,7 +475,7 @@ type GetMessageRequest struct {
 
 func (x *GetMessageRequest) Reset() {
 	*x = GetMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -427,7 +487,7 @@ func (x *GetMessageRequest) String() string {
 func (*GetMessageRequest) ProtoMessage() {}
 
 func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[8]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -440,7 +500,7 @@ func (x *GetMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMessageRequest.ProtoReflect.Descriptor instead.
 func (*GetMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{8}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetMessageRequest) GetChatId() int64 {
@@ -468,7 +528,7 @@ type UpdateMessageRequest struct {
 
 func (x *UpdateMessageRequest) Reset() {
 	*x = UpdateMessageRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -480,7 +540,7 @@ func (x *UpdateMessageRequest) String() string {
 func (*UpdateMessageRequest) ProtoMessage() {}
 
 func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[9]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +553,7 @@ func (x *UpdateMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMessageRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMessageRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{9}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateMessageRequest) GetChatId() int64 {
@@ -527,7 +587,7 @@ type DeleteMessagesRequest struct {
 
 func (x *DeleteMessagesRequest) Reset() {
 	*x = DeleteMessagesRequest{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -539,7 +599,7 @@ func (x *DeleteMessagesRequest) String() string {
 func (*DeleteMessagesRequest) ProtoMessage() {}
 
 func (x *DeleteMessagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[10]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -552,7 +612,7 @@ func (x *DeleteMessagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMessagesRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMessagesRequest) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{10}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteMessagesRequest) GetChatId() int64 {
@@ -578,7 +638,7 @@ type DeleteMessagesResponse struct {
 
 func (x *DeleteMessagesResponse) Reset() {
 	*x = DeleteMessagesResponse{}
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -590,7 +650,7 @@ func (x *DeleteMessagesResponse) String() string {
 func (*DeleteMessagesResponse) ProtoMessage() {}
 
 func (x *DeleteMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[11]
+	mi := &file_transport_grpc_pb_telegram_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -603,7 +663,7 @@ func (x *DeleteMessagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMessagesResponse.ProtoReflect.Descriptor instead.
 func (*DeleteMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{11}
+	return file_transport_grpc_pb_telegram_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteMessagesResponse) GetSuccess() bool {
@@ -620,12 +680,12 @@ const file_transport_grpc_pb_telegram_proto_rawDesc = "" +
 	" transport/grpc/pb/telegram.proto\x12\x02pb\"\x0e\n" +
 	"\fEmptyRequest\"(\n" +
 	"\x12ClientDoneResponse\x12\x12\n" +
-	"\x04done\x18\x01 \x01(\bR\x04done\"U\n" +
-	"\aMessage\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\x03R\tmessageId\x12\x17\n" +
+	"\x04done\x18\x01 \x01(\bR\x04done\"`\n" +
+	"\aMessage\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
 	"\achat_id\x18\x02 \x01(\x03R\x06chatId\x12\x12\n" +
-	"\x04text\x18\x03 \x01(\tR\x04text\"N\n" +
+	"\x04text\x18\x03 \x01(\tR\x04text\x12\x18\n" +
+	"\aforward\x18\x04 \x01(\bR\aforward\"N\n" +
 	"\x12GetMessagesRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1f\n" +
 	"\vmessage_ids\x18\x02 \x03(\x03R\n" +
@@ -633,11 +693,15 @@ const file_transport_grpc_pb_telegram_proto_rawDesc = "" +
 	"\x15GetLastMessageRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\">\n" +
 	"\x13GetMessagesResponse\x12'\n" +
-	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"r\n" +
-	"\x14CreateMessageRequest\x12\x17\n" +
+	"\bmessages\x18\x01 \x03(\v2\v.pb.MessageR\bmessages\"p\n" +
+	"\x12SendMessageRequest\x12\x17\n" +
 	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12-\n" +
-	"\x13reply_to_message_id\x18\x03 \x01(\x03R\x10replyToMessageId\"8\n" +
+	"\x13reply_to_message_id\x18\x03 \x01(\x03R\x10replyToMessageId\"O\n" +
+	"\x15ForwardMessageRequest\x12\x17\n" +
+	"\achat_id\x18\x01 \x01(\x03R\x06chatId\x12\x1d\n" +
+	"\n" +
+	"message_id\x18\x02 \x01(\x03R\tmessageId\"8\n" +
 	"\x0fMessageResponse\x12%\n" +
 	"\amessage\x18\x01 \x01(\v2\v.pb.MessageR\amessage\"K\n" +
 	"\x11GetMessageRequest\x12\x17\n" +
@@ -654,13 +718,14 @@ const file_transport_grpc_pb_telegram_proto_rawDesc = "" +
 	"\vmessage_ids\x18\x02 \x03(\x03R\n" +
 	"messageIds\"2\n" +
 	"\x16DeleteMessagesResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xcc\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x8a\x04\n" +
 	"\n" +
 	"FacadeGRPC\x129\n" +
 	"\rGetClientDone\x12\x10.pb.EmptyRequest\x1a\x16.pb.ClientDoneResponse\x12>\n" +
 	"\vGetMessages\x12\x16.pb.GetMessagesRequest\x1a\x17.pb.GetMessagesResponse\x12@\n" +
-	"\x0eGetLastMessage\x12\x19.pb.GetLastMessageRequest\x1a\x13.pb.MessageResponse\x12>\n" +
-	"\rCreateMessage\x12\x18.pb.CreateMessageRequest\x1a\x13.pb.MessageResponse\x128\n" +
+	"\x0eGetLastMessage\x12\x19.pb.GetLastMessageRequest\x1a\x13.pb.MessageResponse\x12:\n" +
+	"\vSendMessage\x12\x16.pb.SendMessageRequest\x1a\x13.pb.MessageResponse\x12@\n" +
+	"\x0eForwardMessage\x12\x19.pb.ForwardMessageRequest\x1a\x13.pb.MessageResponse\x128\n" +
 	"\n" +
 	"GetMessage\x12\x15.pb.GetMessageRequest\x1a\x13.pb.MessageResponse\x12>\n" +
 	"\rUpdateMessage\x12\x18.pb.UpdateMessageRequest\x1a\x13.pb.MessageResponse\x12G\n" +
@@ -678,7 +743,7 @@ func file_transport_grpc_pb_telegram_proto_rawDescGZIP() []byte {
 	return file_transport_grpc_pb_telegram_proto_rawDescData
 }
 
-var file_transport_grpc_pb_telegram_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_transport_grpc_pb_telegram_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_transport_grpc_pb_telegram_proto_goTypes = []any{
 	(*EmptyRequest)(nil),           // 0: pb.EmptyRequest
 	(*ClientDoneResponse)(nil),     // 1: pb.ClientDoneResponse
@@ -686,12 +751,13 @@ var file_transport_grpc_pb_telegram_proto_goTypes = []any{
 	(*GetMessagesRequest)(nil),     // 3: pb.GetMessagesRequest
 	(*GetLastMessageRequest)(nil),  // 4: pb.GetLastMessageRequest
 	(*GetMessagesResponse)(nil),    // 5: pb.GetMessagesResponse
-	(*CreateMessageRequest)(nil),   // 6: pb.CreateMessageRequest
-	(*MessageResponse)(nil),        // 7: pb.MessageResponse
-	(*GetMessageRequest)(nil),      // 8: pb.GetMessageRequest
-	(*UpdateMessageRequest)(nil),   // 9: pb.UpdateMessageRequest
-	(*DeleteMessagesRequest)(nil),  // 10: pb.DeleteMessagesRequest
-	(*DeleteMessagesResponse)(nil), // 11: pb.DeleteMessagesResponse
+	(*SendMessageRequest)(nil),     // 6: pb.SendMessageRequest
+	(*ForwardMessageRequest)(nil),  // 7: pb.ForwardMessageRequest
+	(*MessageResponse)(nil),        // 8: pb.MessageResponse
+	(*GetMessageRequest)(nil),      // 9: pb.GetMessageRequest
+	(*UpdateMessageRequest)(nil),   // 10: pb.UpdateMessageRequest
+	(*DeleteMessagesRequest)(nil),  // 11: pb.DeleteMessagesRequest
+	(*DeleteMessagesResponse)(nil), // 12: pb.DeleteMessagesResponse
 }
 var file_transport_grpc_pb_telegram_proto_depIdxs = []int32{
 	2,  // 0: pb.GetMessagesResponse.messages:type_name -> pb.Message
@@ -699,19 +765,21 @@ var file_transport_grpc_pb_telegram_proto_depIdxs = []int32{
 	0,  // 2: pb.FacadeGRPC.GetClientDone:input_type -> pb.EmptyRequest
 	3,  // 3: pb.FacadeGRPC.GetMessages:input_type -> pb.GetMessagesRequest
 	4,  // 4: pb.FacadeGRPC.GetLastMessage:input_type -> pb.GetLastMessageRequest
-	6,  // 5: pb.FacadeGRPC.CreateMessage:input_type -> pb.CreateMessageRequest
-	8,  // 6: pb.FacadeGRPC.GetMessage:input_type -> pb.GetMessageRequest
-	9,  // 7: pb.FacadeGRPC.UpdateMessage:input_type -> pb.UpdateMessageRequest
-	10, // 8: pb.FacadeGRPC.DeleteMessages:input_type -> pb.DeleteMessagesRequest
-	1,  // 9: pb.FacadeGRPC.GetClientDone:output_type -> pb.ClientDoneResponse
-	5,  // 10: pb.FacadeGRPC.GetMessages:output_type -> pb.GetMessagesResponse
-	7,  // 11: pb.FacadeGRPC.GetLastMessage:output_type -> pb.MessageResponse
-	7,  // 12: pb.FacadeGRPC.CreateMessage:output_type -> pb.MessageResponse
-	7,  // 13: pb.FacadeGRPC.GetMessage:output_type -> pb.MessageResponse
-	7,  // 14: pb.FacadeGRPC.UpdateMessage:output_type -> pb.MessageResponse
-	11, // 15: pb.FacadeGRPC.DeleteMessages:output_type -> pb.DeleteMessagesResponse
-	9,  // [9:16] is the sub-list for method output_type
-	2,  // [2:9] is the sub-list for method input_type
+	6,  // 5: pb.FacadeGRPC.SendMessage:input_type -> pb.SendMessageRequest
+	7,  // 6: pb.FacadeGRPC.ForwardMessage:input_type -> pb.ForwardMessageRequest
+	9,  // 7: pb.FacadeGRPC.GetMessage:input_type -> pb.GetMessageRequest
+	10, // 8: pb.FacadeGRPC.UpdateMessage:input_type -> pb.UpdateMessageRequest
+	11, // 9: pb.FacadeGRPC.DeleteMessages:input_type -> pb.DeleteMessagesRequest
+	1,  // 10: pb.FacadeGRPC.GetClientDone:output_type -> pb.ClientDoneResponse
+	5,  // 11: pb.FacadeGRPC.GetMessages:output_type -> pb.GetMessagesResponse
+	8,  // 12: pb.FacadeGRPC.GetLastMessage:output_type -> pb.MessageResponse
+	8,  // 13: pb.FacadeGRPC.SendMessage:output_type -> pb.MessageResponse
+	8,  // 14: pb.FacadeGRPC.ForwardMessage:output_type -> pb.MessageResponse
+	8,  // 15: pb.FacadeGRPC.GetMessage:output_type -> pb.MessageResponse
+	8,  // 16: pb.FacadeGRPC.UpdateMessage:output_type -> pb.MessageResponse
+	12, // 17: pb.FacadeGRPC.DeleteMessages:output_type -> pb.DeleteMessagesResponse
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -728,7 +796,7 @@ func file_transport_grpc_pb_telegram_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transport_grpc_pb_telegram_proto_rawDesc), len(file_transport_grpc_pb_telegram_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

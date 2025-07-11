@@ -33,6 +33,8 @@ type clientAdapter interface {
 	// Other operations
 	GetListener() *client.Listener
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
+	// ParseMarkdown(*client.ParseMarkdownRequest) (*client.FormattedText, error)
+	GetMarkdownText(*client.GetMarkdownTextRequest) (*client.FormattedText, error)
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
 	GetOption(*client.GetOptionRequest) (client.OptionValue, error)
 	GetMe() (*client.User, error)
@@ -162,6 +164,24 @@ func (r *Repo) GetListener() *client.Listener {
 // ParseTextEntities парсит текст сообщения
 func (r *Repo) ParseTextEntities(req *client.ParseTextEntitiesRequest) (*client.FormattedText, error) {
 	formattedText, err := r.getClient().ParseTextEntities(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return formattedText, nil
+}
+
+// // ParseMarkdown парсит текст сообщения
+// func (r *Repo) ParseMarkdown(req *client.ParseMarkdownRequest) (*client.FormattedText, error) {
+// 	formattedText, err := r.getClient().ParseMarkdown(req)
+// 	if err != nil {
+// 		return nil, log.WrapError(err) // внешняя ошибка
+// 	}
+// 	return formattedText, nil
+// }
+
+// GetMarkdownText парсит текст сообщения
+func (r *Repo) GetMarkdownText(req *client.GetMarkdownTextRequest) (*client.FormattedText, error) {
+	formattedText, err := r.getClient().GetMarkdownText(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
