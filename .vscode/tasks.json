@@ -2,16 +2,92 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Go: Check Error Log or Return",
+			"type": "shell",
+			"command": "${command:go.buildTags}",
+			"windows": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"ERROR_LOG_OR_RETURN_VERBOSE": "1",
+					}
+				},
+				"command": "error-log-or-return.exe"
+			},
+			"linux": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"ERROR_LOG_OR_RETURN_VERBOSE": "1",
+					}
+				},
+				"command": "error-log-or-return"
+			},
+			"osx": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"ERROR_LOG_OR_RETURN_VERBOSE": "1",
+					}
+				},
+				"command": "error-log-or-return"
+			},
+			"args": [
+				"./..."
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"echo": false,
+				"focus": false,
+				"reveal": "never",
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": {
+				"owner": "go",
+				"fileLocation": "absolute",
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"message": 4
+				}
+			}
+		},
+		{
 			"label": "Go: Check Unused Interface Methods",
 			"type": "shell",
 			"command": "${command:go.buildTags}",
 			"windows": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"UNUSED_INTERFACE_METHODS_VERBOSE": "1",
+					}
+				},
 				"command": "unused-interface-methods.exe"
 			},
 			"linux": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"UNUSED_INTERFACE_METHODS_VERBOSE": "1",
+					}
+				},
 				"command": "unused-interface-methods"
 			},
 			"osx": {
+				"options": {
+					"env": {
+						"GOEXPERIMENT": "synctest",
+						"UNUSED_INTERFACE_METHODS_VERBOSE": "1",
+					}
+				},
 				"command": "unused-interface-methods"
 			},
 			"args": [

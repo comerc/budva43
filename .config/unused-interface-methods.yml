@@ -1,0 +1,9 @@
+ignore:
+  - "**/*_test.go"
+  - "test/**"
+  - "**/mocks/*.go"
+  - "**/github/home/.cache/go-build/**"
+  - "**/Library/Caches/go-build/**"
+  - "transport/grpc/pb/*.pb.go"
+  - "transport/web/graph/generated.go"
+  - "app/dto/gql/dto/dto_generated.go"

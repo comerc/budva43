@@ -41,7 +41,6 @@ func (s *Service) Close() error {
 // GetStatus возвращает статус авторизации
 func (s *Service) GetStatus() (*dto.Status, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	// TODO: отображать аргументы структурированной ошибки в GraphQL
 

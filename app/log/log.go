@@ -12,6 +12,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// TODO: linter: `defer log.ErrorOrDebug(&err, "")` without anonymous function
+// TODO: linter: `var err error` must be used
+// TODO: linter: `log.NewError("text")` via `errors.New("text")` via `fmt.Errorf("text")`
+// TODO: linter: `log.WrapError(err)` только для внешних ошибок
+// TODO: linter: `log.NewError("text")` - форматирование ошибок: с малелькой буквы, без точки в конце
+
 // из-за циклической зависимости app/spylog vs app/log - тесты вынесены в test/log_test.go
 
 type Logger struct {
@@ -36,7 +42,7 @@ func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
 	l.logWithError(slog.LevelWarn, errPtr, message, args...)
 }
 
-func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) {
+func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) { //nolint:error_log_or_return
 	count := 0
 	for _, arg := range args {
 		if attr, ok := arg.(slog.Attr); ok {

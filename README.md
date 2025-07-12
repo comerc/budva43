@@ -128,8 +128,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [godog](github.com/cucumber/godog)
 - [x] grpc
 - [ ] fuzz-test?
-
-
+- [x] [error-log-or-return](https://github.com/error-log-or-return/error-log-or-return)
 
 ## .env
 
