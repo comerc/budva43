@@ -1,9 +1,11 @@
 package config
 
 import (
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,6 +14,9 @@ import (
 
 func setDefaultConfig(config *config) {
 	subproject := strings.TrimSpace(os.Getenv("SUBPROJECT"))
+	if !slices.Contains([]string{"engine", "facade"}, subproject) {
+		log.Panic("invalid subproject: " + subproject)
+	}
 	logDir := filepath.Join(util.ProjectRoot, ".data", subproject, "log")
 	testing := os.Getenv("GOEXPERIMENT") == "synctest"
 	logLevel := slog.LevelDebug
