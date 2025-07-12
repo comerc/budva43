@@ -71,7 +71,6 @@ func (s *Service) GetClientDone() <-chan any {
 
 func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var messages *client.Messages
 	messages, err = s.telegramRepo.GetMessages(&client.GetMessagesRequest{
@@ -96,7 +95,6 @@ func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message,
 
 func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var messages *client.Messages
 	messages, err = s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
@@ -117,7 +115,6 @@ func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 // TODO: вынести в messageService?
 func (s *Service) parseTextEntities(text string) (*client.FormattedText, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
@@ -134,7 +131,6 @@ func (s *Service) parseTextEntities(text string) (*client.FormattedText, error) 
 
 func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	formattedText, err := s.parseTextEntities(newMessage.Text)
 	if err != nil {
@@ -166,7 +162,6 @@ func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) 
 
 func (s *Service) ForwardMessage(chatId int64, messageId int64) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var messages *client.Messages
 	messages, err = s.telegramRepo.ForwardMessages(&client.ForwardMessagesRequest{
@@ -185,7 +180,6 @@ func (s *Service) ForwardMessage(chatId int64, messageId int64) (*dto.Message, e
 
 func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var message *client.Message
 	message, err = s.telegramRepo.GetMessage(&client.GetMessageRequest{
@@ -201,7 +195,6 @@ func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error
 
 func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var sourceMessage *client.Message
 	sourceMessage, err = s.telegramRepo.GetMessage(&client.GetMessageRequest{
@@ -238,7 +231,6 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 
 func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	_, err = s.telegramRepo.DeleteMessages(&client.DeleteMessagesRequest{
 		ChatId:     chatId,
@@ -254,7 +246,6 @@ func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error)
 // mapMessage преобразует сообщение из tdlib в dto.Message
 func (s *Service) mapMessage(message *client.Message) (*dto.Message, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.GetMarkdownText(&client.GetMarkdownTextRequest{

@@ -42,7 +42,7 @@ type RunFunc = func(
 ) error
 
 // Run запускает основные компоненты приложения
-func (a *App) Run(runFunc RunFunc) error {
+func (a *App) Run(runFunc RunFunc) error { //nolint:error_log_or_return
 	releaseVersion := util.GetReleaseVersion()
 	fmt.Println("Release version:", releaseVersion)
 
@@ -51,7 +51,7 @@ func (a *App) Run(runFunc RunFunc) error {
 	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
 	defer a.log.ErrorOrDebug(&err, "Приложение завершило работу")
 
-	a.log.ErrorOrDebug(&err, "Запуск приложения")
+	a.log.ErrorOrDebug(nil, "Запуск приложения")
 
 	// Создаем контекст, который будет отменен при сигнале остановки
 	ctx, cancel := context.WithCancel(context.Background())

@@ -67,6 +67,11 @@ jobs:
       #     go install github.com/unused-interface-methods/unused-interface-methods@latest
       #     GOEXPERIMENT=synctest UNUSED_INTERFACE_METHODS_VERBOSE=1 unused-interface-methods ./...
 
+      - name: Install error-log-or-return
+        run: |
+          go install github.com/error-log-or-return/error-log-or-return@latest
+          GOEXPERIMENT=synctest ERROR_LOG_OR_RETURN_VERBOSE=1 error-log-or-return ./...
+
       - name: Run tests and generate coverage
         run: |
           ./script/cover.sh

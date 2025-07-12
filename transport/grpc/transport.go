@@ -75,7 +75,6 @@ func (t *Transport) GetClientDone(ctx context.Context, req *pb.EmptyRequest) (*p
 
 func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest) (*pb.GetMessagesResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var msgs []*dto.Message
 	msgs, err = t.facade.GetMessages(req.ChatId, req.MessageIds)
@@ -96,7 +95,6 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 
 func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRequest) (*pb.MessageResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
 	res, err = t.facade.GetLastMessage(req.ChatId)
@@ -116,7 +114,6 @@ func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRe
 
 func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.MessageResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
 	res, err = t.facade.SendMessage(&dto.NewMessage{
@@ -139,7 +136,6 @@ func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest)
 
 func (t *Transport) ForwardMessage(ctx context.Context, req *pb.ForwardMessageRequest) (*pb.MessageResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
 	res, err = t.facade.ForwardMessage(req.ChatId, req.MessageId)
@@ -159,7 +155,6 @@ func (t *Transport) ForwardMessage(ctx context.Context, req *pb.ForwardMessageRe
 
 func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (*pb.MessageResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
 	res, err = t.facade.GetMessage(req.ChatId, req.MessageId)
@@ -176,7 +171,6 @@ func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (
 
 func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequest) (*pb.MessageResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var res *dto.Message
 	res, err = t.facade.UpdateMessage(&dto.Message{
@@ -197,7 +191,6 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 
 func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRequest) (*pb.DeleteMessagesResponse, error) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
 
 	var ok bool
 	ok, err = t.facade.DeleteMessages(req.ChatId, req.MessageIds)
