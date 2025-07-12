@@ -8,6 +8,8 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+// TODO: oklog/ulid
+
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	GetClientDone() <-chan any
