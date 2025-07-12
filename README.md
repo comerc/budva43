@@ -111,7 +111,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] dynamic config engine.yml
 - [x] structured logs and errors
 - [x] termAutomator
-- [ ] codecov.io (as uber/atomic)
+- [x] codecov.io
 - [x] snapshot tests
 - [ ] [LocalAI](https://github.com/mudler/LocalAI)
 - [ ] [go-prompt](https://github.com/c-bata/go-prompt)
