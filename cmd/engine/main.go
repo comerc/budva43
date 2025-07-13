@@ -16,6 +16,7 @@ import (
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
 	engineService "github.com/comerc/budva43/service/engine"
+	engineLoaderService "github.com/comerc/budva43/service/engine_loader"
 	filtersModeService "github.com/comerc/budva43/service/filters_mode"
 	forwardedToService "github.com/comerc/budva43/service/forwarded_to"
 	forwarderService "github.com/comerc/budva43/service/forwarder"
@@ -72,6 +73,7 @@ func runEngine(
 
 	// - Инициализация вспомогательных сервисов
 	storageService := storageService.New(storageRepo)
+	engineLoaderService := engineLoaderService.New(telegramRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
 	transformService := transformService.New(
@@ -127,6 +129,7 @@ func runEngine(
 	)
 	engineService := engineService.New(
 		telegramRepo,
+		engineLoaderService,
 		updateNewMessageHandler,
 		updateMessageEditedHandler,
 		updateDeleteMessagesHandler,
