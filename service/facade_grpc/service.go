@@ -113,27 +113,16 @@ func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	return s.mapMessage(messages.Messages[0])
 }
 
-// TODO: вынести в messageService?
-func (s *Service) parseTextEntities(text string) (*client.FormattedText, error) {
+func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
 	var err error
 
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
-		Text: text,
+		Text: newMessage.Text,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,
 		},
 	})
-	if err != nil {
-		return nil, err
-	}
-	return formattedText, nil
-}
-
-func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
-	var err error
-
-	formattedText, err := s.parseTextEntities(newMessage.Text)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +195,13 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		return nil, err
 	}
 
-	formattedText, err := s.parseTextEntities(updateMessage.Text)
+	var formattedText *client.FormattedText
+	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: updateMessage.Text,
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
