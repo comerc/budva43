@@ -163,7 +163,7 @@ func (r *Repo) GetListener() *client.Listener {
 
 // ParseTextEntities парсит текст сообщения
 func (r *Repo) ParseTextEntities(req *client.ParseTextEntitiesRequest) (*client.FormattedText, error) {
-	formattedText, err := r.getClient().ParseTextEntities(req)
+	formattedText, err := client.ParseTextEntities(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
@@ -172,7 +172,7 @@ func (r *Repo) ParseTextEntities(req *client.ParseTextEntitiesRequest) (*client.
 
 // // ParseMarkdown парсит текст сообщения
 // func (r *Repo) ParseMarkdown(req *client.ParseMarkdownRequest) (*client.FormattedText, error) {
-// 	formattedText, err := r.getClient().ParseMarkdown(req)
+// 	formattedText, err := client.ParseMarkdown(req)
 // 	if err != nil {
 // 		return nil, log.WrapError(err) // внешняя ошибка
 // 	}
@@ -181,7 +181,7 @@ func (r *Repo) ParseTextEntities(req *client.ParseTextEntitiesRequest) (*client.
 
 // GetMarkdownText парсит текст сообщения
 func (r *Repo) GetMarkdownText(req *client.GetMarkdownTextRequest) (*client.FormattedText, error) {
-	formattedText, err := r.getClient().GetMarkdownText(req)
+	formattedText, err := client.GetMarkdownText(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
@@ -199,7 +199,7 @@ func (r *Repo) GetCallbackQueryAnswer(req *client.GetCallbackQueryAnswerRequest)
 
 // GetOption выводит информацию о параметрах TDLib
 func (r *Repo) GetOption(req *client.GetOptionRequest) (client.OptionValue, error) {
-	option, err := r.getClient().GetOption(req)
+	option, err := client.GetOption(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
