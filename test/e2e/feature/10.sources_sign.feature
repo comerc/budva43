@@ -6,7 +6,7 @@ Feature: 10.SourcesSign
 
   Background:
     Given будет пересылка - копия
-    And будет суффикс "\n\n**Sign**"
+    And будет подпись
 
   Scenario Outline: Вставка подписи источника
     Given исходный чат "<src_chat_id>" (<src_chat_name>)
