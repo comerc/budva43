@@ -145,8 +145,6 @@ func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) 
 		return nil, err
 	}
 
-	// TODO: дожидаться client.UpdateMessageSendSucceeded, подставлять реальный message.Id
-
 	return s.mapMessage(message)
 }
 

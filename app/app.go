@@ -12,9 +12,9 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
-// TODO: переделать входные параметры функций на объект *Request (как у go-tdlib)
-// TODO: pkg/tdlib-buntu - в какой папке лучше держать?
-// TODO: при старте проверять новые необработанныесообщения в чатах
+// TODO: переделать входные параметры функций на объект *Request (как у go-tdlib) - спорно
+// TODO: pkg/tdlib-ubuntu - в какой папке лучше держать?
+// TODO: при старте проверять новые необработанные сообщения в чатах
 // TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
 // TODO: реализовать storage.BackupEnabled
 // TODO: проверить на Race Condition

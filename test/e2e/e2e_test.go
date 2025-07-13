@@ -350,8 +350,6 @@ func Test(t *testing.T) {
 		t.Skip()
 	}
 
-	// TODO: запустить сервер
-
 	names := []string{
 		// "01.forward_send_copy", // OK
 		// "02.forward", // OK
@@ -373,7 +371,6 @@ func Test(t *testing.T) {
 		// "15.media_album_indelible",
 	}
 
-	// TODO: доставать из конфига? + v6
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
