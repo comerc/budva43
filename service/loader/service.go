@@ -1,4 +1,4 @@
-package engine_loader
+package loader
 
 import (
 	"errors"
