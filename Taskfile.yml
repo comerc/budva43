@@ -27,7 +27,9 @@ tasks:
     cmds:
       # Запускаем скрипт в фоне (&) и ждем его завершения (wait).
       # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
-      - TAIL_ARGS="-0" ./script/log.sh {{.CLI_ARGS}} & wait
+      - |
+        SUBPROJECT=engine \
+        TAIL_ARGS="-0" ./script/log.sh {{.CLI_ARGS}} & wait
     silent: true
 
   log-all:
@@ -48,7 +50,9 @@ tasks:
     cmds:
       # Запускаем скрипт в фоне (&) и ждем его завершения (wait).
       # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
-      - TAIL_ARGS="-n +1" ./script/log.sh {{.CLI_ARGS}} & wait
+      - |
+        SUBPROJECT=engine \
+        TAIL_ARGS="-n +1" ./script/log.sh {{.CLI_ARGS}} & wait
     silent: true
 
   jqp:
@@ -56,7 +60,9 @@ tasks:
     summary: |
       Run jqp on app.log file.
     cmds:
-      - jqp -f .data/engine/log/app.log
+      - |
+        SUBPROJECT=engine \
+        ./script/jqp.sh {{.CLI_ARGS}}
     silent: true
 
   lint:

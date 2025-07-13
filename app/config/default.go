@@ -14,8 +14,11 @@ import (
 
 func setDefaultConfig(config *config) {
 	subproject := strings.TrimSpace(os.Getenv("SUBPROJECT"))
+	if subproject == "" {
+		subproject = "engine"
+	}
 	if !slices.Contains([]string{"engine", "facade"}, subproject) {
-		log.Panic("invalid subproject: " + subproject)
+		log.Panic("invalid subproject: " + subproject + " (valid: engine, facade)")
 	}
 	logDir := filepath.Join(util.ProjectRoot, ".data", subproject, "log")
 	testing := os.Getenv("GOEXPERIMENT") == "synctest"

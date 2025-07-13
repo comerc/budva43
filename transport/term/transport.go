@@ -227,7 +227,12 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		t.authService.GetInputChan() <- code
 
 	case client.TypeAuthorizationStateWaitPassword:
-		t.termRepo.Println("Введите пароль: ")
+		passwordState := state.(*client.AuthorizationStateWaitPassword)
+		if passwordState.PasswordHint != "" {
+			t.termRepo.Printf("Введите пароль (подсказка: %s): \n", passwordState.PasswordHint)
+		} else {
+			t.termRepo.Println("Введите пароль: ")
+		}
 		var password string
 		password, err = t.termRepo.HiddenReadLine()
 		if err != nil {
