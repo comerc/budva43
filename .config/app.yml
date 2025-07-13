@@ -48,3 +48,9 @@ web:
   # read-timeout: 15s
   # write-timeout: 15s
   # shutdown-timeout: 5s
+
+# Настройки gRPC
+grpc:
+  # host: ""
+  # port: 50051
+  # connection-timeout: 15s

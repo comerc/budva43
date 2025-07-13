@@ -14,6 +14,7 @@ var (
 	Storage   = &cfg.Storage
 	Telegram  = &cfg.Telegram
 	Web       = &cfg.Web
+	Grpc      = &cfg.Grpc
 	Engine    = &cfg.Engine
 	// Reports = &cfg.Reports
 )
@@ -26,6 +27,7 @@ type (
 		Storage   storage
 		Telegram  telegram
 		Web       web
+		Grpc      grpc
 		Engine    entity.EngineConfig
 		// Reports reports
 	}
@@ -87,6 +89,13 @@ type (
 		ReadTimeout     time.Duration
 		WriteTimeout    time.Duration
 		ShutdownTimeout time.Duration
+	}
+
+	// Настройки gRPC
+	grpc struct {
+		Host              string
+		Port              string
+		ConnectionTimeout time.Duration
 	}
 
 	// Настройки отчетов
