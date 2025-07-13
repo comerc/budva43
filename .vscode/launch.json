@@ -2,7 +2,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug Budva43",
+			"name": "Debug Engine",
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
@@ -23,7 +23,28 @@
 			"postDebugTask": "",
 			"console": "integratedTerminal"
 		},
-		// {
+		{
+			"name": "Debug Facade",
+			"type": "go",
+			"request": "launch",
+			"mode": "debug",
+			"program": "${workspaceFolder}/cmd/facade",
+			"cwd": "${workspaceFolder}",
+			"env": {
+				"BUDVA43__GENERAL__ENGINE_CONFIG_FILE": "engine.e2e.yml",
+				"SUBPROJECT": "facade",
+			},
+			"args": [],
+			"showLog": true,
+			"logOutput": "rpc",
+			"buildFlags": "",
+			"dlvFlags": [
+				"--check-go-version=false"
+			],
+			"preLaunchTask": "",
+			"postDebugTask": "",
+			"console": "integratedTerminal"
+		}, // {
 		// 	"name": "Debug Budva43 with Config",
 		// 	"type": "go",
 		// 	"request": "launch",
