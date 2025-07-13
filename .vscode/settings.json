@@ -5,7 +5,11 @@
 	},
 	"go.testFlags": [
 		"-count=1",
+		// "-short",
 	],
+	"go.enableCodeLens": {
+		"runtest": true,
+	},
 	"go.testTimeout": "360s",
 	"go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
@@ -22,6 +26,7 @@
 	// ],
 	"go.installDependenciesWhenBuilding": true,
 	"go.coverOnSave": true,
+	"go.coverShort": true, // fork https://github.com/comerc/vscode-go
 	// "go.coverOnSingleTest": true,
 	// "go.coverOnSingleTestFile": true,
 	// "go.coverOnTestPackage": true,
