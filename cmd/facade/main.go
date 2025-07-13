@@ -9,6 +9,8 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
+	engineLoaderService "github.com/comerc/budva43/service/engine_loader"
+	facadeService "github.com/comerc/budva43/service/facade"
 	facadeGQL "github.com/comerc/budva43/service/facade_gql"
 	facadeGRPC "github.com/comerc/budva43/service/facade_grpc"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
@@ -63,6 +65,7 @@ func runFacade(
 
 	// - Инициализация вспомогательных сервисов
 	// storageService := storageService.New(storageRepo)
+	engineLoaderService := engineLoaderService.New(telegramRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
 	// transformService := transformService.New(
@@ -80,7 +83,11 @@ func runFacade(
 	// 	transformService,
 	// 	rateLimiterService,
 	// )
-	authService := authService.New(telegramRepo)
+
+	// - Инициализация сервиса авторизации
+	authService := authService.New(
+		telegramRepo,
+	)
 	err = authService.StartContext(ctx)
 	if err != nil {
 		return err
@@ -128,6 +135,17 @@ func runFacade(
 	// 	return err
 	// }
 	// defer gracefulShutdown(engineService)
+
+	// - Инициализация основного сервиса
+	facadeService := facadeService.New(
+		telegramRepo,
+		engineLoaderService,
+	)
+	err = facadeService.StartContext(ctx)
+	if err != nil {
+		return err
+	}
+	defer gracefulShutdown(facadeService)
 
 	// - Инициализация фасадов
 	facadeGQL := facadeGQL.New(
