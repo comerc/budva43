@@ -65,8 +65,10 @@ func (s *scenario) setSourceChat(chatId, name string) error {
 
 	s.state.sourceChatId = stringToInt64(chatId)
 
+	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 	var key string
-	key, err = gonanoid.New(5)
+	key, err = gonanoid.Generate(alphabet, 5)
 	if err != nil {
 		return fmt.Errorf("failed to generate nanoid: %w", err)
 	}
