@@ -3,6 +3,8 @@ package web
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/zelenin/go-tdlib/client"
 )
 
 // handleAuthState обработчик для получения текущего состояния авторизации
@@ -16,16 +18,30 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var stateType string
+	var passwordHint string
 	state := t.authState
 
 	if state != nil {
 		stateType = state.AuthorizationStateType()
+
+		// Если состояние - ожидание пароля, извлекаем подсказку
+		if stateType == client.TypeAuthorizationStateWaitPassword {
+			passwordState := state.(*client.AuthorizationStateWaitPassword)
+			passwordHint = passwordState.PasswordHint
+		}
+	}
+
+	response := map[string]any{
+		"state_type": stateType,
+	}
+
+	// Добавляем подсказку пароля только если она есть
+	if passwordHint != "" {
+		response["password_hint"] = passwordHint
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(map[string]any{
-		"state_type": stateType,
-	})
+	err = json.NewEncoder(w).Encode(response)
 }
 
 // handleSubmitPhone обработчик для отправки номера телефона

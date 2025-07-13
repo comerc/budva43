@@ -93,6 +93,7 @@ func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message,
 	return result, nil
 }
 
+// GetLastMessage возвращает последнее сообщение в чате (только локальные)
 func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	var err error
 
