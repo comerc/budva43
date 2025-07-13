@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -101,11 +102,6 @@ func (s *scenario) setSendText() error {
 	// 	return fmt.Errorf("failed to generate nanoid: %w", err)
 	// }
 	// s.SendText = id + " " + s.SourceChatName
-	return nil
-}
-
-func (s *scenario) setExpectedText(suffix string) error {
-	// s.ExpectedText = s.SendText + strings.ReplaceAll(suffix, `\n`, "\n")
 	return nil
 }
 
@@ -222,7 +218,6 @@ func (s *scenario) checkMessageAppearsInTargetChat() error {
 // }
 
 func (s *scenario) setExpectedForward(mode string) error {
-	fmt.Println("setExpectedMessages", mode)
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
 		switch mode {
 		case "копия":
@@ -241,11 +236,15 @@ func (s *scenario) setExpectedForward(mode string) error {
 	return nil
 }
 
-func (s *scenario) setExpectedSuffix(v string) error {
+func (s *scenario) setExpectedRegex(v string) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
-		expected := strings.ReplaceAll(v, `\n`, "\n")
-		if !strings.HasSuffix(message.Text, expected) {
-			return fmt.Errorf("message text has no suffix: want %q, got %q", expected, message.Text)
+		pattern := v
+		matched, err := regexp.MatchString(pattern, message.Text)
+		if err != nil {
+			return fmt.Errorf("invalid regex pattern %q: %w", pattern, err)
+		}
+		if !matched {
+			return fmt.Errorf("message text does not match regex: pattern %q, got %q", pattern, message.Text)
 		}
 		return nil
 	})
@@ -296,13 +295,28 @@ func (s *scenario) checkMessage(ctx context.Context, chatId, name string) error 
 	return nil
 }
 
+// Константы из engine.e2e.yml // TODO: получать через grpc?
+const (
+	E2E_SIGN = "**Sign**"
+	E2E_LINK = "**Link**"
+)
+
+func (s *scenario) setExpectedSign() error {
+	pattern := fmt.Sprintf(`(?s)^.*\n\n%s.*$`, strings.ReplaceAll(E2E_SIGN, "*", `\*`))
+	return s.setExpectedRegex(pattern)
+}
+
+func (s *scenario) setExpectedLink() error {
+	pattern := fmt.Sprintf(`(?s)^.*\n\n\[🔗%s\]\(https://t.me/.*\)$`, strings.ReplaceAll(E2E_LINK, "*", `\*`))
+	return s.setExpectedRegex(pattern)
+}
+
 func registerSteps(ctx *godog.ScenarioContext) {
 	scenario := &scenario{}
 	// !! зарегистрированные раньше имеют приоритет выполнения
 	ctx.Given(`^исходный чат "([^"]*)" \(([^)]+)\)$`, scenario.setSourceChat)
 	// ctx.Given(`^целевой чат "([^"]*)" \(([^)]+)\)$`, state.setDestinationChat)
 	// ctx.Given(`^отправляемый текст \"\[id\]\ \[src_chat_name\]\"$`, state.setSendText)
-	// ctx.Given(`^ожидаемый текст \"\[id\]\ \[src_chat_name\]\" \+ "([^"]*)"$`, state.setExpectedText)
 	// ctx.When(`^пользователь отправляет исходное сообщение$`, state.sendMessage)
 	// ctx.When(`^пользователь пересылает последнее сообщение$`, state.forwardLastMessage)
 	// ctx.Then(`^медиа-альбом как копия$`, state.checkAlbumAppearsAsCopy)
@@ -316,7 +330,9 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.When(`^пользователь отправляет сообщение в исходный чат$`, scenario.sendMessage)
 	ctx.Then(`^пауза (\d+) сек.$`, scenario.sleep)
 	ctx.Then(`^сообщение в чате "([^"]*)" \("([^"]*)"\)$`, scenario.checkMessage)
-	ctx.Given(`^будет суффикс "([^"]*)"$`, scenario.setExpectedSuffix)
+	ctx.Given(`^будет текст "([^"]*)"$`, scenario.setExpectedRegex)
+	ctx.Given(`^будет подпись$`, scenario.setExpectedSign)
+	ctx.Given(`^будет ссылка$`, scenario.setExpectedLink)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -344,8 +360,8 @@ func Test(t *testing.T) {
 		// "07.1.include_submatch_f",
 		// "07.2.include_submatch_t",
 		// "08.replace_fragments",
-		"09.sources_link_title",
-		// "10.sources_sign", // OK
+		"09.sources_link_title", // OK
+		"10.sources_sign",       // OK
 		// "11.auto_answers",
 		// "12.copy_once",
 		// "13.indelible",
