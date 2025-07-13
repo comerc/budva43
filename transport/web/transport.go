@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/dto/gql/dto"
 	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 )
 
 // TODO: передавать состояние авторизации в режиме SSE
@@ -74,11 +76,14 @@ func (t *Transport) logMiddleware(next http.Handler) http.Handler {
 
 // StartContext запускает HTTP-сервер
 func (t *Transport) StartContext(ctx context.Context, shutdown func()) error {
-	_ = shutdown // не используется
+	_ = shutdown // пока не используется
 
 	addr := net.JoinHostPort(config.Web.Host, config.Web.Port)
-	if !isPortFree(addr) {
-		return log.NewError("port is busy -> task kill-port", "addr", addr)
+	if !util.IsPortFree(addr) {
+		return log.NewError(
+			fmt.Sprintf("port is busy -> task kill-port -- %s", config.Grpc.Port),
+			"addr", addr,
+		)
 	}
 
 	t.authService.Subscribe(newFuncNotify(t))
@@ -170,17 +175,4 @@ func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	_, err = w.Write([]byte("Budva43 API Server"))
-}
-
-// isPortFree проверяет, свободен ли порт
-func isPortFree(addr string) bool {
-	// Пытаемся подключиться к порту как клиент
-	conn, err := net.DialTimeout("tcp", addr, 1*time.Second)
-	if err != nil {
-		// Если не удалось подключиться, порт свободен
-		return true
-	}
-	// Если подключились, значит порт занят
-	conn.Close()
-	return false
 }

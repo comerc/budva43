@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"google.golang.org/grpc"
@@ -9,8 +10,10 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
+	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/dto/grpc/dto"
 	"github.com/comerc/budva43/app/log"
+	"github.com/comerc/budva43/app/util"
 	"github.com/comerc/budva43/transport/grpc/pb"
 )
 
@@ -44,13 +47,21 @@ func New(facade facadeGRPC) *Transport {
 }
 
 func (t *Transport) Start() error {
-	// TODO: read from config
-	lis, err := net.Listen("tcp", ":50051")
+	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
+	if !util.IsPortFree(addr) {
+		return log.NewError(
+			fmt.Sprintf("port is busy -> task kill-port -- %s", config.Grpc.Port),
+			"addr", addr,
+		)
+	}
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 	t.lis = lis
-	t.server = grpc.NewServer()
+	t.server = grpc.NewServer(
+		grpc.ConnectionTimeout(config.Grpc.ConnectionTimeout),
+	)
 	pb.RegisterFacadeGRPCServer(t.server, t)
 	reflection.Register(t.server)
 	go func() {

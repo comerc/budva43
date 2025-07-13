@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"net"
 	"regexp"
 	"strings"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"google.golang.org/grpc"
 
+	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/transport/grpc/pb"
 )
 
@@ -372,8 +374,8 @@ func Test(t *testing.T) {
 	}
 
 	// TODO: доставать из конфига? + v6
-	grpcAddr := ":50051"
-	conn, err := grpc.Dial(grpcAddr, grpc.WithInsecure())
+	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		t.Fatal(err)
 	}

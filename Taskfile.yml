@@ -153,11 +153,15 @@ tasks:
     # silent: true
 
   kill-port:
-    desc: "Kill port 7070"
+    desc: "Kill specific port"
     summary: |
-      Kill port 7070.
+      Kill specific port.
+
+      ПРИМЕРЫ:
+        task kill-port -- 7070
+        task kill-port -- 50051
     cmds:
-      - lsof -ti:7070 | xargs kill -9
+      - lsof -ti:{{.CLI_ARGS}} | xargs kill -9
 
   all:
     desc: "Run tasks: lint -> test -> build"
