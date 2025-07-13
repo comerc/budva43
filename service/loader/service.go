@@ -17,7 +17,7 @@ type telegramRepo interface {
 	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
 }
 
-// Service предоставляет функциональность загрузчика конфигурации
+// Service предоставляет функциональность загрузчика
 type Service struct {
 	log *log.Logger
 	//
@@ -25,7 +25,7 @@ type Service struct {
 	loadChatsDone bool
 }
 
-// New создает новый экземпляр сервиса загрузчика конфигурации
+// New создает новый экземпляр сервиса загрузчика
 func New(
 	telegramRepo telegramRepo,
 ) *Service {
@@ -36,8 +36,8 @@ func New(
 	}
 }
 
-// loadConfig загружает конфигурацию
-func (s *Service) LoadConfig() {
+// Run запускает сервис загрузчика
+func (s *Service) Run() {
 	// Загружаем в первый раз engine.yml
 	s.handleConfigReload()
 

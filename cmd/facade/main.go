@@ -9,10 +9,10 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
-	engineLoaderService "github.com/comerc/budva43/service/engine_loader"
 	facadeService "github.com/comerc/budva43/service/facade"
 	facadeGQL "github.com/comerc/budva43/service/facade_gql"
 	facadeGRPC "github.com/comerc/budva43/service/facade_grpc"
+	loaderService "github.com/comerc/budva43/service/loader"
 	mediaAlbumService "github.com/comerc/budva43/service/media_album"
 	messageService "github.com/comerc/budva43/service/message"
 	grpcTransport "github.com/comerc/budva43/transport/grpc"
@@ -65,7 +65,7 @@ func runFacade(
 
 	// - Инициализация вспомогательных сервисов
 	// storageService := storageService.New(storageRepo)
-	engineLoaderService := engineLoaderService.New(telegramRepo)
+	loaderService := loaderService.New(telegramRepo)
 	messageService := messageService.New()
 	mediaAlbumService := mediaAlbumService.New()
 	// transformService := transformService.New(
@@ -139,7 +139,7 @@ func runFacade(
 	// - Инициализация основного сервиса
 	facadeService := facadeService.New(
 		telegramRepo,
-		engineLoaderService,
+		loaderService,
 	)
 	err = facadeService.StartContext(ctx)
 	if err != nil {

@@ -11,29 +11,29 @@ type telegramRepo interface {
 	GetClientDone() <-chan any
 }
 
-//go:generate mockery --name=engineLoaderService --exported
-type engineLoaderService interface {
-	LoadConfig()
+//go:generate mockery --name=loaderService --exported
+type loaderService interface {
+	Run()
 }
 
 // Service предоставляет функциональность фасада
 type Service struct {
 	log *log.Logger
 	//
-	telegramRepo        telegramRepo
-	engineLoaderService engineLoaderService
+	telegramRepo  telegramRepo
+	loaderService loaderService
 }
 
 // New создает новый экземпляр сервиса фасада
 func New(
 	telegramRepo telegramRepo,
-	engineLoaderService engineLoaderService,
+	loaderService loaderService,
 ) *Service {
 	return &Service{
 		log: log.NewLogger(),
 		//
-		telegramRepo:        telegramRepo,
-		engineLoaderService: engineLoaderService,
+		telegramRepo:  telegramRepo,
+		loaderService: loaderService,
 	}
 }
 
@@ -56,6 +56,6 @@ func (s *Service) run(ctx context.Context) {
 	case <-ctx.Done():
 		return
 	case <-s.telegramRepo.GetClientDone():
-		s.engineLoaderService.LoadConfig()
+		s.loaderService.Run()
 	}
 }
