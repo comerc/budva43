@@ -15,11 +15,6 @@ type telegramRepo interface {
 	GetListener() *client.Listener
 }
 
-//go:generate mockery --name=loaderService --exported
-type loaderService interface {
-	Run()
-}
-
 //go:generate mockery --name=updateNewMessageHandler --exported
 type updateNewMessageHandler interface {
 	Run(ctx context.Context, update *client.UpdateNewMessage)
@@ -45,7 +40,6 @@ type Service struct {
 	log *log.Logger
 	//
 	telegramRepo                telegramRepo
-	loaderService               loaderService
 	updateNewMessageHandler     updateNewMessageHandler
 	updateMessageEditedHandler  updateMessageEditedHandler
 	updateDeleteMessagesHandler updateDeleteMessagesHandler
@@ -55,7 +49,6 @@ type Service struct {
 // New создает новый экземпляр сервиса engine
 func New(
 	telegramRepo telegramRepo,
-	loaderService loaderService,
 	updateNewMessageHandler updateNewMessageHandler,
 	updateMessageEditedHandler updateMessageEditedHandler,
 	updateDeleteMessagesHandler updateDeleteMessagesHandler,
@@ -65,7 +58,6 @@ func New(
 		log: log.NewLogger(),
 		//
 		telegramRepo:                telegramRepo,
-		loaderService:               loaderService,
 		updateNewMessageHandler:     updateNewMessageHandler,
 		updateMessageEditedHandler:  updateMessageEditedHandler,
 		updateDeleteMessagesHandler: updateDeleteMessagesHandler,
@@ -93,7 +85,6 @@ func (s *Service) run(ctx context.Context) {
 	case <-ctx.Done():
 		return
 	case <-s.telegramRepo.GetClientDone():
-		s.loaderService.Run()
 		listener := s.telegramRepo.GetListener()
 		defer listener.Close()
 		s.handleUpdates(ctx, listener)

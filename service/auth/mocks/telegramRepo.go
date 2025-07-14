@@ -20,9 +20,9 @@ func (_m *TelegramRepo) EXPECT() *TelegramRepo_Expecter {
 	return &TelegramRepo_Expecter{mock: &_m.Mock}
 }
 
-// CreateClient provides a mock function with given fields: _a0
-func (_m *TelegramRepo) CreateClient(_a0 func() client.AuthorizationStateHandler) {
-	_m.Called(_a0)
+// CreateClient provides a mock function with given fields: _a0, _a1
+func (_m *TelegramRepo) CreateClient(_a0 func() client.AuthorizationStateHandler, _a1 func()) {
+	_m.Called(_a0, _a1)
 }
 
 // TelegramRepo_CreateClient_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateClient'
@@ -32,13 +32,14 @@ type TelegramRepo_CreateClient_Call struct {
 
 // CreateClient is a helper method to define mock.On call
 //   - _a0 func() client.AuthorizationStateHandler
-func (_e *TelegramRepo_Expecter) CreateClient(_a0 interface{}) *TelegramRepo_CreateClient_Call {
-	return &TelegramRepo_CreateClient_Call{Call: _e.mock.On("CreateClient", _a0)}
+//   - _a1 func()
+func (_e *TelegramRepo_Expecter) CreateClient(_a0 interface{}, _a1 interface{}) *TelegramRepo_CreateClient_Call {
+	return &TelegramRepo_CreateClient_Call{Call: _e.mock.On("CreateClient", _a0, _a1)}
 }
 
-func (_c *TelegramRepo_CreateClient_Call) Run(run func(_a0 func() client.AuthorizationStateHandler)) *TelegramRepo_CreateClient_Call {
+func (_c *TelegramRepo_CreateClient_Call) Run(run func(_a0 func() client.AuthorizationStateHandler, _a1 func())) *TelegramRepo_CreateClient_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(func() client.AuthorizationStateHandler))
+		run(args[0].(func() client.AuthorizationStateHandler), args[1].(func()))
 	})
 	return _c
 }
@@ -48,7 +49,7 @@ func (_c *TelegramRepo_CreateClient_Call) Return() *TelegramRepo_CreateClient_Ca
 	return _c
 }
 
-func (_c *TelegramRepo_CreateClient_Call) RunAndReturn(run func(func() client.AuthorizationStateHandler)) *TelegramRepo_CreateClient_Call {
+func (_c *TelegramRepo_CreateClient_Call) RunAndReturn(run func(func() client.AuthorizationStateHandler, func())) *TelegramRepo_CreateClient_Call {
 	_c.Run(run)
 	return _c
 }
@@ -96,53 +97,6 @@ func (_c *TelegramRepo_CreateTdlibParameters_Call) Return(_a0 *client.SetTdlibPa
 }
 
 func (_c *TelegramRepo_CreateTdlibParameters_Call) RunAndReturn(run func() *client.SetTdlibParametersRequest) *TelegramRepo_CreateTdlibParameters_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetClientDone provides a mock function with no fields
-func (_m *TelegramRepo) GetClientDone() <-chan interface{} {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetClientDone")
-	}
-
-	var r0 <-chan interface{}
-	if rf, ok := ret.Get(0).(func() <-chan interface{}); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan interface{})
-		}
-	}
-
-	return r0
-}
-
-// TelegramRepo_GetClientDone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetClientDone'
-type TelegramRepo_GetClientDone_Call struct {
-	*mock.Call
-}
-
-// GetClientDone is a helper method to define mock.On call
-func (_e *TelegramRepo_Expecter) GetClientDone() *TelegramRepo_GetClientDone_Call {
-	return &TelegramRepo_GetClientDone_Call{Call: _e.mock.On("GetClientDone")}
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) Run(run func()) *TelegramRepo_GetClientDone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) Return(_a0 <-chan interface{}) *TelegramRepo_GetClientDone_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) RunAndReturn(run func() <-chan interface{}) *TelegramRepo_GetClientDone_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -204,9 +158,9 @@ func (_c *TelegramRepo_GetMe_Call) RunAndReturn(run func() (*client.User, error)
 	return _c
 }
 
-// GetOption provides a mock function with given fields: req
-func (_m *TelegramRepo) GetOption(req *client.GetOptionRequest) (client.OptionValue, error) {
-	ret := _m.Called(req)
+// GetOption provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetOption(_a0 *client.GetOptionRequest) (client.OptionValue, error) {
+	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetOption")
@@ -215,10 +169,10 @@ func (_m *TelegramRepo) GetOption(req *client.GetOptionRequest) (client.OptionVa
 	var r0 client.OptionValue
 	var r1 error
 	if rf, ok := ret.Get(0).(func(*client.GetOptionRequest) (client.OptionValue, error)); ok {
-		return rf(req)
+		return rf(_a0)
 	}
 	if rf, ok := ret.Get(0).(func(*client.GetOptionRequest) client.OptionValue); ok {
-		r0 = rf(req)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(client.OptionValue)
@@ -226,7 +180,7 @@ func (_m *TelegramRepo) GetOption(req *client.GetOptionRequest) (client.OptionVa
 	}
 
 	if rf, ok := ret.Get(1).(func(*client.GetOptionRequest) error); ok {
-		r1 = rf(req)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -240,12 +194,12 @@ type TelegramRepo_GetOption_Call struct {
 }
 
 // GetOption is a helper method to define mock.On call
-//   - req *client.GetOptionRequest
-func (_e *TelegramRepo_Expecter) GetOption(req interface{}) *TelegramRepo_GetOption_Call {
-	return &TelegramRepo_GetOption_Call{Call: _e.mock.On("GetOption", req)}
+//   - _a0 *client.GetOptionRequest
+func (_e *TelegramRepo_Expecter) GetOption(_a0 interface{}) *TelegramRepo_GetOption_Call {
+	return &TelegramRepo_GetOption_Call{Call: _e.mock.On("GetOption", _a0)}
 }
 
-func (_c *TelegramRepo_GetOption_Call) Run(run func(req *client.GetOptionRequest)) *TelegramRepo_GetOption_Call {
+func (_c *TelegramRepo_GetOption_Call) Run(run func(_a0 *client.GetOptionRequest)) *TelegramRepo_GetOption_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(*client.GetOptionRequest))
 	})

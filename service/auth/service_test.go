@@ -21,7 +21,7 @@ func TestGetStatus(t *testing.T) {
 		Return(&client.OptionValueString{Value: "1.2.3"}, nil)
 	telegramRepo.EXPECT().GetMe().
 		Return(&client.User{Id: 123}, nil)
-	service := New(telegramRepo)
+	service := New(telegramRepo, nil)
 
 	status := service.GetStatus()
 	assert.Equal(t, "TDLib version: 1.2.3 userId: 123", status)
@@ -31,7 +31,7 @@ func TestSubscribe(t *testing.T) {
 	t.Parallel()
 
 	telegramRepo := mocks.NewTelegramRepo(t)
-	service := New(telegramRepo)
+	service := New(telegramRepo, nil)
 
 	// Проверяем начальное состояние
 	require.Equal(t, 0, len(service.subscribers))
@@ -71,7 +71,7 @@ func Test_broadcast(t *testing.T) {
 		}
 
 		telegramRepo := mocks.NewTelegramRepo(t)
-		service := New(telegramRepo)
+		service := New(telegramRepo, nil)
 
 		// Тест: broadcast без подписчиков - нормально
 		for _, state := range states {

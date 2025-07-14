@@ -161,24 +161,3 @@ func TestDeleteMessage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, resp.Success)
 }
-
-func TestGetClientDone(t *testing.T) {
-	t.Parallel()
-	facade := mocks.NewFacadeGRPC(t)
-	ch := make(chan any)
-	facade.EXPECT().GetClientDone().Return((<-chan any)(ch))
-
-	conn, cleanup := startTestGRPCServer(t, facade)
-	t.Cleanup(cleanup)
-	client := pb.NewFacadeGRPCClient(conn)
-
-	resp, err := client.GetClientDone(context.Background(), &pb.EmptyRequest{})
-	assert.NoError(t, err)
-	assert.False(t, resp.Done)
-
-	// Закрываем канал, чтобы проверить Done = true
-	close(ch)
-	resp2, err2 := client.GetClientDone(context.Background(), &pb.EmptyRequest{})
-	assert.NoError(t, err2)
-	assert.True(t, resp2.Done)
-}

@@ -24,6 +24,12 @@ func TestGetMessages(t *testing.T) {
 	msg2 := &client.Message{Id: 20}
 	msgs := &client.Messages{Messages: []*client.Message{msg1, msg2}}
 	tg.EXPECT().GetMessages(&client.GetMessagesRequest{ChatId: chatId, MessageIds: msgIds}).Return(msgs, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "foo"},
+	}).Return(&client.FormattedText{Text: "foo"}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "bar"},
+	}).Return(&client.FormattedText{Text: "bar"}, nil)
 	ms.EXPECT().GetFormattedText(msg1).Return(&client.FormattedText{Text: "foo"})
 	ms.EXPECT().GetFormattedText(msg2).Return(&client.FormattedText{Text: "bar"})
 
@@ -53,6 +59,9 @@ func TestGetLastMessage(t *testing.T) {
 		TotalCount: 1,
 		Messages:   []*client.Message{msg},
 	}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "last"},
+	}).Return(&client.FormattedText{Text: "last"}, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "last"})
 
 	result, err := s.GetLastMessage(chatId)
@@ -79,6 +88,15 @@ func TestSendMessage(t *testing.T) {
 		},
 		ReplyTo: &client.InputMessageReplyToMessage{MessageId: 2},
 	}).Return(msg, nil)
+	tg.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: "hi",
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	}).Return(&client.FormattedText{Text: "hi"}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "hi"},
+	}).Return(&client.FormattedText{Text: "hi"}, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "hi"})
 
 	result, err := s.SendMessage(in)
@@ -104,6 +122,9 @@ func TestForwardMessage(t *testing.T) {
 		TotalCount: 1,
 		Messages:   []*client.Message{msg},
 	}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "msg"},
+	}).Return(&client.FormattedText{Text: "msg"}, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "msg"})
 
 	result, err := s.ForwardMessage(chatId, msgId)
@@ -123,6 +144,9 @@ func TestGetMessage(t *testing.T) {
 	msgId := int64(2)
 	msg := &client.Message{Id: msgId}
 	tg.EXPECT().GetMessage(&client.GetMessageRequest{ChatId: chatId, MessageId: msgId}).Return(msg, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "msg"},
+	}).Return(&client.FormattedText{Text: "msg"}, nil)
 	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "msg"})
 
 	result, err := s.GetMessage(chatId, msgId)
@@ -151,6 +175,15 @@ func TestUpdateMessage(t *testing.T) {
 		ReplyMarkup:         orig.ReplyMarkup,
 		InputMessageContent: imc,
 	}).Return(newMsg, nil)
+	tg.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: "upd",
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	}).Return(&client.FormattedText{Text: "upd"}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: &client.FormattedText{Text: "upd"},
+	}).Return(&client.FormattedText{Text: "upd"}, nil)
 	ms.EXPECT().GetFormattedText(newMsg).Return(ft)
 
 	result, err := s.UpdateMessage(upd)

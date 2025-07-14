@@ -21,6 +21,7 @@ import (
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
+	loaderService "github.com/comerc/budva43/service/loader"
 	termTransport "github.com/comerc/budva43/transport/term"
 	webTransport "github.com/comerc/budva43/transport/web"
 )
@@ -88,7 +89,9 @@ func TestAuth(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	authService := authService.New(telegramRepo)
+	loaderService := loaderService.New(telegramRepo)
+
+	authService := authService.New(telegramRepo, loaderService)
 
 	err = authService.StartContext(ctx)
 	require.NoError(t, err)
@@ -98,6 +101,7 @@ func TestAuth(t *testing.T) {
 	})
 
 	termTransport := termTransport.New(
+		telegramRepo,
 		termRepo,
 		authService,
 	).WithPhoneNumber("")

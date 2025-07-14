@@ -131,7 +131,11 @@ func (r *Repo) GetMessageLinkInfo(req *client.GetMessageLinkInfoRequest) (*clien
 
 // LoadChats загружает чаты
 func (r *Repo) LoadChats(req *client.LoadChatsRequest) (*client.Ok, error) {
-	ok, err := r.getClient().LoadChats(req)
+	// Требуется r.client до закрытия канала r.clientDone (для runLoader)
+	if r.client == nil {
+		return nil, log.NewError("client is not initialized")
+	}
+	ok, err := r.client.LoadChats(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
@@ -140,7 +144,11 @@ func (r *Repo) LoadChats(req *client.LoadChatsRequest) (*client.Ok, error) {
 
 // GetChatHistory выводит историю сообщений
 func (r *Repo) GetChatHistory(req *client.GetChatHistoryRequest) (*client.Messages, error) {
-	messages, err := r.getClient().GetChatHistory(req)
+	// Требуется r.client до закрытия канала r.clientDone (для runLoader)
+	if r.client == nil {
+		return nil, log.NewError("client is not initialized")
+	}
+	messages, err := r.client.GetChatHistory(req)
 	if err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}

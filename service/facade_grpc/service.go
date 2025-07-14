@@ -9,7 +9,6 @@ import (
 
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClientDone() <-chan any
 	// tdlibClient methods
 	GetMessage(*client.GetMessageRequest) (*client.Message, error)
 	SendMessage(*client.SendMessageRequest) (*client.Message, error)
@@ -55,18 +54,6 @@ func New(
 		messageService:    messageService,
 		mediaAlbumService: mediaAlbumService,
 	}
-}
-
-func (s *Service) Start() error {
-	return nil
-}
-
-func (s *Service) Close() error {
-	return nil
-}
-
-func (s *Service) GetClientDone() <-chan any {
-	return s.telegramRepo.GetClientDone()
 }
 
 func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error) {

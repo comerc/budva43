@@ -91,7 +91,10 @@ func runEngine(
 		transformService,
 		rateLimiterService,
 	)
-	authService := authService.New(telegramRepo)
+	authService := authService.New(
+		telegramRepo,
+		loaderService,
+	)
 	err = authService.StartContext(ctx)
 	if err != nil {
 		return err
@@ -129,7 +132,6 @@ func runEngine(
 	)
 	engineService := engineService.New(
 		telegramRepo,
-		loaderService,
 		updateNewMessageHandler,
 		updateMessageEditedHandler,
 		updateDeleteMessagesHandler,
@@ -152,6 +154,7 @@ func runEngine(
 
 	// - Инициализация транспортных адаптеров
 	termTransport := termTransport.New(
+		telegramRepo,
 		termRepo,
 		authService,
 	)

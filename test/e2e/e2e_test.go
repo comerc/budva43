@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/util"
 	"github.com/comerc/budva43/transport/grpc/pb"
 )
 
@@ -351,8 +352,8 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.forward_send_copy", // OK
-		// "02.forward", // OK
+		"01.forward_send_copy", // OK
+		"02.forward",           // OK
 		// "03.1.replace_myself_links",
 		// "03.2.delete_external_links",
 		// "04.1.filters_mode_exclude",
@@ -362,8 +363,8 @@ func Test(t *testing.T) {
 		// "07.1.include_submatch_f",
 		// "07.2.include_submatch_t",
 		// "08.replace_fragments",
-		// "09.sources_link_title", // OK
-		// "10.sources_sign", // OK
+		"09.sources_link_title", // OK
+		"10.sources_sign",       // OK
 		// "11.auto_answers",
 		// "12.copy_once",
 		// "13.indelible",
@@ -372,6 +373,9 @@ func Test(t *testing.T) {
 	}
 
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
+	if util.IsPortFree(addr) {
+		t.Fatal("port is not open")
+	}
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		t.Fatal(err)
