@@ -1719,3 +1719,219 @@ func TestEscapeMarkdown(t *testing.T) {
 		assert.Equal(t, "\\"+v, escapeMarkdown(v))
 	}
 }
+
+func Test_applyReplacements(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		setup            func() (*client.FormattedText, []*replacement)
+		expectedText     string
+		expectedEntities []*client.TextEntity
+	}{
+		{
+			name: "only_change_entity_type_no_text_change",
+			setup: func() (*client.FormattedText, []*replacement) {
+				entity := &client.TextEntity{
+					Offset: 5,
+					Length: 7,
+					Type:   &client.TextEntityTypeTextUrl{Url: "https://example.com"},
+				}
+				formattedText := &client.FormattedText{
+					Text:     "test message",
+					Entities: []*client.TextEntity{entity},
+				}
+				replacements := []*replacement{
+					{
+						OldEntity:     entity, // используем тот же объект
+						NewText:       "",     // пустой - только меняем тип
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+				}
+				return formattedText, replacements
+			},
+			expectedText: "test message",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 5,
+					Length: 7,
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+			},
+		},
+		{
+			name: "entity_fully_inside_replaced_text_gets_deleted",
+			setup: func() (*client.FormattedText, []*replacement) {
+				urlEntity := &client.TextEntity{
+					Offset: 6,
+					Length: 21, // URL entity
+					Type:   &client.TextEntityTypeUrl{},
+				}
+				boldEntity := &client.TextEntity{
+					Offset: 12, // Bold entity внутри URL (t.me/test/123)
+					Length: 9,
+					Type:   &client.TextEntityTypeBold{},
+				}
+				formattedText := &client.FormattedText{
+					Text:     "Check https://t.me/test/123 here",
+					Entities: []*client.TextEntity{urlEntity, boldEntity},
+				}
+				replacements := []*replacement{
+					{
+						OldEntity:     urlEntity,
+						NewText:       "DELETED LINK",
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+				}
+				return formattedText, replacements
+			},
+			expectedText: "Check DELETED LINK here",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 12, // длина "DELETED LINK"
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+				// Bold entity должен быть удален, так как был внутри заменяемого текста
+			},
+		},
+		{
+			name: "entity_after_replacement_gets_shifted",
+			setup: func() (*client.FormattedText, []*replacement) {
+				urlEntity := &client.TextEntity{
+					Offset: 6,
+					Length: 21, // URL entity
+					Type:   &client.TextEntityTypeUrl{},
+				}
+				boldEntity := &client.TextEntity{
+					Offset: 32, // Bold entity после URL
+					Length: 9,
+					Type:   &client.TextEntityTypeBold{},
+				}
+				formattedText := &client.FormattedText{
+					Text:     "Start https://t.me/test/123 and bold text",
+					Entities: []*client.TextEntity{urlEntity, boldEntity},
+				}
+				replacements := []*replacement{
+					{
+						OldEntity:     urlEntity,
+						NewText:       "DELETED LINK", // 12 символов вместо 21
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+				}
+				return formattedText, replacements
+			},
+			expectedText: "Start DELETED LINK and bold text",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 12,
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+				{
+					Offset: 23, // сдвинулся на -9 (21-12)
+					Length: 9,
+					Type:   &client.TextEntityTypeBold{},
+				},
+			},
+		},
+		{
+			name: "entity_before_replacement_stays_unchanged",
+			setup: func() (*client.FormattedText, []*replacement) {
+				boldEntity := &client.TextEntity{
+					Offset: 0, // Bold entity до URL
+					Length: 4,
+					Type:   &client.TextEntityTypeBold{},
+				}
+				urlEntity := &client.TextEntity{
+					Offset: 10,
+					Length: 21, // URL entity
+					Type:   &client.TextEntityTypeUrl{},
+				}
+				formattedText := &client.FormattedText{
+					Text:     "Bold text https://t.me/test/123 end",
+					Entities: []*client.TextEntity{boldEntity, urlEntity},
+				}
+				replacements := []*replacement{
+					{
+						OldEntity:     urlEntity,
+						NewText:       "DELETED LINK",
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+				}
+				return formattedText, replacements
+			},
+			expectedText: "Bold text DELETED LINK end",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 0, // остается без изменений
+					Length: 4,
+					Type:   &client.TextEntityTypeBold{},
+				},
+				{
+					Offset: 10,
+					Length: 12,
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+			},
+		},
+		{
+			name: "multiple_replacements_processed_in_reverse_order",
+			setup: func() (*client.FormattedText, []*replacement) {
+				url1Entity := &client.TextEntity{
+					Offset: 6,
+					Length: 21, // первый URL
+					Type:   &client.TextEntityTypeUrl{},
+				}
+				url2Entity := &client.TextEntity{
+					Offset: 39,
+					Length: 21, // второй URL
+					Type:   &client.TextEntityTypeUrl{},
+				}
+				formattedText := &client.FormattedText{
+					Text:     "First https://t.me/test/123 and second https://t.me/test/456 end",
+					Entities: []*client.TextEntity{url1Entity, url2Entity},
+				}
+				replacements := []*replacement{
+					{
+						OldEntity:     url1Entity,
+						NewText:       "LINK1",
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+					{
+						OldEntity:     url2Entity,
+						NewText:       "LINK2",
+						NewEntityType: &client.TextEntityTypeStrikethrough{},
+					},
+				}
+				return formattedText, replacements
+			},
+			expectedText: "First LINK1 and second LINK2 end",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 5, // LINK1
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+				{
+					Offset: 23, // сдвинулся после замены первого URL
+					Length: 5,  // LINK2
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			formattedText, replacements := test.setup()
+			service := New(nil, nil, nil)
+			service.applyReplacements(formattedText, replacements)
+
+			assert.Equal(t, test.expectedText, formattedText.Text)
+			assert.Equal(t, test.expectedEntities, formattedText.Entities)
+		})
+	}
+}
