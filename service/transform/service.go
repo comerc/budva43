@@ -114,25 +114,142 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	}
 	_, isBasicGroup := chat.Type.(*client.ChatTypeBasicGroup)
 
-	for _, entity := range formattedText.Entities {
-		if replaceMyselfLinks.Run && !isBasicGroup {
-			textUrl, ok := entity.Type.(*client.TextEntityTypeTextUrl)
-			if !ok {
-				continue
+	// Структура для хранения информации о замене
+	type replacement struct {
+		entityIndex  int
+		entity       *client.TextEntity
+		newText      string
+		newUrl       string
+		shouldDelete bool // для зачёркивания ссылки когда не найдено скопированное
+	}
+
+	// Собираем все замены
+	var replacements []replacement
+	for i, entity := range formattedText.Entities {
+		switch entityType := entity.Type.(type) {
+		case *client.TextEntityTypeUrl:
+			if replaceMyselfLinks.Run && !isBasicGroup {
+				url := util.DecodeFromUTF16(util.EncodeToUTF16(formattedText.Text[entity.Offset : entity.Offset+entity.Length]))
+				src := s.getMessageByLink(url)
+				if src == nil || srcChatId != src.ChatId {
+					// Не наш чат - не трогаем
+					continue
+				}
+				// Ссылка на тот же исходный чат - пытаемся заменить
+				myselfLink, err := s.getMyselfLink(src, dstChatId)
+				if err != nil {
+					// Не удалось получить ссылку на копию
+					if replaceMyselfLinks.DeleteExternal {
+						// Заменяем на "DELETED LINK" (для URL без текста)
+						replacements = append(replacements, replacement{
+							entityIndex:  i,
+							entity:       entity,
+							newText:      "DELETED LINK",
+							shouldDelete: true,
+						})
+					}
+					continue
+				}
+				// Успешная замена на ссылку копии
+				replacements = append(replacements, replacement{
+					entityIndex: i,
+					entity:      entity,
+					newText:     myselfLink,
+					newUrl:      myselfLink,
+				})
 			}
-			src := s.getMessageByLink(textUrl.Url)
-			if src == nil || srcChatId != src.ChatId {
-				continue
+		case *client.TextEntityTypeTextUrl:
+			if replaceMyselfLinks.Run && !isBasicGroup {
+				src := s.getMessageByLink(entityType.Url)
+				if src == nil || srcChatId != src.ChatId {
+					// Не наш чат - не трогаем
+					continue
+				}
+				// Ссылка на тот же исходный чат - пытаемся заменить
+				myselfLink, err := s.getMyselfLink(src, dstChatId)
+				if err != nil {
+					// Не удалось получить ссылку на копию
+					if replaceMyselfLinks.DeleteExternal {
+						// Зачёркиваем (текст остаётся, URL удаляется)
+						replacements = append(replacements, replacement{
+							entityIndex:  i,
+							entity:       entity,
+							shouldDelete: true,
+						})
+					}
+					continue
+				}
+				// Успешная замена URL
+				replacements = append(replacements, replacement{
+					entityIndex: i,
+					entity:      entity,
+					newUrl:      myselfLink,
+				})
 			}
-			isReplaced := s.justReplaceMyselfLinks(entity, src, dstChatId)
-			if isReplaced {
-				continue
-			}
-		}
-		if replaceMyselfLinks.DeleteExternal {
-			entity.Type = &client.TextEntityTypeStrikethrough{}
 		}
 	}
+
+	// Применяем замены к тексту в обратном порядке (от конца к началу)
+	for i := len(replacements) - 1; i >= 0; i-- {
+		replacement := replacements[i]
+		if replacement.newText != "" {
+			// Заменяем текст ссылки
+			start := replacement.entity.Offset
+			end := replacement.entity.Offset + replacement.entity.Length
+			formattedText.Text = formattedText.Text[:start] + replacement.newText + formattedText.Text[end:]
+		}
+	}
+
+	// Пересчитываем entities на основе нового текста
+	resultEntities := make([]*client.TextEntity, 0, len(formattedText.Entities))
+	offsetAdjustment := int32(0)
+
+	for i, entity := range formattedText.Entities {
+		// Ищем replacement для этого entity
+		var replacement *replacement
+		for j := range replacements {
+			if replacements[j].entityIndex == i {
+				replacement = &replacements[j]
+				break
+			}
+		}
+
+		newEntity := &client.TextEntity{
+			Offset: entity.Offset + offsetAdjustment,
+			Length: entity.Length,
+			Type:   entity.Type,
+		}
+
+		// Применяем замену и корректируем смещение
+		if replacement != nil {
+			if replacement.shouldDelete {
+				// Зачёркиваем ссылку
+				if replacement.newText != "" {
+					newLength := int32(len(util.EncodeToUTF16(replacement.newText)))
+					offsetAdjustment += newLength - entity.Length
+					newEntity.Length = newLength
+				}
+				newEntity.Type = &client.TextEntityTypeStrikethrough{}
+			} else if replacement.newText != "" {
+				// Заменяем на новый текст с URL
+				newLength := int32(len(util.EncodeToUTF16(replacement.newText)))
+				offsetAdjustment += newLength - entity.Length
+				newEntity.Length = newLength
+				newEntity.Type = &client.TextEntityTypeTextUrl{
+					Url: replacement.newUrl,
+				}
+			} else if replacement.newUrl != "" {
+				// Только меняем URL
+				newEntity.Type = &client.TextEntityTypeTextUrl{
+					Url: replacement.newUrl,
+				}
+			}
+		}
+
+		resultEntities = append(resultEntities, newEntity)
+	}
+
+	formattedText.Entities = resultEntities
 }
 
 // getMessageByLink получает сообщение по ссылке - YAGNI (это просто вызов tdlib с логированием)
@@ -150,12 +267,9 @@ func (s *Service) getMessageByLink(url string) *client.Message {
 	return messageLinkInfo.Message
 }
 
-// justReplaceMyselfLinks заменяет ссылки исходного чата ссылками на копии в целевом чате
-func (s *Service) justReplaceMyselfLinks(
-	entity *client.TextEntity, src *client.Message, dstChatId int64,
-) bool {
+// getMyselfLink получает ссылку на копию сообщения в целевом чате
+func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, error) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
 
 	toChatMessageIds := s.storageService.GetCopiedMessageIds(src.ChatId, src.Id)
 	var tmpMessageId int64 = 0
@@ -167,13 +281,11 @@ func (s *Service) justReplaceMyselfLinks(
 		}
 	}
 	if tmpMessageId == 0 {
-		err = log.NewError("tmpMessageId as 0")
-		return false
+		return "", log.NewError("tmpMessageId as 0")
 	}
 	newMessageId := s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 	if newMessageId == 0 {
-		err = log.NewError("newMessageId as 0")
-		return false
+		return "", log.NewError("newMessageId as 0")
 	}
 	var messageLink *client.MessageLink
 	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
@@ -181,12 +293,12 @@ func (s *Service) justReplaceMyselfLinks(
 		MessageId: newMessageId,
 	})
 	if err != nil {
-		return false
+		return "", err
 	}
-	entity.Type = &client.TextEntityTypeTextUrl{
-		Url: messageLink.Link,
+	if !messageLink.IsPublic {
+		return "", log.NewError("messageLink.IsPublic is false")
 	}
-	return true
+	return messageLink.Link, nil
 }
 
 // replaceFragments заменяет фрагменты текста согласно настройкам
@@ -321,7 +433,7 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	if err != nil {
 		return
 	}
-	offset := int32(util.RuneCountForUTF16(formattedText.Text)) // nolint:gosec
+	offset := int32(len(util.EncodeToUTF16(formattedText.Text))) // nolint:gosec
 	if offset > 0 {
 		formattedText.Text += "\n\n"
 		offset += 2

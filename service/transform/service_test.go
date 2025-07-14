@@ -322,35 +322,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 				return New(telegramRepo, nil, nil)
 			},
 		},
-		{
-			name: "replace myself links disabled - only delete external",
-			formattedText: &client.FormattedText{
-				Text: "test",
-				Entities: []*client.TextEntity{
-					{
-						Type: &client.TextEntityTypeTextUrl{
-							Url: "https://t.me/test/123",
-						},
-					},
-				},
-			},
-			srcChatId: -10100,
-			dstChatId: -10115, // destination с run=false и deleteExternal=true
-			expectedEntities: []*client.TextEntity{
-				{
-					Type: &client.TextEntityTypeStrikethrough{},
-				},
-			},
-			setup: func(t *testing.T) *Service {
-				telegramRepo := mocks.NewTelegramRepo(t)
-				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
-					ChatId: int64(-10100),
-				}).Return(&client.Chat{
-					Type: &client.ChatTypeSupergroup{},
-				}, nil)
-				return New(telegramRepo, nil, nil)
-			},
-		},
+
 		{
 			name: "get message link info error",
 			formattedText: &client.FormattedText{
@@ -675,13 +647,109 @@ func Test_replaceMyselfLinks(t *testing.T) {
 					ChatId:    -10114,
 					MessageId: 456,
 				}).Return(&client.MessageLink{
-					Link: "https://t.me/newchat/456",
+					Link:     "https://t.me/newchat/456",
+					IsPublic: true,
+				}, nil)
+				return New(telegramRepo, storageService, nil)
+			},
+		},
+
+		{
+			name: "url entity - successful replacement",
+			formattedText: &client.FormattedText{
+				Text: "Check https://t.me/test/123 for details",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 21,
+						Type:   &client.TextEntityTypeUrl{},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 24, // длина "https://t.me/newchat/456"
+					Type: &client.TextEntityTypeTextUrl{
+						Url: "https://t.me/newchat/456",
+					},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				storageService := mocks.NewStorageService(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/test/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10100,
+						Id:     123,
+					},
+				}, nil)
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
+					"rule1:-10114:789",
+				})
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(456))
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10114,
+					MessageId: 456,
+				}).Return(&client.MessageLink{
+					Link:     "https://t.me/newchat/456",
+					IsPublic: true,
 				}, nil)
 				return New(telegramRepo, storageService, nil)
 			},
 		},
 		{
-			name: "basic group - delete external only",
+			name: "url entity - delete external",
+			formattedText: &client.FormattedText{
+				Text: "Check https://t.me/test/123 for details",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 21,
+						Type:   &client.TextEntityTypeUrl{},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114, // destination с deleteExternal=true
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 12, // длина "DELETED LINK"
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				storageService := mocks.NewStorageService(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/test/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10100,
+						Id:     123,
+					},
+				}, nil)
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{})
+				return New(telegramRepo, storageService, nil)
+			},
+		},
+		{
+			name: "message link is not public",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -693,7 +761,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 				},
 			},
 			srcChatId: -10100,
-			dstChatId: -10114, // destination с run=true и deleteExternal=true
+			dstChatId: -10114,
 			expectedEntities: []*client.TextEntity{
 				{
 					Type: &client.TextEntityTypeStrikethrough{},
@@ -701,10 +769,231 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 			setup: func(t *testing.T) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
+				storageService := mocks.NewStorageService(t)
 				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
 					ChatId: int64(-10100),
 				}).Return(&client.Chat{
-					Type: &client.ChatTypeBasicGroup{},
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/test/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10100,
+						Id:     123,
+					},
+				}, nil)
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
+					"rule1:-10114:789",
+				})
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(456))
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10114,
+					MessageId: 456,
+				}).Return(&client.MessageLink{
+					Link:     "https://t.me/newchat/456",
+					IsPublic: false, // НЕ публичная ссылка
+				}, nil)
+				return New(telegramRepo, storageService, nil)
+			},
+		},
+		{
+			name: "external chat link - not our chat",
+			formattedText: &client.FormattedText{
+				Text: "test",
+				Entities: []*client.TextEntity{
+					{
+						Type: &client.TextEntityTypeTextUrl{
+							Url: "https://t.me/external/123",
+						},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Type: &client.TextEntityTypeTextUrl{
+						Url: "https://t.me/external/123",
+					},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/external/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10200, // другой чат (не srcChatId -10100)
+						Id:     123,
+					},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "message not found by link",
+			formattedText: &client.FormattedText{
+				Text: "test",
+				Entities: []*client.TextEntity{
+					{
+						Type: &client.TextEntityTypeTextUrl{
+							Url: "https://t.me/notfound/123",
+						},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Type: &client.TextEntityTypeTextUrl{
+						Url: "https://t.me/notfound/123",
+					},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/notfound/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: nil, // сообщение не найдено
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "url entity - message link is not public",
+			formattedText: &client.FormattedText{
+				Text: "Check https://t.me/test/123 for details",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 21,
+						Type:   &client.TextEntityTypeUrl{},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 12, // длина "DELETED LINK"
+					Type:   &client.TextEntityTypeStrikethrough{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				storageService := mocks.NewStorageService(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/test/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10100,
+						Id:     123,
+					},
+				}, nil)
+				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{
+					"rule1:-10114:789",
+				})
+				storageService.EXPECT().GetNewMessageId(int64(-10114), int64(789)).Return(int64(456))
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10114,
+					MessageId: 456,
+				}).Return(&client.MessageLink{
+					Link:     "https://t.me/newchat/456",
+					IsPublic: false, // НЕ публичная ссылка
+				}, nil)
+				return New(telegramRepo, storageService, nil)
+			},
+		},
+		{
+			name: "url entity - external chat link",
+			formattedText: &client.FormattedText{
+				Text: "Check https://t.me/external/123 for details",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 25,
+						Type:   &client.TextEntityTypeUrl{},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 25, // длина не изменилась
+					Type:   &client.TextEntityTypeUrl{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/external/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: &client.Message{
+						ChatId: -10200, // другой чат (не srcChatId -10100)
+						Id:     123,
+					},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "url entity - message not found by link",
+			formattedText: &client.FormattedText{
+				Text: "Check https://t.me/notfound/123 for details",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 25,
+						Type:   &client.TextEntityTypeUrl{},
+					},
+				},
+			},
+			srcChatId: -10100,
+			dstChatId: -10114,
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 6,
+					Length: 25, // длина не изменилась
+					Type:   &client.TextEntityTypeUrl{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetChat(&client.GetChatRequest{
+					ChatId: int64(-10100),
+				}).Return(&client.Chat{
+					Type: &client.ChatTypeSupergroup{},
+				}, nil)
+				telegramRepo.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+					Url: "https://t.me/notfound/123",
+				}).Return(&client.MessageLinkInfo{
+					Message: nil, // сообщение не найдено
 				}, nil)
 				return New(telegramRepo, nil, nil)
 			},

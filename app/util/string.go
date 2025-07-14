@@ -9,9 +9,20 @@ import (
 	"unicode/utf16"
 )
 
+// deprecated
 // RuneCountForUTF16 возвращает количество символов в строке, учитывая UTF-16
 func RuneCountForUTF16(s string) int {
-	return len(utf16.Encode([]rune(s)))
+	return len(EncodeToUTF16(s))
+}
+
+// EncodeToUTF16 преобразует строку в срез UTF-16
+func EncodeToUTF16(s string) []uint16 {
+	return utf16.Encode([]rune(s))
+}
+
+// DecodeFromUTF16 преобразует срез UTF-16 в строку
+func DecodeFromUTF16(utf16s []uint16) string {
+	return string(utf16.Decode(utf16s))
 }
 
 // ConvertToInt преобразует строку в целое число
