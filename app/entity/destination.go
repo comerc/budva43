@@ -15,6 +15,8 @@ type ReplaceMyselfLinks struct {
 	Run bool
 	// DeleteExternal если true, то внешние ссылки удаляются
 	DeleteExternal bool
+	// DeletedLinkText текст для замены внешней ссылки
+	DeletedLinkText string
 }
 
 // ReplaceFragment представляет настройки для замены фрагмента текста

@@ -34,6 +34,13 @@ type messageService interface {
 	GetReplyMarkupData(message *client.Message) []byte
 }
 
+// replacement представляет замену entity
+type replacement struct {
+	OldEntity     *client.TextEntity
+	NewText       string                // если пустой - текст не меняем
+	NewEntityType client.TextEntityType // новый тип entity
+}
+
 // Service предоставляет методы для преобразования и замены текста
 type Service struct {
 	log *log.Logger
@@ -114,18 +121,9 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	}
 	_, isBasicGroup := chat.Type.(*client.ChatTypeBasicGroup)
 
-	// Структура для хранения информации о замене
-	type replacement struct {
-		entityIndex  int
-		entity       *client.TextEntity
-		newText      string
-		newUrl       string
-		shouldDelete bool // для зачёркивания ссылки когда не найдено скопированное
-	}
-
 	// Собираем все замены
-	var replacements []replacement
-	for i, entity := range formattedText.Entities {
+	var replacements []*replacement
+	for _, entity := range formattedText.Entities {
 		switch entityType := entity.Type.(type) {
 		case *client.TextEntityTypeUrl:
 			if replaceMyselfLinks.Run && !isBasicGroup {
@@ -140,22 +138,24 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 				if err != nil {
 					// Не удалось получить ссылку на копию
 					if replaceMyselfLinks.DeleteExternal {
+						deletedLinkText := replaceMyselfLinks.DeletedLinkText // TODO: не поддерживает markdown
+						if deletedLinkText == "" {
+							deletedLinkText = "DELETED LINK"
+						}
 						// Заменяем на "DELETED LINK" (для URL без текста)
-						replacements = append(replacements, replacement{
-							entityIndex:  i,
-							entity:       entity,
-							newText:      "DELETED LINK", // TODO: брать значение из replace-myself-link.delete-external (вместо bool)
-							shouldDelete: true,
+						replacements = append(replacements, &replacement{
+							OldEntity:     entity,
+							NewText:       deletedLinkText,
+							NewEntityType: &client.TextEntityTypeStrikethrough{},
 						})
 					}
 					continue
 				}
 				// Успешная замена на ссылку копии
-				replacements = append(replacements, replacement{
-					entityIndex: i,
-					entity:      entity,
-					newText:     myselfLink,
-					newUrl:      myselfLink,
+				replacements = append(replacements, &replacement{
+					OldEntity:     entity,
+					NewText:       myselfLink,
+					NewEntityType: &client.TextEntityTypeTextUrl{Url: myselfLink},
 				})
 			}
 		case *client.TextEntityTypeTextUrl:
@@ -171,85 +171,24 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 					// Не удалось получить ссылку на копию
 					if replaceMyselfLinks.DeleteExternal {
 						// Зачёркиваем (текст остаётся, URL удаляется)
-						replacements = append(replacements, replacement{
-							entityIndex:  i,
-							entity:       entity,
-							shouldDelete: true,
+						replacements = append(replacements, &replacement{
+							OldEntity:     entity,
+							NewEntityType: &client.TextEntityTypeStrikethrough{},
 						})
 					}
 					continue
 				}
 				// Успешная замена URL
-				replacements = append(replacements, replacement{
-					entityIndex: i,
-					entity:      entity,
-					newUrl:      myselfLink,
+				replacements = append(replacements, &replacement{
+					OldEntity:     entity,
+					NewEntityType: &client.TextEntityTypeTextUrl{Url: myselfLink},
 				})
 			}
 		}
 	}
 
-	// Применяем замены к тексту в обратном порядке (от конца к началу)
-	for i := len(replacements) - 1; i >= 0; i-- {
-		replacement := replacements[i]
-		if replacement.newText != "" {
-			// Заменяем текст ссылки
-			start := replacement.entity.Offset
-			end := replacement.entity.Offset + replacement.entity.Length
-			formattedText.Text = formattedText.Text[:start] + replacement.newText + formattedText.Text[end:]
-		}
-	}
-
-	// Пересчитываем entities на основе нового текста
-	resultEntities := make([]*client.TextEntity, 0, len(formattedText.Entities))
-	offsetAdjustment := int32(0)
-
-	for i, entity := range formattedText.Entities {
-		// Ищем replacement для этого entity
-		var replacement *replacement
-		for j := range replacements {
-			if replacements[j].entityIndex == i {
-				replacement = &replacements[j]
-				break
-			}
-		}
-
-		newEntity := &client.TextEntity{
-			Offset: entity.Offset + offsetAdjustment,
-			Length: entity.Length,
-			Type:   entity.Type,
-		}
-
-		// Применяем замену и корректируем смещение
-		if replacement != nil {
-			if replacement.shouldDelete {
-				// Зачёркиваем ссылку
-				if replacement.newText != "" {
-					newLength := int32(len(util.EncodeToUTF16(replacement.newText)))
-					offsetAdjustment += newLength - entity.Length
-					newEntity.Length = newLength
-				}
-				newEntity.Type = &client.TextEntityTypeStrikethrough{}
-			} else if replacement.newText != "" {
-				// Заменяем на новый текст с URL
-				newLength := int32(len(util.EncodeToUTF16(replacement.newText)))
-				offsetAdjustment += newLength - entity.Length
-				newEntity.Length = newLength
-				newEntity.Type = &client.TextEntityTypeTextUrl{
-					Url: replacement.newUrl,
-				}
-			} else if replacement.newUrl != "" {
-				// Только меняем URL
-				newEntity.Type = &client.TextEntityTypeTextUrl{
-					Url: replacement.newUrl,
-				}
-			}
-		}
-
-		resultEntities = append(resultEntities, newEntity)
-	}
-
-	formattedText.Entities = resultEntities
+	// Применяем все замены
+	s.applyReplacements(formattedText, replacements)
 }
 
 // getMessageByLink получает сообщение по ссылке - YAGNI (это просто вызов tdlib с логированием)
@@ -299,6 +238,57 @@ func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, e
 		return "", log.NewError("messageLink.IsPublic is false")
 	}
 	return messageLink.Link, nil
+}
+
+// applyReplacements применяет замены replacements к formattedText
+func (s *Service) applyReplacements(formattedText *client.FormattedText, replacements []*replacement) {
+	// Сортируем замены по Offset в обратном порядке (от конца к началу)
+	// чтобы смещения не сбивались при замене текста
+	for i := len(replacements) - 1; i >= 0; i-- {
+		replacement := replacements[i]
+
+		if replacement.NewText == "" {
+			// Только меняем тип entity, текст не трогаем
+			replacement.OldEntity.Type = replacement.NewEntityType
+			continue
+		}
+
+		oldStart := replacement.OldEntity.Offset
+		oldEnd := oldStart + replacement.OldEntity.Length
+
+		// Заменяем текст
+		newLength := int32(len(util.EncodeToUTF16(replacement.NewText)))
+		lengthDelta := newLength - replacement.OldEntity.Length
+
+		// Заменяем текст в formattedText.Text
+		formattedText.Text = formattedText.Text[:oldStart] +
+			replacement.NewText +
+			formattedText.Text[oldEnd:]
+
+		// Обновляем entities
+		var newEntities []*client.TextEntity
+		for _, entity := range formattedText.Entities {
+			if entity == replacement.OldEntity {
+				// Заменяем целевой entity
+				newEntities = append(newEntities, &client.TextEntity{
+					Offset: oldStart,
+					Length: newLength,
+					Type:   replacement.NewEntityType,
+				})
+			} else if entity.Offset >= oldStart && entity.Offset+entity.Length <= oldEnd {
+				// Entity полностью внутри заменяемого текста → удаляем
+				continue
+			} else {
+				// Entity не пересекается или находится вне заменяемого текста
+				if entity.Offset > oldEnd {
+					// Entity после замены → сдвигаем
+					entity.Offset += lengthDelta
+				}
+				newEntities = append(newEntities, entity)
+			}
+		}
+		formattedText.Entities = newEntities
+	}
 }
 
 // replaceFragments заменяет фрагменты текста согласно настройкам
