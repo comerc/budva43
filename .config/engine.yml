@@ -12,6 +12,8 @@
 # - replace-myself-link: "Message links are available only for messages in supergroups and channel chats"
 # - FIXME: markdown без дублирования: *Sign* превращается в **Sign**
 
+# Смотри соглашение о нумерации чатов в тестах в doc/TEST-CHAT.md
+
 sources:
   111:
     sign:
@@ -95,15 +97,15 @@ destinations:
         to: "new"
   10113: # for no fragments test
     dummy: true
-  10114: # for replace myself links test
+  10114: # for replace myself links test (with delete external when copy not found)
     replace-myself-links:
       run: true
       delete-external: true
-  10115: # for replace myself links disabled test
+  10115: # for replace myself links disabled test (run=false ignores delete-external)
     replace-myself-links:
       run: false
       delete-external: true
-  10116: # for replace myself links no delete external test
+  10116: # for delete external disabled test (no deletion when copy not found)
     replace-myself-links:
       run: true
       delete-external: false
@@ -111,10 +113,11 @@ destinations:
     dummy: true
   10109: # for addSourceSign and addSourceLink tests - general destination
     dummy: true
-  10117: # for empty replace myself links test
+  10117: # for empty replace myself links test (both run and delete-external false)
     replace-myself-links:
       run: false
       # deleteExternal не указан (значит false)
+
   10123: # for Transform test - minimal success config
     replace-myself-links:
       run: false # чтобы replaceMyselfLinks не выдавал ошибку
