@@ -32,7 +32,7 @@ func New() *Repo {
 	r := &Repo{
 		log: log.NewLogger(),
 		//
-		client:     nil,            // клиент будет создан позже, после успеха авторизатора
+		client:     nil,            // клиент будет создан позже, после успеха CreateClient()
 		clientDone: make(chan any), // закроется, когда клиент будет готов
 		options: Options{
 			DatabaseDirectory: config.Telegram.DatabaseDirectory,
@@ -78,7 +78,7 @@ func (r *Repo) CreateTdlibParameters() *client.SetTdlibParametersRequest {
 	}
 }
 
-// CreateClient создает клиент TDLib после успешной авторизации
+// CreateClient создает клиент TDLib после успешной авторизации и загрузки чатов
 func (r *Repo) CreateClient(
 	runAuthorizationStateHandler func() client.AuthorizationStateHandler,
 	runLoader func(),
@@ -132,12 +132,12 @@ func (r *Repo) Close() error {
 	return nil
 }
 
-// GetClientDone возвращает канал, который будет закрыт после авторизации клиента
+// GetClientDone возвращает канал, который будет закрыт после готовности клиента
 func (r *Repo) GetClientDone() <-chan any {
 	return r.clientDone
 }
 
-// getClient возвращает клиент TDLib, если он авторизован
+// getClient возвращает клиент TDLib, если он готов
 func (r *Repo) getClient() *client.Client {
 	<-r.clientDone
 	return r.client
