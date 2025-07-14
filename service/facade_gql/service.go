@@ -12,7 +12,6 @@ import (
 
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
-	GetClientDone() <-chan any
 	// tdlibClient methods
 	GetOption(*client.GetOptionRequest) (client.OptionValue, error)
 	GetMe() (*client.User, error)
@@ -30,14 +29,6 @@ func New(telegramRepo telegramRepo) *Service {
 		//
 		telegramRepo: telegramRepo,
 	}
-}
-
-func (s *Service) Start() error {
-	return nil
-}
-
-func (s *Service) Close() error {
-	return nil
 }
 
 // GetStatus возвращает статус авторизации

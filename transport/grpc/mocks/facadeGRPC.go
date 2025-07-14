@@ -137,53 +137,6 @@ func (_c *FacadeGRPC_ForwardMessage_Call) RunAndReturn(run func(int64, int64) (*
 	return _c
 }
 
-// GetClientDone provides a mock function with no fields
-func (_m *FacadeGRPC) GetClientDone() <-chan interface{} {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetClientDone")
-	}
-
-	var r0 <-chan interface{}
-	if rf, ok := ret.Get(0).(func() <-chan interface{}); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan interface{})
-		}
-	}
-
-	return r0
-}
-
-// FacadeGRPC_GetClientDone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetClientDone'
-type FacadeGRPC_GetClientDone_Call struct {
-	*mock.Call
-}
-
-// GetClientDone is a helper method to define mock.On call
-func (_e *FacadeGRPC_Expecter) GetClientDone() *FacadeGRPC_GetClientDone_Call {
-	return &FacadeGRPC_GetClientDone_Call{Call: _e.mock.On("GetClientDone")}
-}
-
-func (_c *FacadeGRPC_GetClientDone_Call) Run(run func()) *FacadeGRPC_GetClientDone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *FacadeGRPC_GetClientDone_Call) Return(_a0 <-chan interface{}) *FacadeGRPC_GetClientDone_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *FacadeGRPC_GetClientDone_Call) RunAndReturn(run func() <-chan interface{}) *FacadeGRPC_GetClientDone_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetLastMessage provides a mock function with given fields: chatId
 func (_m *FacadeGRPC) GetLastMessage(chatId int64) (*dto.Message, error) {
 	ret := _m.Called(chatId)

@@ -21,8 +21,7 @@ type telegramRepo interface {
 type Service struct {
 	log *log.Logger
 	//
-	telegramRepo  telegramRepo
-	loadChatsDone bool
+	telegramRepo telegramRepo
 }
 
 // New создает новый экземпляр сервиса загрузчика
@@ -121,9 +120,10 @@ type initDestinations = func([]entity.ChatId)
 
 // newFuncInitDestinations создает колбек для загрузки чатов
 func newFuncInitDestinations(s *Service) initDestinations {
+	loadChats := false
 	return func(destinations []entity.ChatId) {
-		if !s.loadChatsDone {
-			s.loadChatsDone = true
+		if !loadChats {
+			loadChats = true
 			_, err := s.telegramRepo.LoadChats(&client.LoadChatsRequest{
 				Limit: 200,
 			})

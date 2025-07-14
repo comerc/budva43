@@ -23,6 +23,9 @@ func Test(t *testing.T) {
 		clientDone := make(chan any)
 		close(clientDone)
 
+		telegramRepo := mocks.NewTelegramRepo(t)
+		telegramRepo.EXPECT().GetClientDone().Return(clientDone)
+
 		termRepo := mocks.NewTermRepo(t)
 		termRepo.EXPECT().Println(status)
 		termRepo.EXPECT().Println(">")
@@ -30,10 +33,10 @@ func Test(t *testing.T) {
 		termRepo.EXPECT().Println("Выход из программы...")
 
 		authService := mocks.NewAuthService(t)
-		authService.EXPECT().GetClientDone().Return(clientDone)
 		authService.EXPECT().GetStatus().Return(status)
 
 		termTransport := New(
+			telegramRepo,
 			termRepo,
 			authService,
 		)
@@ -87,7 +90,7 @@ func TestProcessAuth_WaitPassword(t *testing.T) {
 			termRepo := mocks.NewTermRepo(t)
 			authService := mocks.NewAuthService(t)
 
-			transport := New(termRepo, authService)
+			transport := New(nil, termRepo, authService)
 
 			// Создаем состояние ожидания пароля
 			passwordState := &client.AuthorizationStateWaitPassword{

@@ -11,6 +11,11 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+//go:generate mockery --name=telegramRepo --exported
+type telegramRepo interface {
+	GetClientDone() <-chan any
+}
+
 //go:generate mockery --name=termRepo --exported
 type termRepo interface {
 	HiddenReadLine() (string, error)
@@ -25,7 +30,7 @@ type notify = func(state client.AuthorizationState)
 type authService interface {
 	Subscribe(notify)
 	GetInputChan() chan<- string
-	GetClientDone() <-chan any
+	// GetClientDone() <-chan any
 	GetStatus() string
 }
 
@@ -33,6 +38,7 @@ type authService interface {
 type Transport struct {
 	log *log.Logger
 	//
+	telegramRepo  telegramRepo
 	termRepo      termRepo
 	authService   authService
 	authStateChan chan client.AuthorizationState
@@ -50,10 +56,15 @@ type command struct {
 }
 
 // New создает новый экземпляр терминального транспорта
-func New(termRepo termRepo, authService authService) *Transport {
+func New(
+	telegramRepo telegramRepo,
+	termRepo termRepo,
+	authService authService,
+) *Transport {
 	term := &Transport{
 		log: log.NewLogger(),
 		//
+		telegramRepo:  telegramRepo,
 		termRepo:      termRepo,
 		authService:   authService,
 		authStateChan: make(chan client.AuthorizationState, 10),
@@ -98,7 +109,7 @@ func (t *Transport) runInputLoop(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-t.authService.GetClientDone():
+		case <-t.telegramRepo.GetClientDone():
 			if !isAuth {
 				t.termRepo.Println(t.authService.GetStatus())
 				isAuth = true

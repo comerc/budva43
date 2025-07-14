@@ -20,53 +20,6 @@ func (_m *AuthService) EXPECT() *AuthService_Expecter {
 	return &AuthService_Expecter{mock: &_m.Mock}
 }
 
-// GetClientDone provides a mock function with no fields
-func (_m *AuthService) GetClientDone() <-chan interface{} {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetClientDone")
-	}
-
-	var r0 <-chan interface{}
-	if rf, ok := ret.Get(0).(func() <-chan interface{}); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan interface{})
-		}
-	}
-
-	return r0
-}
-
-// AuthService_GetClientDone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetClientDone'
-type AuthService_GetClientDone_Call struct {
-	*mock.Call
-}
-
-// GetClientDone is a helper method to define mock.On call
-func (_e *AuthService_Expecter) GetClientDone() *AuthService_GetClientDone_Call {
-	return &AuthService_GetClientDone_Call{Call: _e.mock.On("GetClientDone")}
-}
-
-func (_c *AuthService_GetClientDone_Call) Run(run func()) *AuthService_GetClientDone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *AuthService_GetClientDone_Call) Return(_a0 <-chan interface{}) *AuthService_GetClientDone_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *AuthService_GetClientDone_Call) RunAndReturn(run func() <-chan interface{}) *AuthService_GetClientDone_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetInputChan provides a mock function with no fields
 func (_m *AuthService) GetInputChan() chan<- string {
 	ret := _m.Called()

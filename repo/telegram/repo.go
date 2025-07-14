@@ -33,7 +33,7 @@ func New() *Repo {
 		log: log.NewLogger(),
 		//
 		client:     nil,            // клиент будет создан позже, после успеха авторизатора
-		clientDone: make(chan any), // закроется, когда клиент авторизован
+		clientDone: make(chan any), // закроется, когда клиент будет готов
 		options: Options{
 			DatabaseDirectory: config.Telegram.DatabaseDirectory,
 			FilesDirectory:    config.Telegram.FilesDirectory,
@@ -79,7 +79,10 @@ func (r *Repo) CreateTdlibParameters() *client.SetTdlibParametersRequest {
 }
 
 // CreateClient создает клиент TDLib после успешной авторизации
-func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.AuthorizationStateHandler) {
+func (r *Repo) CreateClient(
+	runAuthorizationStateHandler func() client.AuthorizationStateHandler,
+	runLoader func(),
+) {
 	for {
 		ok := func() bool {
 			var err error
@@ -94,6 +97,7 @@ func (r *Repo) CreateClient(runAuthorizationStateHandler func() client.Authoriza
 			}
 
 			r.client = tdlibClient
+			runLoader()
 			close(r.clientDone)
 
 			return true

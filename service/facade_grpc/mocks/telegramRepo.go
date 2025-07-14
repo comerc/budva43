@@ -311,53 +311,6 @@ func (_c *TelegramRepo_GetChatHistory_Call) RunAndReturn(run func(*client.GetCha
 	return _c
 }
 
-// GetClientDone provides a mock function with no fields
-func (_m *TelegramRepo) GetClientDone() <-chan interface{} {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetClientDone")
-	}
-
-	var r0 <-chan interface{}
-	if rf, ok := ret.Get(0).(func() <-chan interface{}); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan interface{})
-		}
-	}
-
-	return r0
-}
-
-// TelegramRepo_GetClientDone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetClientDone'
-type TelegramRepo_GetClientDone_Call struct {
-	*mock.Call
-}
-
-// GetClientDone is a helper method to define mock.On call
-func (_e *TelegramRepo_Expecter) GetClientDone() *TelegramRepo_GetClientDone_Call {
-	return &TelegramRepo_GetClientDone_Call{Call: _e.mock.On("GetClientDone")}
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) Run(run func()) *TelegramRepo_GetClientDone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) Return(_a0 <-chan interface{}) *TelegramRepo_GetClientDone_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *TelegramRepo_GetClientDone_Call) RunAndReturn(run func() <-chan interface{}) *TelegramRepo_GetClientDone_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetMarkdownText provides a mock function with given fields: _a0
 func (_m *TelegramRepo) GetMarkdownText(_a0 *client.GetMarkdownTextRequest) (*client.FormattedText, error) {
 	ret := _m.Called(_a0)

@@ -19,7 +19,6 @@ import (
 
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {
-	GetClientDone() <-chan any
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
 	GetLastMessage(chatId int64) (*dto.Message, error)
 	SendMessage(message *dto.NewMessage) (*dto.Message, error)
@@ -73,15 +72,6 @@ func (t *Transport) Start() error {
 func (t *Transport) Close() error {
 	t.server.GracefulStop()
 	return t.lis.Close()
-}
-
-func (t *Transport) GetClientDone(ctx context.Context, req *pb.EmptyRequest) (*pb.ClientDoneResponse, error) {
-	select {
-	case <-t.facade.GetClientDone():
-		return &pb.ClientDoneResponse{Done: true}, nil
-	default:
-		return &pb.ClientDoneResponse{Done: false}, nil
-	}
 }
 
 func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest) (*pb.GetMessagesResponse, error) {

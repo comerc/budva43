@@ -19,7 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FacadeGRPC_GetClientDone_FullMethodName  = "/pb.FacadeGRPC/GetClientDone"
 	FacadeGRPC_GetMessages_FullMethodName    = "/pb.FacadeGRPC/GetMessages"
 	FacadeGRPC_GetLastMessage_FullMethodName = "/pb.FacadeGRPC/GetLastMessage"
 	FacadeGRPC_SendMessage_FullMethodName    = "/pb.FacadeGRPC/SendMessage"
@@ -33,7 +32,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FacadeGRPCClient interface {
-	GetClientDone(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ClientDoneResponse, error)
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 	GetLastMessage(ctx context.Context, in *GetLastMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
@@ -49,16 +47,6 @@ type facadeGRPCClient struct {
 
 func NewFacadeGRPCClient(cc grpc.ClientConnInterface) FacadeGRPCClient {
 	return &facadeGRPCClient{cc}
-}
-
-func (c *facadeGRPCClient) GetClientDone(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ClientDoneResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ClientDoneResponse)
-	err := c.cc.Invoke(ctx, FacadeGRPC_GetClientDone_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *facadeGRPCClient) GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
@@ -135,7 +123,6 @@ func (c *facadeGRPCClient) DeleteMessages(ctx context.Context, in *DeleteMessage
 // All implementations must embed UnimplementedFacadeGRPCServer
 // for forward compatibility.
 type FacadeGRPCServer interface {
-	GetClientDone(context.Context, *EmptyRequest) (*ClientDoneResponse, error)
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*MessageResponse, error)
@@ -153,9 +140,6 @@ type FacadeGRPCServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFacadeGRPCServer struct{}
 
-func (UnimplementedFacadeGRPCServer) GetClientDone(context.Context, *EmptyRequest) (*ClientDoneResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetClientDone not implemented")
-}
 func (UnimplementedFacadeGRPCServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
@@ -196,24 +180,6 @@ func RegisterFacadeGRPCServer(s grpc.ServiceRegistrar, srv FacadeGRPCServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&FacadeGRPC_ServiceDesc, srv)
-}
-
-func _FacadeGRPC_GetClientDone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmptyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FacadeGRPCServer).GetClientDone(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: FacadeGRPC_GetClientDone_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FacadeGRPCServer).GetClientDone(ctx, req.(*EmptyRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _FacadeGRPC_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -349,10 +315,6 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.FacadeGRPC",
 	HandlerType: (*FacadeGRPCServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetClientDone",
-			Handler:    _FacadeGRPC_GetClientDone_Handler,
-		},
 		{
 			MethodName: "GetMessages",
 			Handler:    _FacadeGRPC_GetMessages_Handler,

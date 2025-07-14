@@ -5,7 +5,6 @@ package pb;
 option go_package = "github.com/comerc/budva43/transport/grpc/pb";
 
 service FacadeGRPC {
-  rpc GetClientDone (EmptyRequest) returns (ClientDoneResponse);
   rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
   rpc GetLastMessage (GetLastMessageRequest) returns (MessageResponse);
   rpc SendMessage (SendMessageRequest) returns (MessageResponse);
@@ -13,12 +12,6 @@ service FacadeGRPC {
   rpc GetMessage (GetMessageRequest) returns (MessageResponse);
   rpc UpdateMessage (UpdateMessageRequest) returns (MessageResponse);
   rpc DeleteMessages (DeleteMessagesRequest) returns (DeleteMessagesResponse);
-}
-
-message EmptyRequest {}
-
-message ClientDoneResponse {
-  bool done = 1;
 }
 
 message Message {

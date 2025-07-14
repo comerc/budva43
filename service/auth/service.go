@@ -11,15 +11,20 @@ import (
 )
 
 type runAuthorizationStateHandler = func() client.AuthorizationStateHandler
+type runLoader = func()
 
 //go:generate mockery --name=telegramRepo --exported
 type telegramRepo interface {
 	CreateTdlibParameters() *client.SetTdlibParametersRequest
-	CreateClient(runAuthorizationStateHandler)
-	GetClientDone() <-chan any
+	CreateClient(runAuthorizationStateHandler, runLoader)
 	// tdlibClient methods
 	GetOption(*client.GetOptionRequest) (client.OptionValue, error)
 	GetMe() (*client.User, error)
+}
+
+//go:generate mockery --name=loaderService --exported
+type loaderService interface {
+	Run()
 }
 
 type notify = func(state client.AuthorizationState)
@@ -28,28 +33,33 @@ type notify = func(state client.AuthorizationState)
 type Service struct {
 	log *log.Logger
 	//
-	telegramRepo telegramRepo
-	inputChan    chan string
+	telegramRepo  telegramRepo
+	loaderService loaderService
+	inputChan     chan string
 	// Для широковещательного оповещения
 	subscribers []notify
 	mu          sync.RWMutex
 }
 
 // New создает новый экземпляр сервиса авторизации
-func New(telegramRepo telegramRepo) *Service {
+func New(telegramRepo telegramRepo, loaderService loaderService) *Service {
 	return &Service{
 		log: log.NewLogger(),
 		//
-		telegramRepo: telegramRepo,
-		inputChan:    make(chan string, 1),
-		subscribers:  make([]notify, 0),
+		telegramRepo:  telegramRepo,
+		loaderService: loaderService,
+		inputChan:     make(chan string, 1),
+		subscribers:   make([]notify, 0),
 	}
 }
 
 // StartContext запускает процесс авторизации
 func (s *Service) StartContext(ctx context.Context) error {
 
-	go s.telegramRepo.CreateClient(newFuncRunAuthorizationStateHandler(ctx, s))
+	go s.telegramRepo.CreateClient(
+		newFuncRunAuthorizationStateHandler(ctx, s),
+		s.loaderService.Run,
+	)
 
 	return nil
 }
@@ -65,11 +75,6 @@ func (s *Service) Close() error {
 // GetInputChan возвращает канал для ввода данных
 func (s *Service) GetInputChan() chan<- string {
 	return s.inputChan
-}
-
-// GetClientDone возвращает канал, который будет закрыт после завершения авторизации
-func (s *Service) GetClientDone() <-chan any {
-	return s.telegramRepo.GetClientDone()
 }
 
 // GetStatus возвращает статус авторизации
@@ -117,6 +122,8 @@ func newFuncRunAuthorizationStateHandler(ctx context.Context, s *Service) runAut
 
 		tdlibParameters := s.telegramRepo.CreateTdlibParameters()
 		authorizer := client.ClientAuthorizer(tdlibParameters)
+		// TODO: форкнуть client.NewClientAuthorizer() *client.ClientAuthorizer
+		// тогда не нужно костылить замыкание для *client.clientAuthorizer
 
 		go func() {
 			for {
