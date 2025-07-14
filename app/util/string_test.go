@@ -18,17 +18,17 @@ func TestConvertToInt(t *testing.T) {
 		panic bool
 	}{
 		{
-			name: "valid case",
+			name: "valid_case",
 			s:    "123",
 			want: 123,
 		},
 		{
-			name:  "with dummy string",
+			name:  "with_dummy_string",
 			s:     "dummy",
 			panic: true,
 		},
 		{
-			name:  "with empty string",
+			name:  "with_empty_string",
 			s:     "",
 			panic: true,
 		},

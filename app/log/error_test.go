@@ -19,19 +19,19 @@ func TestWrapError(t *testing.T) {
 		expectedArgs  []any
 	}{
 		{
-			name: "nil error",
+			name: "nil_error",
 			err:  nil,
 			args: []any{"arg1", "val1"},
 		},
 		{
-			name:          "unwrapped error",
+			name:          "unwrapped_error",
 			err:           errors.New("error"),
 			args:          []any{"arg1", "val1"},
 			expectedError: "error",
 			expectedArgs:  []any{"arg1", "val1"},
 		},
 		{
-			name:          "CustomError",
+			name:          "custom_error",
 			err:           NewError("error", "arg0", "val0"),
 			args:          []any{"arg1", "val1"},
 			expectedError: "error",

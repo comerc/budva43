@@ -144,7 +144,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 						replacements = append(replacements, replacement{
 							entityIndex:  i,
 							entity:       entity,
-							newText:      "DELETED LINK",
+							newText:      "DELETED LINK", // TODO: брать значение из replace-myself-link.delete-external (вместо bool)
 							shouldDelete: true,
 						})
 					}

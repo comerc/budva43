@@ -41,7 +41,7 @@ func Test(t *testing.T) {
 		setup            func(t *testing.T) *Service
 	}{
 		{
-			name: "with sources and markdown",
+			name: "with_sources_and_markdown",
 			formattedText: &client.FormattedText{
 				Text:     "test message",
 				Entities: []*client.TextEntity{},
@@ -92,7 +92,7 @@ func Test(t *testing.T) {
 			},
 		},
 		{
-			name: "with sources and escaped markdown",
+			name: "with_sources_and_escaped_markdown",
 			formattedText: &client.FormattedText{
 				Text:     "test message",
 				Entities: []*client.TextEntity{},
@@ -143,7 +143,7 @@ func Test(t *testing.T) {
 			},
 		},
 		{
-			name: "without sources",
+			name: "without_sources",
 			formattedText: &client.FormattedText{
 				Text:     "test message",
 				Entities: []*client.TextEntity{},
@@ -189,7 +189,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name: "destination not found",
+			name: "destination_not_found",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -215,7 +215,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedError: log.NewError("destination not found"),
 		},
 		{
-			name: "replace myself links is nil",
+			name: "replace_myself_links_is_nil",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -241,7 +241,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedError: log.NewError("replaceMyselfLinks is nil"),
 		},
 		{
-			name: "replace myself links is empty - both false",
+			name: "replace_myself_links_is_empty-both_false",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -267,7 +267,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedError: log.NewError("replaceMyselfLinks is empty"),
 		},
 		{
-			name: "get chat error",
+			name: "get_chat_error",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -296,7 +296,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "no text url entities",
+			name: "no_text_url_entities",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -324,7 +324,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 		},
 
 		{
-			name: "get message link info error",
+			name: "get_message_link_info_error",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -358,7 +358,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "get message link info returns nil message",
+			name: "get_message_link_info_returns_nil_message",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -394,7 +394,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "message not from source chat",
+			name: "message_not_from_source_chat",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -433,7 +433,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "no copied messages found",
+			name: "no_copied_messages_found",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -474,7 +474,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "tmp message id zero",
+			name: "tmp_message_id_zero",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -515,7 +515,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "new message id zero",
+			name: "new_message_id_zero",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -557,7 +557,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "get message link error",
+			name: "get_message_link_error",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -603,7 +603,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "successful link replacement",
+			name: "successful_link_replacement",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -655,7 +655,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 		},
 
 		{
-			name: "url entity - successful replacement",
+			name: "url_entity-successful_replacement",
 			formattedText: &client.FormattedText{
 				Text: "Check https://t.me/test/123 for details",
 				Entities: []*client.TextEntity{
@@ -708,7 +708,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "url entity - delete external",
+			name: "url_entity_delete_external",
 			formattedText: &client.FormattedText{
 				Text: "Check https://t.me/test/123 for details",
 				Entities: []*client.TextEntity{
@@ -749,7 +749,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "message link is not public",
+			name: "message_link_is_not_public",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -798,7 +798,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "external chat link - not our chat",
+			name: "external_chat_link_not_our_chat",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -837,7 +837,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "message not found by link",
+			name: "message_not_found_by_link",
 			formattedText: &client.FormattedText{
 				Text: "test",
 				Entities: []*client.TextEntity{
@@ -873,7 +873,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "url entity - message link is not public",
+			name: "url_entity_message_link_is_not_public",
 			formattedText: &client.FormattedText{
 				Text: "Check https://t.me/test/123 for details",
 				Entities: []*client.TextEntity{
@@ -924,7 +924,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "url entity - external chat link",
+			name: "url_entity_external_chat_link",
 			formattedText: &client.FormattedText{
 				Text: "Check https://t.me/external/123 for details",
 				Entities: []*client.TextEntity{
@@ -963,7 +963,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			},
 		},
 		{
-			name: "url entity - message not found by link",
+			name: "url_entity_message_not_found_by_link",
 			formattedText: &client.FormattedText{
 				Text: "Check https://t.me/notfound/123 for details",
 				Entities: []*client.TextEntity{
@@ -1034,7 +1034,7 @@ func Test_replaceFragments(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name: "destination not found",
+			name: "destination_not_found",
 			formattedText: &client.FormattedText{
 				Text: "some text",
 			},
@@ -1043,7 +1043,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedError: log.NewError("destination not found"),
 		},
 		{
-			name: "no replace fragments",
+			name: "no_replace_fragments",
 			formattedText: &client.FormattedText{
 				Text: "some text",
 			},
@@ -1051,7 +1051,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "some text",
 		},
 		{
-			name: "single replacement",
+			name: "single_replacement",
 			formattedText: &client.FormattedText{
 				Text: "hello world",
 			},
@@ -1059,7 +1059,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "12345 67890",
 		},
 		{
-			name: "case insensitive replacement",
+			name: "case_insensitive_replacement",
 			formattedText: &client.FormattedText{
 				Text: "This is a test and TEST and Test",
 			},
@@ -1067,7 +1067,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "This is a Тест and Тест and Тест",
 		},
 		{
-			name: "multiple occurrences",
+			name: "multiple_occurrences",
 			formattedText: &client.FormattedText{
 				Text: "old text with old values and old data",
 			},
@@ -1075,7 +1075,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "new text with new values and new data",
 		},
 		{
-			name: "no matches",
+			name: "no_matches",
 			formattedText: &client.FormattedText{
 				Text: "some random text",
 			},
@@ -1083,7 +1083,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "some random text",
 		},
 		{
-			name: "partial word match",
+			name: "partial_word_match",
 			formattedText: &client.FormattedText{
 				Text: "hello? and world!",
 			},
@@ -1091,7 +1091,7 @@ func Test_replaceFragments(t *testing.T) {
 			expectedText: "12345? and 67890!",
 		},
 		{
-			name: "empty text",
+			name: "empty_text",
 			formattedText: &client.FormattedText{
 				Text: "",
 			},
@@ -1203,7 +1203,7 @@ func Test_addAutoAnswer(t *testing.T) {
 			expectedError: log.NewError("callback query error"),
 		},
 		{
-			name: "successful auto answer",
+			name: "successful_auto_answer",
 			formattedText: &client.FormattedText{
 				Text:     "existing text",
 				Entities: []*client.TextEntity{},
@@ -1380,7 +1380,7 @@ func Test_addSourceSign(t *testing.T) {
 			},
 		},
 		{
-			name: "sign addition to existing text",
+			name: "sign_addition_to_existing_text",
 			formattedText: &client.FormattedText{
 				Text:     "existing text",
 				Entities: []*client.TextEntity{},
@@ -1526,7 +1526,7 @@ func Test_addSourceLink(t *testing.T) {
 			},
 		},
 		{
-			name: "link addition to existing text",
+			name: "link_addition_to_existing_text",
 			formattedText: &client.FormattedText{
 				Text:     "existing text",
 				Entities: []*client.TextEntity{},
@@ -1636,7 +1636,7 @@ func Test_addText(t *testing.T) {
 			expectedEntities: nil,
 		},
 		{
-			name: "with existing text",
+			name: "with_existing_text",
 			formattedText: &client.FormattedText{
 				Text:     "existing",
 				Entities: []*client.TextEntity{},
@@ -1647,7 +1647,7 @@ func Test_addText(t *testing.T) {
 			expectedEntities: []*client.TextEntity{},
 		},
 		{
-			name: "add text with entities",
+			name: "add_text_with_entities",
 			formattedText: &client.FormattedText{
 				Text:     "existing",
 				Entities: []*client.TextEntity{},
@@ -1671,7 +1671,7 @@ func Test_addText(t *testing.T) {
 
 			telegramRepo := mocks.NewTelegramRepo(t)
 			var returnEntities []*client.TextEntity
-			if test.name == "add text with entities" {
+			if test.name == "add_text_with_entities" {
 				returnEntities = []*client.TextEntity{
 					{
 						Type:   &client.TextEntityTypeBold{},
