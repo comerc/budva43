@@ -23,7 +23,7 @@ func Test(t *testing.T) {
 		expectedPasswordHint string
 	}{
 		{
-			name: "with password hint",
+			name: "with_password_hint",
 			authState: &client.AuthorizationStateWaitPassword{
 				PasswordHint: "test hint",
 			},
@@ -31,7 +31,7 @@ func Test(t *testing.T) {
 			expectedPasswordHint: "test hint",
 		},
 		{
-			name: "without password hint",
+			name: "without_password_hint",
 			authState: &client.AuthorizationStateWaitPassword{
 				PasswordHint: "",
 			},
@@ -39,19 +39,19 @@ func Test(t *testing.T) {
 			expectedPasswordHint: "",
 		},
 		{
-			name:                 "not password state - wait code",
+			name:                 "not_password_state-wait_code",
 			authState:            &client.AuthorizationStateWaitCode{},
 			expectedStateType:    "authorizationStateWaitCode",
 			expectedPasswordHint: "",
 		},
 		{
-			name:                 "not password state - wait phone",
+			name:                 "not_password_state-wait_phone",
 			authState:            &client.AuthorizationStateWaitPhoneNumber{},
 			expectedStateType:    "authorizationStateWaitPhoneNumber",
 			expectedPasswordHint: "",
 		},
 		{
-			name:                 "nil state",
+			name:                 "nil_state",
 			authState:            nil,
 			expectedStateType:    "",
 			expectedPasswordHint: "",

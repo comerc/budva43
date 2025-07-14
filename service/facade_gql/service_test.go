@@ -37,7 +37,7 @@ func TestGetStatus(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "option error",
+			name: "option_error",
 			setup: func(t *testing.T, tg *mocks.TelegramRepo) {
 				tg.EXPECT().GetOption(&client.GetOptionRequest{Name: "version"}).Return(nil, errors.New("fail opt"))
 			},
@@ -45,7 +45,7 @@ func TestGetStatus(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "getme error",
+			name: "getme_error",
 			setup: func(t *testing.T, tg *mocks.TelegramRepo) {
 				opt := &client.OptionValueString{Value: "tdlib-v1.2.3"}
 				tg.EXPECT().GetOption(&client.GetOptionRequest{Name: "version"}).Return(opt, nil)
