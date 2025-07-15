@@ -32,3 +32,5 @@ _*.go
 .config/engine.e2e.yml
 .coverage/
 ___.md
+
+.vscode/settings.local.json
