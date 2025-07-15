@@ -518,10 +518,10 @@ func (s *Service) applyMarkdownReplacements(formattedText *client.FormattedText,
 	var entityReplacements []*replacement
 
 	for _, replacement := range markdownReplacements {
-		if replacement.NewText != "" {
-			textReplacements = append(textReplacements, replacement)
-		} else {
+		if replacement.NewText == "" {
 			entityReplacements = append(entityReplacements, replacement)
+		} else {
+			textReplacements = append(textReplacements, replacement)
 		}
 	}
 
