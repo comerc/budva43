@@ -136,7 +136,7 @@ func validate(engineConfig *entity.EngineConfig) error {
 		// 		"value", dstChatId)
 		// }
 		for i, replaceFragment := range dsc.ReplaceFragments {
-			if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
+			if len(util.EncodeToUTF16(replaceFragment.From)) != len(util.EncodeToUTF16(replaceFragment.To)) {
 				return log.NewError("длина исходного и заменяемого текста должна быть одинаковой",
 					"path", fmt.Sprintf("config.Engine.Destinations[%d].ReplaceFragments[%d]", dstChatId, i),
 					"from", replaceFragment.From,

@@ -12,7 +12,6 @@ import (
 
 	"github.com/comerc/budva43/app/config"
 	"github.com/comerc/budva43/app/engine_config"
-	_ "github.com/comerc/budva43/app/engine_config" // init()
 	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/testing/spylog"
@@ -724,7 +723,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED LINK"
+					Length: 12, // длина "DELETED_LINK"
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 			},
@@ -745,6 +744,21 @@ func Test_replaceMyselfLinks(t *testing.T) {
 					},
 				}, nil)
 				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{})
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "DELETED_LINK",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text: "DELETED_LINK",
+					Entities: []*client.TextEntity{
+						{
+							Offset: 0,
+							Length: 12,
+							Type:   &client.TextEntityTypeStrikethrough{},
+						},
+					},
+				}, nil)
 				return New(telegramRepo, storageService, nil)
 			},
 		},
@@ -889,7 +903,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED LINK"
+					Length: 12, // длина "DELETED_LINK"
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 			},
@@ -919,6 +933,21 @@ func Test_replaceMyselfLinks(t *testing.T) {
 				}).Return(&client.MessageLink{
 					Link:     "https://t.me/newchat/456",
 					IsPublic: false, // НЕ публичная ссылка
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "DELETED_LINK",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text: "DELETED_LINK",
+					Entities: []*client.TextEntity{
+						{
+							Offset: 0,
+							Length: 12,
+							Type:   &client.TextEntityTypeStrikethrough{},
+						},
+					},
 				}, nil)
 				return New(telegramRepo, storageService, nil)
 			},
@@ -1136,7 +1165,7 @@ func Test_addAutoAnswer(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name:          "source not found",
+			name:          "source_not_found",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10199, // не существует в config.yml
@@ -1150,7 +1179,7 @@ func Test_addAutoAnswer(t *testing.T) {
 			expectedError: log.NewError("source not found"),
 		},
 		{
-			name:          "auto answer disabled",
+			name:          "auto_answer_disabled",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10107,
@@ -1164,7 +1193,7 @@ func Test_addAutoAnswer(t *testing.T) {
 			expectedError: log.NewError("source.AutoAnswer is false"),
 		},
 		{
-			name:          "reply markup data is empty",
+			name:          "reply_markup_data_is_empty",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10106,
@@ -1180,7 +1209,7 @@ func Test_addAutoAnswer(t *testing.T) {
 			expectedError: log.NewError("replyMarkupData is empty"),
 		},
 		{
-			name:          "get callback query answer error",
+			name:          "get_callback_query_answer_error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10106,
@@ -1239,7 +1268,7 @@ func Test_addAutoAnswer(t *testing.T) {
 			},
 		},
 		{
-			name:          "empty formatted text",
+			name:          "empty_formatted_text",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10106,
@@ -1311,7 +1340,7 @@ func Test_addSourceSign(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name:          "source not found",
+			name:          "source_not_found",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10199, // не существует в config.yml
@@ -1326,7 +1355,7 @@ func Test_addSourceSign(t *testing.T) {
 			expectedError: log.NewError("source not found"),
 		},
 		{
-			name:          "sign not for this chat",
+			name:          "sign_not_for_this_chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10103, // sign.for = [-10108], а не -10109
@@ -1341,7 +1370,7 @@ func Test_addSourceSign(t *testing.T) {
 			expectedError: log.NewError("source.Sign without dstChatId"),
 		},
 		{
-			name:          "no sign configured",
+			name:          "no_sign_configured",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10104, // empty source
@@ -1356,7 +1385,7 @@ func Test_addSourceSign(t *testing.T) {
 			expectedError: log.NewError("source.Sign without dstChatId"),
 		},
 		{
-			name:          "successful sign addition",
+			name:          "successful_sign_addition",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10100, // sign для dstChatId -10109
@@ -1446,7 +1475,7 @@ func Test_addSourceLink(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name:          "source not found",
+			name:          "source_not_found",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId: -10199, // не существует в config.yml
@@ -1461,7 +1490,7 @@ func Test_addSourceLink(t *testing.T) {
 			expectedError: log.NewError("source not found"),
 		},
 		{
-			name:          "link not for this chat",
+			name:          "link_not_for_this_chat",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId:       -10100, // у этого source нет link для dstChatId -10109
@@ -1477,7 +1506,7 @@ func Test_addSourceLink(t *testing.T) {
 			expectedError: log.NewError("source.Link without dstChatId"),
 		},
 		{
-			name:          "no link configured",
+			name:          "no_link_configured",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId:       -10104, // empty source
@@ -1493,7 +1522,7 @@ func Test_addSourceLink(t *testing.T) {
 			expectedError: log.NewError("source.Link without dstChatId"),
 		},
 		{
-			name:          "successful link addition",
+			name:          "successful_link_addition",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId:       -10101, // link для dstChatId -10109
@@ -1562,7 +1591,7 @@ func Test_addSourceLink(t *testing.T) {
 			},
 		},
 		{
-			name:          "get message link error",
+			name:          "get_message_link_error",
 			formattedText: &client.FormattedText{},
 			src: &client.Message{
 				ChatId:       -10101,
@@ -1779,17 +1808,17 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED LINK",
+						NewText:       "DELETED_LINK",
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
 				return formattedText, replacements
 			},
-			expectedText: "Check DELETED LINK here",
+			expectedText: "Check DELETED_LINK here",
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED LINK"
+					Length: 12, // длина "DELETED_LINK"
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 				// Bold entity должен быть удален, так как был внутри заменяемого текста
@@ -1815,13 +1844,13 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED LINK", // 12 символов вместо 21
+						NewText:       "DELETED_LINK", // 12 символов вместо 21
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
 				return formattedText, replacements
 			},
-			expectedText: "Start DELETED LINK and bold text",
+			expectedText: "Start DELETED_LINK and bold text",
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
@@ -1855,13 +1884,13 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED LINK",
+						NewText:       "DELETED_LINK",
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
 				return formattedText, replacements
 			},
-			expectedText: "Bold text DELETED LINK end",
+			expectedText: "Bold text DELETED_LINK end",
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 0, // остается без изменений
@@ -1932,6 +1961,263 @@ func Test_applyReplacements(t *testing.T) {
 
 			assert.Equal(t, test.expectedText, formattedText.Text)
 			assert.Equal(t, test.expectedEntities, formattedText.Entities)
+		})
+	}
+}
+
+func Test_collectMarkdownReplacements(t *testing.T) {
+	t.Parallel()
+
+	type testCase struct {
+		name      string
+		inputText string
+		parsed    *client.FormattedText
+		expects   []*replacement
+		err       error
+	}
+
+	tests := []testCase{
+		{
+			name:      "plain_text_no_markdown",
+			inputText: "hello world",
+			parsed: &client.FormattedText{
+				Text:     "hello world",
+				Entities: nil,
+			},
+			expects: nil, // нет markdown, нет replacements
+		},
+		{
+			name:      "markdown_bold",
+			inputText: "*bold*",
+			parsed: &client.FormattedText{
+				Text:     "bold",
+				Entities: []*client.TextEntity{{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}}},
+			},
+			expects: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 6, Type: nil},
+					NewText:       "bold",
+					NewEntityType: nil,
+				},
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeBold{},
+				},
+			},
+		},
+		{
+			name:      "parse_error",
+			inputText: "*fail*",
+			parsed:    nil,
+			expects:   nil,
+			err:       assert.AnError,
+		},
+		{
+			name:      "entities_only_with_no_text_replacement",
+			inputText: "bold",
+			parsed: &client.FormattedText{
+				Text:     "bold",
+				Entities: []*client.TextEntity{{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}}},
+			},
+			expects: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeBold{},
+				},
+			},
+		},
+		{
+			name:      "multiple_entities",
+			inputText: "*a*_b_",
+			parsed: &client.FormattedText{
+				Text: "ab",
+				Entities: []*client.TextEntity{
+					{Offset: 0, Length: 1, Type: &client.TextEntityTypeBold{}},
+					{Offset: 1, Length: 1, Type: &client.TextEntityTypeItalic{}},
+				},
+			},
+			expects: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 6, Type: nil},
+					NewText:       "ab",
+					NewEntityType: nil,
+				},
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 1, Type: &client.TextEntityTypeBold{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeBold{},
+				},
+				{
+					OldEntity:     &client.TextEntity{Offset: 1, Length: 1, Type: &client.TextEntityTypeItalic{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeItalic{},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			telegramRepo := mocks.NewTelegramRepo(t)
+			if test.err != nil {
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text:      test.inputText,
+					ParseMode: &client.TextParseModeMarkdown{Version: 2},
+				}).Return(nil, test.err)
+			} else {
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text:      test.inputText,
+					ParseMode: &client.TextParseModeMarkdown{Version: 2},
+				}).Return(test.parsed, nil)
+			}
+			service := New(telegramRepo, nil, nil)
+			result := service.collectMarkdownReplacements(0, test.inputText)
+			if test.expects == nil {
+				assert.Nil(t, result)
+			} else {
+				assert.Equal(t, len(test.expects), len(result))
+				for i := range test.expects {
+					assert.Equal(t, test.expects[i].OldEntity.Offset, result[i].OldEntity.Offset)
+					assert.Equal(t, test.expects[i].OldEntity.Length, result[i].OldEntity.Length)
+					assert.Equal(t, test.expects[i].NewText, result[i].NewText)
+					assert.Equal(t, test.expects[i].NewEntityType, result[i].NewEntityType)
+				}
+			}
+		})
+	}
+}
+
+func Test_applyMarkdownReplacements(t *testing.T) {
+	t.Parallel()
+	type testCase struct {
+		name     string
+		initial  *client.FormattedText
+		repls    []*replacement
+		expected *client.FormattedText
+	}
+
+	t.Run("replace_text_and_add_bold_entity", func(t *testing.T) {
+		t.Parallel()
+		service := New(nil, nil, nil)
+		ft := &client.FormattedText{
+			Text:     "*bold*",
+			Entities: []*client.TextEntity{},
+		}
+		_ = service
+		_ = ft
+	})
+
+	tests := []testCase{
+		{
+			name: "replace_text_and_add_bold_entity",
+			initial: &client.FormattedText{
+				Text:     "*bold*",
+				Entities: []*client.TextEntity{},
+			},
+			repls: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 6, Type: nil},
+					NewText:       "bold",
+					NewEntityType: nil,
+				},
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeBold{},
+				},
+			},
+			expected: &client.FormattedText{
+				Text:     "bold",
+				Entities: []*client.TextEntity{{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}}},
+			},
+		},
+		{
+			name: "only_entity_replacement",
+			initial: &client.FormattedText{
+				Text:     "bold",
+				Entities: []*client.TextEntity{},
+			},
+			repls: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeBold{},
+				},
+			},
+			expected: &client.FormattedText{
+				Text:     "bold",
+				Entities: []*client.TextEntity{{Offset: 0, Length: 4, Type: &client.TextEntityTypeBold{}}},
+			},
+		},
+		{
+			name: "offset_shift_for_entities_after_text_replacement",
+			initial: &client.FormattedText{
+				Text:     "abcde",
+				Entities: []*client.TextEntity{{Offset: 3, Length: 2, Type: &client.TextEntityTypeItalic{}}},
+			},
+			repls: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 2, Type: nil},
+					NewText:       "xyzuvw",
+					NewEntityType: nil,
+				},
+			},
+			expected: &client.FormattedText{
+				Text:     "xyzuvwcde",
+				Entities: []*client.TextEntity{{Offset: 7, Length: 2, Type: &client.TextEntityTypeItalic{}}},
+			},
+		},
+		{
+			name: "offset_shift_for_entity_replacements_after_text_replacement",
+			initial: &client.FormattedText{
+				Text:     "abcde",
+				Entities: []*client.TextEntity{},
+			},
+			repls: []*replacement{
+				{
+					OldEntity:     &client.TextEntity{Offset: 0, Length: 2, Type: nil},
+					NewText:       "xyzuvw",
+					NewEntityType: nil,
+				},
+				{
+					OldEntity:     &client.TextEntity{Offset: 3, Length: 2, Type: &client.TextEntityTypeItalic{}},
+					NewText:       "",
+					NewEntityType: &client.TextEntityTypeItalic{},
+				},
+			},
+			expected: &client.FormattedText{
+				Text:     "xyzuvwcde",
+				Entities: []*client.TextEntity{{Offset: 7, Length: 2, Type: &client.TextEntityTypeItalic{}}},
+			},
+		},
+		{
+			name: "empty_replacements",
+			initial: &client.FormattedText{
+				Text:     "abc",
+				Entities: []*client.TextEntity{},
+			},
+			repls: nil,
+			expected: &client.FormattedText{
+				Text:     "abc",
+				Entities: []*client.TextEntity{},
+			},
+		},
+	}
+
+	service := New(nil, nil, nil)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ft := &client.FormattedText{
+				Text:     test.initial.Text,
+				Entities: append([]*client.TextEntity{}, test.initial.Entities...),
+			}
+			service.applyMarkdownReplacements(ft, test.repls)
+			assert.Equal(t, test.expected.Text, ft.Text)
+			assert.Equal(t, test.expected.Entities, ft.Entities)
 		})
 	}
 }
