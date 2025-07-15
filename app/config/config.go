@@ -7,18 +7,6 @@ import (
 	"github.com/comerc/budva43/app/entity"
 )
 
-var (
-	cfg       = &config{}
-	General   = &cfg.General
-	LogSource = &cfg.LogSource
-	Storage   = &cfg.Storage
-	Telegram  = &cfg.Telegram
-	Web       = &cfg.Web
-	Grpc      = &cfg.Grpc
-	Engine    = &cfg.Engine
-	// Reports = &cfg.Reports
-)
-
 type (
 	// Настройки приложения
 	config struct {
@@ -103,4 +91,16 @@ type (
 	// 	Template string
 	// 	For      []entity.ChatId
 	// }
+)
+
+var (
+	cfg       = &config{}
+	General   = &cfg.General
+	LogSource = &cfg.LogSource
+	Storage   = &cfg.Storage
+	Telegram  = &cfg.Telegram
+	Web       = &cfg.Web
+	Grpc      = &cfg.Grpc
+	Engine    = &cfg.Engine
+	// Reports = &cfg.Reports
 )
