@@ -28,18 +28,18 @@ type App struct {
 	log *log.Logger
 }
 
-func NewApp() *App {
-	return &App{
-		log: log.NewLogger(),
-	}
-}
-
 type RunFunc = func(
 	ctx context.Context,
 	cancel func(),
 	gracefulShutdown func(closer io.Closer),
 	waitFunc func(),
 ) error
+
+func NewApp() *App {
+	return &App{
+		log: log.NewLogger(),
+	}
+}
 
 // Run запускает основные компоненты приложения
 func (a *App) Run(runFunc RunFunc) error { //nolint:error_log_or_return
