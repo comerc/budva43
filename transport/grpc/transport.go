@@ -26,6 +26,7 @@ type facadeGRPC interface {
 	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
 	UpdateMessage(message *dto.Message) (*dto.Message, error)
 	DeleteMessages(chatId int64, messageIds []int64) (bool, error)
+	GetMessageLink(chatId int64, messageId int64) (string, error)
 }
 
 type Transport struct {
@@ -199,4 +200,15 @@ func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRe
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.DeleteMessagesResponse{Success: ok}, nil
+}
+
+func (t *Transport) GetMessageLink(ctx context.Context, req *pb.GetMessageLinkRequest) (*pb.GetMessageLinkResponse, error) {
+	var err error
+
+	var link string
+	link, err = t.facade.GetMessageLink(req.ChatId, req.MessageId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.GetMessageLinkResponse{Link: link}, nil
 }

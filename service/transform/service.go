@@ -123,7 +123,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
 		return
 	}
 
-	s.addText(formattedText, escapeMarkdown(answer.Text))
+	s.addText(formattedText, util.EscapeMarkdown(answer.Text))
 }
 
 // replaceMyselfLinks заменяет ссылки исходного чата ссылками на копии в целевом чате
@@ -337,19 +337,6 @@ func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	}
 	formattedText.Text += parsedText.Text
 	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
-}
-
-// escapeMarkdown экранирует markdown спецсимволы
-func escapeMarkdown(text string) string {
-	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
-	a := strings.Split(s, " ")
-	result := text
-	for _, v := range a {
-		result = strings.ReplaceAll(result, v, "\\"+v)
-	}
-	return result
-	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
-	// return re.ReplaceAllString(text, `\$0`)
 }
 
 // applyReplacements применяет замены replacements к formattedText

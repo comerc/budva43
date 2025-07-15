@@ -5,6 +5,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf16"
 )
@@ -51,4 +52,17 @@ func NewFuncWithIndex(prefix string) func() string {
 		index++
 		return fmt.Sprintf("%s.%d", prefix, index)
 	}
+}
+
+// EscapeMarkdown экранирует markdown спецсимволы
+func EscapeMarkdown(text string) string {
+	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
+	a := strings.Split(s, " ")
+	result := text
+	for _, v := range a {
+		result = strings.ReplaceAll(result, v, "\\"+v)
+	}
+	return result
+	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
+	// return re.ReplaceAllString(text, `\$0`)
 }

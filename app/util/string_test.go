@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"testing/synctest"
 
@@ -65,4 +66,14 @@ func TestNewFuncWithIndex(t *testing.T) {
 	assert.Equal(t, getKey(), "path.0")
 	assert.Equal(t, getKey(), "path.1")
 	assert.Equal(t, getKey(), "path.2")
+}
+
+func TestEscapeMarkdown(t *testing.T) {
+	t.Parallel()
+
+	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
+	a := strings.Split(s, " ")
+	for _, v := range a {
+		assert.Equal(t, "\\"+v, EscapeMarkdown(v))
+	}
 }
