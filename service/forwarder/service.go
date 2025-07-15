@@ -115,7 +115,7 @@ func (s *Service) ForwardMessages(
 				DisableNotification: false,
 				FromBackground:      false,
 				SchedulingState: &client.MessageSchedulingStateSendAtDate{
-					SendDate: int32(time.Now().Unix()), // nolint:gosec
+					SendDate: int32(time.Now().Unix()), //nolint:gosec
 				},
 			},
 			SendCopy:      false,

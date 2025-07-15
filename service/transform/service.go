@@ -38,7 +38,7 @@ type messageService interface {
 type replacement struct {
 	OldEntity     *client.TextEntity
 	NewText       string                // если пустой - текст не меняем
-	NewEntityType client.TextEntityType // новый тип entity
+	NewEntityType client.TextEntityType // если пустой - парсим markdown
 }
 
 // Service предоставляет методы для преобразования и замены текста
@@ -89,6 +89,43 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 	}
 }
 
+// addAutoAnswer добавляет ответ на автоответ
+func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
+	src *client.Message, engineConfig *entity.EngineConfig,
+) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	source := engineConfig.Sources[src.ChatId]
+	if source == nil {
+		err = log.NewError("source not found")
+		return
+	}
+	if !source.AutoAnswer {
+		err = log.NewError("source.AutoAnswer is false")
+		return
+	}
+
+	replyMarkupData := s.messageService.GetReplyMarkupData(src)
+	if len(replyMarkupData) == 0 {
+		err = log.NewError("replyMarkupData is empty")
+		return
+	}
+	var answer *client.CallbackQueryAnswer
+	answer, err = s.telegramRepo.GetCallbackQueryAnswer(
+		&client.GetCallbackQueryAnswerRequest{
+			ChatId:    src.ChatId,
+			MessageId: src.Id,
+			Payload:   &client.CallbackQueryPayloadData{Data: replyMarkupData},
+		},
+	)
+	if err != nil {
+		return
+	}
+
+	s.addText(formattedText, escapeMarkdown(answer.Text))
+}
+
 // replaceMyselfLinks заменяет ссылки исходного чата ссылками на копии в целевом чате
 // или удаляет ссылки на внешние сообщения
 func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
@@ -127,7 +164,10 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 		switch entityType := entity.Type.(type) {
 		case *client.TextEntityTypeUrl:
 			if replaceMyselfLinks.Run && !isBasicGroup {
-				url := util.DecodeFromUTF16(util.EncodeToUTF16(formattedText.Text[entity.Offset : entity.Offset+entity.Length]))
+				// Извлекаем URL с учетом UTF-16 смещений
+				utf16Text := util.EncodeToUTF16(formattedText.Text)
+				utf16URL := utf16Text[entity.Offset : entity.Offset+entity.Length]
+				url := util.DecodeFromUTF16(utf16URL)
 				src := s.getMessageByLink(url)
 				if src == nil || srcChatId != src.ChatId {
 					// Не наш чат - не трогаем
@@ -140,13 +180,12 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 					if replaceMyselfLinks.DeleteExternal {
 						deletedLinkText := replaceMyselfLinks.DeletedLinkText // TODO: не поддерживает markdown
 						if deletedLinkText == "" {
-							deletedLinkText = "DELETED LINK"
+							deletedLinkText = "DELETED_LINK"
 						}
 						// Заменяем на "DELETED LINK" (для URL без текста)
 						replacements = append(replacements, &replacement{
-							OldEntity:     entity,
-							NewText:       deletedLinkText,
-							NewEntityType: &client.TextEntityTypeStrikethrough{},
+							OldEntity: entity,
+							NewText:   deletedLinkText,
 						})
 					}
 					continue
@@ -191,7 +230,188 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	s.applyReplacements(formattedText, replacements)
 }
 
-// getMessageByLink получает сообщение по ссылке - YAGNI (это просто вызов tdlib с логированием)
+// replaceFragments заменяет фрагменты текста
+func (s *Service) replaceFragments(formattedText *client.FormattedText,
+	dstChatId int64, engineConfig *entity.EngineConfig,
+) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	destination := engineConfig.Destinations[dstChatId]
+	if destination == nil {
+		err = log.NewError("destination not found")
+		return
+	}
+
+	for _, replaceFragment := range destination.ReplaceFragments {
+		re := regexp.MustCompile("(?i)" + replaceFragment.From)
+		if re.FindString(formattedText.Text) != "" {
+			// вынесено в engineService.validateConfig()
+			// if len(util.EncodeToUTF16(replaceFragment.From)) != len(util.EncodeToUTF16(replaceFragment.To)) {
+			// err = log.NewError("длина исходного и заменяемого текста должна быть одинаковой",
+			// 	"from", replaceFragment.From,
+			// 	"to", replaceFragment.To,
+			// )
+			// 	return
+			// }
+			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
+		}
+	}
+}
+
+// addSourceSign добавляет подпись источника
+func (s *Service) addSourceSign(formattedText *client.FormattedText,
+	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
+) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	source := engineConfig.Sources[src.ChatId]
+	if source == nil {
+		err = log.NewError("source not found")
+		return
+	}
+	if source.Sign == nil || !slices.Contains(source.Sign.For, dstChatId) {
+		err = log.NewError("source.Sign without dstChatId")
+		return
+	}
+
+	text := source.Sign.Title
+	s.addText(formattedText, text)
+}
+
+// addSourceLink добавляет ссылку на источник
+func (s *Service) addSourceLink(formattedText *client.FormattedText,
+	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
+) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	source := engineConfig.Sources[src.ChatId]
+	if source == nil {
+		err = log.NewError("source not found")
+		return
+	}
+	if source.Link == nil || !slices.Contains(source.Link.For, dstChatId) {
+		err = log.NewError("source.Link without dstChatId")
+		return
+	}
+
+	var messageLink *client.MessageLink
+	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
+		ChatId:    src.ChatId,
+		MessageId: src.Id,
+		ForAlbum:  src.MediaAlbumId != 0,
+		// ForComment: false, // удалено в новой версии go-tdlib
+	})
+	if err != nil {
+		return
+	}
+
+	text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
+	s.addText(formattedText, text)
+}
+
+// addText добавляет текст в formattedText
+func (s *Service) addText(formattedText *client.FormattedText, text string) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "")
+
+	var parsedText *client.FormattedText
+	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: text,
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	})
+	if err != nil {
+		return
+	}
+	offset := int32(len(util.EncodeToUTF16(formattedText.Text))) //nolint:gosec
+	if offset > 0 {
+		formattedText.Text += "\n\n"
+		offset += 2
+	}
+	for _, entity := range parsedText.Entities {
+		entity.Offset += offset
+	}
+	formattedText.Text += parsedText.Text
+	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
+}
+
+// escapeMarkdown экранирует markdown спецсимволы
+func escapeMarkdown(text string) string {
+	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
+	a := strings.Split(s, " ")
+	result := text
+	for _, v := range a {
+		result = strings.ReplaceAll(result, v, "\\"+v)
+	}
+	return result
+	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
+	// return re.ReplaceAllString(text, `\$0`)
+}
+
+// applyReplacements применяет замены replacements к formattedText
+func (s *Service) applyReplacements(formattedText *client.FormattedText, replacements []*replacement) {
+	markdownReplacements := []*replacement{}
+	// Сортируем замены по Offset в обратном порядке (от конца к началу)
+	// чтобы смещения не сбивались при замене текста
+	for i := len(replacements) - 1; i >= 0; i-- {
+		replacement := replacements[i]
+
+		if replacement.NewText == "" {
+			// Только меняем тип entity, текст не трогаем
+			replacement.OldEntity.Type = replacement.NewEntityType
+			continue
+		}
+
+		oldStart := replacement.OldEntity.Offset
+		oldEnd := oldStart + replacement.OldEntity.Length
+
+		// Заменяем текст
+		newLength := int32(len(util.EncodeToUTF16(replacement.NewText))) //nolint:gosec
+		lengthDelta := newLength - replacement.OldEntity.Length
+
+		// Заменяем текст в formattedText.Text
+		formattedText.Text = replaceTextUTF16(
+			formattedText.Text, oldStart, oldEnd, replacement.NewText)
+
+		// Обновляем entities
+		var newEntities []*client.TextEntity
+		for _, entity := range formattedText.Entities {
+			if entity == replacement.OldEntity {
+				if replacement.NewEntityType == nil {
+					// Накапливаем markdown replacements
+					markdownReplacements = append(markdownReplacements,
+						s.collectMarkdownReplacements(oldStart, replacement.NewText)...)
+				} else {
+					// Заменяем целевой entity
+					newEntities = append(newEntities, &client.TextEntity{
+						Offset: oldStart,
+						Length: newLength,
+						Type:   replacement.NewEntityType,
+					})
+				}
+			} else if entity.Offset >= oldStart && entity.Offset+entity.Length <= oldEnd {
+				// Entity полностью внутри заменяемого текста → удаляем
+				continue
+			} else {
+				// Entity не пересекается или находится вне заменяемого текста
+				if entity.Offset > oldEnd {
+					// Entity после замены → сдвигаем
+					entity.Offset += lengthDelta
+				}
+				newEntities = append(newEntities, entity)
+			}
+		}
+		formattedText.Entities = newEntities
+	}
+	// Обрабатываем markdown replacements для replacement.NewEntityType == nil
+	s.applyMarkdownReplacements(formattedText, markdownReplacements)
+}
+
+// getMessageByLink получает сообщение по ссылке
 func (s *Service) getMessageByLink(url string) *client.Message {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
@@ -206,7 +426,7 @@ func (s *Service) getMessageByLink(url string) *client.Message {
 	return messageLinkInfo.Message
 }
 
-// getMyselfLink получает ссылку на копию сообщения в целевом чате
+// getMyselfLink получает ссылку на копию сообщения
 func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, error) {
 	var err error
 
@@ -240,210 +460,116 @@ func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, e
 	return messageLink.Link, nil
 }
 
-// applyReplacements применяет замены replacements к formattedText
-func (s *Service) applyReplacements(formattedText *client.FormattedText, replacements []*replacement) {
-	// Сортируем замены по Offset в обратном порядке (от конца к началу)
-	// чтобы смещения не сбивались при замене текста
-	for i := len(replacements) - 1; i >= 0; i-- {
-		replacement := replacements[i]
-
-		if replacement.NewText == "" {
-			// Только меняем тип entity, текст не трогаем
-			replacement.OldEntity.Type = replacement.NewEntityType
-			continue
-		}
-
-		oldStart := replacement.OldEntity.Offset
-		oldEnd := oldStart + replacement.OldEntity.Length
-
-		// Заменяем текст
-		newLength := int32(len(util.EncodeToUTF16(replacement.NewText)))
-		lengthDelta := newLength - replacement.OldEntity.Length
-
-		// Заменяем текст в formattedText.Text
-		formattedText.Text = formattedText.Text[:oldStart] +
-			replacement.NewText +
-			formattedText.Text[oldEnd:]
-
-		// Обновляем entities
-		var newEntities []*client.TextEntity
-		for _, entity := range formattedText.Entities {
-			if entity == replacement.OldEntity {
-				// Заменяем целевой entity
-				newEntities = append(newEntities, &client.TextEntity{
-					Offset: oldStart,
-					Length: newLength,
-					Type:   replacement.NewEntityType,
-				})
-			} else if entity.Offset >= oldStart && entity.Offset+entity.Length <= oldEnd {
-				// Entity полностью внутри заменяемого текста → удаляем
-				continue
-			} else {
-				// Entity не пересекается или находится вне заменяемого текста
-				if entity.Offset > oldEnd {
-					// Entity после замены → сдвигаем
-					entity.Offset += lengthDelta
-				}
-				newEntities = append(newEntities, entity)
-			}
-		}
-		formattedText.Entities = newEntities
-	}
-}
-
-// replaceFragments заменяет фрагменты текста согласно настройкам
-func (s *Service) replaceFragments(formattedText *client.FormattedText,
-	dstChatId int64, engineConfig *entity.EngineConfig,
-) {
+// collectMarkdownReplacements собирает замены для markdown текста
+func (s *Service) collectMarkdownReplacements(oldStart int32, newText string) []*replacement {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
-
-	destination := engineConfig.Destinations[dstChatId]
-	if destination == nil {
-		err = log.NewError("destination not found")
-		return
-	}
-
-	for _, replaceFragment := range destination.ReplaceFragments {
-		re := regexp.MustCompile("(?i)" + replaceFragment.From)
-		if re.FindString(formattedText.Text) != "" {
-			// вынесено в engineService.validateConfig()
-			// if util.RuneCountForUTF16(replaceFragment.From) != util.RuneCountForUTF16(replaceFragment.To) {
-			// err = log.NewError("длина исходного и заменяемого текста должна быть одинаковой",
-			// 	"from", replaceFragment.From,
-			// 	"to", replaceFragment.To,
-			// )
-			// 	return
-			// }
-			formattedText.Text = re.ReplaceAllString(formattedText.Text, replaceFragment.To)
-		}
-	}
-}
-
-// addAutoAnswer добавляет ответ на сообщение
-func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
-	src *client.Message, engineConfig *entity.EngineConfig,
-) {
-	var err error
-	defer s.log.ErrorOrDebug(&err, "")
-
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	if !source.AutoAnswer {
-		err = log.NewError("source.AutoAnswer is false")
-		return
-	}
-
-	replyMarkupData := s.messageService.GetReplyMarkupData(src)
-	if len(replyMarkupData) == 0 {
-		err = log.NewError("replyMarkupData is empty")
-		return
-	}
-	var answer *client.CallbackQueryAnswer
-	answer, err = s.telegramRepo.GetCallbackQueryAnswer(
-		&client.GetCallbackQueryAnswerRequest{
-			ChatId:    src.ChatId,
-			MessageId: src.Id,
-			Payload:   &client.CallbackQueryPayloadData{Data: replyMarkupData},
-		},
-	)
-	if err != nil {
-		return
-	}
-
-	s.addText(formattedText, escapeMarkdown(answer.Text))
-}
-
-func (s *Service) addSourceSign(formattedText *client.FormattedText,
-	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
-) {
-	var err error
-	defer s.log.ErrorOrDebug(&err, "")
-
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	if source.Sign == nil || !slices.Contains(source.Sign.For, dstChatId) {
-		err = log.NewError("source.Sign without dstChatId")
-		return
-	}
-
-	text := source.Sign.Title
-	s.addText(formattedText, text)
-}
-
-func (s *Service) addSourceLink(formattedText *client.FormattedText,
-	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
-) {
-	var err error
-	defer s.log.ErrorOrDebug(&err, "")
-
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	if source.Link == nil || !slices.Contains(source.Link.For, dstChatId) {
-		err = log.NewError("source.Link without dstChatId")
-		return
-	}
-
-	var messageLink *client.MessageLink
-	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
-		ChatId:    src.ChatId,
-		MessageId: src.Id,
-		ForAlbum:  src.MediaAlbumId != 0,
-		// ForComment: false, // удалено в новой версии go-tdlib
-	})
-	if err != nil {
-		return
-	}
-
-	text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
-	s.addText(formattedText, text)
-}
-
-// addText добавляет новый текст в конец форматированного текста
-func (s *Service) addText(formattedText *client.FormattedText, text string) {
-	var err error
-	defer s.log.ErrorOrDebug(&err, "")
-
-	var parsedText *client.FormattedText
-	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
-		Text: text,
+	var formattedText *client.FormattedText
+	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: newText,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,
 		},
 	})
 	if err != nil {
-		return
+		return nil
 	}
-	offset := int32(len(util.EncodeToUTF16(formattedText.Text))) // nolint:gosec
-	if offset > 0 {
-		formattedText.Text += "\n\n"
-		offset += 2
+
+	var markdownReplacements []*replacement
+
+	// Сначала заменяем весь markdown текст на чистый текст
+	if formattedText.Text != newText {
+		// Создаем replacement для замены markdown текста на чистый
+		oldEntity := &client.TextEntity{
+			Offset: oldStart,
+			Length: int32(len(util.EncodeToUTF16(newText))), //nolint:gosec
+			Type:   nil,                                     // тип не важен для замены текста
+		}
+
+		markdownReplacements = append(markdownReplacements, &replacement{
+			OldEntity:     oldEntity,
+			NewText:       formattedText.Text, // заменяем на чистый текст
+			NewEntityType: nil,                // это не entity replacement
+		})
 	}
-	for _, entity := range parsedText.Entities {
-		entity.Offset += offset
+
+	// Затем добавляем entities для форматирования
+	// ВАЖНО: entities должны быть относительно чистого текста, а не markdown
+	for _, entity := range formattedText.Entities {
+		newEntity := &client.TextEntity{
+			Offset: oldStart + entity.Offset,
+			Length: entity.Length,
+			Type:   entity.Type,
+		}
+
+		markdownReplacements = append(markdownReplacements, &replacement{
+			OldEntity:     newEntity,
+			NewText:       "", // текст не меняем, только добавляем entity
+			NewEntityType: entity.Type,
+		})
 	}
-	formattedText.Text += parsedText.Text
-	formattedText.Entities = append(formattedText.Entities, parsedText.Entities...)
+	return markdownReplacements
 }
 
-// escapeMarkdown экранирует специальные символы Markdown в тексте
-func escapeMarkdown(text string) string {
-	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
-	a := strings.Split(s, " ")
-	result := text
-	for _, v := range a {
-		result = strings.ReplaceAll(result, v, "\\"+v)
+// applyReplacements применяет замены replacements к formattedText
+func (s *Service) applyMarkdownReplacements(formattedText *client.FormattedText, markdownReplacements []*replacement) {
+	// Разделяем replacements на замены текста и добавления entities
+	var textReplacements []*replacement
+	var entityReplacements []*replacement
+
+	for _, replacement := range markdownReplacements {
+		if replacement.NewText != "" {
+			textReplacements = append(textReplacements, replacement)
+		} else {
+			entityReplacements = append(entityReplacements, replacement)
+		}
 	}
-	return result
-	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
-	// return re.ReplaceAllString(text, `\$0`)
+
+	// Сначала применяем замены текста (сортируем по offset в обратном порядке)
+	for i := len(textReplacements) - 1; i >= 0; i-- {
+		replacement := textReplacements[i]
+
+		oldStart := replacement.OldEntity.Offset
+		oldEnd := oldStart + replacement.OldEntity.Length
+
+		// Заменяем текст
+		formattedText.Text = replaceTextUTF16(
+			formattedText.Text, oldStart, oldEnd, replacement.NewText)
+
+		// Обновляем смещения всех entities после замены
+		newLength := int32(len(util.EncodeToUTF16(replacement.NewText))) //nolint:gosec
+		lengthDelta := newLength - replacement.OldEntity.Length
+
+		// Обновляем существующие entities
+		for _, entity := range formattedText.Entities {
+			if entity.Offset > oldEnd {
+				entity.Offset += lengthDelta
+			}
+		}
+
+		// Обновляем entities, которые мы собираемся добавить
+		for _, entityReplacement := range entityReplacements {
+			if entityReplacement.OldEntity.Offset > oldEnd {
+				entityReplacement.OldEntity.Offset += lengthDelta
+			}
+		}
+	}
+
+	// Затем добавляем entities для форматирования
+	for _, replacement := range entityReplacements {
+		formattedText.Entities = append(formattedText.Entities, replacement.OldEntity)
+	}
+}
+
+// replaceTextUTF16 заменяет фрагмент текста с учетом UTF-16 смещений
+func replaceTextUTF16(text string, startOffset, endOffset int32, newText string) string {
+	utf16Text := util.EncodeToUTF16(text)
+	utf16NewText := util.EncodeToUTF16(newText)
+
+	newUTF16 := make([]uint16, 0, len(utf16Text)+len(utf16NewText))
+	newUTF16 = append(newUTF16, utf16Text[:startOffset]...)
+	newUTF16 = append(newUTF16, utf16NewText...)
+	newUTF16 = append(newUTF16, utf16Text[endOffset:]...)
+
+	return util.DecodeFromUTF16(newUTF16)
 }
