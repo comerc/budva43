@@ -254,6 +254,63 @@ func (_c *FacadeGRPC_GetMessage_Call) RunAndReturn(run func(int64, int64) (*dto.
 	return _c
 }
 
+// GetMessageLink provides a mock function with given fields: chatId, messageId
+func (_m *FacadeGRPC) GetMessageLink(chatId int64, messageId int64) (string, error) {
+	ret := _m.Called(chatId, messageId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMessageLink")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int64, int64) (string, error)); ok {
+		return rf(chatId, messageId)
+	}
+	if rf, ok := ret.Get(0).(func(int64, int64) string); ok {
+		r0 = rf(chatId, messageId)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(int64, int64) error); ok {
+		r1 = rf(chatId, messageId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FacadeGRPC_GetMessageLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessageLink'
+type FacadeGRPC_GetMessageLink_Call struct {
+	*mock.Call
+}
+
+// GetMessageLink is a helper method to define mock.On call
+//   - chatId int64
+//   - messageId int64
+func (_e *FacadeGRPC_Expecter) GetMessageLink(chatId interface{}, messageId interface{}) *FacadeGRPC_GetMessageLink_Call {
+	return &FacadeGRPC_GetMessageLink_Call{Call: _e.mock.On("GetMessageLink", chatId, messageId)}
+}
+
+func (_c *FacadeGRPC_GetMessageLink_Call) Run(run func(chatId int64, messageId int64)) *FacadeGRPC_GetMessageLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(int64), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *FacadeGRPC_GetMessageLink_Call) Return(_a0 string, _a1 error) *FacadeGRPC_GetMessageLink_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *FacadeGRPC_GetMessageLink_Call) RunAndReturn(run func(int64, int64) (string, error)) *FacadeGRPC_GetMessageLink_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetMessages provides a mock function with given fields: chatId, messageIds
 func (_m *FacadeGRPC) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error) {
 	ret := _m.Called(chatId, messageIds)

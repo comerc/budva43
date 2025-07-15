@@ -21,6 +21,7 @@ type telegramRepo interface {
 	GetChatHistory(*client.GetChatHistoryRequest) (*client.Messages, error)
 	GetMarkdownText(*client.GetMarkdownTextRequest) (*client.FormattedText, error)
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
+	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
 }
 
 //go:generate mockery --name=messageService --exported
@@ -222,6 +223,22 @@ func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error)
 	}
 
 	return true, nil
+}
+
+// GetMessageLink возвращает ссылку на сообщение
+func (s *Service) GetMessageLink(chatId int64, messageId int64) (string, error) {
+	var err error
+
+	var messageLink *client.MessageLink
+	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
+		ChatId:    chatId,
+		MessageId: messageId,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return messageLink.Link, nil
 }
 
 // mapMessage преобразует сообщение из tdlib в dto.Message

@@ -31,6 +31,7 @@ sources:
       for: [321]
     auto-answer: true
     delete-system-messages: true
+    # deleted-link-text: "DELETED_LINK" # default value
   # data for service.transform - 101xx
   10100: # for sign only test
     sign:

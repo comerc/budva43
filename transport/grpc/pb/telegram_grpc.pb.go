@@ -26,6 +26,7 @@ const (
 	FacadeGRPC_GetMessage_FullMethodName     = "/pb.FacadeGRPC/GetMessage"
 	FacadeGRPC_UpdateMessage_FullMethodName  = "/pb.FacadeGRPC/UpdateMessage"
 	FacadeGRPC_DeleteMessages_FullMethodName = "/pb.FacadeGRPC/DeleteMessages"
+	FacadeGRPC_GetMessageLink_FullMethodName = "/pb.FacadeGRPC/GetMessageLink"
 )
 
 // FacadeGRPCClient is the client API for FacadeGRPC service.
@@ -39,6 +40,7 @@ type FacadeGRPCClient interface {
 	GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error)
+	GetMessageLink(ctx context.Context, in *GetMessageLinkRequest, opts ...grpc.CallOption) (*GetMessageLinkResponse, error)
 }
 
 type facadeGRPCClient struct {
@@ -119,6 +121,16 @@ func (c *facadeGRPCClient) DeleteMessages(ctx context.Context, in *DeleteMessage
 	return out, nil
 }
 
+func (c *facadeGRPCClient) GetMessageLink(ctx context.Context, in *GetMessageLinkRequest, opts ...grpc.CallOption) (*GetMessageLinkResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMessageLinkResponse)
+	err := c.cc.Invoke(ctx, FacadeGRPC_GetMessageLink_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FacadeGRPCServer is the server API for FacadeGRPC service.
 // All implementations must embed UnimplementedFacadeGRPCServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type FacadeGRPCServer interface {
 	GetMessage(context.Context, *GetMessageRequest) (*MessageResponse, error)
 	UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error)
 	DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error)
+	GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error)
 	mustEmbedUnimplementedFacadeGRPCServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedFacadeGRPCServer) UpdateMessage(context.Context, *UpdateMessa
 }
 func (UnimplementedFacadeGRPCServer) DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessages not implemented")
+}
+func (UnimplementedFacadeGRPCServer) GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessageLink not implemented")
 }
 func (UnimplementedFacadeGRPCServer) mustEmbedUnimplementedFacadeGRPCServer() {}
 func (UnimplementedFacadeGRPCServer) testEmbeddedByValue()                    {}
@@ -308,6 +324,24 @@ func _FacadeGRPC_DeleteMessages_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FacadeGRPC_GetMessageLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessageLinkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FacadeGRPCServer).GetMessageLink(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FacadeGRPC_GetMessageLink_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FacadeGRPCServer).GetMessageLink(ctx, req.(*GetMessageLinkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FacadeGRPC_ServiceDesc is the grpc.ServiceDesc for FacadeGRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +376,10 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMessages",
 			Handler:    _FacadeGRPC_DeleteMessages_Handler,
+		},
+		{
+			MethodName: "GetMessageLink",
+			Handler:    _FacadeGRPC_GetMessageLink_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

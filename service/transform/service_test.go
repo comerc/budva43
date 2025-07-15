@@ -3,7 +3,6 @@ package transform
 import (
 	"errors"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1736,16 +1735,6 @@ func Test_addText(t *testing.T) {
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
 		})
-	}
-}
-
-func TestEscapeMarkdown(t *testing.T) {
-	t.Parallel()
-
-	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
-	a := strings.Split(s, " ")
-	for _, v := range a {
-		assert.Equal(t, "\\"+v, escapeMarkdown(v))
 	}
 }
 

@@ -67,7 +67,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
 - [x] Notations Start & Run
 - [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
-- [ ] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
+- [x] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
 - [ ] CQRS
 - [x] [samber/lo](https://github.com/samber/lo)
 - [ ] [uptrace/bun](https://github.com/uptrace/bun)

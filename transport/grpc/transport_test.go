@@ -161,3 +161,19 @@ func TestDeleteMessage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, resp.Success)
 }
+
+func TestGetMessageLink(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	link := "https://t.me/c/1/2"
+	facade.EXPECT().GetMessageLink(int64(1), int64(2)).Return(link, nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+
+	resp, err := client.GetMessageLink(context.Background(), &pb.GetMessageLinkRequest{ChatId: 1, MessageId: 2})
+	assert.NoError(t, err)
+	assert.Equal(t, link, resp.Link)
+}

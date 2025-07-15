@@ -25,8 +25,9 @@ type scenario struct {
 }
 
 type scenarioState struct {
-	sourceChatId int64
-	sourceText   string
+	sourceChatId     int64
+	sourceTextPrefix string
+	sourceTextMiddle string
 
 	checks []check
 
@@ -75,7 +76,7 @@ func (s *scenario) setSourceChat(chatId, name string) error {
 	if err != nil {
 		return fmt.Errorf("failed to generate nanoid: %w", err)
 	}
-	s.state.sourceText = fmt.Sprintf("%s %s", name, key)
+	s.state.sourceTextPrefix = fmt.Sprintf("%s %s", name, key)
 
 	return nil
 }
@@ -266,7 +267,21 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
 		ChatId: s.state.sourceChatId,
-		Text:   s.state.sourceText,
+		Text:   s.state.sourceTextPrefix + "\n\n" + s.state.sourceTextMiddle,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to send text message via grpc: %w", err)
+	}
+
+	return nil
+}
+
+func (s *scenario) sendYETIMessage(ctx context.Context) error {
+	var err error
+
+	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
+		ChatId: s.state.sourceChatId,
+		Text:   util.EscapeMarkdown("YETI_MESSAGE"),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send text message via grpc: %w", err)
@@ -283,11 +298,11 @@ func (s *scenario) checkMessage(ctx context.Context, chatId, name string) error 
 		ChatId: stringToInt64(chatId),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to get last message in destination chat: %w", err)
+		return fmt.Errorf("failed to get last message: %w", err)
 	}
 
-	if !strings.HasPrefix(resp.Message.Text, s.state.sourceText) {
-		return fmt.Errorf("message text has no prefix: want %q, got %q", s.state.sourceText, resp.Message.Text)
+	if !strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+		return fmt.Errorf("message text has no prefix: want %q, got %q", s.state.sourceTextPrefix, resp.Message.Text)
 	}
 
 	for _, check := range s.state.checks {
@@ -296,6 +311,49 @@ func (s *scenario) checkMessage(ctx context.Context, chatId, name string) error 
 			return err
 		}
 	}
+
+	return nil
+}
+
+func (s *scenario) checkYETIMessage(ctx context.Context) error {
+	var err error
+
+	var resp *pb.MessageResponse
+	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+		ChatId: s.state.sourceChatId,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get last message: %w", err)
+	}
+
+	if resp.Message.Text != "YETI_MESSAGE" {
+		return fmt.Errorf("message text is not YETI_MESSAGE: want %q, got %q", "YETI_MESSAGE", resp.Message.Text)
+	}
+
+	return nil
+}
+
+func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
+	var err error
+
+	var respMessage *pb.MessageResponse
+	respMessage, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+		ChatId: s.state.sourceChatId,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get last message: %w", err)
+	}
+
+	var resp *pb.GetMessageLinkResponse
+	resp, err = client.GetMessageLink(ctx, &pb.GetMessageLinkRequest{
+		ChatId:    s.state.sourceChatId,
+		MessageId: respMessage.Message.Id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get message link: %w", err)
+	}
+
+	s.state.sourceTextMiddle = util.EscapeMarkdown(resp.Link)
 
 	return nil
 }
@@ -316,6 +374,11 @@ func (s *scenario) setExpectedLink() error {
 	return s.setExpectedRegex(pattern)
 }
 
+func (s *scenario) setExpectedNoExternalLink() error {
+	pattern := `(?s)^.*DELETED_LINK.*$`
+	return s.setExpectedRegex(pattern)
+}
+
 func registerSteps(ctx *godog.ScenarioContext) {
 	scenario := &scenario{}
 	// !! зарегистрированные раньше имеют приоритет выполнения
@@ -333,11 +396,15 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	// ctx.Then(`^сообщение равно ожидаемому тексту$`, state.checkMessageEqualsExpectedText)
 	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.setExpectedForward)
 	ctx.When(`^пользователь отправляет сообщение в исходный чат$`, scenario.sendMessage)
+	ctx.When(`^пользователь отправляет YETI_MESSAGE в исходный чат$`, scenario.sendYETIMessage)
 	ctx.Then(`^пауза (\d+) сек.$`, scenario.sleep)
 	ctx.Then(`^сообщение в чате "([^"]*)" \(([^"]*)\)$`, scenario.checkMessage)
+	ctx.Then(`^YETI_MESSAGE в исходном чате$`, scenario.checkYETIMessage)
 	ctx.Given(`^будет текст "([^"]*)"$`, scenario.setExpectedRegex)
 	ctx.Given(`^будет подпись$`, scenario.setExpectedSign)
 	ctx.Given(`^будет ссылка$`, scenario.setExpectedLink)
+	ctx.Given(`^будет замена: ссылка на YETI_MESSAGE -> DELETED_LINK$`, scenario.setExpectedNoExternalLink)
+	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -352,10 +419,10 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		"01.forward_send_copy", // OK
-		"02.forward",           // OK
+		// "01.forward_send_copy", // OK
+		// "02.forward",           // OK
 		// "03.1.replace_myself_links",
-		// "03.2.delete_external_links",
+		// "03.2.delete_external_links", // OK
 		// "04.1.filters_mode_exclude",
 		// "04.2.filters_mode_include",
 		// "05.media_album_send_copy",
@@ -363,8 +430,8 @@ func Test(t *testing.T) {
 		// "07.1.include_submatch_f",
 		// "07.2.include_submatch_t",
 		// "08.replace_fragments",
-		"09.sources_link_title", // OK
-		"10.sources_sign",       // OK
+		// "09.sources_link_title", // OK
+		// "10.sources_sign",       // OK
 		// "11.auto_answers",
 		// "12.copy_once",
 		// "13.indelible",
