@@ -19,6 +19,9 @@ type ReplaceMyselfLinks struct {
 	DeletedLinkText string
 }
 
+// DELETED_LINK константа для замены внешней ссылки
+const DELETED_LINK = "DELETED_LINK"
+
 // ReplaceFragment представляет настройки для замены фрагмента текста
 type ReplaceFragment struct {
 	// From исходный текст
