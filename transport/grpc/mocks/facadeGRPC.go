@@ -311,6 +311,64 @@ func (_c *FacadeGRPC_GetMessageLink_Call) RunAndReturn(run func(int64, int64) (s
 	return _c
 }
 
+// GetMessageLinkInfo provides a mock function with given fields: link
+func (_m *FacadeGRPC) GetMessageLinkInfo(link string) (*dto.Message, error) {
+	ret := _m.Called(link)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMessageLinkInfo")
+	}
+
+	var r0 *dto.Message
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (*dto.Message, error)); ok {
+		return rf(link)
+	}
+	if rf, ok := ret.Get(0).(func(string) *dto.Message); ok {
+		r0 = rf(link)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.Message)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(link)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FacadeGRPC_GetMessageLinkInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessageLinkInfo'
+type FacadeGRPC_GetMessageLinkInfo_Call struct {
+	*mock.Call
+}
+
+// GetMessageLinkInfo is a helper method to define mock.On call
+//   - link string
+func (_e *FacadeGRPC_Expecter) GetMessageLinkInfo(link interface{}) *FacadeGRPC_GetMessageLinkInfo_Call {
+	return &FacadeGRPC_GetMessageLinkInfo_Call{Call: _e.mock.On("GetMessageLinkInfo", link)}
+}
+
+func (_c *FacadeGRPC_GetMessageLinkInfo_Call) Run(run func(link string)) *FacadeGRPC_GetMessageLinkInfo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *FacadeGRPC_GetMessageLinkInfo_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_GetMessageLinkInfo_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *FacadeGRPC_GetMessageLinkInfo_Call) RunAndReturn(run func(string) (*dto.Message, error)) *FacadeGRPC_GetMessageLinkInfo_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetMessages provides a mock function with given fields: chatId, messageIds
 func (_m *FacadeGRPC) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error) {
 	ret := _m.Called(chatId, messageIds)

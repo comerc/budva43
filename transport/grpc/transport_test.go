@@ -177,3 +177,22 @@ func TestGetMessageLink(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, link, resp.Link)
 }
+
+func TestGetMessageLinkInfo(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	link := "https://t.me/c/1/2"
+	msg := &dto.Message{Id: 2, ChatId: 1, Text: "", Forward: true}
+	facade.EXPECT().GetMessageLinkInfo(link).Return(msg, nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+
+	resp, err := client.GetMessageLinkInfo(context.Background(), &pb.GetMessageLinkInfoRequest{Link: link})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), resp.Message.Id)
+	assert.Equal(t, int64(1), resp.Message.ChatId)
+	assert.True(t, resp.Message.Forward)
+}

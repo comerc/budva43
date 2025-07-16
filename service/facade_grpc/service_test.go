@@ -240,3 +240,21 @@ func TestGetMessageLink(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, link, result)
 }
+
+func TestGetMessageLinkInfo(t *testing.T) {
+	t.Parallel()
+
+	tg := mocks.NewTelegramRepo(t)
+	ms := mocks.NewMessageService(t)
+	s := New(tg, ms, nil)
+
+	link := "https://t.me/c/1/2"
+	msg := &client.Message{Id: 2, ChatId: 1, ForwardInfo: &client.MessageForwardInfo{}}
+	tg.EXPECT().GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{Url: link}).Return(&client.MessageLinkInfo{Message: msg}, nil)
+
+	result, err := s.GetMessageLinkInfo(link)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), result.Id)
+	assert.Equal(t, int64(1), result.ChatId)
+	assert.True(t, result.Forward)
+}

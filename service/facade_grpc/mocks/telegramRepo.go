@@ -485,6 +485,64 @@ func (_c *TelegramRepo_GetMessageLink_Call) RunAndReturn(run func(*client.GetMes
 	return _c
 }
 
+// GetMessageLinkInfo provides a mock function with given fields: _a0
+func (_m *TelegramRepo) GetMessageLinkInfo(_a0 *client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error) {
+	ret := _m.Called(_a0)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetMessageLinkInfo")
+	}
+
+	var r0 *client.MessageLinkInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)); ok {
+		return rf(_a0)
+	}
+	if rf, ok := ret.Get(0).(func(*client.GetMessageLinkInfoRequest) *client.MessageLinkInfo); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.MessageLinkInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.GetMessageLinkInfoRequest) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_GetMessageLinkInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessageLinkInfo'
+type TelegramRepo_GetMessageLinkInfo_Call struct {
+	*mock.Call
+}
+
+// GetMessageLinkInfo is a helper method to define mock.On call
+//   - _a0 *client.GetMessageLinkInfoRequest
+func (_e *TelegramRepo_Expecter) GetMessageLinkInfo(_a0 interface{}) *TelegramRepo_GetMessageLinkInfo_Call {
+	return &TelegramRepo_GetMessageLinkInfo_Call{Call: _e.mock.On("GetMessageLinkInfo", _a0)}
+}
+
+func (_c *TelegramRepo_GetMessageLinkInfo_Call) Run(run func(_a0 *client.GetMessageLinkInfoRequest)) *TelegramRepo_GetMessageLinkInfo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.GetMessageLinkInfoRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_GetMessageLinkInfo_Call) Return(_a0 *client.MessageLinkInfo, _a1 error) *TelegramRepo_GetMessageLinkInfo_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_GetMessageLinkInfo_Call) RunAndReturn(run func(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)) *TelegramRepo_GetMessageLinkInfo_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetMessages provides a mock function with given fields: _a0
 func (_m *TelegramRepo) GetMessages(_a0 *client.GetMessagesRequest) (*client.Messages, error) {
 	ret := _m.Called(_a0)

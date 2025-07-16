@@ -22,6 +22,7 @@ type telegramRepo interface {
 	GetMarkdownText(*client.GetMarkdownTextRequest) (*client.FormattedText, error)
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
 	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
+	GetMessageLinkInfo(*client.GetMessageLinkInfoRequest) (*client.MessageLinkInfo, error)
 }
 
 //go:generate mockery --name=messageService --exported
@@ -239,6 +240,29 @@ func (s *Service) GetMessageLink(chatId int64, messageId int64) (string, error) 
 	}
 
 	return messageLink.Link, nil
+}
+
+func (s *Service) GetMessageLinkInfo(link string) (*dto.Message, error) {
+	var err error
+
+	var messageLinkInfo *client.MessageLinkInfo
+	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
+		Url: link,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	message := messageLinkInfo.Message
+
+	var result *dto.Message
+	result = &dto.Message{
+		Id:      message.Id,
+		Text:    "", // !! не используется
+		ChatId:  message.ChatId,
+		Forward: message.ForwardInfo != nil,
+	}
+	return result, nil
 }
 
 // mapMessage преобразует сообщение из tdlib в dto.Message
