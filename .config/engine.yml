@@ -15,23 +15,22 @@
 # Смотри соглашение о нумерации чатов в тестах в doc/TEST-CHAT.md
 
 sources:
-  111:
-    sign:
-      title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
-      for: [888]
-    link:
-      title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
-      for: [321]
-  123:
-    sign:
-      title: "*Source*" # for SendCopy (with markdown)
-      for: [888]
-    link:
-      title: "*Source*" # for SendCopy (with markdown)
-      for: [321]
-    auto-answer: true
-    delete-system-messages: true
-    # deleted-link-text: "DELETED_LINK" # default value
+  # 111:
+  #   sign:
+  #     title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+  #     for: [888]
+  #   link:
+  #     title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
+  #     for: [321]
+  # 123:
+  #   sign:
+  #     title: "*Source*" # for SendCopy (with markdown)
+  #     for: [888]
+  #   link:
+  #     title: "*Source*" # for SendCopy (with markdown)
+  #     for: [321]
+  #   auto-answer: true
+  #   delete-system-messages: true
   # data for service.transform - 101xx
   10100: # for sign only test
     sign:
@@ -81,6 +80,16 @@ sources:
   10118: # for other source test in replaceMyselfLinks - message not from source chat
     dummy: true
 destinations:
+  # 321:
+  #   replace-myself-links:
+  #     run: true
+  #     delete-external: true
+  #     # deleted-link-text: "DELETED\_LINK" # default value (with markdown)
+  # 888:
+  #   replace-myself-links:
+  #     run: true
+  #     delete-external: true
+  #     deleted-link-text: '🔥*B\*O\*L\*D* _I\_T\_A\_L\_I\_C_ *_BOLD\_AND\_ITALIC_*🔥'
   # data for service.transform - 101xx
   10110: # for replace fragments test
     replace-fragments: # must be equal length
