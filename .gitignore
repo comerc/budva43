@@ -29,7 +29,6 @@ bin/
 vendor/
 _try/
 _*.go
-.config/engine.e2e.yml
 .coverage/
 ___.md
 
