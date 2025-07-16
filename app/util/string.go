@@ -21,6 +21,18 @@ func DecodeFromUTF16(a []uint16) string {
 	return string(utf16.Decode(a))
 }
 
+// Int64ToString преобразует int64 в строку
+func Int64ToString(i int64) string {
+	return fmt.Sprintf("%d", i)
+}
+
+// StringToInt64 преобразует строку в int64
+func StringToInt64(s string) int64 {
+	var result int64
+	fmt.Sscanf(s, "%d", &result)
+	return result
+}
+
 // ConvertToInt преобразует строку в целое число
 func ConvertToInt[T int | int64](s string) T {
 	i, err := strconv.Atoi(s)
@@ -69,14 +81,4 @@ func EscapeMarkdown(text string) string {
 	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
 	// return re.ReplaceAllString(text, `\$0`)
 	return reMarkdown.ReplaceAllString(text, `\$0`)
-}
-
-func Int64ToString(i int64) string {
-	return fmt.Sprintf("%d", i)
-}
-
-func StringToInt64(s string) int64 {
-	var result int64
-	fmt.Sscanf(s, "%d", &result)
-	return result
 }
