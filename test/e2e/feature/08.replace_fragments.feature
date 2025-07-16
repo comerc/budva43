@@ -2,7 +2,7 @@
 @what:replace-fragments
 @why:replacement
 
-Feature: 08.ReplaceFragments
+Feature: 08.replace_fragments
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

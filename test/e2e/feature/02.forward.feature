@@ -2,7 +2,7 @@
 @what:forward
 @why:forward
 
-Feature: 02.Forward
+Feature: 02.forward
 
   Background:
     Given будет пересылка - форвард

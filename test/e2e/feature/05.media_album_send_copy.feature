@@ -2,7 +2,7 @@
 @what:album_send-copy
 @why:copy
 
-Feature: 05.MediaAlbumSendCopy
+Feature: 05.media_album_send_copy
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

@@ -2,7 +2,7 @@
 @what:album_forward
 @why:forward
 
-Feature: 06.MediaAlbumForward
+Feature: 06.media_album_forward
 
   Background:
     Given исходный чат "-1002748936346" (SRC PUB CHL 2)

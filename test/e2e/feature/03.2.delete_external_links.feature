@@ -2,7 +2,7 @@
 @what:links
 @why:cleanliness
 
-Feature: 03.2.DeleteExternalLinks
+Feature: 03.2.delete_external_links
 
   Background:
     Given будет пересылка - копия

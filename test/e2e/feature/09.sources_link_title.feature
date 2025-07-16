@@ -2,7 +2,7 @@
 @what:sources-link-title
 @why:identification
 
-Feature: 09.SourcesLinkTitle
+Feature: 09.sources_link_title
 
   Background:
     Given будет пересылка - копия
