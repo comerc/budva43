@@ -69,8 +69,6 @@ func New(
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool,
 	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
-	// Чтобы не дублировать входные параметры в дочерних функциях,
-	// хотя это и нарушает атомарность сообщений в логе - компромисс
 	defer s.log.ErrorOrDebug(nil, "",
 		"withSources", withSources,
 		"srcChatId", src.ChatId,
@@ -94,7 +92,10 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
 	src *client.Message, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"srcChatId", src.ChatId,
+		"srcId", src.Id,
+	)
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -132,7 +133,10 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	srcChatId, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"srcChatId", srcChatId,
+		"dstChatId", dstChatId,
+	)
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -144,8 +148,8 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 		err = log.NewError("replaceMyselfLinks is nil")
 		return
 	}
-	if !replaceMyselfLinks.Run && !replaceMyselfLinks.DeleteExternal {
-		err = log.NewError("replaceMyselfLinks is empty")
+	if !replaceMyselfLinks.Run {
+		err = log.NewError("replaceMyselfLinks.Run is false")
 		return
 	}
 
@@ -180,9 +184,9 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 					if replaceMyselfLinks.DeleteExternal {
 						deletedLinkText := replaceMyselfLinks.DeletedLinkText // TODO: не поддерживает markdown
 						if deletedLinkText == "" {
-							deletedLinkText = "DELETED_LINK"
+							deletedLinkText = util.EscapeMarkdown("DELETED_LINK")
 						}
-						// Заменяем на "DELETED LINK" (для URL без текста)
+						// Заменяем для URL без текста
 						replacements = append(replacements, &replacement{
 							OldEntity: entity,
 							NewText:   deletedLinkText,
@@ -235,7 +239,9 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText,
 	dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"dstChatId", dstChatId,
+	)
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -264,7 +270,11 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"srcChatId", src.ChatId,
+		"srcId", src.Id,
+		"dstChatId", dstChatId,
+	)
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -285,7 +295,11 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"srcChatId", src.ChatId,
+		"srcId", src.Id,
+		"dstChatId", dstChatId,
+	)
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -315,7 +329,9 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 // addText добавляет текст в formattedText
 func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"text", text,
+	)
 
 	var parsedText *client.FormattedText
 	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
@@ -401,7 +417,9 @@ func (s *Service) applyReplacements(formattedText *client.FormattedText, replace
 // getMessageByLink получает сообщение по ссылке
 func (s *Service) getMessageByLink(url string) *client.Message {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"url", url,
+	)
 
 	var messageLinkInfo *client.MessageLinkInfo
 	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
@@ -450,7 +468,11 @@ func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, e
 // collectMarkdownReplacements собирает замены для markdown текста
 func (s *Service) collectMarkdownReplacements(oldStart int32, newText string) []*replacement {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer s.log.ErrorOrDebug(&err, "",
+		"oldStart", oldStart,
+		"newText", newText,
+	)
+
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
 		Text: newText,
