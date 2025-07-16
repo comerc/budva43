@@ -182,9 +182,9 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 				if err != nil {
 					// Не удалось получить ссылку на копию
 					if replaceMyselfLinks.DeleteExternal {
-						deletedLinkText := replaceMyselfLinks.DeletedLinkText // TODO: не поддерживает markdown
+						deletedLinkText := replaceMyselfLinks.DeletedLinkText
 						if deletedLinkText == "" {
-							deletedLinkText = "DELETED_LINK"
+							deletedLinkText = domain.DELETED_LINK // тут не нужен util.EscapeMarkdown()
 						}
 						// Заменяем для URL без текста
 						replacements = append(replacements, &replacement{

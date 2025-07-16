@@ -9,13 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cucumber/godog"
+	godog "github.com/cucumber/godog"
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	"google.golang.org/grpc"
+	grpc "google.golang.org/grpc"
 
-	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/util"
-	"github.com/comerc/budva43/transport/grpc/pb"
+	config "github.com/comerc/budva43/app/config"
+	domain "github.com/comerc/budva43/app/domain"
+	util "github.com/comerc/budva43/app/util"
+	pb "github.com/comerc/budva43/transport/grpc/pb"
 )
 
 var client pb.FacadeGRPCClient
@@ -306,7 +307,7 @@ func (s *scenario) sendYetiMessage(ctx context.Context) error {
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
 		ChatId: s.state.sourceChatId,
-		Text:   util.EscapeMarkdown("YETI_MESSAGE"),
+		Text:   util.EscapeMarkdown(domain.YETI_MESSAGE),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send text message via grpc: %w", err)
@@ -371,8 +372,9 @@ func (s *scenario) checkYetiMessage(ctx context.Context) error {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
 
-	if resp.Message.Text != "YETI_MESSAGE" {
-		return fmt.Errorf("message text mismatch: want %q, got %q", "YETI_MESSAGE", resp.Message.Text)
+	if resp.Message.Text != domain.YETI_MESSAGE {
+		return fmt.Errorf("message text mismatch: want %q, got %q",
+			domain.YETI_MESSAGE, resp.Message.Text)
 	}
 
 	return nil
@@ -421,7 +423,7 @@ func (s *scenario) setExpectedLink() error {
 }
 
 func (s *scenario) setExpectedNoExternalLink() error {
-	pattern := `>>>DELETED_LINK<<<`
+	pattern := fmt.Sprintf(`>>>%s<<<`, domain.DELETED_LINK)
 	return s.setExpectedRegex(pattern)
 }
 
