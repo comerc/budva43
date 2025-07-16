@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entity "github.com/comerc/budva43/app/entity"
+	domain "github.com/comerc/budva43/app/domain"
 	client "github.com/zelenin/go-tdlib/client"
 
 	mock "github.com/stretchr/testify/mock"
@@ -23,7 +23,7 @@ func (_m *FiltersModeService) EXPECT() *FiltersModeService_Expecter {
 }
 
 // Map provides a mock function with given fields: formattedText, forwardRule
-func (_m *FiltersModeService) Map(formattedText *client.FormattedText, forwardRule *entity.ForwardRule) string {
+func (_m *FiltersModeService) Map(formattedText *client.FormattedText, forwardRule *domain.ForwardRule) string {
 	ret := _m.Called(formattedText, forwardRule)
 
 	if len(ret) == 0 {
@@ -31,7 +31,7 @@ func (_m *FiltersModeService) Map(formattedText *client.FormattedText, forwardRu
 	}
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(*client.FormattedText, *entity.ForwardRule) string); ok {
+	if rf, ok := ret.Get(0).(func(*client.FormattedText, *domain.ForwardRule) string); ok {
 		r0 = rf(formattedText, forwardRule)
 	} else {
 		r0 = ret.Get(0).(string)
@@ -47,14 +47,14 @@ type FiltersModeService_Map_Call struct {
 
 // Map is a helper method to define mock.On call
 //   - formattedText *client.FormattedText
-//   - forwardRule *entity.ForwardRule
+//   - forwardRule *domain.ForwardRule
 func (_e *FiltersModeService_Expecter) Map(formattedText interface{}, forwardRule interface{}) *FiltersModeService_Map_Call {
 	return &FiltersModeService_Map_Call{Call: _e.mock.On("Map", formattedText, forwardRule)}
 }
 
-func (_c *FiltersModeService_Map_Call) Run(run func(formattedText *client.FormattedText, forwardRule *entity.ForwardRule)) *FiltersModeService_Map_Call {
+func (_c *FiltersModeService_Map_Call) Run(run func(formattedText *client.FormattedText, forwardRule *domain.ForwardRule)) *FiltersModeService_Map_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*client.FormattedText), args[1].(*entity.ForwardRule))
+		run(args[0].(*client.FormattedText), args[1].(*domain.ForwardRule))
 	})
 	return _c
 }
@@ -64,7 +64,7 @@ func (_c *FiltersModeService_Map_Call) Return(_a0 string) *FiltersModeService_Ma
 	return _c
 }
 
-func (_c *FiltersModeService_Map_Call) RunAndReturn(run func(*client.FormattedText, *entity.ForwardRule) string) *FiltersModeService_Map_Call {
+func (_c *FiltersModeService_Map_Call) RunAndReturn(run func(*client.FormattedText, *domain.ForwardRule) string) *FiltersModeService_Map_Call {
 	_c.Call.Return(run)
 	return _c
 }

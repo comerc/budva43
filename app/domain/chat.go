@@ -1,4 +1,4 @@
-package entity
+package domain
 
 // ChatId идентификатор чата
 type ChatId = int64

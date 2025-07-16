@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,7 +13,7 @@ import (
 func TestCheck(t *testing.T) {
 	t.Parallel()
 
-	err := check(&entity.EngineConfig{})
+	err := check(&domain.EngineConfig{})
 	is := errors.Is(err, ErrEmptyConfigData)
 	require.True(t, is)
 

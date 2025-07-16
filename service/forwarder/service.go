@@ -8,7 +8,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -39,7 +39,7 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig)
 }
 
 //go:generate mockery --name=rateLimiterService --exported
@@ -78,9 +78,9 @@ func New(
 
 // ForwardMessages пересылает сообщения в целевой чат
 func (s *Service) ForwardMessages(
-	messages []*client.Message, filtersMode entity.FiltersMode,
+	messages []*client.Message, filtersMode domain.FiltersMode,
 	srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string,
-	engineConfig *entity.EngineConfig,
+	engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -189,7 +189,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 }
 
 // prepareMessageContents подготавливает сообщения для отправки
-func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64, engineConfig *entity.EngineConfig) []client.InputMessageContent {
+func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64, engineConfig *domain.EngineConfig) []client.InputMessageContent {
 	contents := make([]client.InputMessageContent, 0)
 
 	for i, message := range messages {

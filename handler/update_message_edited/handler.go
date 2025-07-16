@@ -7,7 +7,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -42,17 +42,17 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig)
 }
 
 //go:generate mockery --name=filtersModeService --exported
 type filtersModeService interface {
-	Map(formattedText *client.FormattedText, forwardRule *entity.ForwardRule) entity.FiltersMode
+	Map(formattedText *client.FormattedText, forwardRule *domain.ForwardRule) domain.FiltersMode
 }
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, filtersMode entity.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
+	ForwardMessages(messages []*client.Message, filtersMode domain.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)
 }
 
 type Handler struct {
@@ -162,7 +162,7 @@ func (h *Handler) collectData(chatId, messageId int64) *data {
 }
 
 // editMessages редактирует сообщения
-func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig *entity.EngineConfig) {
+func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig *domain.EngineConfig) {
 	var (
 		err          error
 		mediaAlbumId int64
@@ -224,7 +224,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 				return
 			}
 			if (forwardRule.SendCopy || src.CanBeSaved) &&
-				h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
+				h.filtersModeService.Map(formattedText, forwardRule) == domain.FiltersCheck {
 				_, ok := checkFns[forwardRule.Check]
 				if !ok {
 					checkFns[forwardRule.Check] = func() {
@@ -243,7 +243,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			// 	if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
 			// 		for _, dstChatId := range forwardRule.To {
 			// 			if testChatId == dstChatId {
-			// 				if h.filtersModeService.Map(formattedText, forwardRule) == entity.FiltersCheck {
+			// 				if h.filtersModeService.Map(formattedText, forwardRule) == domain.FiltersCheck {
 			// 					hasFiltersCheck = true
 			// 					_, ok := checkFns[forwardRule.Check]
 			// 					if !ok {

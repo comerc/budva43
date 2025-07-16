@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/testing/spylog"
 )
 
@@ -32,7 +32,7 @@ func Test(t *testing.T) {
 			queueRepo.Close()
 		})
 
-		var engineConfig *entity.EngineConfig
+		var engineConfig *domain.EngineConfig
 
 		// Счетчик выполненных задач
 		executed := 0
@@ -87,9 +87,9 @@ func Test(t *testing.T) {
 	})
 }
 
-func newEngineConfig(from int64) *entity.EngineConfig {
-	return &entity.EngineConfig{
-		ForwardRules: map[string]*entity.ForwardRule{
+func newEngineConfig(from int64) *domain.EngineConfig {
+	return &domain.EngineConfig{
+		ForwardRules: map[string]*domain.ForwardRule{
 			"rule1": {
 				From: from,
 			},

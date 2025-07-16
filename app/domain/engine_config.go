@@ -1,4 +1,4 @@
-package entity
+package domain
 
 // Настройки движка форвардинга
 type EngineConfig struct {

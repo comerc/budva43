@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entity "github.com/comerc/budva43/app/entity"
+	domain "github.com/comerc/budva43/app/domain"
 	client "github.com/zelenin/go-tdlib/client"
 
 	mock "github.com/stretchr/testify/mock"
@@ -23,7 +23,7 @@ func (_m *TransformService) EXPECT() *TransformService_Expecter {
 }
 
 // Transform provides a mock function with given fields: formattedText, withSources, src, dstChatId, engineConfig
-func (_m *TransformService) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig) {
+func (_m *TransformService) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig) {
 	_m.Called(formattedText, withSources, src, dstChatId, engineConfig)
 }
 
@@ -37,14 +37,14 @@ type TransformService_Transform_Call struct {
 //   - withSources bool
 //   - src *client.Message
 //   - dstChatId int64
-//   - engineConfig *entity.EngineConfig
+//   - engineConfig *domain.EngineConfig
 func (_e *TransformService_Expecter) Transform(formattedText interface{}, withSources interface{}, src interface{}, dstChatId interface{}, engineConfig interface{}) *TransformService_Transform_Call {
 	return &TransformService_Transform_Call{Call: _e.mock.On("Transform", formattedText, withSources, src, dstChatId, engineConfig)}
 }
 
-func (_c *TransformService_Transform_Call) Run(run func(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig)) *TransformService_Transform_Call {
+func (_c *TransformService_Transform_Call) Run(run func(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig)) *TransformService_Transform_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*client.FormattedText), args[1].(bool), args[2].(*client.Message), args[3].(int64), args[4].(*entity.EngineConfig))
+		run(args[0].(*client.FormattedText), args[1].(bool), args[2].(*client.Message), args[3].(int64), args[4].(*domain.EngineConfig))
 	})
 	return _c
 }
@@ -54,7 +54,7 @@ func (_c *TransformService_Transform_Call) Return() *TransformService_Transform_
 	return _c
 }
 
-func (_c *TransformService_Transform_Call) RunAndReturn(run func(*client.FormattedText, bool, *client.Message, int64, *entity.EngineConfig)) *TransformService_Transform_Call {
+func (_c *TransformService_Transform_Call) RunAndReturn(run func(*client.FormattedText, bool, *client.Message, int64, *domain.EngineConfig)) *TransformService_Transform_Call {
 	_c.Run(run)
 	return _c
 }

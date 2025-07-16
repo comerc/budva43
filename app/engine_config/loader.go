@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -25,7 +25,7 @@ func initEngineViper(projectRoot string) {
 	engineViper.SetConfigFile(path)
 }
 
-type initDestinations = func([]entity.ChatId)
+type initDestinations = func([]domain.ChatId)
 
 // Reload перезагружает конфигурацию config.Engine из engine.yml
 func Reload(initDestinations initDestinations) error {
@@ -36,7 +36,7 @@ func Reload(initDestinations initDestinations) error {
 		}
 	}
 
-	var destinations []entity.ChatId
+	var destinations []domain.ChatId
 	for dstChatId := range newEngineConfig.UniqueDestinations {
 		destinations = append(destinations, dstChatId)
 	}
@@ -57,12 +57,12 @@ func Watch(reloadCallback func()) {
 }
 
 // load загружает конфигурацию из engine.yml
-func load() (*entity.EngineConfig, error) {
+func load() (*domain.EngineConfig, error) {
 	if err := engineViper.ReadInConfig(); err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
 
-	engineConfig := &entity.EngineConfig{}
+	engineConfig := &domain.EngineConfig{}
 	if err := engineViper.Unmarshal(engineConfig, util.GetConfigOptions()); err != nil {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
@@ -85,22 +85,22 @@ func load() (*entity.EngineConfig, error) {
 }
 
 // Initialize инициализирует конфигурацию
-func Initialize(engineConfig *entity.EngineConfig) {
+func Initialize(engineConfig *domain.EngineConfig) {
 	if engineConfig.Sources == nil {
-		engineConfig.Sources = make(map[entity.ChatId]*entity.Source)
+		engineConfig.Sources = make(map[domain.ChatId]*domain.Source)
 	}
 	if engineConfig.Destinations == nil {
-		engineConfig.Destinations = make(map[entity.ChatId]*entity.Destination)
+		engineConfig.Destinations = make(map[domain.ChatId]*domain.Destination)
 	}
 	if engineConfig.ForwardRules == nil {
-		engineConfig.ForwardRules = make(map[entity.ForwardRuleId]*entity.ForwardRule)
+		engineConfig.ForwardRules = make(map[domain.ForwardRuleId]*domain.ForwardRule)
 	}
-	engineConfig.UniqueSources = make(map[entity.ChatId]struct{})
-	engineConfig.UniqueDestinations = make(map[entity.ChatId]struct{})
+	engineConfig.UniqueSources = make(map[domain.ChatId]struct{})
+	engineConfig.UniqueDestinations = make(map[domain.ChatId]struct{})
 }
 
 // validate проверяет корректность конфигурации
-func validate(engineConfig *entity.EngineConfig) error {
+func validate(engineConfig *domain.EngineConfig) error {
 	for srcChatId, src := range engineConfig.Sources {
 		// viper читает цифровые ключи без минуса
 		// if srcChatId < 0 {
@@ -199,9 +199,9 @@ func validate(engineConfig *entity.EngineConfig) error {
 }
 
 // transform преобразует конфигурацию в отрицательные идентификаторы
-func transform(engineConfig *entity.EngineConfig) {
+func transform(engineConfig *domain.EngineConfig) {
 	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
-	sourceKeys := make([]entity.ChatId, 0, len(engineConfig.Sources))
+	sourceKeys := make([]domain.ChatId, 0, len(engineConfig.Sources))
 	for srcChatId := range engineConfig.Sources {
 		sourceKeys = append(sourceKeys, srcChatId)
 	}
@@ -214,14 +214,14 @@ func transform(engineConfig *entity.EngineConfig) {
 
 	for _, src := range engineConfig.Sources {
 		if src.Sign != nil {
-			a := []entity.ChatId{}
+			a := []domain.ChatId{}
 			for _, targetChatId := range src.Sign.For {
 				a = append(a, -targetChatId)
 			}
 			src.Sign.For = a
 		}
 		if src.Link != nil {
-			a := []entity.ChatId{}
+			a := []domain.ChatId{}
 			for _, targetChatId := range src.Link.For {
 				a = append(a, -targetChatId)
 			}
@@ -230,7 +230,7 @@ func transform(engineConfig *entity.EngineConfig) {
 	}
 
 	// Сначала собираем все ключи, чтобы избежать модификации карты во время итерации
-	destinationKeys := make([]entity.ChatId, 0, len(engineConfig.Destinations))
+	destinationKeys := make([]domain.ChatId, 0, len(engineConfig.Destinations))
 	for dstChatId := range engineConfig.Destinations {
 		destinationKeys = append(destinationKeys, dstChatId)
 	}
@@ -252,8 +252,8 @@ func transform(engineConfig *entity.EngineConfig) {
 }
 
 // enrich обогащает конфигурацию
-func enrich(engineConfig *entity.EngineConfig) {
-	tmpOrderedForwardRules := make([]entity.ForwardRuleId, 0)
+func enrich(engineConfig *domain.EngineConfig) {
+	tmpOrderedForwardRules := make([]domain.ForwardRuleId, 0)
 
 	for key, destination := range engineConfig.Destinations {
 		destination.ChatId = key
@@ -267,7 +267,7 @@ func enrich(engineConfig *entity.EngineConfig) {
 		srcChatId := forwardRule.From
 		forwardRule.Id = key
 		if _, ok := engineConfig.Sources[srcChatId]; !ok {
-			engineConfig.Sources[srcChatId] = &entity.Source{
+			engineConfig.Sources[srcChatId] = &domain.Source{
 				ChatId: srcChatId,
 			}
 		}
@@ -284,7 +284,7 @@ func enrich(engineConfig *entity.EngineConfig) {
 var ErrEmptyConfigData = errors.New("отсутствуют данные")
 
 // check проверяет, что конфигурация не пуста
-func check(engineConfig *entity.EngineConfig) error {
+func check(engineConfig *domain.EngineConfig) error {
 	var args []any
 
 	getKey := util.NewFuncWithIndex("path") // !! частичное применение

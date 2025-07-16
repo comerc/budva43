@@ -1,4 +1,4 @@
-package entity
+package domain
 
 type Destination struct {
 	// Id идентификатор чата-получателя - обогощаем при загрузке

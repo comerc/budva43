@@ -6,7 +6,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -21,7 +21,7 @@ func New() *Service {
 }
 
 // Map определяет, какой режим фильтрации применим
-func (s *Service) Map(formattedText *client.FormattedText, rule *entity.ForwardRule) entity.FiltersMode {
+func (s *Service) Map(formattedText *client.FormattedText, rule *domain.ForwardRule) domain.FiltersMode {
 	if formattedText.Text == "" {
 		hasInclude := false
 		if rule.Include != "" {
@@ -34,13 +34,13 @@ func (s *Service) Map(formattedText *client.FormattedText, rule *entity.ForwardR
 			}
 		}
 		if hasInclude {
-			return entity.FiltersOther
+			return domain.FiltersOther
 		}
 	} else {
 		if rule.Exclude != "" {
 			re := regexp.MustCompile("(?i)" + rule.Exclude)
 			if re.FindString(formattedText.Text) != "" {
-				return entity.FiltersCheck
+				return domain.FiltersCheck
 			}
 		}
 		hasInclude := false
@@ -48,7 +48,7 @@ func (s *Service) Map(formattedText *client.FormattedText, rule *entity.ForwardR
 			hasInclude = true
 			re := regexp.MustCompile("(?i)" + rule.Include)
 			if re.FindString(formattedText.Text) != "" {
-				return entity.FiltersOK
+				return domain.FiltersOK
 			}
 		}
 		for _, includeSubmatch := range rule.IncludeSubmatch {
@@ -59,14 +59,14 @@ func (s *Service) Map(formattedText *client.FormattedText, rule *entity.ForwardR
 				for _, match := range matches {
 					s := match[includeSubmatch.Group]
 					if slices.Contains(includeSubmatch.Match, s) {
-						return entity.FiltersOK
+						return domain.FiltersOK
 					}
 				}
 			}
 		}
 		if hasInclude {
-			return entity.FiltersOther
+			return domain.FiltersOther
 		}
 	}
-	return entity.FiltersOK
+	return domain.FiltersOK
 }

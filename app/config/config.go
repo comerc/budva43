@@ -4,19 +4,19 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 )
 
 type (
 	// Настройки приложения
 	config struct {
 		General   general
-		LogSource entity.LogSource
+		LogSource domain.LogSource
 		Storage   storage
 		Telegram  telegram
 		Web       web
 		Grpc      grpc
-		Engine    entity.EngineConfig
+		Engine    domain.EngineConfig
 		// Reports reports
 	}
 
@@ -89,7 +89,7 @@ type (
 	// Настройки отчетов
 	// report struct {
 	// 	Template string
-	// 	For      []entity.ChatId
+	// 	For      []domain.ChatId
 	// }
 )
 

@@ -7,7 +7,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -137,7 +137,7 @@ func (h *Handler) collectData(chatId int64, messageIds []int64) *data {
 }
 
 // deleteMessages удаляет сообщения
-func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, engineConfig *entity.EngineConfig) {
+func (h *Handler) deleteMessages(chatId int64, messageIds []int64, data *data, engineConfig *domain.EngineConfig) {
 	var err error
 	result := []string{}
 	defer h.log.ErrorOrDebug(&err, "",

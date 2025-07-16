@@ -7,7 +7,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -22,7 +22,7 @@ type Service struct {
 	log *log.Logger
 	//
 	mu          sync.Mutex
-	mediaAlbums map[entity.MediaAlbumKey]*mediaAlbum
+	mediaAlbums map[domain.MediaAlbumKey]*mediaAlbum
 }
 
 // New создает новый сервис для управления медиа-альбомами
@@ -30,14 +30,14 @@ func New() *Service {
 	return &Service{
 		log: log.NewLogger(),
 		//
-		mediaAlbums: make(map[entity.MediaAlbumKey]*mediaAlbum),
+		mediaAlbums: make(map[domain.MediaAlbumKey]*mediaAlbum),
 	}
 }
 
 // https://github.com/tdlib/td/issues/1482
 // AddMessage добавляет сообщение в медиа-альбом
 // Возвращает true, если это первое сообщение в медиа-альбоме
-func (s *Service) AddMessage(key entity.MediaAlbumKey, message *client.Message) bool {
+func (s *Service) AddMessage(key domain.MediaAlbumKey, message *client.Message) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	item, ok := s.mediaAlbums[key]
@@ -51,14 +51,14 @@ func (s *Service) AddMessage(key entity.MediaAlbumKey, message *client.Message) 
 }
 
 // GetLastReceivedDiff возвращает время, прошедшее с момента получения последнего сообщения в медиа-альбоме
-func (s *Service) GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration {
+func (s *Service) GetLastReceivedDiff(key domain.MediaAlbumKey) time.Duration {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return time.Since(s.mediaAlbums[key].lastReceived)
 }
 
 // PopMessages возвращает сообщения медиа-альбома и удаляет его
-func (s *Service) PopMessages(key entity.MediaAlbumKey) []*client.Message {
+func (s *Service) PopMessages(key domain.MediaAlbumKey) []*client.Message {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	messages := s.mediaAlbums[key].messages
@@ -67,6 +67,6 @@ func (s *Service) PopMessages(key entity.MediaAlbumKey) []*client.Message {
 }
 
 // GetKey возвращает ключ для пересылаемого медиа-альбома
-func (s *Service) GetKey(forwardRuleId entity.ForwardRuleId, mediaAlbumId client.JsonInt64) entity.MediaAlbumKey {
+func (s *Service) GetKey(forwardRuleId domain.ForwardRuleId, mediaAlbumId client.JsonInt64) domain.MediaAlbumKey {
 	return fmt.Sprintf("%s:%d", forwardRuleId, mediaAlbumId)
 }
