@@ -2,7 +2,7 @@
 @what:album_copy-once
 @why:uniqueness
 
-Feature: 14.MediaAlbumCopyOnce
+Feature: 14.media_album_copy_once
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

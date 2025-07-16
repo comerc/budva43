@@ -2,7 +2,7 @@
 @what:links
 @why:cleanliness
 
-Feature: 03.1.ReplaceMyselfLinks
+Feature: 03.1.replace_myself_links
 
   Background:
     Given будет пересылка - копия

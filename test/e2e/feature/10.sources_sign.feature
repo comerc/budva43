@@ -2,7 +2,7 @@
 @what:sources-sign
 @why:identification
 
-Feature: 10.SourcesSign
+Feature: 10.sources_sign
 
   Background:
     Given будет пересылка - копия

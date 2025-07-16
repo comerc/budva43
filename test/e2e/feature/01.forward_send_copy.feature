@@ -2,7 +2,7 @@
 @what:send-copy
 @why:copy
 
-Feature: 01.Forward.SendCopy
+Feature: 01.forward_send_copy
 
   Background:
     Given будет пересылка - копия

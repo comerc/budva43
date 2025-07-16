@@ -2,7 +2,7 @@
 @what:album_indelible
 @why:indelibility
 
-Feature: 15.MediaAlbumIndelible
+Feature: 15.media_album_indelible
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

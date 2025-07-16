@@ -2,7 +2,7 @@
 @what:фильтр
 @why:relevance
 
-Feature: 04.1.FiltersModeExclude
+Feature: 04.1.filters_mode_exclude
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

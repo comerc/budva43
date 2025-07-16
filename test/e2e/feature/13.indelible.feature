@@ -2,7 +2,7 @@
 @what:indelible
 @why:indelibility
 
-Feature: 13.Indelible
+Feature: 13.indelible
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

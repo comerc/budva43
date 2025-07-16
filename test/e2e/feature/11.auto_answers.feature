@@ -2,7 +2,7 @@
 @what:auto-answers
 @why:automation
 
-Feature: 11.AutoAnswers
+Feature: 11.auto_answers
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

@@ -2,7 +2,7 @@
 @what:include_submatch
 @why:filtering
 
-Feature: 07.1.IncludeSubmatchFalse
+Feature: 07.1.include_submatch_false
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)

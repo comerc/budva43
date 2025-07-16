@@ -2,7 +2,7 @@
 @what:copy-once
 @why:uniqueness
 
-Feature: 12.CopyOnce
+Feature: 12.copy_once
 
   Background:
     Given исходный чат "<src_chat_id>" (<src_chat_name>)
