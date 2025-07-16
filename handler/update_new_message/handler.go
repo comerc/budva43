@@ -121,7 +121,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 		return
 	}
 	// Игнорируем сообщение - для тестирования
-	if formattedText.Text == "YETI_MESSAGE" {
+	if formattedText.Text == domain.YETI_MESSAGE {
 		return
 	}
 	isExist := false

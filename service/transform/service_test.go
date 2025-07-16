@@ -722,7 +722,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED_LINK"
+					Length: 12, // длина domain.DELETED_LINK
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 			},
@@ -744,12 +744,12 @@ func Test_replaceMyselfLinks(t *testing.T) {
 				}, nil)
 				storageService.EXPECT().GetCopiedMessageIds(int64(-10100), int64(123)).Return([]string{})
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "DELETED_LINK",
+					Text: domain.DELETED_LINK,
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text: "DELETED_LINK",
+					Text: domain.DELETED_LINK,
 					Entities: []*client.TextEntity{
 						{
 							Offset: 0,
@@ -902,7 +902,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED_LINK"
+					Length: 12, // длина domain.DELETED_LINK
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 			},
@@ -934,12 +934,12 @@ func Test_replaceMyselfLinks(t *testing.T) {
 					IsPublic: false, // НЕ публичная ссылка
 				}, nil)
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "DELETED_LINK",
+					Text: domain.DELETED_LINK,
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text: "DELETED_LINK",
+					Text: domain.DELETED_LINK,
 					Entities: []*client.TextEntity{
 						{
 							Offset: 0,
@@ -1797,7 +1797,7 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED_LINK",
+						NewText:       domain.DELETED_LINK,
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
@@ -1807,7 +1807,7 @@ func Test_applyReplacements(t *testing.T) {
 			expectedEntities: []*client.TextEntity{
 				{
 					Offset: 6,
-					Length: 12, // длина "DELETED_LINK"
+					Length: 12, // длина domain.DELETED_LINK
 					Type:   &client.TextEntityTypeStrikethrough{},
 				},
 				// Bold entity должен быть удален, так как был внутри заменяемого текста
@@ -1833,7 +1833,7 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED_LINK", // 12 символов вместо 21
+						NewText:       domain.DELETED_LINK, // 12 символов вместо 21
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
@@ -1873,7 +1873,7 @@ func Test_applyReplacements(t *testing.T) {
 				replacements := []*replacement{
 					{
 						OldEntity:     urlEntity,
-						NewText:       "DELETED_LINK",
+						NewText:       domain.DELETED_LINK,
 						NewEntityType: &client.TextEntityTypeStrikethrough{},
 					},
 				}
