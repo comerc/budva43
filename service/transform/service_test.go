@@ -10,8 +10,8 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/engine_config"
-	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/testing/spylog"
 	"github.com/comerc/budva43/service/transform/mocks"
@@ -20,7 +20,7 @@ import (
 // data for service.transform - -101xx
 
 func TestMain(m *testing.M) {
-	initDestinations := func([]entity.ChatId) {}
+	initDestinations := func([]domain.ChatId) {}
 	engine_config.Reload(initDestinations)
 	os.Exit(m.Run())
 }
@@ -262,7 +262,7 @@ func Test_replaceMyselfLinks(t *testing.T) {
 			setup: func(t *testing.T) *Service {
 				return New(nil, nil, nil)
 			},
-			expectedError: log.NewError("replaceMyselfLinks is empty"),
+			expectedError: log.NewError("replaceMyselfLinks.Run is false"),
 		},
 		{
 			name: "get_chat_error",

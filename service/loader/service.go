@@ -5,8 +5,8 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/engine_config"
-	"github.com/comerc/budva43/app/entity"
 	"github.com/comerc/budva43/app/log"
 )
 
@@ -60,15 +60,15 @@ func (s *Service) handleConfigReload() {
 	}
 }
 
-type initDestinations = func([]entity.ChatId)
+type initDestinations = func([]domain.ChatId)
 
 // _newFuncInitDestinations создает колбек для загрузки чатов (не используется)
 // func _newFuncInitDestinations(s *Service) initDestinations {
 // 	var fn initDestinations
 // 	level := 0
-// 	notFound := make(map[entity.ChatId]struct{})
+// 	notFound := make(map[domain.ChatId]struct{})
 
-// 	fn = func(destinations []entity.ChatId) {
+// 	fn = func(destinations []domain.ChatId) {
 
 // 		repeat := func() bool {
 // 			var err error
@@ -99,7 +99,7 @@ type initDestinations = func([]entity.ChatId)
 // 			// LoadChats() нельзя вызывать дважды, только если перезапускать клиент,
 // 			// а это может привести к потере сообщений
 // 			if level == 0 {
-// 				a := []entity.ChatId{}
+// 				a := []domain.ChatId{}
 // 				for k := range notFound {
 // 					a = append(a, k)
 // 				}
@@ -121,7 +121,7 @@ type initDestinations = func([]entity.ChatId)
 // newFuncInitDestinations создает колбек для загрузки чатов
 func newFuncInitDestinations(s *Service) initDestinations {
 	loadChats := false
-	return func(destinations []entity.ChatId) {
+	return func(destinations []domain.ChatId) {
 		if !loadChats {
 			loadChats = true
 			_, err := s.telegramRepo.LoadChats(&client.LoadChatsRequest{
@@ -133,7 +133,7 @@ func newFuncInitDestinations(s *Service) initDestinations {
 			}
 		}
 		// Загружаем историю только для тех чатов, которые есть в конфигурации
-		notFound := []entity.ChatId{}
+		notFound := []domain.ChatId{}
 		for _, dstChatId := range destinations {
 			_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
 				ChatId:    dstChatId,

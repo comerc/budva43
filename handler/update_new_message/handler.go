@@ -7,7 +7,7 @@ import (
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -37,15 +37,15 @@ type messageService interface {
 
 //go:generate mockery --name=mediaAlbumService --exported
 type mediaAlbumService interface {
-	AddMessage(key entity.MediaAlbumKey, message *client.Message) bool
-	GetLastReceivedDiff(key entity.MediaAlbumKey) time.Duration
-	PopMessages(key entity.MediaAlbumKey) []*client.Message
-	GetKey(forwardRuleId entity.ForwardRuleId, MediaAlbumId client.JsonInt64) entity.MediaAlbumKey
+	AddMessage(key domain.MediaAlbumKey, message *client.Message) bool
+	GetLastReceivedDiff(key domain.MediaAlbumKey) time.Duration
+	PopMessages(key domain.MediaAlbumKey) []*client.Message
+	GetKey(forwardRuleId domain.ForwardRuleId, MediaAlbumId client.JsonInt64) domain.MediaAlbumKey
 }
 
 //go:generate mockery --name=filtersModeService --exported
 type filtersModeService interface {
-	Map(formattedText *client.FormattedText, rule *entity.ForwardRule) entity.FiltersMode
+	Map(formattedText *client.FormattedText, rule *domain.ForwardRule) domain.FiltersMode
 }
 
 //go:generate mockery --name=forwardedToService --exported
@@ -56,7 +56,7 @@ type forwardedToService interface {
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, filtersMode entity.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)
+	ForwardMessages(messages []*client.Message, filtersMode domain.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)
 }
 
 type Handler struct {
@@ -188,7 +188,7 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 }
 
 // deleteSystemMessage удаляет системное сообщение
-func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *entity.EngineConfig) {
+func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *domain.EngineConfig) {
 	var err error
 	defer h.log.ErrorOrDebug(&err, "",
 		"chatId", src.ChatId,
@@ -211,9 +211,9 @@ func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *entity.
 
 // processMessage обрабатывает сообщения и выполняет пересылку согласно правилам
 func (h *Handler) processMessage(messages []*client.Message,
-	forwardRule *entity.ForwardRule, forwardedTo map[int64]bool,
+	forwardRule *domain.ForwardRule, forwardedTo map[int64]bool,
 	checkFns map[int64]func(), otherFns map[int64]func(),
-	engineConfig *entity.EngineConfig) {
+	engineConfig *domain.EngineConfig) {
 	var (
 		err         error
 		filtersMode string
@@ -236,7 +236,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 
 	filtersMode = h.filtersModeService.Map(formattedText, forwardRule)
 	switch filtersMode {
-	case entity.FiltersOK:
+	case domain.FiltersOK:
 		// checkFns[rule.Check] = nil // !! не надо сбрасывать - хочу проверить сообщение, даже если где-то прошли фильтры
 		otherFns[forwardRule.Other] = nil
 		for _, dstChatId := range forwardRule.To {
@@ -245,7 +245,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 				result = append(result, dstChatId)
 			}
 		}
-	case entity.FiltersCheck:
+	case domain.FiltersCheck:
 		if forwardRule.Check != 0 {
 			_, ok := checkFns[forwardRule.Check]
 			if !ok {
@@ -255,7 +255,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 				}
 			}
 		}
-	case entity.FiltersOther:
+	case domain.FiltersOther:
 		if forwardRule.Other != 0 {
 			_, ok := otherFns[forwardRule.Other]
 			if !ok {
@@ -271,7 +271,7 @@ func (h *Handler) processMessage(messages []*client.Message,
 const waitForMediaAlbum = 3 * time.Second
 
 // processMediaAlbum обрабатывает медиа-альбом
-func (h *Handler) processMediaAlbum(ctx context.Context, key entity.MediaAlbumKey, cb func([]*client.Message)) {
+func (h *Handler) processMediaAlbum(ctx context.Context, key domain.MediaAlbumKey, cb func([]*client.Message)) {
 	diff := h.mediaAlbumsService.GetLastReceivedDiff(key)
 	if diff < waitForMediaAlbum {
 		timer := time.NewTimer(waitForMediaAlbum - diff)

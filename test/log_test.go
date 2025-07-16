@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comerc/budva43/app/config"
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/testing/spylog"
 	"github.com/comerc/budva43/app/util"
@@ -44,7 +44,7 @@ func TestSomeMethod(t *testing.T) {
 
 	var err error
 
-	var copy *entity.LogSource
+	var copy *domain.LogSource
 	copy, err = util.DeepCopy(config.LogSource)
 	require.NoError(t, err)
 	t.Cleanup(func() {

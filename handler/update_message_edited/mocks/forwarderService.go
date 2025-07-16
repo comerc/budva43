@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entity "github.com/comerc/budva43/app/entity"
+	domain "github.com/comerc/budva43/app/domain"
 	client "github.com/zelenin/go-tdlib/client"
 
 	mock "github.com/stretchr/testify/mock"
@@ -23,7 +23,7 @@ func (_m *ForwarderService) EXPECT() *ForwarderService_Expecter {
 }
 
 // ForwardMessages provides a mock function with given fields: messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig
-func (_m *ForwarderService) ForwardMessages(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig) {
+func (_m *ForwarderService) ForwardMessages(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig) {
 	_m.Called(messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig)
 }
 
@@ -39,14 +39,14 @@ type ForwarderService_ForwardMessages_Call struct {
 //   - dstChatId int64
 //   - isSendCopy bool
 //   - forwardRuleId string
-//   - engineConfig *entity.EngineConfig
+//   - engineConfig *domain.EngineConfig
 func (_e *ForwarderService_Expecter) ForwardMessages(messages interface{}, filtersMode interface{}, srcChatId interface{}, dstChatId interface{}, isSendCopy interface{}, forwardRuleId interface{}, engineConfig interface{}) *ForwarderService_ForwardMessages_Call {
 	return &ForwarderService_ForwardMessages_Call{Call: _e.mock.On("ForwardMessages", messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig)}
 }
 
-func (_c *ForwarderService_ForwardMessages_Call) Run(run func(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *entity.EngineConfig)) *ForwarderService_ForwardMessages_Call {
+func (_c *ForwarderService_ForwardMessages_Call) Run(run func(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]*client.Message), args[1].(string), args[2].(int64), args[3].(int64), args[4].(bool), args[5].(string), args[6].(*entity.EngineConfig))
+		run(args[0].([]*client.Message), args[1].(string), args[2].(int64), args[3].(int64), args[4].(bool), args[5].(string), args[6].(*domain.EngineConfig))
 	})
 	return _c
 }
@@ -56,7 +56,7 @@ func (_c *ForwarderService_ForwardMessages_Call) Return() *ForwarderService_Forw
 	return _c
 }
 
-func (_c *ForwarderService_ForwardMessages_Call) RunAndReturn(run func([]*client.Message, string, int64, int64, bool, string, *entity.EngineConfig)) *ForwarderService_ForwardMessages_Call {
+func (_c *ForwarderService_ForwardMessages_Call) RunAndReturn(run func([]*client.Message, string, int64, int64, bool, string, *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
 	_c.Run(run)
 	return _c
 }

@@ -12,20 +12,20 @@
 // Настройки движка форвардинга из budva32
 engine struct {
   // Настройки для замены ссылок на себя
-  ReplaceMyselfLinks map[int64]entity.ReplaceMyselfLinkSettings
+  ReplaceMyselfLinks map[int64]domain.ReplaceMyselfLinkSettings
   // Настройки для замены фрагментов текста
-  ReplaceFragments map[int64]entity.ReplaceFragmentSettings
+  ReplaceFragments map[int64]domain.ReplaceFragmentSettings
   // Настройки источников
-  Sources map[int64]entity.Source
+  Sources map[int64]domain.Source
   // Настройки отчетов
   Reports struct {
     Template string
     For      []int64
   }
   // Правила форвардинга
-  Forwards map[string]entity.ForwardRule
+  Forwards map[string]domain.ForwardRule
   // Настройки автоответов
-  Answers map[int64]entity.Answer
+  Answers map[int64]domain.Answer
   // Удаление системных сообщений
   DeleteSystemMessages map[int64]bool
 }

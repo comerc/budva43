@@ -14,7 +14,7 @@
 - loader.go (308)
 - init.go (20)
 
-### app/entity/ — 145
+### app/domain/ — 145
 - chat.go (8)
 - destination.go (29)
 - engine_config.go (18)

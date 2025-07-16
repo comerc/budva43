@@ -8,7 +8,7 @@ import (
 
 	"github.com/zelenin/go-tdlib/client"
 
-	"github.com/comerc/budva43/app/entity"
+	"github.com/comerc/budva43/app/domain"
 	"github.com/comerc/budva43/app/log"
 	"github.com/comerc/budva43/app/util"
 )
@@ -67,7 +67,7 @@ func New(
 
 // Transform преобразует содержимое сообщения
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool,
-	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
+	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	defer s.log.ErrorOrDebug(nil, "",
 		"withSources", withSources,
@@ -89,7 +89,7 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 
 // addAutoAnswer добавляет ответ на автоответ
 func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
-	src *client.Message, engineConfig *entity.EngineConfig,
+	src *client.Message, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -130,7 +130,7 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
 // replaceMyselfLinks заменяет ссылки исходного чата ссылками на копии в целевом чате
 // или удаляет ссылки на внешние сообщения
 func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
-	srcChatId, dstChatId int64, engineConfig *entity.EngineConfig,
+	srcChatId, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -184,7 +184,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 					if replaceMyselfLinks.DeleteExternal {
 						deletedLinkText := replaceMyselfLinks.DeletedLinkText // TODO: не поддерживает markdown
 						if deletedLinkText == "" {
-							deletedLinkText = util.EscapeMarkdown("DELETED_LINK")
+							deletedLinkText = "DELETED_LINK"
 						}
 						// Заменяем для URL без текста
 						replacements = append(replacements, &replacement{
@@ -236,7 +236,7 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 
 // replaceFragments заменяет фрагменты текста
 func (s *Service) replaceFragments(formattedText *client.FormattedText,
-	dstChatId int64, engineConfig *entity.EngineConfig,
+	dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -267,7 +267,7 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText,
 
 // addSourceSign добавляет подпись источника
 func (s *Service) addSourceSign(formattedText *client.FormattedText,
-	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
+	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -292,7 +292,7 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 
 // addSourceLink добавляет ссылку на источник
 func (s *Service) addSourceLink(formattedText *client.FormattedText,
-	src *client.Message, dstChatId int64, engineConfig *entity.EngineConfig,
+	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
