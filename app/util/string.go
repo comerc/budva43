@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -10,20 +11,14 @@ import (
 	"unicode/utf16"
 )
 
-// deprecated
-// RuneCountForUTF16 возвращает количество символов в строке, учитывая UTF-16
-func RuneCountForUTF16(s string) int {
-	return len(EncodeToUTF16(s))
-}
-
 // EncodeToUTF16 преобразует строку в срез UTF-16
 func EncodeToUTF16(s string) []uint16 {
 	return utf16.Encode([]rune(s))
 }
 
 // DecodeFromUTF16 преобразует срез UTF-16 в строку
-func DecodeFromUTF16(utf16s []uint16) string {
-	return string(utf16.Decode(utf16s))
+func DecodeFromUTF16(a []uint16) string {
+	return string(utf16.Decode(a))
 }
 
 // ConvertToInt преобразует строку в целое число
@@ -54,15 +49,24 @@ func NewFuncWithIndex(prefix string) func() string {
 	}
 }
 
-// EscapeMarkdown экранирует markdown спецсимволы
-func EscapeMarkdown(text string) string {
+var reMarkdown *regexp.Regexp
+
+func initReMarkdown() {
 	s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
 	a := strings.Split(s, " ")
-	result := text
-	for _, v := range a {
-		result = strings.ReplaceAll(result, v, "\\"+v)
-	}
-	return result
+	reMarkdown = regexp.MustCompile("[" + strings.Join(a, "") + "]")
+}
+
+// EscapeMarkdown экранирует markdown спецсимволы
+func EscapeMarkdown(text string) string {
+	// s := "_ * ( ) ~ ` > # + = | { } . ! \\[ \\] \\-"
+	// a := strings.Split(s, " ")
+	// result := text
+	// for _, v := range a {
+	// 	result = strings.ReplaceAll(result, v, "\\"+v)
+	// }
+	// return result
 	// re := regexp.MustCompile("[" + strings.Join(a, "|") + "]")
 	// return re.ReplaceAllString(text, `\$0`)
+	return reMarkdown.ReplaceAllString(text, `\$0`)
 }
