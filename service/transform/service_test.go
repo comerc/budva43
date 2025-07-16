@@ -1957,15 +1957,13 @@ func Test_applyReplacements(t *testing.T) {
 func Test_collectMarkdownReplacements(t *testing.T) {
 	t.Parallel()
 
-	type testCase struct {
+	tests := []struct {
 		name      string
 		inputText string
 		parsed    *client.FormattedText
 		expects   []*replacement
 		err       error
-	}
-
-	tests := []testCase{
+	}{
 		{
 			name:      "plain_text_no_markdown",
 			inputText: "hello world",
@@ -2081,25 +2079,13 @@ func Test_collectMarkdownReplacements(t *testing.T) {
 
 func Test_applyMarkdownReplacements(t *testing.T) {
 	t.Parallel()
-	type testCase struct {
+
+	tests := []struct {
 		name     string
 		initial  *client.FormattedText
 		repls    []*replacement
 		expected *client.FormattedText
-	}
-
-	t.Run("replace_text_and_add_bold_entity", func(t *testing.T) {
-		t.Parallel()
-		service := New(nil, nil, nil)
-		ft := &client.FormattedText{
-			Text:     "*bold*",
-			Entities: []*client.TextEntity{},
-		}
-		_ = service
-		_ = ft
-	})
-
-	tests := []testCase{
+	}{
 		{
 			name: "replace_text_and_add_bold_entity",
 			initial: &client.FormattedText{

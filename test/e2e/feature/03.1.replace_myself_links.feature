@@ -5,21 +5,24 @@
 Feature: 03.1.ReplaceMyselfLinks
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
-    And режим "replace-myself-links: run=true"
-    And исходное сообщение со ссылкой на своё сообщение
+    Given будет пересылка - копия
 
   Scenario Outline: Ссылки на свои сообщения заменяются
-    Given целевой чат "<dst_chat_id>" (<dst_chat_name>)
-    When пользователь отправляет исходное сообщение
-    Then сообщение появляется в целевом чате
-    And сообщение с замененной ссылкой
+    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    When пользователь отправляет сообщение
+    Then пауза 10 сек.
+    And сообщение в чате
+    And сообщение в чате "-1002667730628" (DST PUB CHL 1)
+    And сообщение в чате "-1002866470933" (DST PUB GRP 1)
+    Given сообщение со ссылкой на последнее сообщение
+    And будет замена ссылки на сообщение в целевом чате
+    When пользователь отправляет сообщение
+    Then пауза 10 сек.
+    And сообщение в чате "-1002667730628" (DST PUB CHL 1)
+    And сообщение в чате "-1002866470933" (DST PUB GRP 1)
 
     Examples:
       | src_chat_id    | src_chat_name |
-      | -1002641439846 | SRC PUB CH 1  |
-      | -1002748936346 | SRC PUB CH 2  |
-      | -1002792282007 | SRC PRV CH 1  |
-      | -1002524362679 | SRC PRV CH 2  |
+      | -1002641439846 | SRC PUB CHL 1 |
+      | -1002792282007 | SRC PRV CHL 1 |
       | -1002736661856 | SRC PUB GRP 1 |
-      | -1002781642357 | SRC PUB GRP 2 |

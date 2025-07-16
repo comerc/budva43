@@ -58,16 +58,10 @@ func runFeature(t *testing.T, name string) {
 	}
 }
 
-func stringToInt64(s string) int64 {
-	var result int64
-	fmt.Sscanf(s, "%d", &result)
-	return result
-}
-
 func (s *scenario) setSourceChat(chatId, name string) error {
 	var err error
 
-	s.state.sourceChatId = stringToInt64(chatId)
+	s.state.sourceChatId = util.StringToInt64(chatId)
 
 	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -242,6 +236,37 @@ func (s *scenario) setExpectedForward(mode string) error {
 	return nil
 }
 
+func extractExpectedLink(text string) string {
+	pattern := `>>>\[(.*)\]\((.*)\)<<<`
+	re := regexp.MustCompile(pattern)
+	matches := re.FindStringSubmatch(text)
+	if len(matches) != 3 {
+		return ""
+	}
+	return matches[2]
+}
+
+func (s *scenario) setExpectedLinkToMessageInTargetChat(ctx context.Context) error {
+	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
+		link := extractExpectedLink(message.Text)
+		if link == "" {
+			return fmt.Errorf("link is empty")
+		}
+		resp, err := client.GetMessageLinkInfo(ctx, &pb.GetMessageLinkInfoRequest{
+			Link: link,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get message link: %w", err)
+		}
+		if resp.Message.ChatId != message.ChatId {
+			return fmt.Errorf("message chat id mismatch: want %d, got %d",
+				message.ChatId, resp.Message.ChatId)
+		}
+		return nil
+	})
+	return nil
+}
+
 func (s *scenario) setExpectedRegex(v string) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
 		pattern := v
@@ -276,7 +301,7 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 	return nil
 }
 
-func (s *scenario) sendYETIMessage(ctx context.Context) error {
+func (s *scenario) sendYetiMessage(ctx context.Context) error {
 	var err error
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
@@ -290,19 +315,39 @@ func (s *scenario) sendYETIMessage(ctx context.Context) error {
 	return nil
 }
 
-func (s *scenario) checkMessage(ctx context.Context, chatId, name string) error {
+func (s *scenario) checkSourceMessage(ctx context.Context) error {
 	var err error
 
 	var resp *pb.MessageResponse
 	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
-		ChatId: stringToInt64(chatId),
+		ChatId: s.state.sourceChatId,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
 
 	if !strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
-		return fmt.Errorf("message text has no prefix: want %q, got %q", s.state.sourceTextPrefix, resp.Message.Text)
+		return fmt.Errorf("message text has no prefix: want %q, got %q",
+			s.state.sourceTextPrefix, resp.Message.Text)
+	}
+
+	return nil
+}
+
+func (s *scenario) checkMessage(ctx context.Context, chatId string) error {
+	var err error
+
+	var resp *pb.MessageResponse
+	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+		ChatId: util.StringToInt64(chatId),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get last message: %w", err)
+	}
+
+	if !strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+		return fmt.Errorf("message text has no prefix: want %q, got %q",
+			s.state.sourceTextPrefix, resp.Message.Text)
 	}
 
 	for _, check := range s.state.checks {
@@ -315,7 +360,7 @@ func (s *scenario) checkMessage(ctx context.Context, chatId, name string) error 
 	return nil
 }
 
-func (s *scenario) checkYETIMessage(ctx context.Context) error {
+func (s *scenario) checkYetiMessage(ctx context.Context) error {
 	var err error
 
 	var resp *pb.MessageResponse
@@ -353,13 +398,14 @@ func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 		return fmt.Errorf("failed to get message link: %w", err)
 	}
 
-	s.state.sourceTextMiddle = util.EscapeMarkdown(resp.Link)
+	text := fmt.Sprintf(">>>%s<<<", resp.Link)
+	s.state.sourceTextMiddle = util.EscapeMarkdown(text)
 
 	return nil
 }
 
-// Константы из engine.e2e.yml // TODO: получать через grpc?
 const (
+	// Константы из engine.e2e.yml // TODO: получать через grpc?
 	E2E_SIGN = "**Sign**"
 	E2E_LINK = "**Link**"
 )
@@ -375,7 +421,7 @@ func (s *scenario) setExpectedLink() error {
 }
 
 func (s *scenario) setExpectedNoExternalLink() error {
-	pattern := `(?s)^.*DELETED_LINK.*$`
+	pattern := `>>>DELETED_LINK<<<`
 	return s.setExpectedRegex(pattern)
 }
 
@@ -395,16 +441,18 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	// ctx.Then(`^сообщение не появляется в целевом чате$`, state.checkMessageDoesNotAppearInTargetChat)
 	// ctx.Then(`^сообщение равно ожидаемому тексту$`, state.checkMessageEqualsExpectedText)
 	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.setExpectedForward)
-	ctx.When(`^пользователь отправляет сообщение в исходный чат$`, scenario.sendMessage)
-	ctx.When(`^пользователь отправляет YETI_MESSAGE в исходный чат$`, scenario.sendYETIMessage)
+	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
+	ctx.When(`^пользователь отправляет YETI_MESSAGE$`, scenario.sendYetiMessage)
 	ctx.Then(`^пауза (\d+) сек.$`, scenario.sleep)
-	ctx.Then(`^сообщение в чате "([^"]*)" \(([^"]*)\)$`, scenario.checkMessage)
-	ctx.Then(`^YETI_MESSAGE в исходном чате$`, scenario.checkYETIMessage)
+	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
+	ctx.Then(`^сообщение в чате "([^"]*)" .*$`, scenario.checkMessage)
+	ctx.Then(`^YETI_MESSAGE в чате$`, scenario.checkYetiMessage)
 	ctx.Given(`^будет текст "([^"]*)"$`, scenario.setExpectedRegex)
 	ctx.Given(`^будет подпись$`, scenario.setExpectedSign)
 	ctx.Given(`^будет ссылка$`, scenario.setExpectedLink)
 	ctx.Given(`^будет замена: ссылка на YETI_MESSAGE -> DELETED_LINK$`, scenario.setExpectedNoExternalLink)
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
+	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.setExpectedLinkToMessageInTargetChat)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -419,9 +467,9 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.forward_send_copy", // OK
-		// "02.forward",           // OK
-		// "03.1.replace_myself_links",
+		// "01.forward_send_copy",       // OK
+		// "02.forward",                 // OK
+		// "03.1.replace_myself_links",  // OK
 		// "03.2.delete_external_links", // OK
 		// "04.1.filters_mode_exclude",
 		// "04.2.filters_mode_include",

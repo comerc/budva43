@@ -70,3 +70,13 @@ func EscapeMarkdown(text string) string {
 	// return re.ReplaceAllString(text, `\$0`)
 	return reMarkdown.ReplaceAllString(text, `\$0`)
 }
+
+func Int64ToString(i int64) string {
+	return fmt.Sprintf("%d", i)
+}
+
+func StringToInt64(s string) int64 {
+	var result int64
+	fmt.Sscanf(s, "%d", &result)
+	return result
+}

@@ -13,6 +13,7 @@ service FacadeGRPC {
   rpc UpdateMessage (UpdateMessageRequest) returns (MessageResponse);
   rpc DeleteMessages (DeleteMessagesRequest) returns (DeleteMessagesResponse);
   rpc GetMessageLink (GetMessageLinkRequest) returns (GetMessageLinkResponse);
+  rpc GetMessageLinkInfo (GetMessageLinkInfoRequest) returns (MessageResponse);
 }
 
 message Message {
@@ -78,3 +79,8 @@ message GetMessageLinkRequest {
 message GetMessageLinkResponse {
   string link = 1;
 }
+
+message GetMessageLinkInfoRequest {
+  string link = 1;
+}
+

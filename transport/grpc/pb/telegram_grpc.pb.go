@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FacadeGRPC_GetMessages_FullMethodName    = "/pb.FacadeGRPC/GetMessages"
-	FacadeGRPC_GetLastMessage_FullMethodName = "/pb.FacadeGRPC/GetLastMessage"
-	FacadeGRPC_SendMessage_FullMethodName    = "/pb.FacadeGRPC/SendMessage"
-	FacadeGRPC_ForwardMessage_FullMethodName = "/pb.FacadeGRPC/ForwardMessage"
-	FacadeGRPC_GetMessage_FullMethodName     = "/pb.FacadeGRPC/GetMessage"
-	FacadeGRPC_UpdateMessage_FullMethodName  = "/pb.FacadeGRPC/UpdateMessage"
-	FacadeGRPC_DeleteMessages_FullMethodName = "/pb.FacadeGRPC/DeleteMessages"
-	FacadeGRPC_GetMessageLink_FullMethodName = "/pb.FacadeGRPC/GetMessageLink"
+	FacadeGRPC_GetMessages_FullMethodName        = "/pb.FacadeGRPC/GetMessages"
+	FacadeGRPC_GetLastMessage_FullMethodName     = "/pb.FacadeGRPC/GetLastMessage"
+	FacadeGRPC_SendMessage_FullMethodName        = "/pb.FacadeGRPC/SendMessage"
+	FacadeGRPC_ForwardMessage_FullMethodName     = "/pb.FacadeGRPC/ForwardMessage"
+	FacadeGRPC_GetMessage_FullMethodName         = "/pb.FacadeGRPC/GetMessage"
+	FacadeGRPC_UpdateMessage_FullMethodName      = "/pb.FacadeGRPC/UpdateMessage"
+	FacadeGRPC_DeleteMessages_FullMethodName     = "/pb.FacadeGRPC/DeleteMessages"
+	FacadeGRPC_GetMessageLink_FullMethodName     = "/pb.FacadeGRPC/GetMessageLink"
+	FacadeGRPC_GetMessageLinkInfo_FullMethodName = "/pb.FacadeGRPC/GetMessageLinkInfo"
 )
 
 // FacadeGRPCClient is the client API for FacadeGRPC service.
@@ -41,6 +42,7 @@ type FacadeGRPCClient interface {
 	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error)
 	GetMessageLink(ctx context.Context, in *GetMessageLinkRequest, opts ...grpc.CallOption) (*GetMessageLinkResponse, error)
+	GetMessageLinkInfo(ctx context.Context, in *GetMessageLinkInfoRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
 
 type facadeGRPCClient struct {
@@ -131,6 +133,16 @@ func (c *facadeGRPCClient) GetMessageLink(ctx context.Context, in *GetMessageLin
 	return out, nil
 }
 
+func (c *facadeGRPCClient) GetMessageLinkInfo(ctx context.Context, in *GetMessageLinkInfoRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, FacadeGRPC_GetMessageLinkInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FacadeGRPCServer is the server API for FacadeGRPC service.
 // All implementations must embed UnimplementedFacadeGRPCServer
 // for forward compatibility.
@@ -143,6 +155,7 @@ type FacadeGRPCServer interface {
 	UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error)
 	DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error)
 	GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error)
+	GetMessageLinkInfo(context.Context, *GetMessageLinkInfoRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedFacadeGRPCServer()
 }
 
@@ -176,6 +189,9 @@ func (UnimplementedFacadeGRPCServer) DeleteMessages(context.Context, *DeleteMess
 }
 func (UnimplementedFacadeGRPCServer) GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessageLink not implemented")
+}
+func (UnimplementedFacadeGRPCServer) GetMessageLinkInfo(context.Context, *GetMessageLinkInfoRequest) (*MessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessageLinkInfo not implemented")
 }
 func (UnimplementedFacadeGRPCServer) mustEmbedUnimplementedFacadeGRPCServer() {}
 func (UnimplementedFacadeGRPCServer) testEmbeddedByValue()                    {}
@@ -342,6 +358,24 @@ func _FacadeGRPC_GetMessageLink_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FacadeGRPC_GetMessageLinkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessageLinkInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FacadeGRPCServer).GetMessageLinkInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FacadeGRPC_GetMessageLinkInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FacadeGRPCServer).GetMessageLinkInfo(ctx, req.(*GetMessageLinkInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FacadeGRPC_ServiceDesc is the grpc.ServiceDesc for FacadeGRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +414,10 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMessageLink",
 			Handler:    _FacadeGRPC_GetMessageLink_Handler,
+		},
+		{
+			MethodName: "GetMessageLinkInfo",
+			Handler:    _FacadeGRPC_GetMessageLinkInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
