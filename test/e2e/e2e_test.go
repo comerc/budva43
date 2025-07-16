@@ -292,7 +292,7 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
 		ChatId: s.state.sourceChatId,
-		Text:   s.state.sourceTextPrefix + "\n\n" + s.state.sourceTextMiddle,
+		Text:   fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceTextMiddle),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send text message via grpc: %w", err)
@@ -372,7 +372,7 @@ func (s *scenario) checkYetiMessage(ctx context.Context) error {
 	}
 
 	if resp.Message.Text != "YETI_MESSAGE" {
-		return fmt.Errorf("message text is not YETI_MESSAGE: want %q, got %q", "YETI_MESSAGE", resp.Message.Text)
+		return fmt.Errorf("message text mismatch: want %q, got %q", "YETI_MESSAGE", resp.Message.Text)
 	}
 
 	return nil
