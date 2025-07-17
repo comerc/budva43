@@ -10,7 +10,7 @@ Feature: 02.forward
   Scenario Outline: Сообщение пересылается в целевые чаты
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     When пользователь отправляет сообщение
-    Then пауза 10 сек.
+    Then ожидание 10 сек.
     And сообщение в чате "DST PUB CHL 2" (1002877966922)
     And сообщение в чате "DST PRV CHL 2" (1002641980237)
     And сообщение в чате "DST PUB GRP 2" (1002876400294)
