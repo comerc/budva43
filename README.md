@@ -6,6 +6,8 @@
 [![Last Commit](https://img.shields.io/github/last-commit/comerc/budva43)](https://github.com/comerc/budva43/commits/main/)
 [![Project Status](https://img.shields.io/github/release/comerc/budva43.svg)](https://github.com/comerc/budva43/releases/latest)
 
+> 🚀 My best learning project to apply technology - from MVP to Enterprise Level
+
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
 
 ## How to clone project with submodules
