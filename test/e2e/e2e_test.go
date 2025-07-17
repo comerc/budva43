@@ -471,7 +471,8 @@ func Test(t *testing.T) {
 		// "03.2.delete_external_links", // OK
 		// "04.1.1.filters_mode_exclude", // OK
 		// "04.1.2.filters_mode_exclude", // OK
-		// "04.2.filters_mode_include",
+		// "04.2.1.filters_mode_include", // OK
+		// "04.2.2.filters_mode_include", // OK
 		// "05.media_album_send_copy",
 		// "06.media_album_forward",
 		// "07.1.include_submatch_f",
