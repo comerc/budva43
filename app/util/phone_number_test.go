@@ -16,97 +16,97 @@ func TestMaskPhoneNumber(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "Standard phone number",
+			name:     "standard_phone_number",
 			phone:    "+7 926 111 22 33",
 			expected: "+7926*****33",
 		},
 		{
-			name:     "Phone number without spaces",
+			name:     "phone_number_without_spaces",
 			phone:    "+79261112233",
 			expected: "+7926*****33",
 		},
 		{
-			name:     "Phone number with dashes",
+			name:     "phone_number_with_dashes",
 			phone:    "+7-926-111-22-33",
 			expected: "+7926*****33",
 		},
 		{
-			name:     "Short phone number",
+			name:     "short_phone_number",
 			phone:    "12345",
 			expected: "***45",
 		},
 		{
-			name:     "Very short number (2 chars)",
+			name:     "very_short_number-2_chars",
 			phone:    "12",
 			expected: "**", // По реализации, если длина <= 2, возвращается "**"
 		},
 		{
-			name:     "Very short number (1 char)",
+			name:     "very_short_number-1_char",
 			phone:    "1",
 			expected: "**", // По реализации, если длина <= 2, возвращается "**"
 		},
 		{
-			name:     "Empty number",
+			name:     "empty_number",
 			phone:    "",
 			expected: "**", // Согласно логике функции для слишком коротких номеров
 		},
 		{
-			name:     "International format number",
+			name:     "international_format_number",
 			phone:    "+38 067 123 45 67",
 			expected: "+38067*****67", // Учитываем фактический результат
 		},
 		{
-			name:     "Number with letters",
+			name:     "number_with_letters",
 			phone:    "+7 (XXX) 123-45-67",
 			expected: "+7(XXX)*****67",
 		},
 		{
-			name:     "Number with 7 chars (border)",
+			name:     "number_with_7_chars-border",
 			phone:    "1234567",
 			expected: "*****67",
 		},
 		{
-			name:     "Number with 8 chars (1 visible prefix)",
+			name:     "number_with_8_chars-1_visible_prefix",
 			phone:    "12345678",
 			expected: "1*****78",
 		},
 		{
-			name:     "Number with spaces at start and end",
+			name:     "number_with_spaces_at_start_and_end",
 			phone:    "  +7 926  123  45  67  ",
 			expected: "+7926*****67",
 		},
 		{
-			name:     "Very long number",
+			name:     "very_long_number",
 			phone:    "+7926123456789012345",
 			expected: "+792612345678*****45",
 		},
 		{
-			name:     "Number with non-digit symbols",
+			name:     "number_with_non_digit_symbols",
 			phone:    "АБВabcdefghij",
 			expected: "АБВabc*****ij",
 		},
 		{
-			name:     "Number with special symbols",
+			name:     "number_with_special_symbols",
 			phone:    "+7@#$%^&*()_+12345",
 			expected: "+7@#$%^&*()*****45", // Сохраняются последние 2 символа
 		},
 		{
-			name:     "Number with other special symbols",
+			name:     "number_with_other_special_symbols",
 			phone:    "!@#$%^1234567",
 			expected: "!@#$%^*****67",
 		},
 		{
-			name:     "Number with unicode symbols",
+			name:     "number_with_unicode_symbols",
 			phone:    "🙃+79261234567",
 			expected: "🙃+7926*****67",
 		},
 		{
-			name:     "Number with 6 chars (one less than border)",
+			name:     "number_with_6_chars-one_less_than_border",
 			phone:    "123456",
 			expected: "****56",
 		},
 		{
-			name:     "Number with 3 chars (minimal for masking)",
+			name:     "number_with_3_chars-minimal_for_masking",
 			phone:    "123",
 			expected: "*23",
 		},

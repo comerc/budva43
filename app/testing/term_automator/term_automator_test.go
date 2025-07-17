@@ -155,7 +155,7 @@ func TestWaitForOutput(t *testing.T) {
 		os.Remove(tmpFile.Name())
 	})
 
-	t.Run("Successful prefix detection", func(t *testing.T) {
+	t.Run("successful_prefix_detection", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста
@@ -185,7 +185,7 @@ func TestWaitForOutput(t *testing.T) {
 		assert.True(t, found, "WaitForOutput должен обнаружить вывод по префиксу")
 	})
 
-	t.Run("Timeout when string is missing", func(t *testing.T) {
+	t.Run("timeout_when_string_is_missing", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем отдельный автоматор для этого подтеста
@@ -380,7 +380,7 @@ func TestErrorHandling(t *testing.T) {
 		os.Stdout = oldStdout
 	})
 
-	t.Run("WaitForOutput с малым таймаутом без Run", func(t *testing.T) {
+	t.Run("waitforoutput_short_timeout_no_run", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
@@ -395,7 +395,7 @@ func TestErrorHandling(t *testing.T) {
 		assert.False(t, found, "WaitForOutput должен вернуть false при малом таймауте и отсутствии вывода")
 	})
 
-	t.Run("WaitForOutput с пустым шаблоном", func(t *testing.T) {
+	t.Run("waitforoutput_empty_pattern", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
@@ -419,7 +419,7 @@ func TestErrorHandling(t *testing.T) {
 		assert.True(t, found, "WaitForOutput должен вернуть true при пустом шаблоне")
 	})
 
-	t.Run("WaitForOutput после закрытия stdout", func(t *testing.T) {
+	t.Run("waitforoutput_after_stdout_closed", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
@@ -448,7 +448,7 @@ func TestErrorHandling(t *testing.T) {
 		assert.Less(t, timeElapsed, 500*time.Millisecond, "WaitForOutput должен вернуться быстрее таймаута при закрытом канале")
 	})
 
-	t.Run("SendInput после Close", func(t *testing.T) {
+	t.Run("sendinput_after_close", func(t *testing.T) {
 		t.Parallel()
 
 		// Создаем автоматор
