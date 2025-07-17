@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -454,9 +455,14 @@ func registerSteps(ctx *godog.ScenarioContext) {
 func Test(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить
 
-	// if testing.Short() {
-	t.Skip()
-	// }
+	// TODO: запускать e2e тесты в CI
+	if os.Getenv("CI") == "true" {
+		t.Skip()
+	}
+
+	if testing.Short() {
+		t.Skip()
+	}
 
 	names := []string{
 		// "01.forward_send_copy",       // OK
