@@ -361,6 +361,24 @@ func (s *scenario) checkMessage(ctx context.Context, name string, chatId int) er
 	return nil
 }
 
+func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int) error {
+	var err error
+
+	var resp *pb.MessageResponse
+	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+		ChatId: -int64(chatId),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get last message: %w", err)
+	}
+
+	if strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+		return fmt.Errorf("found message")
+	}
+
+	return nil
+}
+
 func (s *scenario) checkYetiMessage(ctx context.Context) error {
 	var err error
 
@@ -461,6 +479,7 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
 	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToMessage)
 	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
+	ctx.Then(`^нет сообщения в чате "([^"]*)" \((\d+)\)$`, scenario.checkNoMessage)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -479,7 +498,7 @@ func Test(t *testing.T) {
 		// "02.forward",                 // OK
 		// "03.1.replace_myself_links",  // OK
 		// "03.2.delete_external_links", // OK
-		// "04.1.filters_mode_exclude",
+		// "04.1.filters_mode_exclude", // OK
 		// "04.2.filters_mode_include",
 		// "05.media_album_send_copy",
 		// "06.media_album_forward",

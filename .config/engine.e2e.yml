@@ -22,43 +22,22 @@ sources:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
-      title: "*Link*"
+      title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  # 1002748936346:
-  #   sign:
-  #     title: "*Sign*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-  #   link:
-  #     title: "*Link*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
   1002792282007:
     sign:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
-      title: "*Link*"
+      title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  # 1002524362679:
-  #   sign:
-  #     title: "*Sign*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-  #   link:
-  #     title: "*Link*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
   1002736661856:
     sign:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
-      title: "*Link*"
+      title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  # 1002781642357:
-  #   sign:
-  #     title: "*Sign*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-  #   link:
-  #     title: "*Link*"
-  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
 destinations:
   1002667730628:
     replace-myself-links:
@@ -70,11 +49,6 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  # 1002877966922:
-  #   replace-myself-links:
-  #     run: true
-  #     delete-external: true
-  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   1002473038431:
     replace-myself-links:
       run: true
@@ -85,11 +59,6 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  # 1002641980237:
-  #   replace-myself-links:
-  #     run: true
-  #     delete-external: true
-  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   1002866470933:
     replace-myself-links:
       run: true
@@ -100,11 +69,6 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  # 1002876400294:
-  #   replace-myself-links:
-  #     run: true
-  #     delete-external: true
-  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   4867965570:
     replace-myself-links:
       run: true # не работает замена, только удаление ссылки
@@ -115,16 +79,13 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  # 4913098869:
-  #   replace-myself-links:
-  #     run: true # не работает замена, только удаление ссылки
-  #     delete-external: true
-  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
 forward-rules:
   "SRC_PUB_CHL_COPY":
     from: 1002641439846
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    # to: [1002667730628, 1002473038431]
     send-copy: true
+    exclude: "EXCLUDE"
     # copy-once: true # TODO: SRC_*_COPY_ONCE
     # indelible: true # TODO: SRC_*_COPY_INDELIBLE
     # exclude: "EXCLUDE" # TODO: SRC_*_EXCLUDE
@@ -136,17 +97,25 @@ forward-rules:
   "SRC_PUB_CHL_FRWD":
     from: 1002748936346
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    # to: [1002667730628, 1002473038431]
+    exclude: "EXCLUDE"
   "SRC_PRV_CHL_COPY":
     from: 1002792282007
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    # to: [1002667730628, 1002473038431]
     send-copy: true
+    exclude: "EXCLUDE"
   "SRC_PRV_CHL_FRWD":
     from: 1002524362679
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    exclude: "EXCLUDE"
   "SRC_PUB_GRP_COPY":
     from: 1002736661856
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    # to: [1002667730628, 1002473038431]
     send-copy: true
+    exclude: "EXCLUDE"
   "SRC_PUB_GRP_FRWD":
     from: 1002781642357
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    exclude: "EXCLUDE"
