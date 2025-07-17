@@ -5,7 +5,7 @@
 Feature: 04.2.filters_mode_include
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And исходное сообщение с тегом "#ARK"
 
   Scenario Outline: Сообщение проходит фильтр (include)

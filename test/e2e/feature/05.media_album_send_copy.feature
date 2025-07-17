@@ -5,7 +5,7 @@
 Feature: 05.media_album_send_copy
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
 
   Scenario Outline: Медиаальбом копируется в целевой чат
     Given целевой чат "<dst_chat_id>" (<dst_chat_name>)

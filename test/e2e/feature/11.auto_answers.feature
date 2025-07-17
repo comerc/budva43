@@ -5,7 +5,7 @@
 Feature: 11.auto_answers
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And исходное сообщение с вопросом
 
   Scenario Outline: Автоматические ответы на сообщения

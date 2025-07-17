@@ -5,7 +5,7 @@
 Feature: 07.2.include_submatch_true
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And исходное сообщение с тикером "TSLA"
 
   Scenario Outline: Сообщение проходит фильтр include-submatch

@@ -5,7 +5,7 @@
 Feature: 04.1.filters_mode_exclude
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And исходное сообщение с тегом "#УТРЕННИЙ_ОБЗОР"
 
   Scenario Outline: Сообщение не проходит фильтр (exclude)

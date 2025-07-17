@@ -5,7 +5,7 @@
 Feature: 14.media_album_copy_once
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And режим "copy-once: true"
 
   Scenario Outline: Медиаальбом копируется только один раз

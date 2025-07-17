@@ -5,7 +5,7 @@
 Feature: 13.indelible
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And режим "indelible: true"
 
   Scenario Outline: Сообщение нельзя удалить из целевого чата

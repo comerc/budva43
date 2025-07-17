@@ -5,7 +5,7 @@
 Feature: 15.media_album_indelible
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And режим "indelible: true"
 
   Scenario Outline: Медиаальбом нельзя удалить из целевого чата

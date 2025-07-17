@@ -5,7 +5,7 @@
 Feature: 07.1.include_submatch_false
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And исходное сообщение с тикером "NVDA"
 
   Scenario Outline: Сообщение не проходит фильтр include-submatch

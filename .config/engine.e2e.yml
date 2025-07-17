@@ -1,105 +1,125 @@
 # Файл конфигурации Budva43 - динамические правила форвардинга (e2e-тесты)
 
-# SRC PUB CHL 1  -1002641439846
-# SRC PUB CHL 2  -1002748936346
-# SRC PRV CHL 1  -1002792282007
-# SRC PRV CHL 2  -1002524362679
-# SRC PUB GRP 1 -1002736661856
-# SRC PUB GRP 2 -1002781642357
+# SRC PUB CHL 1 (1002641439846)
+# SRC PUB CHL 2 (1002748936346)
+# SRC PRV CHL 1 (1002792282007)
+# SRC PRV CHL 2 (1002524362679)
+# SRC PUB GRP 1 (1002736661856)
+# SRC PUB GRP 2 (1002781642357)
 
-# DST PUB CHL 1  -1002667730628
-# DST PUB CHL 2  -1002877966922
-# DST PRV CHL 1  -1002473038431
-# DST PRV CHL 2  -1002641980237
-# DST PUB GRP 1 -1002866470933
-# DST PUB GRP 2 -1002876400294
-# DST PRV GRP 1 -4867965570
-# DST PRV GRP 2 -4913098869
+# DST PUB CHL 1 (1002667730628)
+# DST PUB CHL 2 (1002877966922)
+# DST PRV CHL 1 (1002473038431)
+# DST PRV CHL 2 (1002641980237)
+# DST PUB GRP 1 (1002866470933)
+# DST PUB GRP 2 (1002876400294)
+# DST PRV GRP 1 (4867965570)
+# DST PRV GRP 2 (4913098869)
 
 sources:
   1002641439846:
     sign:
       title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
       title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-  1002748936346:
-    sign:
-      title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-    link:
-      title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  # 1002748936346:
+  #   sign:
+  #     title: "*Sign*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+  #   link:
+  #     title: "*Link*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
   1002792282007:
     sign:
       title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
       title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-  1002524362679:
-    sign:
-      title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-    link:
-      title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  # 1002524362679:
+  #   sign:
+  #     title: "*Sign*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+  #   link:
+  #     title: "*Link*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
   1002736661856:
     sign:
       title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
       title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-  1002781642357:
-    sign:
-      title: "*Sign*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
-    link:
-      title: "*Link*"
-      for: [1002667730628, 1002877966922, 1002473038431, 1002641980237, 1002866470933, 1002876400294, 4867965570, 4913098869]
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  # 1002781642357:
+  #   sign:
+  #     title: "*Sign*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+  #   link:
+  #     title: "*Link*"
+  #     for: [1002877966922, 1002641980237, 1002876400294, 4913098869]
 destinations:
   1002667730628:
     replace-myself-links:
       run: true
       delete-external: true
       # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
-  1002877966922:
-    replace-myself-links:
-      run: true
-      delete-external: true
-      # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
+    replace-fragments: # must be equal length
+      - from: "hello"
+        to: "12345"
+      - from: "world"
+        to: "67890"
+  # 1002877966922:
+  #   replace-myself-links:
+  #     run: true
+  #     delete-external: true
+  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   1002473038431:
     replace-myself-links:
       run: true
       delete-external: true
       # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
-  1002641980237:
-    replace-myself-links:
-      run: true
-      delete-external: true
-      # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
+    replace-fragments: # must be equal length
+      - from: "hello"
+        to: "12345"
+      - from: "world"
+        to: "67890"
+  # 1002641980237:
+  #   replace-myself-links:
+  #     run: true
+  #     delete-external: true
+  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   1002866470933:
     replace-myself-links:
       run: true
       delete-external: true
       # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
-  1002876400294:
-    replace-myself-links:
-      run: true
-      delete-external: true
-      # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
+    replace-fragments: # must be equal length
+      - from: "hello"
+        to: "12345"
+      - from: "world"
+        to: "67890"
+  # 1002876400294:
+  #   replace-myself-links:
+  #     run: true
+  #     delete-external: true
+  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
   4867965570:
     replace-myself-links:
       run: true # не работает замена, только удаление ссылки
       delete-external: true
       # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
-  4913098869:
-    replace-myself-links:
-      run: true # не работает замена, только удаление ссылки
-      delete-external: true
-      # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
+    replace-fragments: # must be equal length
+      - from: "hello"
+        to: "12345"
+      - from: "world"
+        to: "67890"
+  # 4913098869:
+  #   replace-myself-links:
+  #     run: true # не работает замена, только удаление ссылки
+  #     delete-external: true
+  #     # deleted-link-text: "🔥*BOLD* _ITALIC_🔥"
 forward-rules:
   "SRC_PUB_CHL_COPY":
     from: 1002641439846

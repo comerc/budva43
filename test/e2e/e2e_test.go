@@ -28,7 +28,7 @@ type scenario struct {
 type scenarioState struct {
 	sourceChatId     int64
 	sourceTextPrefix string
-	sourceTextMiddle string
+	sourceText       string
 
 	checks []check
 
@@ -59,10 +59,10 @@ func runFeature(t *testing.T, name string) {
 	}
 }
 
-func (s *scenario) setSourceChat(chatId, name string) error {
+func (s *scenario) setSourceChat(name string, chatId int) error {
 	var err error
 
-	s.state.sourceChatId = util.StringToInt64(chatId)
+	s.state.sourceChatId = -int64(chatId)
 
 	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -218,7 +218,7 @@ func (s *scenario) checkMessageAppearsInTargetChat() error {
 // 	return nil
 // }
 
-func (s *scenario) setExpectedForward(mode string) error {
+func (s *scenario) addCheckWithExpectedForward(mode string) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
 		switch mode {
 		case "копия":
@@ -247,7 +247,7 @@ func extractExpectedLink(text string) string {
 	return matches[2]
 }
 
-func (s *scenario) setExpectedLinkToMessageInTargetChat(ctx context.Context) error {
+func (s *scenario) addCheckWithExpectedLinkToMessage(ctx context.Context) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
 		link := extractExpectedLink(message.Text)
 		if link == "" {
@@ -268,9 +268,9 @@ func (s *scenario) setExpectedLinkToMessageInTargetChat(ctx context.Context) err
 	return nil
 }
 
-func (s *scenario) setExpectedRegex(v string) error {
+func (s *scenario) addCheckWithExpectedRegex(val string) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
-		pattern := v
+		pattern := val
 		matched, err := regexp.MatchString(pattern, message.Text)
 		if err != nil {
 			return fmt.Errorf("invalid regex pattern %q: %w", pattern, err)
@@ -293,7 +293,7 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
 		ChatId: s.state.sourceChatId,
-		Text:   fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceTextMiddle),
+		Text:   fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceText),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send text message via grpc: %w", err)
@@ -335,12 +335,12 @@ func (s *scenario) checkSourceMessage(ctx context.Context) error {
 	return nil
 }
 
-func (s *scenario) checkMessage(ctx context.Context, chatId string) error {
+func (s *scenario) checkMessage(ctx context.Context, name string, chatId int) error {
 	var err error
 
 	var resp *pb.MessageResponse
 	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
-		ChatId: util.StringToInt64(chatId),
+		ChatId: -int64(chatId),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
@@ -401,7 +401,7 @@ func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 	}
 
 	text := fmt.Sprintf(">>>%s<<<", resp.Link)
-	s.state.sourceTextMiddle = util.EscapeMarkdown(text)
+	s.state.sourceText = util.EscapeMarkdown(text)
 
 	return nil
 }
@@ -412,25 +412,30 @@ const (
 	E2E_LINK = "**Link**"
 )
 
-func (s *scenario) setExpectedSign() error {
+func (s *scenario) addCheckWithExpectedSign() error {
 	pattern := fmt.Sprintf(`(?s)^.*\n\n%s.*$`, strings.ReplaceAll(E2E_SIGN, "*", `\*`))
-	return s.setExpectedRegex(pattern)
+	return s.addCheckWithExpectedRegex(pattern)
 }
 
-func (s *scenario) setExpectedLink() error {
+func (s *scenario) addCheckWithExpectedLink() error {
 	pattern := fmt.Sprintf(`(?s)^.*\n\n\[🔗%s\]\(https://t.me/.*\)$`, strings.ReplaceAll(E2E_LINK, "*", `\*`))
-	return s.setExpectedRegex(pattern)
+	return s.addCheckWithExpectedRegex(pattern)
 }
 
-func (s *scenario) setExpectedNoExternalLink() error {
+func (s *scenario) addCheckWithExpectedNoExternalLink() error {
 	pattern := fmt.Sprintf(`>>>%s<<<`, domain.DELETED_LINK)
-	return s.setExpectedRegex(pattern)
+	return s.addCheckWithExpectedRegex(pattern)
+}
+
+func (s *scenario) setExpectedText(ctx context.Context, text string) error {
+	s.state.sourceText = text
+	return nil
 }
 
 func registerSteps(ctx *godog.ScenarioContext) {
 	scenario := &scenario{}
 	// !! зарегистрированные раньше имеют приоритет выполнения
-	ctx.Given(`^исходный чат "([^"]*)" \(([^)]+)\)$`, scenario.setSourceChat)
+	ctx.Given(`^исходный чат "([^"]*)" \((\d+)\)$`, scenario.setSourceChat)
 	// ctx.Given(`^целевой чат "([^"]*)" \(([^)]+)\)$`, state.setDestinationChat)
 	// ctx.Given(`^отправляемый текст \"\[id\]\ \[src_chat_name\]\"$`, state.setSendText)
 	// ctx.When(`^пользователь отправляет исходное сообщение$`, state.sendMessage)
@@ -442,19 +447,20 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	// ctx.Then(`^сообщение появляется в целевом чате$`, state.checkMessageAppearsInTargetChat)
 	// ctx.Then(`^сообщение не появляется в целевом чате$`, state.checkMessageDoesNotAppearInTargetChat)
 	// ctx.Then(`^сообщение равно ожидаемому тексту$`, state.checkMessageEqualsExpectedText)
-	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.setExpectedForward)
+	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.addCheckWithExpectedForward)
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
 	ctx.When(`^пользователь отправляет YETI_MESSAGE$`, scenario.sendYetiMessage)
 	ctx.Then(`^пауза (\d+) сек.$`, scenario.sleep)
 	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
-	ctx.Then(`^сообщение в чате "([^"]*)" .*$`, scenario.checkMessage)
+	ctx.Then(`^сообщение в чате "([^"]*)" \((\d+)\)$`, scenario.checkMessage)
 	ctx.Then(`^YETI_MESSAGE в чате$`, scenario.checkYetiMessage)
-	ctx.Given(`^будет текст "([^"]*)"$`, scenario.setExpectedRegex)
-	ctx.Given(`^будет подпись$`, scenario.setExpectedSign)
-	ctx.Given(`^будет ссылка$`, scenario.setExpectedLink)
-	ctx.Given(`^будет замена: ссылка на YETI_MESSAGE -> DELETED_LINK$`, scenario.setExpectedNoExternalLink)
+	ctx.Given(`^будет текст "([^"]*)"$`, scenario.addCheckWithExpectedRegex)
+	ctx.Given(`^будет подпись$`, scenario.addCheckWithExpectedSign)
+	ctx.Given(`^будет ссылка$`, scenario.addCheckWithExpectedLink)
+	ctx.Given(`^будет замена: ссылка на YETI_MESSAGE -> DELETED_LINK$`, scenario.addCheckWithExpectedNoExternalLink)
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
-	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.setExpectedLinkToMessageInTargetChat)
+	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToMessage)
+	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -462,7 +468,7 @@ func registerSteps(ctx *godog.ScenarioContext) {
 }
 
 func Test(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // !! нельзя параллелить
 
 	if testing.Short() {
 		t.Skip()
@@ -479,7 +485,7 @@ func Test(t *testing.T) {
 		// "06.media_album_forward",
 		// "07.1.include_submatch_f",
 		// "07.2.include_submatch_t",
-		// "08.replace_fragments",
+		// "08.replace_fragments",  // OK
 		// "09.sources_link_title", // OK
 		// "10.sources_sign",       // OK
 		// "11.auto_answers",
