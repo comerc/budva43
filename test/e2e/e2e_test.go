@@ -462,8 +462,9 @@ func Test(t *testing.T) {
 		// "01.forward_send_copy",       // OK
 		// "02.forward",                 // OK
 		// "03.1.replace_myself_links",  // OK
-		"03.2.delete_external_links", // OK
-		// "04.1.filters_mode_exclude", // OK
+		// "03.2.delete_external_links", // OK
+		// "04.1.1.filters_mode_exclude", // OK
+		// "04.1.2.filters_mode_exclude", // OK
 		// "04.2.filters_mode_include",
 		// "05.media_album_send_copy",
 		// "06.media_album_forward",
