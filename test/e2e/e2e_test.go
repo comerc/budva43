@@ -283,7 +283,7 @@ func (s *scenario) addCheckWithExpectedRegex(val string) error {
 	return nil
 }
 
-func (s *scenario) sleep(ctx context.Context, seconds int) error {
+func (s *scenario) wait(ctx context.Context, seconds int) error {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return nil
 }
@@ -450,7 +450,7 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.addCheckWithExpectedForward)
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
 	ctx.When(`^пользователь отправляет YETI_MESSAGE$`, scenario.sendYetiMessage)
-	ctx.Then(`^пауза (\d+) сек.$`, scenario.sleep)
+	ctx.Then(`^ожидание (\d+) сек.$`, scenario.wait)
 	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
 	ctx.Then(`^сообщение в чате "([^"]*)" \((\d+)\)$`, scenario.checkMessage)
 	ctx.Then(`^YETI_MESSAGE в чате$`, scenario.checkYetiMessage)

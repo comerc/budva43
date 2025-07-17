@@ -11,7 +11,7 @@ Feature: 10.sources_sign
   Scenario Outline: Вставка подписи источника
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     When пользователь отправляет сообщение
-    Then пауза 10 сек.
+    Then ожидание 10 сек.
     And сообщение в чате "DST PUB CHL 1" (1002667730628)
     And сообщение в чате "DST PRV CHL 1" (1002473038431)
     And сообщение в чате "DST PUB GRP 1" (1002866470933)
