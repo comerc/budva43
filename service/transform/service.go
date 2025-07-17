@@ -322,7 +322,7 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 		return
 	}
 
-	text := fmt.Sprintf("[%s%s](%s)", "\U0001f517", source.Link.Title, messageLink.Link)
+	text := fmt.Sprintf("[%s](%s)", source.Link.Title, messageLink.Link)
 	s.addText(formattedText, text)
 }
 
