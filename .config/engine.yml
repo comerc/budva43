@@ -38,14 +38,14 @@ sources:
       for: [10109]
   10101: # for link only test
     link:
-      title: "Source Link"
+      title: "🔗Source Link"
       for: [10109]
   10102: # for sign and link test
     sign:
       title: "Test Source"
       for: [10109]
     link:
-      title: "Source Link"
+      title: "🔗Source Link"
       for: [10109]
   10103: # for sign not for this chat test
     sign:
@@ -55,7 +55,7 @@ sources:
     dummy: true
   10105: # for get message link error test
     link:
-      title: "Source Link"
+      title: "🔗Source Link"
       for: [10109]
   10106: # for auto answer true test
     auto-answer: true
@@ -66,7 +66,7 @@ sources:
       title: "*Test Source*"
       for: [10123]
     link:
-      title: "*Source Link*"
+      title: "🔗*Source Link*"
       for: [10123]
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   10122: # for Transform test (with escaped markdown)
@@ -74,7 +74,7 @@ sources:
       title: 'Test Source\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
       for: [10123]
     link:
-      title: 'Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
+      title: '🔗Source Link\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|'
       for: [10123]
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   10118: # for other source test in replaceMyselfLinks - message not from source chat
