@@ -86,10 +86,9 @@ forward-rules:
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
+    include: "INCLUDE"
     # copy-once: true # TODO: SRC_*_COPY_ONCE
     # indelible: true # TODO: SRC_*_COPY_INDELIBLE
-    # exclude: "EXCLUDE" # TODO: SRC_*_EXCLUDE
-    # include: "INCLUDE" # TODO: SRC_*_INCLUDE
     # include-submatch: # TODO: SRC_*_INCLUDE_SUBMATCH
     #   - regexp: '(^|[^A-Z])\$([A-Z]+)'
     #     group: 2
@@ -99,23 +98,28 @@ forward-rules:
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     # to: [1002667730628, 1002473038431]
     exclude: "EXCLUDE"
+    include: "INCLUDE"
   "SRC_PRV_CHL_COPY":
     from: 1002792282007
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
+    include: "INCLUDE"
   "SRC_PRV_CHL_FRWD":
     from: 1002524362679
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     exclude: "EXCLUDE"
+    include: "INCLUDE"
   "SRC_PUB_GRP_COPY":
     from: 1002736661856
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
+    include: "INCLUDE"
   "SRC_PUB_GRP_FRWD":
     from: 1002781642357
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     exclude: "EXCLUDE"
+    include: "INCLUDE"

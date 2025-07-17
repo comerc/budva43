@@ -1,5 +1,5 @@
 @who:user
-@what:фильтр
+@what:filter
 @why:relevance
 
 Feature: 04.1.2.filters_mode_exclude
@@ -16,7 +16,7 @@ Feature: 04.1.2.filters_mode_exclude
     And сообщение в чате "DST PRV CHL 2" (1002641980237)
     And сообщение в чате "DST PUB GRP 2" (1002876400294)
     And сообщение в чате "DST PRV GRP 2" (4913098869)
-    # Переназначаем исходный чат - новый ID
+    # Переназначаем исходный чат - новый nanoid
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And сообщение с текстом "EXCLUDE"
     When пользователь отправляет сообщение
