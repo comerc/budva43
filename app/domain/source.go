@@ -29,6 +29,3 @@ type Link struct {
 	// For список идентификаторов чатов, для которых применяется ссылка
 	For []ChatId
 }
-
-// YETI_MESSAGE константа для игнорирования сообщений
-const YETI_MESSAGE = "YETI_MESSAGE"

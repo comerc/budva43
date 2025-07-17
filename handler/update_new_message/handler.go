@@ -120,10 +120,6 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	if formattedText == nil {
 		return
 	}
-	// Игнорируем сообщение - для тестирования
-	if formattedText.Text == domain.YETI_MESSAGE {
-		return
-	}
 	isExist := false
 	forwardedTo := make(map[int64]bool)
 	checkFns := make(map[int64]func())

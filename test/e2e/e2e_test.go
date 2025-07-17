@@ -302,20 +302,6 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 	return nil
 }
 
-func (s *scenario) sendYetiMessage(ctx context.Context) error {
-	var err error
-
-	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
-		ChatId: s.state.sourceChatId,
-		Text:   util.EscapeMarkdown(domain.YETI_MESSAGE),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to send text message via grpc: %w", err)
-	}
-
-	return nil
-}
-
 func (s *scenario) checkSourceMessage(ctx context.Context) error {
 	var err error
 
@@ -374,25 +360,6 @@ func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int) 
 
 	if strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
 		return fmt.Errorf("found message")
-	}
-
-	return nil
-}
-
-func (s *scenario) checkYetiMessage(ctx context.Context) error {
-	var err error
-
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
-		ChatId: s.state.sourceChatId,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get last message: %w", err)
-	}
-
-	if resp.Message.Text != domain.YETI_MESSAGE {
-		return fmt.Errorf("message text mismatch: want %q, got %q",
-			domain.YETI_MESSAGE, resp.Message.Text)
 	}
 
 	return nil
@@ -467,15 +434,13 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	// ctx.Then(`^сообщение равно ожидаемому тексту$`, state.checkMessageEqualsExpectedText)
 	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.addCheckWithExpectedForward)
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
-	ctx.When(`^пользователь отправляет YETI_MESSAGE$`, scenario.sendYetiMessage)
 	ctx.Then(`^ожидание (\d+) сек.$`, scenario.wait)
 	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
 	ctx.Then(`^сообщение в чате "([^"]*)" \((\d+)\)$`, scenario.checkMessage)
-	ctx.Then(`^YETI_MESSAGE в чате$`, scenario.checkYetiMessage)
 	ctx.Given(`^будет текст "([^"]*)"$`, scenario.addCheckWithExpectedRegex)
 	ctx.Given(`^будет подпись$`, scenario.addCheckWithExpectedSign)
 	ctx.Given(`^будет ссылка$`, scenario.addCheckWithExpectedLink)
-	ctx.Given(`^будет замена: ссылка на YETI_MESSAGE -> DELETED_LINK$`, scenario.addCheckWithExpectedNoExternalLink)
+	ctx.Given(`^будет удалена ссылка на сообщение в исходном чате$`, scenario.addCheckWithExpectedNoExternalLink)
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
 	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToMessage)
 	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
@@ -497,7 +462,7 @@ func Test(t *testing.T) {
 		// "01.forward_send_copy",       // OK
 		// "02.forward",                 // OK
 		// "03.1.replace_myself_links",  // OK
-		// "03.2.delete_external_links", // OK
+		"03.2.delete_external_links", // OK
 		// "04.1.filters_mode_exclude", // OK
 		// "04.2.filters_mode_include",
 		// "05.media_album_send_copy",
