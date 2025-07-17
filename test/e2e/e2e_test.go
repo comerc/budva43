@@ -454,9 +454,9 @@ func registerSteps(ctx *godog.ScenarioContext) {
 func Test(t *testing.T) {
 	// t.Parallel() // !! нельзя параллелить
 
-	if testing.Short() {
-		t.Skip()
-	}
+	// if testing.Short() {
+	t.Skip()
+	// }
 
 	names := []string{
 		// "01.forward_send_copy",       // OK
