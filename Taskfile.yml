@@ -72,6 +72,8 @@ tasks:
     cmds:
       - GOEXPERIMENT=synctest golangci-lint run
       - GOEXPERIMENT=synctest unused-interface-methods ./...
+      - GOEXPERIMENT=synctest error-log-or-return ./...
+
     silent: true
 
   test-short:
