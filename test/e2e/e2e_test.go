@@ -284,7 +284,7 @@ func (s *scenario) addCheckWithExpectedRegex(val string) error {
 	return nil
 }
 
-func (s *scenario) wait(ctx context.Context, seconds int) error {
+func (s *scenario) wait(seconds int) error {
 	time.Sleep(time.Duration(seconds) * time.Second)
 	return nil
 }
@@ -413,7 +413,7 @@ func (s *scenario) addCheckWithExpectedNoExternalLink() error {
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
-func (s *scenario) setExpectedText(ctx context.Context, text string) error {
+func (s *scenario) setExpectedText(text string) error {
 	s.state.sourceText = text
 	return nil
 }
