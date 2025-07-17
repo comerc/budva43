@@ -5,62 +5,21 @@
 Feature: 08.replace_fragments
 
   Background:
-    Given исходный чат "<src_chat_id>" (<src_chat_name>)
-    And исходное сообщение с текстом "from"
+    Given будет пересылка - копия
 
   Scenario Outline: Фрагменты текста заменяются в целевом чате
-    Given целевой чат "<dst_chat_id>" (<dst_chat_name>)
-    When пользователь отправляет исходное сообщение
-    Then сообщение появляется в целевом чате
-    And сообщение с текстом "toto"
+    Given исходный чат "<src_chat_name>" (<src_chat_id>)
+    And сообщение с текстом "helloworld"
+    And будет текст "1234567890"
+    When пользователь отправляет сообщение
+    Then пауза 10 сек.
+    And сообщение в чате "DST PUB CHL 1" (1002667730628)
+    And сообщение в чате "DST PRV CHL 1" (1002473038431)
+    And сообщение в чате "DST PUB GRP 1" (1002866470933)
+    And сообщение в чате "DST PRV GRP 1" (4867965570)
 
     Examples:
-      | src_chat_id    | src_chat_name | dst_chat_id    | dst_chat_name |
-      | -1002641439846 | SRC PUB CHL 1 | -1002667730628 | DST PUB CHL 1 |
-      | -1002641439846 | SRC PUB CHL 1 | -1002877966922 | DST PUB CHL 2 |
-      | -1002641439846 | SRC PUB CHL 1 | -1002473038431 | DST PRV CHL 1 |
-      | -1002641439846 | SRC PUB CHL 1 | -1002641980237 | DST PRV CHL 2 |
-      | -1002641439846 | SRC PUB CHL 1 | -1002866470933 | DST PUB GRP 1 |
-      | -1002641439846 | SRC PUB CHL 1 | -1002876400294 | DST PUB GRP 2 |
-      | -1002641439846 | SRC PUB CHL 1 | -4867965570    | DST PRV GRP 1 |
-      | -1002641439846 | SRC PUB CHL 1 | -4913098869    | DST PRV GRP 2 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002667730628 | DST PUB CHL 1 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002877966922 | DST PUB CHL 2 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002473038431 | DST PRV CHL 1 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002641980237 | DST PRV CHL 2 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002866470933 | DST PUB GRP 1 |
-      | -1002748936346 | SRC PUB CHL 2 | -1002876400294 | DST PUB GRP 2 |
-      | -1002748936346 | SRC PUB CHL 2 | -4867965570    | DST PRV GRP 1 |
-      | -1002748936346 | SRC PUB CHL 2 | -4913098869    | DST PRV GRP 2 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002667730628 | DST PUB CHL 1 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002877966922 | DST PUB CHL 2 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002473038431 | DST PRV CHL 1 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002641980237 | DST PRV CHL 2 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002866470933 | DST PUB GRP 1 |
-      | -1002792282007 | SRC PRV CHL 1 | -1002876400294 | DST PUB GRP 2 |
-      | -1002792282007 | SRC PRV CHL 1 | -4867965570    | DST PRV GRP 1 |
-      | -1002792282007 | SRC PRV CHL 1 | -4913098869    | DST PRV GRP 2 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002667730628 | DST PUB CHL 1 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002877966922 | DST PUB CHL 2 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002473038431 | DST PRV CHL 1 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002641980237 | DST PRV CHL 2 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002866470933 | DST PUB GRP 1 |
-      | -1002524362679 | SRC PRV CHL 2 | -1002876400294 | DST PUB GRP 2 |
-      | -1002524362679 | SRC PRV CHL 2 | -4867965570    | DST PRV GRP 1 |
-      | -1002524362679 | SRC PRV CHL 2 | -4913098869    | DST PRV GRP 2 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002667730628 | DST PUB CHL 1 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002877966922 | DST PUB CHL 2 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002473038431 | DST PRV CHL 1 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002641980237 | DST PRV CHL 2 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002866470933 | DST PUB GRP 1 |
-      | -1002736661856 | SRC PUB GRP 1 | -1002876400294 | DST PUB GRP 2 |
-      | -1002736661856 | SRC PUB GRP 1 | -4867965570    | DST PRV GRP 1 |
-      | -1002736661856 | SRC PUB GRP 1 | -4913098869    | DST PRV GRP 2 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002667730628 | DST PUB CHL 1 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002877966922 | DST PUB CHL 2 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002473038431 | DST PRV CHL 1 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002641980237 | DST PRV CHL 2 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002866470933 | DST PUB GRP 1 |
-      | -1002781642357 | SRC PUB GRP 2 | -1002876400294 | DST PUB GRP 2 |
-      | -1002781642357 | SRC PUB GRP 2 | -4867965570    | DST PRV GRP 1 |
-      | -1002781642357 | SRC PUB GRP 2 | -4913098869    | DST PRV GRP 2 |
+      | src_chat_name | src_chat_id   |
+      | SRC PUB CHL 1 | 1002641439846 |
+      | SRC PRV CHL 1 | 1002792282007 |
+      | SRC PUB GRP 1 | 1002736661856 |
