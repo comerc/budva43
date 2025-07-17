@@ -1,11 +1,26 @@
 # Файл конфигурации Budva43 - динамические правила форвардинга (e2e-тесты)
 
+# 1,3 - send-copy: true
+# 2,4 - send-copy: false
+# 1,2 - exclude: "EXCLUDE"
+# 3,4 - include: "INCLUDE"
+
 # SRC PUB CHL 1 (1002641439846)
 # SRC PUB CHL 2 (1002748936346)
+# SRC PUB CHL 3 (1002828900048)
+# SRC PUB CHL 4 (1002861761547)
 # SRC PRV CHL 1 (1002792282007)
 # SRC PRV CHL 2 (1002524362679)
+# SRC PRV CHL 3 (1002557642474)
+# SRC PRV CHL 4 (1002741670036)
 # SRC PUB GRP 1 (1002736661856)
 # SRC PUB GRP 2 (1002781642357)
+# SRC PUB GRP 3 (1002531681006)
+# SRC PUB GRP 4 (1002726501676)
+# SRC PRV GRP 1 (4832061506)
+# SRC PRV GRP 2 (4977845927)
+# SRC PRV GRP 3 (4836830199)
+# SRC PRV GRP 4 (4834622030)
 
 # DST PUB CHL 1 (1002667730628)
 # DST PUB CHL 2 (1002877966922)
@@ -17,21 +32,56 @@
 # DST PRV GRP 2 (4913098869)
 
 sources:
-  1002641439846:
+  1002641439846: # SRC PUB CHL 1
     sign:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
       title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  1002792282007:
+  1002792282007: # SRC PRV CHL 1
     sign:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     link:
       title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  1002736661856:
+  1002736661856: # SRC PUB GRP 1
+    sign:
+      title: "*Sign*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    link:
+      title: "🔗*Link*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  # 4832061506: # SRC PRV GRP 1
+  #   sign:
+  #     title: "*Sign*"
+  #     for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  #   link:
+  #     title: "🔗*Link*"
+  #     for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  1002828900048: # SRC PUB CHL 3
+    sign:
+      title: "*Sign*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    link:
+      title: "🔗*Link*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  1002557642474: # SRC PRV CHL 3
+    sign:
+      title: "*Sign*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    link:
+      title: "🔗*Link*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  1002531681006: # SRC PUB GRP 3
+    sign:
+      title: "*Sign*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    link:
+      title: "🔗*Link*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  4836830199: # SRC PRV GRP 3
     sign:
       title: "*Sign*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
@@ -39,7 +89,7 @@ sources:
       title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
 destinations:
-  1002667730628:
+  1002667730628: # DST PUB CHL 1
     replace-myself-links:
       run: true
       delete-external: true
@@ -49,7 +99,7 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  1002473038431:
+  1002473038431: # DST PRV CHL 1
     replace-myself-links:
       run: true
       delete-external: true
@@ -59,7 +109,7 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  1002866470933:
+  1002866470933: # DST PUB GRP 1
     replace-myself-links:
       run: true
       delete-external: true
@@ -69,7 +119,7 @@ destinations:
         to: "12345"
       - from: "world"
         to: "67890"
-  4867965570:
+  4867965570: # DST PRV GRP 1
     replace-myself-links:
       run: true # не работает замена, только удаление ссылки
       delete-external: true
@@ -80,68 +130,115 @@ destinations:
       - from: "world"
         to: "67890"
 forward-rules:
-  "SRC_PUB_CHL_COPY":
+  "SRC_PUB_CHL_1":
     from: 1002641439846
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
-    include: "INCLUDE"
-    include-submatch:
-      - regexp: '(^|[^A-Z])\$([A-Z]+)'
-        group: 2
-        match: ['TSLA']
     # copy-once: true # TODO: SRC_*_COPY_ONCE
     # indelible: true # TODO: SRC_*_COPY_INDELIBLE
     # include-submatch: # TODO: SRC_*_INCLUDE_SUBMATCH
     #   - regexp: '(^|[^A-Z])\$([A-Z]+)'
     #     group: 2
     #     match: ['F', 'GM', 'TSLA']
-  "SRC_PUB_CHL_FRWD":
+  "SRC_PUB_CHL_2":
     from: 1002748936346
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     # to: [1002667730628, 1002473038431]
     exclude: "EXCLUDE"
-    include: "INCLUDE"
-    include-submatch:
-      - regexp: '(^|[^A-Z])\$([A-Z]+)'
-        group: 2
-        match: ['TSLA']
-  "SRC_PRV_CHL_COPY":
+  "SRC_PRV_CHL_1":
     from: 1002792282007
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
-    include: "INCLUDE"
-    include-submatch:
-      - regexp: '(^|[^A-Z])\$([A-Z]+)'
-        group: 2
-        match: ['TSLA']
-  "SRC_PRV_CHL_FRWD":
+  "SRC_PRV_CHL_2":
     from: 1002524362679
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     exclude: "EXCLUDE"
-    include: "INCLUDE"
-    include-submatch:
-      - regexp: '(^|[^A-Z])\$([A-Z]+)'
-        group: 2
-        match: ['TSLA']
-  "SRC_PUB_GRP_COPY":
+  "SRC_PUB_GRP_1":
     from: 1002736661856
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
+  "SRC_PUB_GRP_2":
+    from: 1002781642357
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    exclude: "EXCLUDE"
+  "SRC_PRV_GRP_1":
+    from: 4832061506
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    send-copy: true
+    exclude: "EXCLUDE"
+  "SRC_PRV_GRP_2":
+    from: 4977845927
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    exclude: "EXCLUDE"
+  "SRC_PUB_CHL_3":
+    from: 1002828900048
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    send-copy: true
     include: "INCLUDE"
     include-submatch:
       - regexp: '(^|[^A-Z])\$([A-Z]+)'
         group: 2
         match: ['TSLA']
-  "SRC_PUB_GRP_FRWD":
-    from: 1002781642357
+  "SRC_PUB_CHL_4":
+    from: 1002861761547
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-    exclude: "EXCLUDE"
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']
+  "SRC_PRV_CHL_3":
+    from: 1002557642474
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    send-copy: true
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']
+  "SRC_PRV_CHL_4":
+    from: 1002741670036
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']
+  "SRC_PUB_GRP_3":
+    from: 1002531681006
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    send-copy: true
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']
+  "SRC_PUB_GRP_4":
+    from: 1002726501676
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']        
+  "SRC_PRV_GRP_3":
+    from: 4836830199
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    send-copy: true
+    include: "INCLUDE"
+    include-submatch:
+      - regexp: '(^|[^A-Z])\$([A-Z]+)'
+        group: 2
+        match: ['TSLA']
+  "SRC_PRV_GRP_4":
+    from: 4834622030
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
     include: "INCLUDE"
     include-submatch:
       - regexp: '(^|[^A-Z])\$([A-Z]+)'

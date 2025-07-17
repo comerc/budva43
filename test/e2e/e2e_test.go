@@ -465,21 +465,21 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.forward_send_copy",       // OK
-		// "02.forward",                 // OK
-		// "03.1.replace_myself_links",  // OK
-		// "03.2.delete_external_links", // OK
+		// "01.forward_send_copy",        // OK
+		// "02.forward",                  // OK
+		// "03.1.replace_myself_links",   // OK
+		// "03.2.delete_external_links",  // OK
 		// "04.1.1.filters_mode_exclude", // OK
 		// "04.1.2.filters_mode_exclude", // OK
 		// "04.2.1.filters_mode_include", // OK
 		// "04.2.2.filters_mode_include", // OK
 		// "05.media_album_send_copy",
 		// "06.media_album_forward",
-		// "07.1.include_submatch", // OK
-		// "07.2.include_submatch", // OK
-		// "08.replace_fragments",  // OK
-		// "09.sources_link_title", // OK
-		// "10.sources_sign",       // OK
+		// "07.1.include_submatch",       // OK
+		// "07.2.include_submatch",       // OK
+		// "08.replace_fragments",        // OK
+		// "09.sources_link_title",       // OK
+		// "10.sources_sign",             // OK
 		// "11.auto_answers",
 		// "12.copy_once",
 		// "13.indelible",

@@ -18,7 +18,7 @@ Feature: 04.1.1.filters_mode_exclude
     And сообщение в чате "DST PRV GRP 1" (4867965570)
     # Переназначаем исходный чат - новый nanoid
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
-    And сообщение с текстом "EXCLUDE"
+    And сообщение с текстом "EXCLUDE other"
     When пользователь отправляет сообщение
     Then ожидание 10 сек.
     And нет сообщения в чате "DST PUB CHL 1" (1002667730628)
@@ -31,3 +31,4 @@ Feature: 04.1.1.filters_mode_exclude
       | SRC PUB CHL 1 | 1002641439846 |
       | SRC PRV CHL 1 | 1002792282007 |
       | SRC PUB GRP 1 | 1002736661856 |
+      | SRC PRV GRP 1 | 4832061506    |

@@ -9,7 +9,7 @@ Feature: 04.2.2.filters_mode_include
 
   Scenario Outline: Сообщение проходит фильтр (include)
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
-    And сообщение с текстом "INCLUDE"
+    And сообщение с текстом "INCLUDE other"
     And будет текст "INCLUDE"
     When пользователь отправляет сообщение
     Then ожидание 10 сек.
@@ -20,6 +20,8 @@ Feature: 04.2.2.filters_mode_include
 
     Examples:
       | src_chat_name | src_chat_id   |
-      | SRC PUB CHL 2 | 1002748936346 |
-      | SRC PRV CHL 2 | 1002524362679 |
-      | SRC PUB GRP 2 | 1002781642357 |
+      | SRC PUB CHL 4 | 1002861761547 |
+      | SRC PRV CHL 4 | 1002741670036 |
+      | SRC PUB GRP 4 | 1002726501676 |
+      | SRC PRV GRP 4 | 4834622030    |
+

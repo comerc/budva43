@@ -22,3 +22,4 @@ Feature: 02.forward
       | SRC PUB CHL 2 | 1002748936346 |
       | SRC PRV CHL 2 | 1002524362679 |
       | SRC PUB GRP 2 | 1002781642357 |
+      | SRC PRV GRP 2 | 4977845927    |

@@ -9,7 +9,7 @@ Feature: 07.2.include_submatch
 
   Scenario Outline: Сообщение проходит фильтр include-submatch
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
-    And сообщение с текстом "\$TSLA"
+    And сообщение с текстом "\$TSLA other"
     And будет текст "\$TSLA"
     When пользователь отправляет сообщение
     Then ожидание 10 сек.
@@ -20,6 +20,7 @@ Feature: 07.2.include_submatch
 
     Examples:
       | src_chat_name | src_chat_id   |
-      | SRC PUB CHL 2 | 1002748936346 |
-      | SRC PRV CHL 2 | 1002524362679 |
-      | SRC PUB GRP 2 | 1002781642357 |
+      | SRC PUB CHL 4 | 1002861761547 |
+      | SRC PRV CHL 4 | 1002741670036 |
+      | SRC PUB GRP 4 | 1002726501676 |
+      | SRC PRV GRP 4 | 4834622030    |

@@ -23,3 +23,4 @@ Feature: 08.replace_fragments
       | SRC PUB CHL 1 | 1002641439846 |
       | SRC PRV CHL 1 | 1002792282007 |
       | SRC PUB GRP 1 | 1002736661856 |
+      | SRC PRV GRP 1 | 4832061506    |
