@@ -475,8 +475,8 @@ func Test(t *testing.T) {
 		// "04.2.2.filters_mode_include", // OK
 		// "05.media_album_send_copy",
 		// "06.media_album_forward",
-		// "07.1.include_submatch_f",
-		// "07.2.include_submatch_t",
+		// "07.1.include_submatch", // OK
+		// "07.2.include_submatch", // OK
 		// "08.replace_fragments",  // OK
 		// "09.sources_link_title", // OK
 		// "10.sources_sign",       // OK
