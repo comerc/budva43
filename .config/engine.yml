@@ -127,7 +127,6 @@ destinations:
     replace-myself-links:
       run: false
       # deleteExternal не указан (значит false)
-
   10123: # for Transform test - minimal success config
     replace-myself-links:
       run: false # чтобы replaceMyselfLinks не выдавал ошибку
