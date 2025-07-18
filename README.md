@@ -154,7 +154,8 @@ BUDVA43__TELEGRAM__PHONE_NUMBER=+78901234567
 ## First start for Telegram auth
 
 ```bash
-$ make run
+$ task engine
+$ task facade
 ```
 
 <!--
