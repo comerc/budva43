@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/comerc/budva43/app"
+	app "github.com/comerc/budva43/app"
 	telegramRepo "github.com/comerc/budva43/repo/telegram"
 	termRepo "github.com/comerc/budva43/repo/term"
 	authService "github.com/comerc/budva43/service/auth"
@@ -32,7 +32,7 @@ func runFacade(
 	ctx context.Context,
 	cancel func(),
 	gracefulShutdown func(closer io.Closer),
-	waitFunc func(),
+	wait func(),
 ) error {
 	var err error
 
@@ -175,7 +175,7 @@ func runFacade(
 	}
 	defer gracefulShutdown(grpcTransport)
 
-	waitFunc()
+	wait()
 
 	return nil
 }

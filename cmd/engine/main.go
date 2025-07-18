@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/comerc/budva43/app"
+	app "github.com/comerc/budva43/app"
 	updateDeleteMessagesHandler "github.com/comerc/budva43/handler/update_delete_messages"
 	updateMessageEditedHandler "github.com/comerc/budva43/handler/update_message_edited"
 	updateMessageSendHandler "github.com/comerc/budva43/handler/update_message_send"
@@ -41,7 +41,7 @@ func runEngine(
 	ctx context.Context,
 	cancel func(),
 	gracefulShutdown func(closer io.Closer),
-	waitFunc func(),
+	wait func(),
 ) error {
 	var err error
 
@@ -181,7 +181,7 @@ func runEngine(
 	// }
 	// defer gracefulShutdown(grpcTransport)
 
-	waitFunc()
+	wait()
 
 	return nil
 }

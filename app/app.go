@@ -31,7 +31,7 @@ type RunFunc = func(
 	ctx context.Context,
 	cancel func(),
 	gracefulShutdown func(closer io.Closer),
-	waitFunc func(),
+	wait func(),
 ) error
 
 func NewApp() *App {
