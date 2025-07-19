@@ -138,19 +138,13 @@ forward-rules:
     exclude: "EXCLUDE"
     # copy-once: true # TODO: SRC_*_COPY_ONCE
     # indelible: true # TODO: SRC_*_COPY_INDELIBLE
-    # include-submatch: # TODO: SRC_*_INCLUDE_SUBMATCH
-    #   - regexp: '(^|[^A-Z])\$([A-Z]+)'
-    #     group: 2
-    #     match: ['F', 'GM', 'TSLA']
   "SRC_PUB_CHL_2":
     from: 1002748936346
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-    # to: [1002667730628, 1002473038431]
     exclude: "EXCLUDE"
   "SRC_PRV_CHL_1":
     from: 1002792282007
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-    # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
   "SRC_PRV_CHL_2":
@@ -160,7 +154,6 @@ forward-rules:
   "SRC_PUB_GRP_1":
     from: 1002736661856
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-    # to: [1002667730628, 1002473038431]
     send-copy: true
     exclude: "EXCLUDE"
   "SRC_PUB_GRP_2":
