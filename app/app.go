@@ -12,6 +12,7 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+// TODO: сделать task init - для установки всех зависимостей
 // TODO: pkg/tdlib-ubuntu - в какой папке лучше держать?
 // TODO: при старте проверять новые необработанные сообщения в чатах
 // TODO: реализовать InlineKeyboardButton (см. README.md -> examples )
