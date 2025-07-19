@@ -1,4 +1,9 @@
 {
+	// "goExp.testExplorer.enable": true,
+	// "go.experiments.testExplorer": true,
+	"go.experiments": {
+		"testExplorer": true,
+	},
 	"go.testOnSave": false,
 	"go.testEnvVars": {
 		"GOEXPERIMENT": "synctest",
