@@ -1,6 +1,4 @@
 ---
-description:
-globs:
-alwaysApply: false
+alwaysApply: true
 ---
 Никогда не читай и не показывай содержимое .env файлов
