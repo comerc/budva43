@@ -3,7 +3,7 @@ Feature: 01.forward_send_copy
   Background:
     Given будет пересылка - копия
 
-  Scenario Outline: Сообщение копируется в целевые чаты
+  Scenario Outline: Сообщение копируется в целевой чат
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     When пользователь отправляет сообщение
     Then ожидание 10 сек.
