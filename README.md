@@ -6,6 +6,8 @@
 [![Last Commit](https://img.shields.io/github/last-commit/comerc/budva43)](https://github.com/comerc/budva43/commits/main/)
 [![Project Status](https://img.shields.io/github/release/comerc/budva43.svg)](https://github.com/comerc/budva43/releases/latest)
 
+[о проекте](doc/ABOUT_RU.md) - [项目介绍](doc/ABOUT_CN.md) - [परियोजना के बारे में](doc/ABOUT_HI.md) - [プロジェクトについて](doc/ABOUT_JA.md) - [acerca del proyecto](doc/ABOUT_ES.md) - [about project](doc/ABOUT_EN.md)
+
 > 🚀 My best learning project to apply technology - from MVP to Enterprise Level
 
 Telegram-Forwarder (UNIX-way) - forwards (or copies) messages from monitored channels and groups to target ones according to specified rules to obtain thematic digests.
@@ -131,6 +133,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] grpc
 - [ ] fuzz-test?
 - [x] [error-log-or-return](https://github.com/error-log-or-return/error-log-or-return)
+- [x] [go-table-test-navigator](https://github.com/comerc/go-table-test-navigator)
 
 ## .env
 
