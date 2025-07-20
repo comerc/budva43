@@ -1,7 +1,3 @@
-@who:user
-@what:album_indelible
-@why:indelibility
-
 Feature: 15.media_album_indelible
 
   Background:

@@ -1,7 +1,3 @@
-@who:user
-@what:send-copy
-@why:copy
-
 Feature: 01.forward_send_copy
 
   Background:

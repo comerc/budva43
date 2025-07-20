@@ -1,7 +1,3 @@
-@who:user
-@what:filter
-@why:relevance
-
 Feature: 04.1.1.filters_mode_exclude
 
   Background:

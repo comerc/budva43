@@ -1,7 +1,3 @@
-@who:user
-@what:links
-@why:cleanliness
-
 Feature: 03.2.delete_external_links
 
   Background:

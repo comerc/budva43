@@ -1,7 +1,3 @@
-@who:user
-@what:copy-once
-@why:uniqueness
-
 Feature: 12.copy_once
 
   # Background:

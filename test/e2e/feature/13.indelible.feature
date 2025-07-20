@@ -1,7 +1,3 @@
-@who:user
-@what:indelible
-@why:indelibility
-
 Feature: 13.indelible
 
   Background:

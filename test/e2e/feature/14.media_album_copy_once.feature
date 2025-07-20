@@ -1,7 +1,3 @@
-@who:user
-@what:album_copy-once
-@why:uniqueness
-
 Feature: 14.media_album_copy_once
 
   Background:
