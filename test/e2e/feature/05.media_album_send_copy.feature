@@ -1,7 +1,3 @@
-@who:user
-@what:album_send-copy
-@why:copy
-
 Feature: 05.media_album_send_copy
 
   Background:

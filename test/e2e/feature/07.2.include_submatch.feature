@@ -1,7 +1,3 @@
-@who:user
-@what:include_submatch
-@why:filtering
-
 Feature: 07.2.include_submatch
 
   Background:

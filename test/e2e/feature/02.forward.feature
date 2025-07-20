@@ -1,7 +1,3 @@
-@who:user
-@what:forward
-@why:forward
-
 Feature: 02.forward
 
   Background:

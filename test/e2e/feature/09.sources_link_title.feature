@@ -1,7 +1,3 @@
-@who:user
-@what:sources-link-title
-@why:identification
-
 Feature: 09.sources_link_title
 
   Background:

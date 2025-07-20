@@ -1,7 +1,3 @@
-@who:user
-@what:links
-@why:cleanliness
-
 Feature: 03.1.replace_myself_links
 
   Background:

@@ -1,7 +1,3 @@
-@who:user
-@what:album_forward
-@why:forward
-
 Feature: 06.media_album_forward
 
   Background:

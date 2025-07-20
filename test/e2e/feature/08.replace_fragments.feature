@@ -1,7 +1,3 @@
-@who:user
-@what:replace-fragments
-@why:replacement
-
 Feature: 08.replace_fragments
 
   Background:

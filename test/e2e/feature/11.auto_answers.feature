@@ -1,7 +1,3 @@
-@who:user
-@what:auto-answers
-@why:automation
-
 Feature: 11.auto_answers
 
   Background:

@@ -1,7 +1,3 @@
-@who:user
-@what:sources-sign
-@why:identification
-
 Feature: 10.sources_sign
 
   Background:
