@@ -3,7 +3,7 @@ Feature: 02.forward
   Background:
     Given будет пересылка - форвард
 
-  Scenario Outline: Сообщение пересылается в целевые чаты
+  Scenario Outline: Сообщение пересылается в целевой чат
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     When пользователь отправляет сообщение
     Then ожидание 10 сек.
