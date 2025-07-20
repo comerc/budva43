@@ -94,15 +94,9 @@ func TestSendMessage(t *testing.T) {
 			Version: 2,
 		},
 	}).Return(&client.FormattedText{Text: "hi"}, nil)
-	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
-		Text: &client.FormattedText{Text: "hi"},
-	}).Return(&client.FormattedText{Text: "hi"}, nil)
-	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "hi"})
 
-	result, err := s.SendMessage(in)
+	err := s.SendMessage(in)
 	assert.NoError(t, err)
-	assert.Equal(t, int64(100), result.Id)
-	assert.Equal(t, "hi", result.Text)
 }
 
 func TestForwardMessage(t *testing.T) {
@@ -122,15 +116,9 @@ func TestForwardMessage(t *testing.T) {
 		TotalCount: 1,
 		Messages:   []*client.Message{msg},
 	}, nil)
-	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
-		Text: &client.FormattedText{Text: "msg"},
-	}).Return(&client.FormattedText{Text: "msg"}, nil)
-	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "msg"})
 
-	result, err := s.ForwardMessage(chatId, msgId)
+	err := s.ForwardMessage(chatId, msgId)
 	assert.NoError(t, err)
-	assert.Equal(t, int64(2), result.Id)
-	assert.Equal(t, "msg", result.Text)
 }
 
 func TestGetMessage(t *testing.T) {
@@ -181,15 +169,9 @@ func TestUpdateMessage(t *testing.T) {
 			Version: 2,
 		},
 	}).Return(&client.FormattedText{Text: "upd"}, nil)
-	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
-		Text: &client.FormattedText{Text: "upd"},
-	}).Return(&client.FormattedText{Text: "upd"}, nil)
-	ms.EXPECT().GetFormattedText(newMsg).Return(ft)
 
-	result, err := s.UpdateMessage(upd)
+	err := s.UpdateMessage(upd)
 	assert.NoError(t, err)
-	assert.Equal(t, int64(2), result.Id)
-	assert.Equal(t, "upd", result.Text)
 }
 
 func TestDeleteMessages(t *testing.T) {
@@ -203,9 +185,8 @@ func TestDeleteMessages(t *testing.T) {
 	msgIds := []int64{2, 3}
 	tg.EXPECT().DeleteMessages(&client.DeleteMessagesRequest{ChatId: chatId, MessageIds: msgIds}).Return(&client.Ok{}, nil)
 
-	ok, err := s.DeleteMessages(chatId, msgIds)
+	err := s.DeleteMessages(chatId, msgIds)
 	assert.NoError(t, err)
-	assert.True(t, ok)
 }
 
 func TestErrorFromRepo(t *testing.T) {

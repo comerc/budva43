@@ -21,11 +21,11 @@ import (
 type facadeGRPC interface {
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
 	GetLastMessage(chatId int64) (*dto.Message, error)
-	SendMessage(message *dto.NewMessage) (*dto.Message, error)
-	ForwardMessage(chatId int64, messageId int64) (*dto.Message, error)
+	SendMessage(message *dto.NewMessage) error
+	ForwardMessage(chatId int64, messageId int64) error
 	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
-	UpdateMessage(message *dto.Message) (*dto.Message, error)
-	DeleteMessages(chatId int64, messageIds []int64) (bool, error)
+	UpdateMessage(message *dto.Message) error
+	DeleteMessages(chatId int64, messageIds []int64) error
 	GetMessageLink(chatId int64, messageId int64) (string, error)
 	GetMessageLinkInfo(link string) (*dto.Message, error)
 }
@@ -115,45 +115,27 @@ func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRe
 	}}, nil
 }
 
-func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.MessageResponse, error) {
+func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.EmptyResponse, error) {
 	var err error
 
-	var res *dto.Message
-	res, err = t.facade.SendMessage(&dto.NewMessage{
+	err = t.facade.SendMessage(&dto.NewMessage{
 		ChatId: req.ChatId,
 		Text:   req.Text,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if res == nil {
-		return nil, nil
-	}
-	return &pb.MessageResponse{Message: &pb.Message{
-		Id:      res.Id,
-		ChatId:  res.ChatId,
-		Text:    res.Text,
-		Forward: res.Forward,
-	}}, nil
+	return &pb.EmptyResponse{}, nil
 }
 
-func (t *Transport) ForwardMessage(ctx context.Context, req *pb.ForwardMessageRequest) (*pb.MessageResponse, error) {
+func (t *Transport) ForwardMessage(ctx context.Context, req *pb.ForwardMessageRequest) (*pb.EmptyResponse, error) {
 	var err error
 
-	var res *dto.Message
-	res, err = t.facade.ForwardMessage(req.ChatId, req.MessageId)
+	err = t.facade.ForwardMessage(req.ChatId, req.MessageId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if res == nil {
-		return nil, nil
-	}
-	return &pb.MessageResponse{Message: &pb.Message{
-		Id:      res.Id,
-		ChatId:  res.ChatId,
-		Text:    res.Text,
-		Forward: res.Forward,
-	}}, nil
+	return &pb.EmptyResponse{}, nil
 }
 
 func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (*pb.MessageResponse, error) {
@@ -172,11 +154,10 @@ func (t *Transport) GetMessage(ctx context.Context, req *pb.GetMessageRequest) (
 	}}, nil
 }
 
-func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequest) (*pb.MessageResponse, error) {
+func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequest) (*pb.EmptyResponse, error) {
 	var err error
 
-	var res *dto.Message
-	res, err = t.facade.UpdateMessage(&dto.Message{
+	err = t.facade.UpdateMessage(&dto.Message{
 		Id:     req.MessageId,
 		ChatId: req.ChatId,
 		Text:   req.Text,
@@ -184,23 +165,17 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.MessageResponse{Message: &pb.Message{
-		Id:      res.Id,
-		ChatId:  res.ChatId,
-		Text:    res.Text,
-		Forward: res.Forward,
-	}}, nil
+	return &pb.EmptyResponse{}, nil
 }
 
-func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRequest) (*pb.DeleteMessagesResponse, error) {
+func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRequest) (*pb.EmptyResponse, error) {
 	var err error
 
-	var ok bool
-	ok, err = t.facade.DeleteMessages(req.ChatId, req.MessageIds)
+	err = t.facade.DeleteMessages(req.ChatId, req.MessageIds)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.DeleteMessagesResponse{Success: ok}, nil
+	return &pb.EmptyResponse{}, nil
 }
 
 func (t *Transport) GetMessageLink(ctx context.Context, req *pb.GetMessageLinkRequest) (*pb.GetMessageLinkResponse, error) {

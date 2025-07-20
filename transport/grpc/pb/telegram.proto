@@ -7,11 +7,11 @@ option go_package = "github.com/comerc/budva43/transport/grpc/pb";
 service FacadeGRPC {
   rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
   rpc GetLastMessage (GetLastMessageRequest) returns (MessageResponse);
-  rpc SendMessage (SendMessageRequest) returns (MessageResponse);
-  rpc ForwardMessage (ForwardMessageRequest) returns (MessageResponse);
+  rpc SendMessage (SendMessageRequest) returns (EmptyResponse);
+  rpc ForwardMessage (ForwardMessageRequest) returns (EmptyResponse);
   rpc GetMessage (GetMessageRequest) returns (MessageResponse);
-  rpc UpdateMessage (UpdateMessageRequest) returns (MessageResponse);
-  rpc DeleteMessages (DeleteMessagesRequest) returns (DeleteMessagesResponse);
+  rpc UpdateMessage (UpdateMessageRequest) returns (EmptyResponse);
+  rpc DeleteMessages (DeleteMessagesRequest) returns (EmptyResponse);
   rpc GetMessageLink (GetMessageLinkRequest) returns (GetMessageLinkResponse);
   rpc GetMessageLinkInfo (GetMessageLinkInfoRequest) returns (MessageResponse);
 }
@@ -67,10 +67,6 @@ message DeleteMessagesRequest {
   repeated int64 message_ids = 2;
 }
 
-message DeleteMessagesResponse {
-  bool success = 1;
-}
-
 message GetMessageLinkRequest {
   int64 chat_id = 1;
   int64 message_id = 2;
@@ -84,3 +80,4 @@ message GetMessageLinkInfoRequest {
   string link = 1;
 }
 
+message EmptyResponse {}

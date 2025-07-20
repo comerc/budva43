@@ -102,7 +102,7 @@ func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
 	return s.mapMessage(messages.Messages[0])
 }
 
-func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) {
+func (s *Service) SendMessage(newMessage *dto.NewMessage) error {
 	var err error
 
 	var formattedText *client.FormattedText
@@ -113,11 +113,10 @@ func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) 
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var message *client.Message
-	message, err = s.telegramRepo.SendMessage(&client.SendMessageRequest{
+	_, err = s.telegramRepo.SendMessage(&client.SendMessageRequest{
 		ChatId: newMessage.ChatId,
 		InputMessageContent: &client.InputMessageText{
 			Text: formattedText,
@@ -131,13 +130,13 @@ func (s *Service) SendMessage(newMessage *dto.NewMessage) (*dto.Message, error) 
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return s.mapMessage(message)
+	return nil
 }
 
-func (s *Service) ForwardMessage(chatId int64, messageId int64) (*dto.Message, error) {
+func (s *Service) ForwardMessage(chatId int64, messageId int64) error {
 	var err error
 
 	var messages *client.Messages
@@ -146,13 +145,13 @@ func (s *Service) ForwardMessage(chatId int64, messageId int64) (*dto.Message, e
 		MessageIds: []int64{messageId},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if messages.TotalCount == 0 {
-		return nil, nil
+		return log.NewError("no messages forwarded")
 	}
 
-	return s.mapMessage(messages.Messages[0])
+	return nil
 }
 
 func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error) {
@@ -170,7 +169,7 @@ func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error
 	return s.mapMessage(message)
 }
 
-func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error) {
+func (s *Service) UpdateMessage(updateMessage *dto.Message) error {
 	var err error
 
 	var sourceMessage *client.Message
@@ -179,7 +178,7 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		MessageId: updateMessage.Id,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var formattedText *client.FormattedText
@@ -190,7 +189,7 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	inputMessageContent := s.messageService.GetInputMessageContent(
@@ -198,21 +197,20 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) (*dto.Message, error
 		formattedText,
 	)
 
-	var message *client.Message
-	message, err = s.telegramRepo.EditMessageText(&client.EditMessageTextRequest{
+	_, err = s.telegramRepo.EditMessageText(&client.EditMessageTextRequest{
 		ChatId:              updateMessage.ChatId,
 		MessageId:           updateMessage.Id,
 		ReplyMarkup:         sourceMessage.ReplyMarkup,
 		InputMessageContent: inputMessageContent,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return s.mapMessage(message)
+	return nil
 }
 
-func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
+func (s *Service) DeleteMessages(chatId int64, messageIds []int64) error {
 	var err error
 
 	_, err = s.telegramRepo.DeleteMessages(&client.DeleteMessagesRequest{
@@ -220,10 +218,10 @@ func (s *Service) DeleteMessages(chatId int64, messageIds []int64) (bool, error)
 		MessageIds: messageIds,
 	})
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
 // GetMessageLink возвращает ссылку на сообщение
