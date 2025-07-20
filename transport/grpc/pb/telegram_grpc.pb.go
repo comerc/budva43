@@ -22,6 +22,7 @@ const (
 	FacadeGRPC_GetMessages_FullMethodName        = "/pb.FacadeGRPC/GetMessages"
 	FacadeGRPC_GetLastMessage_FullMethodName     = "/pb.FacadeGRPC/GetLastMessage"
 	FacadeGRPC_SendMessage_FullMethodName        = "/pb.FacadeGRPC/SendMessage"
+	FacadeGRPC_SendMessageAlbum_FullMethodName   = "/pb.FacadeGRPC/SendMessageAlbum"
 	FacadeGRPC_ForwardMessage_FullMethodName     = "/pb.FacadeGRPC/ForwardMessage"
 	FacadeGRPC_GetMessage_FullMethodName         = "/pb.FacadeGRPC/GetMessage"
 	FacadeGRPC_UpdateMessage_FullMethodName      = "/pb.FacadeGRPC/UpdateMessage"
@@ -37,6 +38,7 @@ type FacadeGRPCClient interface {
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 	GetLastMessage(ctx context.Context, in *GetLastMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SendMessageAlbum(ctx context.Context, in *SendMessageAlbumRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	ForwardMessage(ctx context.Context, in *ForwardMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
@@ -77,6 +79,16 @@ func (c *facadeGRPCClient) SendMessage(ctx context.Context, in *SendMessageReque
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_SendMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *facadeGRPCClient) SendMessageAlbum(ctx context.Context, in *SendMessageAlbumRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, FacadeGRPC_SendMessageAlbum_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +162,7 @@ type FacadeGRPCServer interface {
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*EmptyResponse, error)
+	SendMessageAlbum(context.Context, *SendMessageAlbumRequest) (*EmptyResponse, error)
 	ForwardMessage(context.Context, *ForwardMessageRequest) (*EmptyResponse, error)
 	GetMessage(context.Context, *GetMessageRequest) (*MessageResponse, error)
 	UpdateMessage(context.Context, *UpdateMessageRequest) (*EmptyResponse, error)
@@ -174,6 +187,9 @@ func (UnimplementedFacadeGRPCServer) GetLastMessage(context.Context, *GetLastMes
 }
 func (UnimplementedFacadeGRPCServer) SendMessage(context.Context, *SendMessageRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedFacadeGRPCServer) SendMessageAlbum(context.Context, *SendMessageAlbumRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessageAlbum not implemented")
 }
 func (UnimplementedFacadeGRPCServer) ForwardMessage(context.Context, *ForwardMessageRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ForwardMessage not implemented")
@@ -264,6 +280,24 @@ func _FacadeGRPC_SendMessage_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FacadeGRPCServer).SendMessage(ctx, req.(*SendMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FacadeGRPC_SendMessageAlbum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageAlbumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FacadeGRPCServer).SendMessageAlbum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FacadeGRPC_SendMessageAlbum_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FacadeGRPCServer).SendMessageAlbum(ctx, req.(*SendMessageAlbumRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -394,6 +428,10 @@ var FacadeGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendMessage",
 			Handler:    _FacadeGRPC_SendMessage_Handler,
+		},
+		{
+			MethodName: "SendMessageAlbum",
+			Handler:    _FacadeGRPC_SendMessageAlbum_Handler,
 		},
 		{
 			MethodName: "ForwardMessage",

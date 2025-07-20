@@ -8,6 +8,7 @@ service FacadeGRPC {
   rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
   rpc GetLastMessage (GetLastMessageRequest) returns (MessageResponse);
   rpc SendMessage (SendMessageRequest) returns (EmptyResponse);
+  rpc SendMessageAlbum (SendMessageAlbumRequest) returns (EmptyResponse);
   rpc ForwardMessage (ForwardMessageRequest) returns (EmptyResponse);
   rpc GetMessage (GetMessageRequest) returns (MessageResponse);
   rpc UpdateMessage (UpdateMessageRequest) returns (EmptyResponse);
@@ -39,6 +40,12 @@ message GetMessagesResponse {
 message SendMessageRequest {
   int64 chat_id = 1;
   string text = 2;
+  int64 reply_to_message_id = 3;
+}
+
+message SendMessageAlbumRequest {
+  int64 chat_id = 1;
+  repeated string texts = 2;
   int64 reply_to_message_id = 3;
 }
 

@@ -99,6 +99,63 @@ func TestSendMessage(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestSendMessageAlbum(t *testing.T) {
+	t.Parallel()
+
+	tg := mocks.NewTelegramRepo(t)
+	ms := mocks.NewMessageService(t)
+	s := New(tg, ms, nil)
+
+	newMessages := []*dto.NewMessage{
+		{ChatId: 1, Text: "first", ReplyToMessageId: 10},
+		{ChatId: 1, Text: "second", ReplyToMessageId: 10},
+	}
+
+	// Ожидаем вызовы ParseTextEntities для каждого сообщения
+	tg.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: "first",
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	}).Return(&client.FormattedText{Text: "first"}, nil)
+
+	tg.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+		Text: "second",
+		ParseMode: &client.TextParseModeMarkdown{
+			Version: 2,
+		},
+	}).Return(&client.FormattedText{Text: "second"}, nil)
+
+	// Ожидаем вызов SendMessageAlbum
+	expectedInputContents := []client.InputMessageContent{
+		&client.InputMessageText{
+			Text: &client.FormattedText{Text: "first"},
+			LinkPreviewOptions: &client.LinkPreviewOptions{
+				IsDisabled: true,
+			},
+			ClearDraft: true,
+		},
+		&client.InputMessageText{
+			Text: &client.FormattedText{Text: "second"},
+			LinkPreviewOptions: &client.LinkPreviewOptions{
+				IsDisabled: true,
+			},
+			ClearDraft: true,
+		},
+	}
+
+	tg.EXPECT().SendMessageAlbum(&client.SendMessageAlbumRequest{
+		ChatId:               1,
+		InputMessageContents: expectedInputContents,
+		ReplyTo: &client.InputMessageReplyToMessage{
+			MessageId: 10,
+		},
+	}).Return(&client.Messages{TotalCount: 2}, nil)
+
+	err := s.SendMessageAlbum(newMessages)
+	assert.NoError(t, err)
+}
+
 func TestForwardMessage(t *testing.T) {
 	t.Parallel()
 

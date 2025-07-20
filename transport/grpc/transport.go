@@ -22,6 +22,7 @@ type facadeGRPC interface {
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
 	GetLastMessage(chatId int64) (*dto.Message, error)
 	SendMessage(message *dto.NewMessage) error
+	SendMessageAlbum(messages []*dto.NewMessage) error
 	ForwardMessage(chatId int64, messageId int64) error
 	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
 	UpdateMessage(message *dto.Message) error
@@ -122,6 +123,25 @@ func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest)
 		ChatId: req.ChatId,
 		Text:   req.Text,
 	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.EmptyResponse{}, nil
+}
+
+func (t *Transport) SendMessageAlbum(ctx context.Context, req *pb.SendMessageAlbumRequest) (*pb.EmptyResponse, error) {
+	var err error
+
+	var messages []*dto.NewMessage
+	for _, text := range req.Texts {
+		messages = append(messages, &dto.NewMessage{
+			ChatId:           req.ChatId,
+			Text:             text,
+			ReplyToMessageId: req.ReplyToMessageId,
+		})
+	}
+
+	err = t.facade.SendMessageAlbum(messages)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

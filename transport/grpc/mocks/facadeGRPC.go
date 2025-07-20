@@ -452,6 +452,52 @@ func (_c *FacadeGRPC_SendMessage_Call) RunAndReturn(run func(*dto.NewMessage) er
 	return _c
 }
 
+// SendMessageAlbum provides a mock function with given fields: messages
+func (_m *FacadeGRPC) SendMessageAlbum(messages []*dto.NewMessage) error {
+	ret := _m.Called(messages)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SendMessageAlbum")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]*dto.NewMessage) error); ok {
+		r0 = rf(messages)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// FacadeGRPC_SendMessageAlbum_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMessageAlbum'
+type FacadeGRPC_SendMessageAlbum_Call struct {
+	*mock.Call
+}
+
+// SendMessageAlbum is a helper method to define mock.On call
+//   - messages []*dto.NewMessage
+func (_e *FacadeGRPC_Expecter) SendMessageAlbum(messages interface{}) *FacadeGRPC_SendMessageAlbum_Call {
+	return &FacadeGRPC_SendMessageAlbum_Call{Call: _e.mock.On("SendMessageAlbum", messages)}
+}
+
+func (_c *FacadeGRPC_SendMessageAlbum_Call) Run(run func(messages []*dto.NewMessage)) *FacadeGRPC_SendMessageAlbum_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].([]*dto.NewMessage))
+	})
+	return _c
+}
+
+func (_c *FacadeGRPC_SendMessageAlbum_Call) Return(_a0 error) *FacadeGRPC_SendMessageAlbum_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *FacadeGRPC_SendMessageAlbum_Call) RunAndReturn(run func([]*dto.NewMessage) error) *FacadeGRPC_SendMessageAlbum_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateMessage provides a mock function with given fields: message
 func (_m *FacadeGRPC) UpdateMessage(message *dto.Message) error {
 	ret := _m.Called(message)

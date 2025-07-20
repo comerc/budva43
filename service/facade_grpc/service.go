@@ -136,6 +136,48 @@ func (s *Service) SendMessage(newMessage *dto.NewMessage) error {
 	return nil
 }
 
+func (s *Service) SendMessageAlbum(newMessages []*dto.NewMessage) error {
+	var err error
+
+	var inputMessageContents []client.InputMessageContent
+	for _, newMessage := range newMessages {
+		var formattedText *client.FormattedText
+		formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
+			Text: newMessage.Text,
+			ParseMode: &client.TextParseModeMarkdown{
+				Version: 2,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		inputMessageContents = append(inputMessageContents, &client.InputMessageText{
+			Text: formattedText,
+			LinkPreviewOptions: &client.LinkPreviewOptions{
+				IsDisabled: true,
+			},
+			ClearDraft: true,
+		})
+	}
+
+	var messages *client.Messages
+	messages, err = s.telegramRepo.SendMessageAlbum(&client.SendMessageAlbumRequest{
+		ChatId:               newMessages[0].ChatId,
+		InputMessageContents: inputMessageContents,
+		ReplyTo: &client.InputMessageReplyToMessage{
+			MessageId: newMessages[0].ReplyToMessageId,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if messages.TotalCount == 0 {
+		return log.NewError("no messages sent")
+	}
+
+	return nil
+}
+
 func (s *Service) ForwardMessage(chatId int64, messageId int64) error {
 	var err error
 
