@@ -52,6 +52,28 @@ func TestSendMessage(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestSendMessageAlbum(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	expectedMessages := []*dto.NewMessage{
+		{ChatId: 1, Text: "first", ReplyToMessageId: 10},
+		{ChatId: 1, Text: "second", ReplyToMessageId: 10},
+	}
+	facade.EXPECT().SendMessageAlbum(expectedMessages).Return(nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+
+	_, err := client.SendMessageAlbum(context.Background(), &pb.SendMessageAlbumRequest{
+		ChatId:           1,
+		Texts:            []string{"first", "second"},
+		ReplyToMessageId: 10,
+	})
+	assert.NoError(t, err)
+}
+
 func TestForwardMessage(t *testing.T) {
 	t.Parallel()
 
