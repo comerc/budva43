@@ -303,6 +303,29 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 	return nil
 }
 
+func (s *scenario) editMessage(ctx context.Context) error {
+	var err error
+
+	var resp *pb.MessageResponse
+	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+		ChatId: s.state.sourceChatId,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get last message: %w", err)
+	}
+
+	_, err = client.UpdateMessage(ctx, &pb.UpdateMessageRequest{
+		ChatId:    s.state.sourceChatId,
+		MessageId: resp.Message.Id,
+		Text:      s.state.sourceText,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to edit message: %w", err)
+	}
+
+	return nil
+}
+
 func (s *scenario) checkSourceMessage(ctx context.Context) error {
 	var err error
 
@@ -446,6 +469,7 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToMessage)
 	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
 	ctx.Then(`^нет сообщения в чате "([^"]*)" \((\d+)\)$`, scenario.checkNoMessage)
+	ctx.When(`^пользователь редактирует сообщение$`, scenario.editMessage)
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -481,7 +505,7 @@ func Test(t *testing.T) {
 		// "09.sources_link_title",       // OK
 		// "10.sources_sign",             // OK
 		// "11.auto_answers",
-		// "12.copy_once",
+		// "12.copy_once",                // OK
 		// "13.indelible",
 		// "14.media_album_copy_once",
 		// "15.media_album_indelible",

@@ -60,13 +60,14 @@ sources:
     link:
       title: "🔗*Link*"
       for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  # 4832061506: # SRC PRV GRP 1
-  #   sign:
-  #     title: "*Sign*"
-  #     for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-  #   link:
-  #     title: "🔗*Link*"
-  #     for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+  4832061506: # SRC PRV GRP 1
+    sign:
+      title: "*Sign*"
+      for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    # 400 Message links are available only for messages in supergroups and channel chats
+    # link:
+    #   title: "🔗*Link*"
+    #   for: [1002667730628, 1002473038431, 1002866470933, 4867965570]
   1002828900048: # SRC PUB CHL 3
     sign:
       title: "*Sign*"
@@ -139,22 +140,23 @@ destinations:
 forward-rules:
   "SRC_PUB_CHL_1":
     from: 1002641439846
-    # to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
-    to: [1002667730628]
+    to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
+    # to: [1002667730628]
     send-copy: true
     exclude: "EXCLUDE"
-    # copy-once: true # TODO: SRC_*_COPY_ONCE
+    copy-once: true 
     # indelible: true # TODO: SRC_*_COPY_INDELIBLE
   "SRC_PUB_CHL_2":
     from: 1002748936346
-    # to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
-    to: [1002877966922]
+    to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
+    # to: [1002877966922]
     exclude: "EXCLUDE"
   "SRC_PRV_CHL_1":
     from: 1002792282007
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     send-copy: true
     exclude: "EXCLUDE"
+    copy-once: true 
   "SRC_PRV_CHL_2":
     from: 1002524362679
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
@@ -164,6 +166,7 @@ forward-rules:
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     send-copy: true
     exclude: "EXCLUDE"
+    copy-once: true 
   "SRC_PUB_GRP_2":
     from: 1002781642357
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
@@ -173,6 +176,7 @@ forward-rules:
     to: [1002667730628, 1002473038431, 1002866470933, 4867965570]
     send-copy: true
     exclude: "EXCLUDE"
+    copy-once: true 
   "SRC_PRV_GRP_2":
     from: 4977845927
     to: [1002877966922, 1002641980237, 1002876400294, 4913098869]
