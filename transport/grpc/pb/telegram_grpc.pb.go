@@ -36,11 +36,11 @@ const (
 type FacadeGRPCClient interface {
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 	GetLastMessage(ctx context.Context, in *GetLastMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-	ForwardMessage(ctx context.Context, in *ForwardMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	ForwardMessage(ctx context.Context, in *ForwardMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GetMessage(ctx context.Context, in *GetMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error)
+	UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	GetMessageLink(ctx context.Context, in *GetMessageLinkRequest, opts ...grpc.CallOption) (*GetMessageLinkResponse, error)
 	GetMessageLinkInfo(ctx context.Context, in *GetMessageLinkInfoRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
@@ -73,9 +73,9 @@ func (c *facadeGRPCClient) GetLastMessage(ctx context.Context, in *GetLastMessag
 	return out, nil
 }
 
-func (c *facadeGRPCClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+func (c *facadeGRPCClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MessageResponse)
+	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_SendMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -83,9 +83,9 @@ func (c *facadeGRPCClient) SendMessage(ctx context.Context, in *SendMessageReque
 	return out, nil
 }
 
-func (c *facadeGRPCClient) ForwardMessage(ctx context.Context, in *ForwardMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+func (c *facadeGRPCClient) ForwardMessage(ctx context.Context, in *ForwardMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MessageResponse)
+	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_ForwardMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,9 +103,9 @@ func (c *facadeGRPCClient) GetMessage(ctx context.Context, in *GetMessageRequest
 	return out, nil
 }
 
-func (c *facadeGRPCClient) UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+func (c *facadeGRPCClient) UpdateMessage(ctx context.Context, in *UpdateMessageRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MessageResponse)
+	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_UpdateMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -113,9 +113,9 @@ func (c *facadeGRPCClient) UpdateMessage(ctx context.Context, in *UpdateMessageR
 	return out, nil
 }
 
-func (c *facadeGRPCClient) DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error) {
+func (c *facadeGRPCClient) DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteMessagesResponse)
+	out := new(EmptyResponse)
 	err := c.cc.Invoke(ctx, FacadeGRPC_DeleteMessages_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -149,11 +149,11 @@ func (c *facadeGRPCClient) GetMessageLinkInfo(ctx context.Context, in *GetMessag
 type FacadeGRPCServer interface {
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error)
-	SendMessage(context.Context, *SendMessageRequest) (*MessageResponse, error)
-	ForwardMessage(context.Context, *ForwardMessageRequest) (*MessageResponse, error)
+	SendMessage(context.Context, *SendMessageRequest) (*EmptyResponse, error)
+	ForwardMessage(context.Context, *ForwardMessageRequest) (*EmptyResponse, error)
 	GetMessage(context.Context, *GetMessageRequest) (*MessageResponse, error)
-	UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error)
-	DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error)
+	UpdateMessage(context.Context, *UpdateMessageRequest) (*EmptyResponse, error)
+	DeleteMessages(context.Context, *DeleteMessagesRequest) (*EmptyResponse, error)
 	GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error)
 	GetMessageLinkInfo(context.Context, *GetMessageLinkInfoRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedFacadeGRPCServer()
@@ -172,19 +172,19 @@ func (UnimplementedFacadeGRPCServer) GetMessages(context.Context, *GetMessagesRe
 func (UnimplementedFacadeGRPCServer) GetLastMessage(context.Context, *GetLastMessageRequest) (*MessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLastMessage not implemented")
 }
-func (UnimplementedFacadeGRPCServer) SendMessage(context.Context, *SendMessageRequest) (*MessageResponse, error) {
+func (UnimplementedFacadeGRPCServer) SendMessage(context.Context, *SendMessageRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
-func (UnimplementedFacadeGRPCServer) ForwardMessage(context.Context, *ForwardMessageRequest) (*MessageResponse, error) {
+func (UnimplementedFacadeGRPCServer) ForwardMessage(context.Context, *ForwardMessageRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ForwardMessage not implemented")
 }
 func (UnimplementedFacadeGRPCServer) GetMessage(context.Context, *GetMessageRequest) (*MessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessage not implemented")
 }
-func (UnimplementedFacadeGRPCServer) UpdateMessage(context.Context, *UpdateMessageRequest) (*MessageResponse, error) {
+func (UnimplementedFacadeGRPCServer) UpdateMessage(context.Context, *UpdateMessageRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMessage not implemented")
 }
-func (UnimplementedFacadeGRPCServer) DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error) {
+func (UnimplementedFacadeGRPCServer) DeleteMessages(context.Context, *DeleteMessagesRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessages not implemented")
 }
 func (UnimplementedFacadeGRPCServer) GetMessageLink(context.Context, *GetMessageLinkRequest) (*GetMessageLinkResponse, error) {

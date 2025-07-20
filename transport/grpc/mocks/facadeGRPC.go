@@ -22,31 +22,21 @@ func (_m *FacadeGRPC) EXPECT() *FacadeGRPC_Expecter {
 }
 
 // DeleteMessages provides a mock function with given fields: chatId, messageIds
-func (_m *FacadeGRPC) DeleteMessages(chatId int64, messageIds []int64) (bool, error) {
+func (_m *FacadeGRPC) DeleteMessages(chatId int64, messageIds []int64) error {
 	ret := _m.Called(chatId, messageIds)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteMessages")
 	}
 
-	var r0 bool
-	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, []int64) (bool, error)); ok {
-		return rf(chatId, messageIds)
-	}
-	if rf, ok := ret.Get(0).(func(int64, []int64) bool); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int64, []int64) error); ok {
 		r0 = rf(chatId, messageIds)
 	} else {
-		r0 = ret.Get(0).(bool)
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(int64, []int64) error); ok {
-		r1 = rf(chatId, messageIds)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // FacadeGRPC_DeleteMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteMessages'
@@ -68,44 +58,32 @@ func (_c *FacadeGRPC_DeleteMessages_Call) Run(run func(chatId int64, messageIds 
 	return _c
 }
 
-func (_c *FacadeGRPC_DeleteMessages_Call) Return(_a0 bool, _a1 error) *FacadeGRPC_DeleteMessages_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *FacadeGRPC_DeleteMessages_Call) Return(_a0 error) *FacadeGRPC_DeleteMessages_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *FacadeGRPC_DeleteMessages_Call) RunAndReturn(run func(int64, []int64) (bool, error)) *FacadeGRPC_DeleteMessages_Call {
+func (_c *FacadeGRPC_DeleteMessages_Call) RunAndReturn(run func(int64, []int64) error) *FacadeGRPC_DeleteMessages_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ForwardMessage provides a mock function with given fields: chatId, messageId
-func (_m *FacadeGRPC) ForwardMessage(chatId int64, messageId int64) (*dto.Message, error) {
+func (_m *FacadeGRPC) ForwardMessage(chatId int64, messageId int64) error {
 	ret := _m.Called(chatId, messageId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ForwardMessage")
 	}
 
-	var r0 *dto.Message
-	var r1 error
-	if rf, ok := ret.Get(0).(func(int64, int64) (*dto.Message, error)); ok {
-		return rf(chatId, messageId)
-	}
-	if rf, ok := ret.Get(0).(func(int64, int64) *dto.Message); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int64, int64) error); ok {
 		r0 = rf(chatId, messageId)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.Message)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(int64, int64) error); ok {
-		r1 = rf(chatId, messageId)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // FacadeGRPC_ForwardMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ForwardMessage'
@@ -127,12 +105,12 @@ func (_c *FacadeGRPC_ForwardMessage_Call) Run(run func(chatId int64, messageId i
 	return _c
 }
 
-func (_c *FacadeGRPC_ForwardMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_ForwardMessage_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *FacadeGRPC_ForwardMessage_Call) Return(_a0 error) *FacadeGRPC_ForwardMessage_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *FacadeGRPC_ForwardMessage_Call) RunAndReturn(run func(int64, int64) (*dto.Message, error)) *FacadeGRPC_ForwardMessage_Call {
+func (_c *FacadeGRPC_ForwardMessage_Call) RunAndReturn(run func(int64, int64) error) *FacadeGRPC_ForwardMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -429,33 +407,21 @@ func (_c *FacadeGRPC_GetMessages_Call) RunAndReturn(run func(int64, []int64) ([]
 }
 
 // SendMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) SendMessage(message *dto.NewMessage) (*dto.Message, error) {
+func (_m *FacadeGRPC) SendMessage(message *dto.NewMessage) error {
 	ret := _m.Called(message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendMessage")
 	}
 
-	var r0 *dto.Message
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*dto.NewMessage) (*dto.Message, error)); ok {
-		return rf(message)
-	}
-	if rf, ok := ret.Get(0).(func(*dto.NewMessage) *dto.Message); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*dto.NewMessage) error); ok {
 		r0 = rf(message)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.Message)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*dto.NewMessage) error); ok {
-		r1 = rf(message)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // FacadeGRPC_SendMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SendMessage'
@@ -476,44 +442,32 @@ func (_c *FacadeGRPC_SendMessage_Call) Run(run func(message *dto.NewMessage)) *F
 	return _c
 }
 
-func (_c *FacadeGRPC_SendMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_SendMessage_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *FacadeGRPC_SendMessage_Call) Return(_a0 error) *FacadeGRPC_SendMessage_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *FacadeGRPC_SendMessage_Call) RunAndReturn(run func(*dto.NewMessage) (*dto.Message, error)) *FacadeGRPC_SendMessage_Call {
+func (_c *FacadeGRPC_SendMessage_Call) RunAndReturn(run func(*dto.NewMessage) error) *FacadeGRPC_SendMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) UpdateMessage(message *dto.Message) (*dto.Message, error) {
+func (_m *FacadeGRPC) UpdateMessage(message *dto.Message) error {
 	ret := _m.Called(message)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateMessage")
 	}
 
-	var r0 *dto.Message
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*dto.Message) (*dto.Message, error)); ok {
-		return rf(message)
-	}
-	if rf, ok := ret.Get(0).(func(*dto.Message) *dto.Message); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*dto.Message) error); ok {
 		r0 = rf(message)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.Message)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(*dto.Message) error); ok {
-		r1 = rf(message)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // FacadeGRPC_UpdateMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateMessage'
@@ -534,12 +488,12 @@ func (_c *FacadeGRPC_UpdateMessage_Call) Run(run func(message *dto.Message)) *Fa
 	return _c
 }
 
-func (_c *FacadeGRPC_UpdateMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_UpdateMessage_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *FacadeGRPC_UpdateMessage_Call) Return(_a0 error) *FacadeGRPC_UpdateMessage_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *FacadeGRPC_UpdateMessage_Call) RunAndReturn(run func(*dto.Message) (*dto.Message, error)) *FacadeGRPC_UpdateMessage_Call {
+func (_c *FacadeGRPC_UpdateMessage_Call) RunAndReturn(run func(*dto.Message) error) *FacadeGRPC_UpdateMessage_Call {
 	_c.Call.Return(run)
 	return _c
 }
