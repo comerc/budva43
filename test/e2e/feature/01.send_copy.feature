@@ -1,4 +1,4 @@
-Feature: 01.forward_send_copy
+Feature: 01.send_copy
 
   Background:
     Given будет пересылка - копия
