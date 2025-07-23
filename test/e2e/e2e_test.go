@@ -492,8 +492,8 @@ func Test(t *testing.T) {
 		// "11.auto_answers",
 		// "12.1.copy_once_t",            // OK
 		// "12.2.copy_once_f",            // OK
-		"13.1.indelible_t", // OK
-		// "13.2.indelible_f", // OK
+		// "13.1.indelible_t",            // OK
+		// "13.2.indelible_f",            // OK
 	}
 
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
