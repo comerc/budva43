@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -60,10 +61,10 @@ func runFeature(t *testing.T, name string) {
 	}
 }
 
-func (s *scenario) setSourceChat(name string, chatId int) error {
+func (s *scenario) setSourceChat(name string, chatId int64) error {
 	var err error
 
-	s.state.sourceChatId = -int64(chatId)
+	s.state.sourceChatId = -chatId
 
 	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -151,8 +152,12 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 	var err error
 
 	_, err = client.SendMessage(ctx, &pb.SendMessageRequest{
-		ChatId: s.state.sourceChatId,
-		Text:   fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceText),
+		NewMessage: &pb.NewMessage{
+			ChatId:           s.state.sourceChatId,
+			Text:             fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceText),
+			ReplyToMessageId: 0,
+			FilePath:         "",
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send text message via grpc: %w", err)
@@ -161,21 +166,55 @@ func (s *scenario) sendMessage(ctx context.Context) error {
 	return nil
 }
 
+const mediaAlbumSize int32 = 3
+
+func (s *scenario) sendMediaAlbum(ctx context.Context) error {
+	var err error
+
+	newMessages := make([]*pb.NewMessage, mediaAlbumSize)
+	for i := range mediaAlbumSize {
+		relPath := fmt.Sprintf("static/%d.png", i+1)
+		absPath := filepath.Join(util.ProjectRoot, relPath)
+		newMessages[i] = &pb.NewMessage{
+			ChatId:           s.state.sourceChatId,
+			ReplyToMessageId: 0,
+			FilePath:         absPath,
+		}
+	}
+	newMessages[0].Text = fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceText)
+
+	_, err = client.SendMessageAlbum(ctx, &pb.SendMessageAlbumRequest{
+		NewMessages: newMessages,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to send media album: %w", err)
+	}
+	return nil
+}
+
 func (s *scenario) editMessage(ctx context.Context) error {
 	var err error
 
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
 		ChatId: s.state.sourceChatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(resp.Messages) == 0 {
+		return fmt.Errorf("no messages found")
+	}
+
+	message := resp.Messages[0]
 
 	_, err = client.UpdateMessage(ctx, &pb.UpdateMessageRequest{
-		ChatId:    s.state.sourceChatId,
-		MessageId: resp.Message.Id,
-		Text:      s.state.sourceText,
+		Message: &pb.Message{
+			Id:     message.Id,
+			ChatId: s.state.sourceChatId,
+			Text:   s.state.sourceText,
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to edit message: %w", err)
@@ -187,17 +226,23 @@ func (s *scenario) editMessage(ctx context.Context) error {
 func (s *scenario) deleteMessage(ctx context.Context) error {
 	var err error
 
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
 		ChatId: s.state.sourceChatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(resp.Messages) == 0 {
+		return fmt.Errorf("no messages found")
+	}
+
+	message := resp.Messages[0]
 
 	_, err = client.DeleteMessages(ctx, &pb.DeleteMessagesRequest{
 		ChatId:     s.state.sourceChatId,
-		MessageIds: []int64{resp.Message.Id},
+		MessageIds: []int64{message.Id},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete message: %w", err)
@@ -209,40 +254,52 @@ func (s *scenario) deleteMessage(ctx context.Context) error {
 func (s *scenario) checkSourceMessage(ctx context.Context) error {
 	var err error
 
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
 		ChatId: s.state.sourceChatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(resp.Messages) == 0 {
+		return fmt.Errorf("no messages found")
+	}
 
-	if !strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+	message := resp.Messages[0]
+
+	if !strings.HasPrefix(message.Text, s.state.sourceTextPrefix) {
 		return fmt.Errorf("message text has no prefix: want %q, got %q",
-			s.state.sourceTextPrefix, resp.Message.Text)
+			s.state.sourceTextPrefix, message.Text)
 	}
 
 	return nil
 }
 
-func (s *scenario) checkMessage(ctx context.Context, name string, chatId int) error {
+func (s *scenario) checkMessage(ctx context.Context, name string, chatId int64) error {
 	var err error
 
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
-		ChatId: -int64(chatId),
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
+		ChatId: -chatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(resp.Messages) == 0 {
+		return fmt.Errorf("no messages found")
+	}
 
-	if !strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+	message := resp.Messages[0]
+
+	if !strings.HasPrefix(message.Text, s.state.sourceTextPrefix) {
 		return fmt.Errorf("message text has no prefix: want %q, got %q",
-			s.state.sourceTextPrefix, resp.Message.Text)
+			s.state.sourceTextPrefix, message.Text)
 	}
 
 	for _, check := range s.state.checks {
-		err = check(resp.Message)
+		err = check(message)
 		if err != nil {
 			return err
 		}
@@ -251,18 +308,56 @@ func (s *scenario) checkMessage(ctx context.Context, name string, chatId int) er
 	return nil
 }
 
-func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int) error {
+func (s *scenario) checkMediaAlbum(ctx context.Context, name string, chatId int64) error {
 	var err error
 
-	var resp *pb.MessageResponse
-	resp, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
-		ChatId: -int64(chatId),
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
+		ChatId: -chatId,
+		Limit:  mediaAlbumSize,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get chat history: %w", err)
+	}
+	if len(resp.Messages) != int(mediaAlbumSize) {
+		return fmt.Errorf("expected %d messages, got %d", mediaAlbumSize, len(resp.Messages))
+	}
+
+	message := resp.Messages[mediaAlbumSize-1]
+
+	if !strings.HasPrefix(message.Text, s.state.sourceTextPrefix) {
+		return fmt.Errorf("message text has no prefix: want %q, got %q",
+			s.state.sourceTextPrefix, message.Text)
+	}
+
+	for _, check := range s.state.checks {
+		err = check(message)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int64) error {
+	var err error
+
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
+		ChatId: -chatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(resp.Messages) == 0 {
+		return nil
+	}
 
-	if strings.HasPrefix(resp.Message.Text, s.state.sourceTextPrefix) {
+	message := resp.Messages[0]
+
+	if strings.HasPrefix(message.Text, s.state.sourceTextPrefix) {
 		return fmt.Errorf("found message")
 	}
 
@@ -272,18 +367,24 @@ func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int) 
 func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 	var err error
 
-	var respMessage *pb.MessageResponse
-	respMessage, err = client.GetLastMessage(ctx, &pb.GetLastMessageRequest{
+	var respChatHistory *pb.MessagesResponse
+	respChatHistory, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
 		ChatId: s.state.sourceChatId,
+		Limit:  1,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get last message: %w", err)
 	}
+	if len(respChatHistory.Messages) == 0 {
+		return fmt.Errorf("no messages found")
+	}
 
-	var resp *pb.GetMessageLinkResponse
+	message := respChatHistory.Messages[0]
+
+	var resp *pb.MessageLinkResponse
 	resp, err = client.GetMessageLink(ctx, &pb.GetMessageLinkRequest{
 		ChatId:    s.state.sourceChatId,
-		MessageId: respMessage.Message.Id,
+		MessageId: message.Id,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get message link: %w", err)
@@ -340,8 +441,10 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
 	ctx.Then(`^сообщение в чате "([^"]*)" \((\d+)\)$`, scenario.checkMessage)
 	ctx.Then(`^нет сообщения в чате "([^"]*)" \((\d+)\)$`, scenario.checkNoMessage)
-	// ctx.Then(`^медиа-альбом как копия$`, state.checkAlbumAppearsAsCopy)
-	// ctx.Then(`^медиа-альбом как форвард$`, state.checkAlbumAppearsAsForward)
+
+	ctx.When(`^пользователь отправляет медиа-альбом$`, scenario.sendMediaAlbum)
+	ctx.Then(`^медиа-альбом в чате "([^"]*)" \((\d+)\)$`, scenario.checkMediaAlbum)
+
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		scenario.state = &scenarioState{}
 		return ctx, nil
@@ -361,7 +464,7 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.forward_send_copy",        // OK
+		// "01.send_copy",                // OK
 		// "02.forward",                  // OK
 		// "03.1.replace_myself_links",   // OK
 		// "03.2.delete_external_links",  // OK
@@ -369,7 +472,7 @@ func Test(t *testing.T) {
 		// "04.1.2.filters_mode_exclude", // OK
 		// "04.2.1.filters_mode_include", // OK
 		// "04.2.2.filters_mode_include", // OK
-		// "05.media_album_send_copy",
+		// "05.media_album_send_copy",    // OK
 		// "06.media_album_forward",
 		// "07.1.include_submatch",       // OK
 		// "07.2.include_submatch",       // OK
@@ -379,8 +482,6 @@ func Test(t *testing.T) {
 		// "11.auto_answers",
 		// "12.copy_once",                // OK
 		// "13.indelible",                // OK
-		// "14.media_album_copy_once",
-		// "15.media_album_indelible",
 	}
 
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)

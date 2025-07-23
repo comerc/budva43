@@ -84,7 +84,7 @@ type initDestinations = func([]domain.ChatId)
 // 				_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
 // 					ChatId:    dstChatId,
 // 					Limit:     1,
-// 					OnlyLocal: true,
+// 					OnlyLocal: false,
 // 				})
 // 				if err != nil {
 // 					notFound[dstChatId] = struct{}{}
@@ -138,7 +138,7 @@ func newFuncInitDestinations(s *Service) initDestinations {
 			_, err := s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
 				ChatId:    dstChatId,
 				Limit:     1,
-				OnlyLocal: true,
+				OnlyLocal: false,
 			})
 			if err != nil {
 				notFound = append(notFound, dstChatId)
