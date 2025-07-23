@@ -489,7 +489,7 @@ func Test(t *testing.T) {
 		// "08.replace_fragments",        // OK
 		// "09.sources_link_title",       // OK
 		// "10.sources_sign",             // OK
-		// "11.auto_answers",
+		// "11.auto_answers",             // TODO: R&D
 		// "12.1.copy_once_t",            // OK
 		// "12.2.copy_once_f",            // OK
 		// "13.1.indelible_t",            // OK

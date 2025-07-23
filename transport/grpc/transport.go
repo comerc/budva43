@@ -17,6 +17,14 @@ import (
 	"github.com/comerc/budva43/transport/grpc/pb"
 )
 
+// TODO: gRPC stream
+// https://ably.com/blog/grpc-stream-performance
+// https://habr.com/ru/articles/688756/
+// > как известно, в gRPC есть простые вызовы и стриминговые,
+// так вот - если сделать пул стримов вместо простого вызова,
+// то все работает быстрее приблизительно в два раза
+// (с последовательными или конкурентными запросами - неважно)
+
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
