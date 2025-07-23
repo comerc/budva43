@@ -33,15 +33,6 @@ type scenarioState struct {
 	sourceText       string
 
 	checks []check
-
-	// DestinationChatId   int64
-	// DestinationChatName string
-
-	// SendText     string
-	// ExpectedText string
-	// LastSentMessageText string
-	// LastSentMessageId int64
-	// LastSentMessage *pb.Message
 }
 
 type check = func(message *pb.Message) error
@@ -474,26 +465,26 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.send_copy",                // OK
-		// "02.forward",                  // OK
-		// "03.1.replace_myself_links",   // OK
-		// "03.2.delete_external_links",  // OK
-		// "04.1.1.filters_mode_exclude", // OK
-		// "04.1.2.filters_mode_exclude", // OK
-		// "04.2.1.filters_mode_include", // OK
-		// "04.2.2.filters_mode_include", // OK
-		// "05.media_album_send_copy",    // OK
-		// "06.media_album_forward",      // OK
-		// "07.1.include_submatch",       // OK
-		// "07.2.include_submatch",       // OK
-		// "08.replace_fragments",        // OK
-		// "09.sources_link_title",       // OK
-		// "10.sources_sign",             // OK
-		// "11.auto_answers",             // TODO: R&D
-		// "12.1.copy_once_t",            // OK
-		// "12.2.copy_once_f",            // OK
-		// "13.1.indelible_t",            // OK
-		// "13.2.indelible_f",            // OK
+		"01.send_copy",                // OK
+		"02.forward",                  // OK
+		"03.1.replace_myself_links",   // OK
+		"03.2.delete_external_links",  // OK
+		"04.1.1.filters_mode_exclude", // OK
+		"04.1.2.filters_mode_exclude", // OK
+		"04.2.1.filters_mode_include", // OK
+		"04.2.2.filters_mode_include", // OK
+		"05.media_album_send_copy",    // OK
+		"06.media_album_forward",      // OK
+		"07.1.include_submatch",       // OK
+		"07.2.include_submatch",       // OK
+		"08.replace_fragments",        // OK
+		"09.sources_link_title",       // OK
+		"10.sources_sign",             // OK
+		"12.1.copy_once_t",            // OK
+		"12.2.copy_once_f",            // OK
+		"13.1.indelible_t",            // OK
+		"13.2.indelible_f",            // OK
+		// "11.auto_answers", // TODO: R&D
 	}
 
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
@@ -504,7 +495,9 @@ func Test(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close()
+	t.Cleanup(func() {
+		conn.Close()
+	})
 	client = pb.NewFacadeGRPCClient(conn)
 
 	for _, name := range names {

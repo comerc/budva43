@@ -15,7 +15,7 @@
 	"go.enableCodeLens": {
 		"runtest": true,
 	},
-	"go.testTimeout": "360s",
+	"go.testTimeout": "30m",
 	"go.buildTags": "goexperiment.synctest",
 	"go.toolsManagement.autoUpdate": true,
 	// "go.useLanguageServer": true,
