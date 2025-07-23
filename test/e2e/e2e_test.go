@@ -213,7 +213,7 @@ func (s *scenario) editMessage(ctx context.Context) error {
 		Message: &pb.Message{
 			Id:     message.Id,
 			ChatId: s.state.sourceChatId,
-			Text:   s.state.sourceText,
+			Text:   fmt.Sprintf("%s\n\n%s", s.state.sourceTextPrefix, s.state.sourceText),
 		},
 	})
 	if err != nil {
@@ -417,17 +417,28 @@ func (s *scenario) addCheckWithExpectedNoExternalLink() error {
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
+func (s *scenario) addCheckWithText(text string) error {
+	pattern := fmt.Sprintf(`(?s)^.*(%s).*$`, text)
+	return s.addCheckWithExpectedRegex(pattern)
+}
+
 func (s *scenario) setExpectedText(text string) error {
 	s.state.sourceText = text
+	return nil
+}
+
+func (s *scenario) resetChecks() error {
+	s.state.checks = []check{}
 	return nil
 }
 
 func registerSteps(ctx *godog.ScenarioContext) {
 	scenario := &scenario{}
 	// !! зарегистрированные раньше имеют приоритет выполнения
+	ctx.Given(`^сброс проверок$`, scenario.resetChecks)
 	ctx.Given(`^исходный чат "([^"]*)" \((\d+)\)$`, scenario.setSourceChat)
 	ctx.Given(`^будет пересылка - ([^"]*)$`, scenario.addCheckWithExpectedForward)
-	ctx.Given(`^будет текст "([^"]*)"$`, scenario.addCheckWithExpectedRegex)
+	ctx.Given(`^будет текст "([^"]*)"$`, scenario.addCheckWithText)
 	ctx.Given(`^будет подпись$`, scenario.addCheckWithExpectedSign)
 	ctx.Given(`^будет ссылка$`, scenario.addCheckWithExpectedLink)
 	ctx.Given(`^будет удалена ссылка на сообщение в исходном чате$`, scenario.addCheckWithExpectedNoExternalLink)
@@ -479,8 +490,9 @@ func Test(t *testing.T) {
 		// "09.sources_link_title",       // OK
 		// "10.sources_sign",             // OK
 		// "11.auto_answers",
-		// "12.copy_once",                // OK
-		// "13.indelible",                // OK
+		// "12.1.copy_once_t",            // OK
+		// "12.2.copy_once_f",            // OK
+		// "13.1.indelible",              // OK
 	}
 
 	addr := net.JoinHostPort(config.Grpc.Host, config.Grpc.Port)
