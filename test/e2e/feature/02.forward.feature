@@ -12,7 +12,6 @@ Feature: 02.forward
     And сообщение в чате "DST PUB GRP 2" (1002876400294)
     And сообщение в чате "DST PRV GRP 2" (4913098869)
 
-
     Examples:
       | src_chat_name | src_chat_id   |
       | SRC PUB CHL 2 | 1002748936346 |

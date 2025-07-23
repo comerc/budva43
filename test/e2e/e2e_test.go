@@ -437,12 +437,11 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
 	ctx.When(`^пользователь редактирует сообщение$`, scenario.editMessage)
 	ctx.When(`^пользователь удаляет сообщение$`, scenario.deleteMessage)
+	ctx.When(`^пользователь отправляет медиа-альбом$`, scenario.sendMediaAlbum)
 	ctx.Then(`^ожидание (\d+) сек.$`, scenario.wait)
 	ctx.Then(`^сообщение в чате$`, scenario.checkSourceMessage)
 	ctx.Then(`^сообщение в чате "([^"]*)" \((\d+)\)$`, scenario.checkMessage)
 	ctx.Then(`^нет сообщения в чате "([^"]*)" \((\d+)\)$`, scenario.checkNoMessage)
-
-	ctx.When(`^пользователь отправляет медиа-альбом$`, scenario.sendMediaAlbum)
 	ctx.Then(`^медиа-альбом в чате "([^"]*)" \((\d+)\)$`, scenario.checkMediaAlbum)
 
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
@@ -473,7 +472,7 @@ func Test(t *testing.T) {
 		// "04.2.1.filters_mode_include", // OK
 		// "04.2.2.filters_mode_include", // OK
 		// "05.media_album_send_copy",    // OK
-		// "06.media_album_forward",
+		// "06.media_album_forward",      // OK
 		// "07.1.include_submatch",       // OK
 		// "07.2.include_submatch",       // OK
 		// "08.replace_fragments",        // OK
