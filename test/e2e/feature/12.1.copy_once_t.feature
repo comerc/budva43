@@ -1,9 +1,9 @@
-Feature: 12.copy_once
+Feature: 12.1.copy_once_t
 
   Background:
     Given будет пересылка - копия
 
-  Scenario Outline: Сообщение копируется только один раз
+  Scenario Outline: Сообщение не обновляется в целевом чате
     Given исходный чат "<src_chat_name>" (<src_chat_id>)
     And сообщение с текстом "some text"
     And будет текст "some text"
@@ -13,8 +13,8 @@ Feature: 12.copy_once
     And сообщение в чате "DST PRV CHL 1" (1002473038431)
     And сообщение в чате "DST PUB GRP 1" (1002866470933)
     And сообщение в чате "DST PRV GRP 1" (4867965570)
-    Given сообщение с текстом "some other text"
-    # текст не должен измениться в целевом чате
+    Given сброс проверок
+    And сообщение с текстом "some OTHER text"
     And будет текст "some text"
     When пользователь редактирует сообщение
     Then ожидание 10 сек.
