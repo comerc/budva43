@@ -42,34 +42,6 @@ func TestGetMessages(t *testing.T) {
 	assert.Equal(t, "bar", result[1].Text)
 }
 
-func TestGetLastMessage(t *testing.T) {
-	t.Parallel()
-
-	tg := mocks.NewTelegramRepo(t)
-	ms := mocks.NewMessageService(t)
-	s := New(tg, ms, nil)
-
-	chatId := int64(1)
-	msg := &client.Message{Id: 42}
-	tg.EXPECT().GetChatHistory(&client.GetChatHistoryRequest{
-		ChatId:    chatId,
-		Limit:     1,
-		OnlyLocal: true,
-	}).Return(&client.Messages{
-		TotalCount: 1,
-		Messages:   []*client.Message{msg},
-	}, nil)
-	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
-		Text: &client.FormattedText{Text: "last"},
-	}).Return(&client.FormattedText{Text: "last"}, nil)
-	ms.EXPECT().GetFormattedText(msg).Return(&client.FormattedText{Text: "last"})
-
-	result, err := s.GetLastMessage(chatId)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(42), result.Id)
-	assert.Equal(t, "last", result.Text)
-}
-
 func TestSendMessage(t *testing.T) {
 	t.Parallel()
 
@@ -107,8 +79,8 @@ func TestSendMessageAlbum(t *testing.T) {
 	s := New(tg, ms, nil)
 
 	newMessages := []*dto.NewMessage{
-		{ChatId: 1, Text: "first", ReplyToMessageId: 10},
-		{ChatId: 1, Text: "second", ReplyToMessageId: 10},
+		{ChatId: 1, Text: "first", ReplyToMessageId: 10, FilePath: "123"},
+		{ChatId: 1, Text: "second", ReplyToMessageId: 10, FilePath: "456"},
 	}
 
 	// Ожидаем вызовы ParseTextEntities для каждого сообщения
@@ -128,19 +100,17 @@ func TestSendMessageAlbum(t *testing.T) {
 
 	// Ожидаем вызов SendMessageAlbum
 	expectedInputContents := []client.InputMessageContent{
-		&client.InputMessageText{
-			Text: &client.FormattedText{Text: "first"},
-			LinkPreviewOptions: &client.LinkPreviewOptions{
-				IsDisabled: true,
+		&client.InputMessageDocument{
+			Document: &client.InputFileLocal{
+				Path: "123",
 			},
-			ClearDraft: true,
+			Caption: &client.FormattedText{Text: "first"},
 		},
-		&client.InputMessageText{
-			Text: &client.FormattedText{Text: "second"},
-			LinkPreviewOptions: &client.LinkPreviewOptions{
-				IsDisabled: true,
+		&client.InputMessageDocument{
+			Document: &client.InputFileLocal{
+				Path: "456",
 			},
-			ClearDraft: true,
+			Caption: &client.FormattedText{Text: "second"},
 		},
 	}
 
@@ -295,4 +265,51 @@ func TestGetMessageLinkInfo(t *testing.T) {
 	assert.Equal(t, int64(2), result.Id)
 	assert.Equal(t, int64(1), result.ChatId)
 	assert.True(t, result.Forward)
+}
+
+func TestGetChatHistory(t *testing.T) {
+	t.Parallel()
+
+	tg := mocks.NewTelegramRepo(t)
+	ms := mocks.NewMessageService(t)
+	s := New(tg, ms, nil)
+
+	chatId := int64(1)
+	fromMessageId := int64(100)
+	offset := int32(0)
+	limit := int32(2)
+
+	msg1 := &client.Message{Id: 101, ChatId: chatId}
+	msg2 := &client.Message{Id: 102, ChatId: chatId}
+	messages := &client.Messages{Messages: []*client.Message{msg1, msg2}}
+
+	tg.EXPECT().GetChatHistory(&client.GetChatHistoryRequest{
+		ChatId:        chatId,
+		FromMessageId: fromMessageId,
+		Offset:        offset,
+		Limit:         limit,
+		OnlyLocal:     false,
+	}).Return(messages, nil)
+
+	ft1 := &client.FormattedText{Text: "message 1"}
+	ft2 := &client.FormattedText{Text: "message 2"}
+	ms.EXPECT().GetFormattedText(msg1).Return(ft1)
+	ms.EXPECT().GetFormattedText(msg2).Return(ft2)
+
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: ft1,
+	}).Return(&client.FormattedText{Text: "message 1"}, nil)
+	tg.EXPECT().GetMarkdownText(&client.GetMarkdownTextRequest{
+		Text: ft2,
+	}).Return(&client.FormattedText{Text: "message 2"}, nil)
+
+	result, err := s.GetChatHistory(chatId, fromMessageId, offset, limit)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+	assert.Equal(t, int64(101), result[0].Id)
+	assert.Equal(t, "message 1", result[0].Text)
+	assert.Equal(t, chatId, result[0].ChatId)
+	assert.Equal(t, int64(102), result[1].Id)
+	assert.Equal(t, "message 2", result[1].Text)
+	assert.Equal(t, chatId, result[1].ChatId)
 }

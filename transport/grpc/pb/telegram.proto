@@ -5,16 +5,23 @@ package pb;
 option go_package = "github.com/comerc/budva43/transport/grpc/pb";
 
 service FacadeGRPC {
-  rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
-  rpc GetLastMessage (GetLastMessageRequest) returns (MessageResponse);
+  rpc GetMessages (GetMessagesRequest) returns (MessagesResponse);
+  rpc GetChatHistory (GetChatHistoryRequest) returns (MessagesResponse);
   rpc SendMessage (SendMessageRequest) returns (EmptyResponse);
   rpc SendMessageAlbum (SendMessageAlbumRequest) returns (EmptyResponse);
   rpc ForwardMessage (ForwardMessageRequest) returns (EmptyResponse);
   rpc GetMessage (GetMessageRequest) returns (MessageResponse);
   rpc UpdateMessage (UpdateMessageRequest) returns (EmptyResponse);
   rpc DeleteMessages (DeleteMessagesRequest) returns (EmptyResponse);
-  rpc GetMessageLink (GetMessageLinkRequest) returns (GetMessageLinkResponse);
+  rpc GetMessageLink (GetMessageLinkRequest) returns (MessageLinkResponse);
   rpc GetMessageLinkInfo (GetMessageLinkInfoRequest) returns (MessageResponse);
+}
+
+message NewMessage {
+  int64 chat_id = 2;
+  string text = 1;
+  int64 reply_to_message_id = 3;
+  string file_path = 4;
 }
 
 message Message {
@@ -22,6 +29,7 @@ message Message {
   int64 chat_id = 2;
   string text = 3;
   bool forward = 4;
+  string file_path = 5;
 }
 
 message GetMessagesRequest {
@@ -29,24 +37,23 @@ message GetMessagesRequest {
   repeated int64 message_ids = 2;
 }
 
-message GetLastMessageRequest {
+message GetChatHistoryRequest {
   int64 chat_id = 1;
+  int64 from_message_id = 2;
+  int32 offset = 3;
+  int32 limit = 4;
 }
 
-message GetMessagesResponse {
+message MessagesResponse {
   repeated Message messages = 1;
 }
 
 message SendMessageRequest {
-  int64 chat_id = 1;
-  string text = 2;
-  int64 reply_to_message_id = 3;
+  NewMessage new_message = 1;
 }
 
 message SendMessageAlbumRequest {
-  int64 chat_id = 1;
-  repeated string texts = 2;
-  int64 reply_to_message_id = 3;
+  repeated NewMessage new_messages = 1;
 }
 
 message ForwardMessageRequest {
@@ -64,9 +71,7 @@ message GetMessageRequest {
 }
 
 message UpdateMessageRequest {
-  int64 chat_id = 1;
-  int64 message_id = 2;
-  string text = 3;
+  Message message = 1;
 }
 
 message DeleteMessagesRequest {
@@ -79,7 +84,7 @@ message GetMessageLinkRequest {
   int64 message_id = 2;
 }
 
-message GetMessageLinkResponse {
+message MessageLinkResponse {
   string link = 1;
 }
 

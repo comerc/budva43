@@ -48,7 +48,12 @@ func TestSendMessage(t *testing.T) {
 	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	_, err := client.SendMessage(context.Background(), &pb.SendMessageRequest{ChatId: 1, Text: "hi"})
+	_, err := client.SendMessage(context.Background(), &pb.SendMessageRequest{
+		NewMessage: &pb.NewMessage{
+			ChatId: 1,
+			Text:   "hi",
+		},
+	})
 	assert.NoError(t, err)
 }
 
@@ -57,8 +62,8 @@ func TestSendMessageAlbum(t *testing.T) {
 
 	facade := mocks.NewFacadeGRPC(t)
 	expectedMessages := []*dto.NewMessage{
-		{ChatId: 1, Text: "first", ReplyToMessageId: 10},
-		{ChatId: 1, Text: "second", ReplyToMessageId: 10},
+		{ChatId: 1, Text: "first", ReplyToMessageId: 10, FilePath: "123"},
+		{ChatId: 1, Text: "second", ReplyToMessageId: 10, FilePath: "456"},
 	}
 	facade.EXPECT().SendMessageAlbum(expectedMessages).Return(nil)
 
@@ -67,9 +72,10 @@ func TestSendMessageAlbum(t *testing.T) {
 	client := pb.NewFacadeGRPCClient(conn)
 
 	_, err := client.SendMessageAlbum(context.Background(), &pb.SendMessageAlbumRequest{
-		ChatId:           1,
-		Texts:            []string{"first", "second"},
-		ReplyToMessageId: 10,
+		NewMessages: []*pb.NewMessage{
+			{ChatId: 1, Text: "first", ReplyToMessageId: 10, FilePath: "123"},
+			{ChatId: 1, Text: "second", ReplyToMessageId: 10, FilePath: "456"},
+		},
 	})
 	assert.NoError(t, err)
 }
@@ -108,22 +114,6 @@ func TestGetMessages(t *testing.T) {
 	assert.Equal(t, "b", resp.Messages[1].Text)
 }
 
-func TestGetLastMessage(t *testing.T) {
-	t.Parallel()
-
-	facade := mocks.NewFacadeGRPC(t)
-	facade.EXPECT().GetLastMessage(int64(1)).Return(&dto.Message{Id: 42, ChatId: 1, Text: "hi"}, nil)
-
-	conn, cleanup := startTestGRPCServer(t, facade)
-	t.Cleanup(cleanup)
-	client := pb.NewFacadeGRPCClient(conn)
-	resp, err := client.GetLastMessage(context.Background(), &pb.GetLastMessageRequest{ChatId: 1})
-	assert.NoError(t, err)
-	assert.Equal(t, int64(42), resp.Message.Id)
-	assert.Equal(t, int64(1), resp.Message.ChatId)
-	assert.Equal(t, "hi", resp.Message.Text)
-}
-
 func TestGetMessage(t *testing.T) {
 	t.Parallel()
 
@@ -146,14 +136,21 @@ func TestUpdateMessage(t *testing.T) {
 	t.Parallel()
 
 	facade := mocks.NewFacadeGRPC(t)
-	in := &dto.Message{Id: 42, ChatId: 1, Text: "upd"}
+	in := &dto.Message{Id: 42, ChatId: 1, Text: "upd", FilePath: ""}
 	facade.EXPECT().UpdateMessage(in).Return(nil)
 
 	conn, cleanup := startTestGRPCServer(t, facade)
 	t.Cleanup(cleanup)
 	client := pb.NewFacadeGRPCClient(conn)
 
-	_, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{MessageId: 42, ChatId: 1, Text: "upd"})
+	_, err := client.UpdateMessage(context.Background(), &pb.UpdateMessageRequest{
+		Message: &pb.Message{
+			Id:       42,
+			ChatId:   1,
+			Text:     "upd",
+			FilePath: "",
+		},
+	})
 	assert.NoError(t, err)
 }
 
@@ -204,4 +201,38 @@ func TestGetMessageLinkInfo(t *testing.T) {
 	assert.Equal(t, int64(2), resp.Message.Id)
 	assert.Equal(t, int64(1), resp.Message.ChatId)
 	assert.True(t, resp.Message.Forward)
+}
+
+func TestGetChatHistory(t *testing.T) {
+	t.Parallel()
+
+	facade := mocks.NewFacadeGRPC(t)
+	expectedMessages := []*dto.Message{
+		{Id: 101, ChatId: 1, Text: "message 1", Forward: false},
+		{Id: 102, ChatId: 1, Text: "message 2", Forward: true},
+	}
+	facade.EXPECT().GetChatHistory(int64(1), int64(100), int32(0), int32(2)).Return(expectedMessages, nil)
+
+	conn, cleanup := startTestGRPCServer(t, facade)
+	t.Cleanup(cleanup)
+	client := pb.NewFacadeGRPCClient(conn)
+
+	resp, err := client.GetChatHistory(context.Background(), &pb.GetChatHistoryRequest{
+		ChatId:        1,
+		FromMessageId: 100,
+		Offset:        0,
+		Limit:         2,
+	})
+	assert.NoError(t, err)
+	assert.Len(t, resp.Messages, 2)
+
+	assert.Equal(t, int64(101), resp.Messages[0].Id)
+	assert.Equal(t, int64(1), resp.Messages[0].ChatId)
+	assert.Equal(t, "message 1", resp.Messages[0].Text)
+	assert.False(t, resp.Messages[0].Forward)
+
+	assert.Equal(t, int64(102), resp.Messages[1].Id)
+	assert.Equal(t, int64(1), resp.Messages[1].ChatId)
+	assert.Equal(t, "message 2", resp.Messages[1].Text)
+	assert.True(t, resp.Messages[1].Forward)
 }

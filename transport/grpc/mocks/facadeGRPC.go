@@ -115,29 +115,29 @@ func (_c *FacadeGRPC_ForwardMessage_Call) RunAndReturn(run func(int64, int64) er
 	return _c
 }
 
-// GetLastMessage provides a mock function with given fields: chatId
-func (_m *FacadeGRPC) GetLastMessage(chatId int64) (*dto.Message, error) {
-	ret := _m.Called(chatId)
+// GetChatHistory provides a mock function with given fields: chatId, fromMessageId, offset, limit
+func (_m *FacadeGRPC) GetChatHistory(chatId int64, fromMessageId int64, offset int32, limit int32) ([]*dto.Message, error) {
+	ret := _m.Called(chatId, fromMessageId, offset, limit)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetLastMessage")
+		panic("no return value specified for GetChatHistory")
 	}
 
-	var r0 *dto.Message
+	var r0 []*dto.Message
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int64) (*dto.Message, error)); ok {
-		return rf(chatId)
+	if rf, ok := ret.Get(0).(func(int64, int64, int32, int32) ([]*dto.Message, error)); ok {
+		return rf(chatId, fromMessageId, offset, limit)
 	}
-	if rf, ok := ret.Get(0).(func(int64) *dto.Message); ok {
-		r0 = rf(chatId)
+	if rf, ok := ret.Get(0).(func(int64, int64, int32, int32) []*dto.Message); ok {
+		r0 = rf(chatId, fromMessageId, offset, limit)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.Message)
+			r0 = ret.Get(0).([]*dto.Message)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(chatId)
+	if rf, ok := ret.Get(1).(func(int64, int64, int32, int32) error); ok {
+		r1 = rf(chatId, fromMessageId, offset, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -145,30 +145,33 @@ func (_m *FacadeGRPC) GetLastMessage(chatId int64) (*dto.Message, error) {
 	return r0, r1
 }
 
-// FacadeGRPC_GetLastMessage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLastMessage'
-type FacadeGRPC_GetLastMessage_Call struct {
+// FacadeGRPC_GetChatHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChatHistory'
+type FacadeGRPC_GetChatHistory_Call struct {
 	*mock.Call
 }
 
-// GetLastMessage is a helper method to define mock.On call
+// GetChatHistory is a helper method to define mock.On call
 //   - chatId int64
-func (_e *FacadeGRPC_Expecter) GetLastMessage(chatId interface{}) *FacadeGRPC_GetLastMessage_Call {
-	return &FacadeGRPC_GetLastMessage_Call{Call: _e.mock.On("GetLastMessage", chatId)}
+//   - fromMessageId int64
+//   - offset int32
+//   - limit int32
+func (_e *FacadeGRPC_Expecter) GetChatHistory(chatId interface{}, fromMessageId interface{}, offset interface{}, limit interface{}) *FacadeGRPC_GetChatHistory_Call {
+	return &FacadeGRPC_GetChatHistory_Call{Call: _e.mock.On("GetChatHistory", chatId, fromMessageId, offset, limit)}
 }
 
-func (_c *FacadeGRPC_GetLastMessage_Call) Run(run func(chatId int64)) *FacadeGRPC_GetLastMessage_Call {
+func (_c *FacadeGRPC_GetChatHistory_Call) Run(run func(chatId int64, fromMessageId int64, offset int32, limit int32)) *FacadeGRPC_GetChatHistory_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(int64))
+		run(args[0].(int64), args[1].(int64), args[2].(int32), args[3].(int32))
 	})
 	return _c
 }
 
-func (_c *FacadeGRPC_GetLastMessage_Call) Return(_a0 *dto.Message, _a1 error) *FacadeGRPC_GetLastMessage_Call {
+func (_c *FacadeGRPC_GetChatHistory_Call) Return(_a0 []*dto.Message, _a1 error) *FacadeGRPC_GetChatHistory_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *FacadeGRPC_GetLastMessage_Call) RunAndReturn(run func(int64) (*dto.Message, error)) *FacadeGRPC_GetLastMessage_Call {
+func (_c *FacadeGRPC_GetChatHistory_Call) RunAndReturn(run func(int64, int64, int32, int32) ([]*dto.Message, error)) *FacadeGRPC_GetChatHistory_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -406,9 +409,9 @@ func (_c *FacadeGRPC_GetMessages_Call) RunAndReturn(run func(int64, []int64) ([]
 	return _c
 }
 
-// SendMessage provides a mock function with given fields: message
-func (_m *FacadeGRPC) SendMessage(message *dto.NewMessage) error {
-	ret := _m.Called(message)
+// SendMessage provides a mock function with given fields: newMessage
+func (_m *FacadeGRPC) SendMessage(newMessage *dto.NewMessage) error {
+	ret := _m.Called(newMessage)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendMessage")
@@ -416,7 +419,7 @@ func (_m *FacadeGRPC) SendMessage(message *dto.NewMessage) error {
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*dto.NewMessage) error); ok {
-		r0 = rf(message)
+		r0 = rf(newMessage)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -430,12 +433,12 @@ type FacadeGRPC_SendMessage_Call struct {
 }
 
 // SendMessage is a helper method to define mock.On call
-//   - message *dto.NewMessage
-func (_e *FacadeGRPC_Expecter) SendMessage(message interface{}) *FacadeGRPC_SendMessage_Call {
-	return &FacadeGRPC_SendMessage_Call{Call: _e.mock.On("SendMessage", message)}
+//   - newMessage *dto.NewMessage
+func (_e *FacadeGRPC_Expecter) SendMessage(newMessage interface{}) *FacadeGRPC_SendMessage_Call {
+	return &FacadeGRPC_SendMessage_Call{Call: _e.mock.On("SendMessage", newMessage)}
 }
 
-func (_c *FacadeGRPC_SendMessage_Call) Run(run func(message *dto.NewMessage)) *FacadeGRPC_SendMessage_Call {
+func (_c *FacadeGRPC_SendMessage_Call) Run(run func(newMessage *dto.NewMessage)) *FacadeGRPC_SendMessage_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(*dto.NewMessage))
 	})
@@ -452,9 +455,9 @@ func (_c *FacadeGRPC_SendMessage_Call) RunAndReturn(run func(*dto.NewMessage) er
 	return _c
 }
 
-// SendMessageAlbum provides a mock function with given fields: messages
-func (_m *FacadeGRPC) SendMessageAlbum(messages []*dto.NewMessage) error {
-	ret := _m.Called(messages)
+// SendMessageAlbum provides a mock function with given fields: newMessages
+func (_m *FacadeGRPC) SendMessageAlbum(newMessages []*dto.NewMessage) error {
+	ret := _m.Called(newMessages)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SendMessageAlbum")
@@ -462,7 +465,7 @@ func (_m *FacadeGRPC) SendMessageAlbum(messages []*dto.NewMessage) error {
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func([]*dto.NewMessage) error); ok {
-		r0 = rf(messages)
+		r0 = rf(newMessages)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -476,12 +479,12 @@ type FacadeGRPC_SendMessageAlbum_Call struct {
 }
 
 // SendMessageAlbum is a helper method to define mock.On call
-//   - messages []*dto.NewMessage
-func (_e *FacadeGRPC_Expecter) SendMessageAlbum(messages interface{}) *FacadeGRPC_SendMessageAlbum_Call {
-	return &FacadeGRPC_SendMessageAlbum_Call{Call: _e.mock.On("SendMessageAlbum", messages)}
+//   - newMessages []*dto.NewMessage
+func (_e *FacadeGRPC_Expecter) SendMessageAlbum(newMessages interface{}) *FacadeGRPC_SendMessageAlbum_Call {
+	return &FacadeGRPC_SendMessageAlbum_Call{Call: _e.mock.On("SendMessageAlbum", newMessages)}
 }
 
-func (_c *FacadeGRPC_SendMessageAlbum_Call) Run(run func(messages []*dto.NewMessage)) *FacadeGRPC_SendMessageAlbum_Call {
+func (_c *FacadeGRPC_SendMessageAlbum_Call) Run(run func(newMessages []*dto.NewMessage)) *FacadeGRPC_SendMessageAlbum_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].([]*dto.NewMessage))
 	})

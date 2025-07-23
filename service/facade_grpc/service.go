@@ -1,6 +1,9 @@
 package facade_grpc
 
 import (
+	"path/filepath"
+	"slices"
+
 	"github.com/zelenin/go-tdlib/client"
 
 	"github.com/comerc/budva43/app/dto/grpc/dto"
@@ -70,36 +73,48 @@ func (s *Service) GetMessages(chatId int64, messageIds []int64) ([]*dto.Message,
 		return nil, err
 	}
 
-	var result []*dto.Message
-	for _, message := range messages.Messages {
+	result := make([]*dto.Message, len(messages.Messages))
+	for i, message := range messages.Messages {
 		dtoMessage, err := s.mapMessage(message)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, dtoMessage)
+		result[i] = dtoMessage
 	}
 
 	return result, nil
 }
 
-// GetLastMessage возвращает последнее сообщение в чате (только локальные)
-func (s *Service) GetLastMessage(chatId int64) (*dto.Message, error) {
+func (s *Service) GetChatHistory(
+	chatId int64,
+	fromMessageId int64,
+	offset int32,
+	limit int32,
+) ([]*dto.Message, error) {
 	var err error
 
 	var messages *client.Messages
 	messages, err = s.telegramRepo.GetChatHistory(&client.GetChatHistoryRequest{
-		ChatId:    chatId,
-		Limit:     1,
-		OnlyLocal: true,
+		ChatId:        chatId,
+		FromMessageId: fromMessageId,
+		Offset:        offset,
+		Limit:         limit,
+		OnlyLocal:     false,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if messages.TotalCount == 0 {
-		return nil, nil
+
+	result := make([]*dto.Message, len(messages.Messages))
+	for i, message := range messages.Messages {
+		dtoMessage, err := s.mapMessage(message)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = dtoMessage
 	}
 
-	return s.mapMessage(messages.Messages[0])
+	return result, nil
 }
 
 func (s *Service) SendMessage(newMessage *dto.NewMessage) error {
@@ -151,13 +166,36 @@ func (s *Service) SendMessageAlbum(newMessages []*dto.NewMessage) error {
 		if err != nil {
 			return err
 		}
-		inputMessageContents = append(inputMessageContents, &client.InputMessageText{
-			Text: formattedText,
-			LinkPreviewOptions: &client.LinkPreviewOptions{
-				IsDisabled: true,
-			},
-			ClearDraft: true,
-		})
+		fileExt := filepath.Ext(newMessage.FilePath)
+		if slices.Contains([]string{".png", ".jpg", ".jpeg", ".gif", ".webp"}, fileExt) {
+			inputMessageContents = append(inputMessageContents, &client.InputMessagePhoto{
+				Photo: &client.InputFileLocal{
+					Path: newMessage.FilePath,
+				},
+				Caption: formattedText,
+			})
+		} else if slices.Contains([]string{".mp4", ".mov", ".avi", ".mkv", ".webm"}, fileExt) {
+			inputMessageContents = append(inputMessageContents, &client.InputMessageVideo{
+				Video: &client.InputFileLocal{
+					Path: newMessage.FilePath,
+				},
+				Caption: formattedText,
+			})
+		} else if slices.Contains([]string{".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".wma", ".opus"}, fileExt) {
+			inputMessageContents = append(inputMessageContents, &client.InputMessageAudio{
+				Audio: &client.InputFileLocal{
+					Path: newMessage.FilePath,
+				},
+				Caption: formattedText,
+			})
+		} else {
+			inputMessageContents = append(inputMessageContents, &client.InputMessageDocument{
+				Document: &client.InputFileLocal{
+					Path: newMessage.FilePath,
+				},
+				Caption: formattedText,
+			})
+		}
 	}
 
 	var messages *client.Messages
@@ -211,13 +249,13 @@ func (s *Service) GetMessage(chatId int64, messageId int64) (*dto.Message, error
 	return s.mapMessage(message)
 }
 
-func (s *Service) UpdateMessage(updateMessage *dto.Message) error {
+func (s *Service) UpdateMessage(message *dto.Message) error {
 	var err error
 
 	var sourceMessage *client.Message
 	sourceMessage, err = s.telegramRepo.GetMessage(&client.GetMessageRequest{
-		ChatId:    updateMessage.ChatId,
-		MessageId: updateMessage.Id,
+		ChatId:    message.ChatId,
+		MessageId: message.Id,
 	})
 	if err != nil {
 		return err
@@ -225,7 +263,7 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) error {
 
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
-		Text: updateMessage.Text,
+		Text: message.Text,
 		ParseMode: &client.TextParseModeMarkdown{
 			Version: 2,
 		},
@@ -240,8 +278,8 @@ func (s *Service) UpdateMessage(updateMessage *dto.Message) error {
 	)
 
 	_, err = s.telegramRepo.EditMessageText(&client.EditMessageTextRequest{
-		ChatId:              updateMessage.ChatId,
-		MessageId:           updateMessage.Id,
+		ChatId:              message.ChatId,
+		MessageId:           message.Id,
 		ReplyMarkup:         sourceMessage.ReplyMarkup,
 		InputMessageContent: inputMessageContent,
 	})

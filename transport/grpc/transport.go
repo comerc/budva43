@@ -20,9 +20,9 @@ import (
 //go:generate mockery --name=facadeGRPC --exported
 type facadeGRPC interface {
 	GetMessages(chatId int64, messageIds []int64) ([]*dto.Message, error)
-	GetLastMessage(chatId int64) (*dto.Message, error)
-	SendMessage(message *dto.NewMessage) error
-	SendMessageAlbum(messages []*dto.NewMessage) error
+	GetChatHistory(chatId int64, fromMessageId int64, offset int32, limit int32) ([]*dto.Message, error)
+	SendMessage(newMessage *dto.NewMessage) error
+	SendMessageAlbum(newMessages []*dto.NewMessage) error
 	ForwardMessage(chatId int64, messageId int64) error
 	GetMessage(chatId int64, messageId int64) (*dto.Message, error)
 	UpdateMessage(message *dto.Message) error
@@ -77,7 +77,7 @@ func (t *Transport) Close() error {
 	return t.lis.Close()
 }
 
-func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest) (*pb.GetMessagesResponse, error) {
+func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest) (*pb.MessagesResponse, error) {
 	var err error
 
 	var msgs []*dto.Message
@@ -85,43 +85,50 @@ func (t *Transport) GetMessages(ctx context.Context, req *pb.GetMessagesRequest)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	res := &pb.GetMessagesResponse{}
-	for _, m := range msgs {
-		res.Messages = append(res.Messages, &pb.Message{
+	res := &pb.MessagesResponse{
+		Messages: make([]*pb.Message, len(msgs)),
+	}
+	for i, m := range msgs {
+		res.Messages[i] = &pb.Message{
 			Id:      m.Id,
 			ChatId:  m.ChatId,
 			Text:    m.Text,
 			Forward: m.Forward,
-		})
+		}
 	}
 	return res, nil
 }
 
-func (t *Transport) GetLastMessage(ctx context.Context, req *pb.GetLastMessageRequest) (*pb.MessageResponse, error) {
+func (t *Transport) GetChatHistory(ctx context.Context, req *pb.GetChatHistoryRequest) (*pb.MessagesResponse, error) {
 	var err error
 
-	var res *dto.Message
-	res, err = t.facade.GetLastMessage(req.ChatId)
+	var msgs []*dto.Message
+	msgs, err = t.facade.GetChatHistory(req.ChatId, req.FromMessageId, req.Offset, req.Limit)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if res == nil {
-		return nil, nil
+	res := &pb.MessagesResponse{
+		Messages: make([]*pb.Message, len(msgs)),
 	}
-	return &pb.MessageResponse{Message: &pb.Message{
-		Id:      res.Id,
-		ChatId:  res.ChatId,
-		Text:    res.Text,
-		Forward: res.Forward,
-	}}, nil
+	for i, m := range msgs {
+		res.Messages[i] = &pb.Message{
+			Id:      m.Id,
+			ChatId:  m.ChatId,
+			Text:    m.Text,
+			Forward: m.Forward,
+		}
+	}
+	return res, nil
 }
 
 func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.EmptyResponse, error) {
 	var err error
 
 	err = t.facade.SendMessage(&dto.NewMessage{
-		ChatId: req.ChatId,
-		Text:   req.Text,
+		ChatId:           req.NewMessage.ChatId,
+		Text:             req.NewMessage.Text,
+		ReplyToMessageId: req.NewMessage.ReplyToMessageId,
+		FilePath:         req.NewMessage.FilePath,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -132,12 +139,17 @@ func (t *Transport) SendMessage(ctx context.Context, req *pb.SendMessageRequest)
 func (t *Transport) SendMessageAlbum(ctx context.Context, req *pb.SendMessageAlbumRequest) (*pb.EmptyResponse, error) {
 	var err error
 
-	var messages []*dto.NewMessage
-	for _, text := range req.Texts {
+	if len(req.NewMessages) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "messages is empty")
+	}
+
+	messages := make([]*dto.NewMessage, 0, len(req.NewMessages))
+	for _, message := range req.NewMessages {
 		messages = append(messages, &dto.NewMessage{
-			ChatId:           req.ChatId,
-			Text:             text,
-			ReplyToMessageId: req.ReplyToMessageId,
+			ChatId:           message.ChatId,
+			Text:             message.Text,
+			ReplyToMessageId: message.ReplyToMessageId,
+			FilePath:         message.FilePath,
 		})
 	}
 
@@ -178,9 +190,9 @@ func (t *Transport) UpdateMessage(ctx context.Context, req *pb.UpdateMessageRequ
 	var err error
 
 	err = t.facade.UpdateMessage(&dto.Message{
-		Id:     req.MessageId,
-		ChatId: req.ChatId,
-		Text:   req.Text,
+		Id:     req.Message.Id,
+		ChatId: req.Message.ChatId,
+		Text:   req.Message.Text,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -198,7 +210,7 @@ func (t *Transport) DeleteMessages(ctx context.Context, req *pb.DeleteMessagesRe
 	return &pb.EmptyResponse{}, nil
 }
 
-func (t *Transport) GetMessageLink(ctx context.Context, req *pb.GetMessageLinkRequest) (*pb.GetMessageLinkResponse, error) {
+func (t *Transport) GetMessageLink(ctx context.Context, req *pb.GetMessageLinkRequest) (*pb.MessageLinkResponse, error) {
 	var err error
 
 	var link string
@@ -206,7 +218,7 @@ func (t *Transport) GetMessageLink(ctx context.Context, req *pb.GetMessageLinkRe
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.GetMessageLinkResponse{Link: link}, nil
+	return &pb.MessageLinkResponse{Link: link}, nil
 }
 
 func (t *Transport) GetMessageLinkInfo(ctx context.Context, req *pb.GetMessageLinkInfoRequest) (*pb.MessageResponse, error) {

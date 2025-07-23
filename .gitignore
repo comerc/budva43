@@ -33,3 +33,5 @@ _*.go
 ___.md
 
 .vscode/settings.local.json
+
+.DS_Store
