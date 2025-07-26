@@ -165,6 +165,26 @@ tasks:
     cmds:
       - lsof -ti:{{.CLI_ARGS}} | xargs kill -9
 
+  extract:
+    desc: "Extract and split YouTube audio"
+    summary: |
+      Скачивает видео с YouTube, извлекает аудио и нарезает кусками по 20 минут.
+
+      ПРИМЕНЕНИЕ:
+        task extract -- HASH XX:XX
+
+      ПАРАМЕТРЫ:
+        HASH  - ключ видео на YouTube
+        XX:XX - сколько минут отсекать от начала ролика
+
+      ПРИМЕР:
+        task extract -- abc123def45 05:30
+
+      РЕЗУЛЬТАТ: файлы output1.m4a, output2.m4a, ... в папке _extract/
+    cmds:
+      - ./script/extract.sh {{.CLI_ARGS}}
+    silent: true
+
   all:
     desc: "Run tasks: lint -> test -> build"
     summary: |
