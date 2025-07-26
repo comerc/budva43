@@ -31,17 +31,22 @@ trap cleanup EXIT
 # Переходим во временную папку
 cd "$TEMP_DIR"
 
-echo "Скачиваем видео с YouTube..."
-yt-dlp -x --audio-format m4a -o download.m4a "$HASH"
+echo "Скачиваем аудио с YouTube..."
+yt-dlp -f "bestaudio" -o "source.%(ext)s" "$HASH"
 
-echo "Конвертируем в битрейт 48k..."
-ffmpeg -i download.m4a -c:a aac -b:a 48k input.m4a
+# Определяем расширение скачанного файла
+SOURCE_FILE=$(ls source.*)
+EXT="${SOURCE_FILE#*.}"
+TRIMMED_FILE="trimmed.$EXT"
 
 echo "Отрезаем начало ($SKIP_TIME)..."
-ffmpeg -ss "$SKIP_TIME" -i input.m4a -c copy output.m4a
+ffmpeg -ss "$SKIP_TIME" -i "$SOURCE_FILE" -c copy "$TRIMMED_FILE"
+
+echo "Конвертируем в битрейт 48k..."
+ffmpeg -i "$TRIMMED_FILE" -c:a aac -b:a 48k final.m4a
 
 # Получаем длительность оставшегося аудио
-DURATION=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 output.m4a)
+DURATION=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 final.m4a)
 DURATION_INT=$(echo "$DURATION" | cut -d. -f1)
 
 # Проверяем, что получили корректную длительность
@@ -63,20 +68,17 @@ while [ $START_TIME -lt $DURATION_INT ]; do
     if [ $((START_TIME + CHUNK_DURATION)) -lt $DURATION_INT ]; then
         # Полный кусок 20 минут
         echo "Создаём кусок $CHUNK_NUM (20 минут)..."
-        ffmpeg -ss $START_TIME -t $CHUNK_DURATION -i output.m4a -c copy "$OUTPUT_FILE"
+        ffmpeg -ss $START_TIME -t $CHUNK_DURATION -i final.m4a -c copy "$OUTPUT_FILE"
     else
         # Последний кусок (остаток)
         REMAINING=$((DURATION_INT - START_TIME))
         echo "Создаём последний кусок $CHUNK_NUM ($REMAINING секунд)..."
-        ffmpeg -ss $START_TIME -i output.m4a -c copy "$OUTPUT_FILE"
+        ffmpeg -ss $START_TIME -i final.m4a -c copy "$OUTPUT_FILE"
     fi
     
     START_TIME=$((START_TIME + CHUNK_DURATION))
     CHUNK_NUM=$((CHUNK_NUM + 1))
 done
-
-# Удаляем промежуточный файл output.m4a (он больше не нужен)
-rm -f output.m4a
 
 echo "Перемещаем файлы в папку _extract..."
 # Возвращаемся в исходную папку
