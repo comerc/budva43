@@ -35,3 +35,5 @@ ___.md
 .vscode/settings.local.json
 
 .DS_Store
+
+_extract/
