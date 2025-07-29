@@ -134,17 +134,17 @@ func newFuncRunAuthorizationStateHandler(ctx context.Context, s *Service) runAut
 					if !ok {
 						return
 					}
-					stateType := state.AuthorizationStateType()
-					if stateType == client.TypeAuthorizationStateClosing {
+					_, isClosing := state.(*client.AuthorizationStateClosing)
+					if isClosing {
 						continue // пропускаем broadcast, но продолжаем <-authorizer.State
 					}
 					s.broadcast(state)
-					switch stateType {
-					case client.TypeAuthorizationStateWaitPhoneNumber:
+					switch state.(type) {
+					case *client.AuthorizationStateWaitPhoneNumber:
 						authorizer.PhoneNumber <- <-s.inputChan
-					case client.TypeAuthorizationStateWaitCode:
+					case *client.AuthorizationStateWaitCode:
 						authorizer.Code <- <-s.inputChan
-					case client.TypeAuthorizationStateWaitPassword:
+					case *client.AuthorizationStateWaitPassword:
 						authorizer.Password <- <-s.inputChan
 					}
 				}

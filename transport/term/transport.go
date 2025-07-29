@@ -212,10 +212,8 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		return
 	}
 
-	stateType := state.AuthorizationStateType()
-
-	switch stateType {
-	case client.TypeAuthorizationStateWaitPhoneNumber:
+	switch stateByType := state.(type) {
+	case *client.AuthorizationStateWaitPhoneNumber:
 		phoneNumber := t.phoneNumber
 		if phoneNumber == "" {
 			t.termRepo.Println("Введите номер телефона: ")
@@ -228,7 +226,7 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		}
 		t.authService.GetInputChan() <- phoneNumber
 
-	case client.TypeAuthorizationStateWaitCode:
+	case *client.AuthorizationStateWaitCode:
 		t.termRepo.Println("Введите код подтверждения: ")
 		var code string
 		code, err = t.termRepo.HiddenReadLine()
@@ -237,10 +235,9 @@ func (t *Transport) processAuth(state client.AuthorizationState) {
 		}
 		t.authService.GetInputChan() <- code
 
-	case client.TypeAuthorizationStateWaitPassword:
-		passwordState := state.(*client.AuthorizationStateWaitPassword)
-		if passwordState.PasswordHint != "" {
-			t.termRepo.Printf("Введите пароль (подсказка: %s): \n", passwordState.PasswordHint)
+	case *client.AuthorizationStateWaitPassword:
+		if stateByType.PasswordHint != "" {
+			t.termRepo.Printf("Введите пароль (подсказка: %s): \n", stateByType.PasswordHint)
 		} else {
 			t.termRepo.Println("Введите пароль: ")
 		}
