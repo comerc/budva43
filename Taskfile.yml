@@ -185,6 +185,35 @@ tasks:
       - ./script/extract.sh {{.CLI_ARGS}}
     silent: true
 
+  cleanup_git:
+    desc: "Clean up deleted files from Git history"
+    summary: |
+      Находит файлы, которые были удалены из рабочей директории, но остались в истории Git,
+      и предлагает удалить их с помощью git-filter-repo.
+
+      ВНИМАНИЕ: Эта операция изменяет историю только текущей ветки!
+
+      ТРЕБОВАНИЯ:
+        macOS:    brew install git-filter-repo
+        Ubuntu:   sudo apt install git-filter-repo
+        pip:      pip install git-filter-repo
+
+      ПРИМЕНЕНИЕ:
+        task cleanup_git
+
+      ЧТО ДЕЛАЕТ:
+        1. Сканирует историю текущей ветки на предмет файлов
+        2. Сравнивает с текущим состоянием рабочей директории
+        3. Показывает список удаленных файлов
+        4. Предлагает удалить их из истории с помощью git-filter-repo
+        5. Работает только с текущей веткой (безопаснее)
+
+      ПОСЛЕ ВЫПОЛНЕНИЯ:
+        git push origin --force
+    cmds:
+      - ./script/cleanup_git.sh
+    silent: true
+
   all:
     desc: "Run tasks: lint -> test -> build"
     summary: |

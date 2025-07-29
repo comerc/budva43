@@ -292,6 +292,9 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # for `task extract`
 brew install yt-dlp
 brew install ffmpeg
+
+# for `task cleanup_git`
+brew install git-filter-repo
 ```
 
 ## How to check grpc
