@@ -132,6 +132,7 @@ func newFuncRunAuthorizationStateHandler(ctx context.Context, s *Service) runAut
 					return
 				case state, ok := <-authorizer.State:
 					if !ok {
+						s.broadcast(nil)
 						return
 					}
 					_, isClosing := state.(*client.AuthorizationStateClosing)
