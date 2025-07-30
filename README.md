@@ -135,6 +135,7 @@ $ go install github.com/vektra/mockery/v2@v2.53.3
 - [x] [error-log-or-return](https://github.com/error-log-or-return/error-log-or-return)
 - [x] [go-table-test-navigator](https://github.com/comerc/go-table-test-navigator)
 - [ ] jba/templatecheck
+- [x] [OCP-VS-YAGNI](doc/OCP-VS-YAGNI.md)
 
 ## .env
 
