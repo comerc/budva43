@@ -165,13 +165,13 @@ tasks:
     cmds:
       - lsof -ti:{{.CLI_ARGS}} | xargs kill -9
 
-  extract:
+  extract-youtube-audio:
     desc: "Extract and split YouTube audio"
     summary: |
       Скачивает видео с YouTube, извлекает аудио и нарезает кусками по 20 минут.
 
       ПРИМЕНЕНИЕ:
-        task extract -- HASH XX:XX
+        task extract-youtube-audio -- HASH XX:XX
 
       ПАРАМЕТРЫ:
         HASH  - ключ видео на YouTube
@@ -182,10 +182,10 @@ tasks:
 
       РЕЗУЛЬТАТ: файлы output1.m4a, output2.m4a, ... в папке _extract/
     cmds:
-      - ./script/extract.sh {{.CLI_ARGS}}
+      - ./script/extract_youtube_audio.sh {{.CLI_ARGS}}
     silent: true
 
-  cleanup_git:
+  cleanup-git:
     desc: "Clean up deleted files from Git history"
     summary: |
       Находит файлы, которые были удалены из рабочей директории, но остались в истории Git,
@@ -199,7 +199,7 @@ tasks:
         pip:      pip install git-filter-repo
 
       ПРИМЕНЕНИЕ:
-        task cleanup_git
+        task cleanup-git
 
       ЧТО ДЕЛАЕТ:
         1. Сканирует историю текущей ветки на предмет файлов

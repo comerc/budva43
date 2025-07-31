@@ -17,7 +17,7 @@ SKIP_TIME=$2
 ORIGINAL_DIR=$(pwd)
 
 # Создаём временную папку
-TEMP_DIR="/tmp/_extract_$$"
+TEMP_DIR="/tmp/_extract_youtube_audio_$$"
 mkdir -p "$TEMP_DIR"
 
 # Функция очистки при выходе
@@ -80,18 +80,18 @@ while [ $START_TIME -lt $DURATION_INT ]; do
     CHUNK_NUM=$((CHUNK_NUM + 1))
 done
 
-echo "Перемещаем файлы в папку _extract..."
+echo "Перемещаем файлы в папку _extract_youtube_audio..."
 # Возвращаемся в исходную папку
 cd "$ORIGINAL_DIR"
 
-# Создаём папку _extract если её нет
-mkdir -p _extract
+# Создаём папку _extract_youtube_audio если её нет
+mkdir -p _extract_youtube_audio
 
 # Удаляем старые файлы output*.m4a если они есть
-rm -f _extract/output*.m4a
+rm -f _extract_youtube_audio/output*.m4a
 
 # Перемещаем новые файлы
-mv "$TEMP_DIR"/output*.m4a _extract/
+mv "$TEMP_DIR"/output*.m4a _extract_youtube_audio/
 
-echo "Готово! Создано $((CHUNK_NUM - 1)) файлов в папке _extract/"
-ls -la _extract/output*.m4a
+echo "Готово! Создано $((CHUNK_NUM - 1)) файлов в папке _extract_youtube_audio/"
+ls -la _extract_youtube_audio/output*.m4a
