@@ -6,6 +6,8 @@ import (
 	"github.com/comerc/budva43/app/util"
 )
 
+// TODO: homeDir, err := os.UserHomeDir() вместо util.ProjectRoot
+
 // не используем slog, т.к. он инициализируется после конфига
 
 func transformDirs() {
