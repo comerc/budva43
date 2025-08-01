@@ -9,6 +9,12 @@ tasks:
       - echo "task <name> --summary"
     silent: true
 
+  mod:
+    desc: "Sync go.mod"
+    cmds:
+      - go mod download
+      - go mod tidy
+
   log:
     desc: "Load and filter log (next lines)"
     summary: |
