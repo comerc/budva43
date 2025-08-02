@@ -44,15 +44,8 @@ if [ -z "$SHELL_CONFIG" ]; then
 fi
 
 echo "📄 Конфигурационный файл: $SHELL_CONFIG"
-
-# Проверяем, есть ли уже GOPATH в PATH
-if grep -q "GOPATH.*bin" "$SHELL_CONFIG" 2>/dev/null; then
-    echo "✅ PATH уже настроен в $SHELL_CONFIG"
-else
-    echo "export PATH=\"\$PATH:$GOPATH/bin\"" >> "$SHELL_CONFIG"
-    echo "✅ PATH добавлен в $SHELL_CONFIG"
-fi
-
+echo "export PATH=\"\$PATH:$GOPATH/bin\"" >> "$SHELL_CONFIG"
+echo "✅ PATH добавлен в $SHELL_CONFIG"
 echo ""
 echo "🔄 Применяем изменения..."
 source "$SHELL_CONFIG"
