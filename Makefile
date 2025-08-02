@@ -1,3 +1,10 @@
+# Дефолтная команда
+.DEFAULT_GOAL := init
+
+init:
+	@echo "🚀 Инициализация проекта budva43..."
+	./script/init.sh
+
 test-auth-telegram-state:
 	curl http://localhost:7070/api/auth/telegram/state
 

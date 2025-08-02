@@ -220,6 +220,20 @@ tasks:
       - ./script/cleanup_git.sh
     silent: true
 
+  ext:
+    desc: "Install VS Code extensions"
+    summary: |
+      Устанавливает расширения VS Code из script/ext.sh.
+      
+      ПРИМЕНЕНИЕ:
+        task ext
+      
+      ПРИМЕЧАНИЕ:
+        Отредактируйте script/ext.sh по своему усмотрению перед запуском.
+    cmds:
+      - ./script/ext.sh
+    silent: true
+
   all:
     desc: "Run tasks: lint -> test -> build"
     summary: |

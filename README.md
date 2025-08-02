@@ -21,6 +21,12 @@ $ git submodule init
 $ git submodule update
 ```
 
+## Prepere dependencies
+
+```bash
+make
+```
+
 ## How to Dev Start
 
 Direct install TDLib on host machine for best dev experience or use DevContainer (some restrictions) for build on Ubuntu.
@@ -39,12 +45,6 @@ only first time:
 $ docker-compose build
 ```
 ...then "Reopen in Container"
-
-### Install Mockery V2
-
-```bash
-$ go install github.com/vektra/mockery/v2@v2.53.3
-```
 
 ## Applied Technologies
 
@@ -272,37 +272,6 @@ To -
   - [x] Forward.SendCopy (or forward)
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
-
-## Dependencies
-
-- [task](https://taskfile.dev/)
-- [pplog](https://github.com/michurin/human-readable-json-logging)
-- [tail](https://github.com/uutils/coreutils) (cross platform)
-- [gojq](https://github.com/itchyny/gojq)
-- [jqp](https://github.com/noahgorstein/jqp)
-- [golangci-lint](https://github.com/golangci/golangci-lint)
-- [godog](github.com/cucumber/godog)
-- [protobuf](https://github.com/protocolbuffers/protobuf-go)
-
-```bash
-# golangci-lint
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
-# godog
-go install github.com/cucumber/godog/cmd/godog@latest
-
-# protobuf
-brew install protobuf
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-# for `task extract`
-brew install yt-dlp
-brew install ffmpeg
-
-# for `task cleanup_git`
-brew install git-filter-repo
-```
 
 ## How to check grpc
 
