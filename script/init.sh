@@ -201,7 +201,7 @@ check_path() {
     GOPATH=$(go env GOPATH)
     if [ -z "$GOPATH" ]; then
         echo "⚠️  GOPATH не установлен"
-        return
+        exit 1
     fi
     
     echo "📁 GOPATH: $GOPATH"
@@ -212,6 +212,7 @@ check_path() {
     else
         echo "⚠️  GOPATH/bin не найден в PATH"
         echo "💡 Выполните: make path"
+        exit 1
     fi
 }
 
