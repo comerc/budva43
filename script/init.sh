@@ -16,8 +16,6 @@ esac
 
 echo "📋 Платформа: $PLATFORM"
 
-
-
 # Функция для установки Go инструментов
 install_go_tools() {
     echo "🔧 Установка Go инструментов..."
@@ -37,6 +35,13 @@ install_go_tools() {
     # Protocol Buffers
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+    
+    # gRPC инструменты
+    go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+    
+    # JSON инструменты
+    go install github.com/itchyny/gojq/cmd/gojq@latest
+    go install github.com/noahgorstein/jqp@latest
     
     echo "✅ Go инструменты установлены"
 }
@@ -60,11 +65,7 @@ install_linux_deps() {
         lsof \
         ffmpeg \
         yt-dlp \
-        jq \
-        gojq \
-        protobuf-compiler \
-        jqp \
-        grpcurl
+        protobuf-compiler
     
     echo "✅ Системные зависимости установлены"
 }
@@ -87,11 +88,8 @@ install_macos_deps() {
         lsof \
         ffmpeg \
         yt-dlp \
-        jq \
-        gojq \
         git-filter-repo \
         protobuf \
-        jqp \
         grpcurl
     
     echo "✅ Системные зависимости установлены"
@@ -102,7 +100,7 @@ install_windows_deps() {
     echo "📦 Установка системных зависимостей (Windows)..."
     
     # Список зависимостей для Windows
-    WINDOWS_DEPS="git ffmpeg yt-dlp jq gojq jqp protobuf grpcurl"
+    WINDOWS_DEPS="git ffmpeg yt-dlp protobuf"
     
     # Проверяем наличие пакетных менеджеров
     HAS_CHOCO=false
@@ -164,10 +162,6 @@ install_windows_deps() {
     fi
 }
 
-
-
-
-
 # Функция для создания конфигурационных файлов
 setup_config() {
     echo "🔧 Настройка конфигурации..."
@@ -181,8 +175,6 @@ setup_config() {
     
     echo "✅ Конфигурация настроена"
 }
-
-
 
 # Функция для проверки Go
 check_go() {
