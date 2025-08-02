@@ -35,7 +35,7 @@ tasks:
       # Это позволяет избежать сообщения об ошибке от Task при нажатии Ctrl+C.
       - |
         SUBPROJECT=engine \
-        TAIL_ARGS="-0" ./script/log.sh {{.CLI_ARGS}} & wait
+        TAIL_ARGS="-n 0" ./script/log.sh {{.CLI_ARGS}} & wait
     silent: true
 
   log-all:
