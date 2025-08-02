@@ -194,6 +194,27 @@ check_go() {
     fi
 }
 
+# Функция для проверки PATH
+check_path() {
+    echo "🔍 Проверка PATH..."
+    
+    GOPATH=$(go env GOPATH)
+    if [ -z "$GOPATH" ]; then
+        echo "⚠️  GOPATH не установлен"
+        return
+    fi
+    
+    echo "📁 GOPATH: $GOPATH"
+    
+    # Проверяем, есть ли GOPATH/bin в PATH
+    if [[ ":$PATH:" == *":$GOPATH/bin:"* ]]; then
+        echo "✅ PATH настроен корректно"
+    else
+        echo "⚠️  GOPATH/bin не найден в PATH"
+        echo "💡 Выполните: make path"
+    fi
+}
+
 # Функция для проверки Docker (опционально)
 check_docker() {
     if command -v docker >/dev/null 2>&1; then
@@ -216,6 +237,7 @@ main() {
     
     # Проверяем основные команды
     check_go
+    check_path
     check_docker
     
     # Устанавливаем системные зависимости
