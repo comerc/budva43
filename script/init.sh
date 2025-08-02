@@ -23,7 +23,7 @@ install_go_tools() {
     # Основные инструменты
     go install github.com/vektra/mockery/v2@v2.53.3
     go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
-    go install github.com/mailru/easyjson/...@latest
+    # go install github.com/mailru/easyjson/...@latest
     go install github.com/99designs/gqlgen@latest
     go install github.com/unused-interface-methods/unused-interface-methods@latest
     go install github.com/error-log-or-return/error-log-or-return@latest
