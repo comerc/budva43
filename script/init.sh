@@ -28,7 +28,8 @@ install_go_tools() {
     go install github.com/unused-interface-methods/unused-interface-methods@latest
     go install github.com/error-log-or-return/error-log-or-return@latest
     go install github.com/go-task/task/v3/cmd/task@latest
-    
+    go install github.com/michurin/human-readable-json-logging/cmd/...@latest
+
     # BDD тестирование
     go install github.com/cucumber/godog/cmd/godog@latest
     
