@@ -86,7 +86,7 @@ func (t *Transport) StartContext(ctx context.Context, shutdown func()) error {
 		)
 	}
 
-	t.authService.Subscribe(t.newFuncNotify())
+	t.authService.Subscribe(newFuncNotify(t))
 
 	t.createServer()
 
@@ -112,7 +112,7 @@ func (t *Transport) Close() error {
 }
 
 // newFuncNotify создает функцию для отправки состояния авторизации
-func (t *Transport) newFuncNotify() notify {
+func newFuncNotify(t *Transport) notify {
 	return func(state client.AuthorizationState) {
 		t.authState = state
 	}
