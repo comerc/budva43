@@ -88,7 +88,7 @@ func (t *Transport) WithPhoneNumber(v string) *Transport {
 func (t *Transport) StartContext(ctx context.Context, shutdown func()) error {
 	t.shutdown = shutdown
 
-	t.authService.Subscribe(newFuncNotify(t))
+	t.authService.Subscribe(t.newFuncNotify())
 
 	go t.runInputLoop(ctx)
 
@@ -128,7 +128,7 @@ func (t *Transport) runInputLoop(ctx context.Context) {
 }
 
 // newFuncNotify создает функцию для отправки состояния авторизации
-func newFuncNotify(t *Transport) notify {
+func (t *Transport) newFuncNotify() notify {
 	return func(state client.AuthorizationState) {
 		select {
 		case t.authStateChan <- state:

@@ -49,7 +49,7 @@ func (s *Service) handleConfigReload() {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "")
 
-	err = engine_config.Reload(newFuncInitDestinations(s))
+	err = engine_config.Reload(s.newFuncInitDestinations())
 
 	if errors.Is(err, engine_config.ErrEmptyConfigData) {
 		var customError *log.CustomError
@@ -63,7 +63,7 @@ func (s *Service) handleConfigReload() {
 type initDestinations = func([]domain.ChatId)
 
 // _newFuncInitDestinations создает колбек для загрузки чатов (не используется)
-// func _newFuncInitDestinations(s *Service) initDestinations {
+// func (s *Service) _newFuncInitDestinations() initDestinations {
 // 	var fn initDestinations
 // 	level := 0
 // 	notFound := make(map[domain.ChatId]struct{})
@@ -119,7 +119,7 @@ type initDestinations = func([]domain.ChatId)
 // }
 
 // newFuncInitDestinations создает колбек для загрузки чатов
-func newFuncInitDestinations(s *Service) initDestinations {
+func (s *Service) newFuncInitDestinations() initDestinations {
 	loadChats := false
 	return func(destinations []domain.ChatId) {
 		if !loadChats {
