@@ -42,7 +42,7 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig)
 }
 
 //go:generate mockery --name=filtersModeService --exported
@@ -52,7 +52,7 @@ type filtersModeService interface {
 
 //go:generate mockery --name=forwarderService --exported
 type forwarderService interface {
-	ForwardMessages(messages []*client.Message, filtersMode domain.FiltersMode, srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)
+	ForwardMessages(messages []*client.Message, filtersMode domain.FiltersMode, srcChatId, dstChatId, prevMessageId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)
 }
 
 type Handler struct {
@@ -208,28 +208,48 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			dstChatId := util.ConvertToInt[int64](a[1])
 			tmpMessageId := util.ConvertToInt[int64](a[2])
 
+			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
+			newMessageId := data.newMessageIds[tmpChatMessageId]
+			result = append(result, fmt.Sprintf("tmpMessageId: %d, newMessageId: %d", tmpMessageId, newMessageId))
+
 			forwardRule, ok := engineConfig.ForwardRules[forwardRuleId]
 			if !ok {
 				err = log.NewError("forwardRule not found")
 				return
 			}
+
 			if forwardRule.CopyOnce {
+				prevMessageId := newMessageId
+				const isSendCopy = true
+				h.forwarderService.ForwardMessages(
+					[]*client.Message{src},
+					"",
+					chatId,
+					dstChatId,
+					prevMessageId,
+					isSendCopy,
+					forwardRuleId,
+					engineConfig,
+				)
 				return
 			}
 
-			var formattedText *client.FormattedText
-			formattedText, err = util.DeepCopy(srcFormattedText)
-			if err != nil {
-				err = log.WrapError(err) // внешняя ошибка
-				return
-			}
 			if (forwardRule.SendCopy || src.CanBeSaved) &&
-				h.filtersModeService.Map(formattedText, forwardRule) == domain.FiltersCheck {
+				h.filtersModeService.Map(srcFormattedText, forwardRule) == domain.FiltersCheck {
 				_, ok := checkFns[forwardRule.Check]
 				if !ok {
 					checkFns[forwardRule.Check] = func() {
 						const isSendCopy = false // обязательно надо форвардить, иначе не видно текущего сообщения
-						h.forwarderService.ForwardMessages([]*client.Message{src}, "", chatId, forwardRule.Check, isSendCopy, forwardRuleId, engineConfig)
+						h.forwarderService.ForwardMessages(
+							[]*client.Message{src},
+							"",
+							chatId,
+							forwardRule.Check,
+							0, // prevMessageId
+							isSendCopy,
+							forwardRuleId,
+							engineConfig,
+						)
 					}
 				}
 				return
@@ -243,7 +263,7 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			// 	if src.ChatId == forwardRule.From && (forwardRule.SendCopy || src.CanBeSaved) {
 			// 		for _, dstChatId := range forwardRule.To {
 			// 			if testChatId == dstChatId {
-			// 				if h.filtersModeService.Map(formattedText, forwardRule) == domain.FiltersCheck {
+			// 				if h.filtersModeService.Map(srcFormattedText, forwardRule) == domain.FiltersCheck {
 			// 					hasFiltersCheck = true
 			// 					_, ok := checkFns[forwardRule.Check]
 			// 					if !ok {
@@ -261,12 +281,15 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 			// 	return
 			// }
 
-			withSources := true
-			h.transformService.Transform(formattedText, withSources, src, dstChatId, engineConfig)
+			var formattedText *client.FormattedText
+			formattedText, err = util.DeepCopy(srcFormattedText)
+			if err != nil {
+				err = log.WrapError(err) // внешняя ошибка
+				return
+			}
 
-			tmpChatMessageId := fmt.Sprintf("%d:%d", dstChatId, tmpMessageId)
-			newMessageId := data.newMessageIds[tmpChatMessageId]
-			result = append(result, fmt.Sprintf("toChatMessageId: %s, newMessageId: %d", toChatMessageId, newMessageId))
+			withSources := true
+			h.transformService.Transform(formattedText, withSources, src, dstChatId, 0, engineConfig)
 
 			switch src.Content.(type) {
 			case

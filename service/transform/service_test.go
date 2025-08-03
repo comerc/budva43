@@ -166,7 +166,7 @@ func Test(t *testing.T) {
 			t.Parallel()
 
 			transformService := test.setup(t)
-			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId, config.Engine)
+			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId, 0, config.Engine)
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)

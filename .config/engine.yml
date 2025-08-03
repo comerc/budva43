@@ -22,6 +22,7 @@ sources:
   #   link:
   #     title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
   #     for: [321]
+  #   prev: "🔗Prev Version"
   # 123:
   #   sign:
   #     title: "*Source*" # for SendCopy (with markdown)

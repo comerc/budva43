@@ -39,7 +39,7 @@ type messageService interface {
 
 //go:generate mockery --name=transformService --exported
 type transformService interface {
-	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig)
+	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig)
 }
 
 //go:generate mockery --name=rateLimiterService --exported
@@ -79,8 +79,8 @@ func New(
 // ForwardMessages пересылает сообщения в целевой чат
 func (s *Service) ForwardMessages(
 	messages []*client.Message, filtersMode domain.FiltersMode,
-	srcChatId, dstChatId int64, isSendCopy bool, forwardRuleId string,
-	engineConfig *domain.EngineConfig,
+	srcChatId, dstChatId, prevMessageId int64,
+	isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig,
 ) {
 	var err error
 	defer s.log.ErrorOrDebug(&err, "",
@@ -97,7 +97,7 @@ func (s *Service) ForwardMessages(
 	var result *client.Messages
 
 	if isSendCopy {
-		contents := s.prepareMessageContents(messages, dstChatId, engineConfig)
+		contents := s.prepareMessageContents(messages, dstChatId, prevMessageId, engineConfig)
 		replyToMessageId := s.getReplyToMessageId(messages[0], dstChatId)
 		result, err = s.sendMessages(dstChatId, contents, replyToMessageId)
 	} else {
@@ -189,7 +189,7 @@ func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 }
 
 // prepareMessageContents подготавливает сообщения для отправки
-func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId int64, engineConfig *domain.EngineConfig) []client.InputMessageContent {
+func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig) []client.InputMessageContent {
 	contents := make([]client.InputMessageContent, 0)
 
 	for i, message := range messages {
@@ -215,7 +215,7 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId i
 			}
 
 			withSources := i == 0
-			s.transformService.Transform(formattedText, withSources, src, dstChatId, engineConfig)
+			s.transformService.Transform(formattedText, withSources, src, dstChatId, prevMessageId, engineConfig)
 
 			content := s.messageService.GetInputMessageContent(src, formattedText)
 			if content != nil {

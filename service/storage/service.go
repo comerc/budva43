@@ -57,14 +57,26 @@ func (s *Service) SetCopiedMessageId(chatId, messageId int64, toChatMessageId st
 		"result", &result,
 	)
 
+	lastPos := strings.LastIndex(toChatMessageId, ":")
+	prefix := toChatMessageId[:lastPos+1]
+
 	fn := func(val string) (string, error) {
 		var ss []string
 		if val != "" {
 			// workaround https://stackoverflow.com/questions/28330908/how-to-string-split-an-empty-string-in-go
 			ss = strings.Split(val, ",")
 		}
-		ss = append(ss, toChatMessageId)
-		ss = util.Distinct(ss)
+		isFound := false
+		for i, s := range ss {
+			if strings.HasPrefix(s, prefix) {
+				isFound = true
+				ss[i] = toChatMessageId
+				break
+			}
+		}
+		if !isFound {
+			ss = append(ss, toChatMessageId)
+		}
 		return strings.Join(ss, ","), nil
 	}
 

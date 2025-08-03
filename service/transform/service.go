@@ -67,7 +67,7 @@ func New(
 
 // Transform преобразует содержимое сообщения
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool,
-	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
+	src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig,
 ) {
 	defer s.log.ErrorOrDebug(nil, "",
 		"withSources", withSources,
@@ -84,6 +84,9 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 	if withSources {
 		s.addSourceSign(formattedText, src, dstChatId, engineConfig)
 		s.addSourceLink(formattedText, src, dstChatId, engineConfig)
+	}
+	if prevMessageId != 0 {
+		s.addPrevMessageId(formattedText, src, dstChatId, prevMessageId, engineConfig)
 	}
 }
 
@@ -323,6 +326,43 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 	}
 
 	text := fmt.Sprintf("[%s](%s)", source.Link.Title, messageLink.Link)
+	s.addText(formattedText, text)
+}
+
+// addPrevMessageId добавляет id предыдущей версии сообщения
+func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
+	src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig,
+) {
+	var err error
+	defer s.log.ErrorOrDebug(&err, "",
+		"srcChatId", src.ChatId,
+		"srcId", src.Id,
+		"dstChatId", dstChatId,
+		"prevMessageId", prevMessageId,
+	)
+
+	source := engineConfig.Sources[src.ChatId]
+	if source == nil {
+		err = log.NewError("source not found")
+		return
+	}
+	prev := source.Prev
+	if prev == "" {
+		prev = "Prev"
+	}
+
+	var messageLink *client.MessageLink
+	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
+		ChatId:    dstChatId,
+		MessageId: prevMessageId,
+		ForAlbum:  src.MediaAlbumId != 0,
+		// ForComment: false, // удалено в новой версии go-tdlib
+	})
+	if err != nil {
+		return
+	}
+
+	text := fmt.Sprintf("[%s](%s)", prev, messageLink.Link)
 	s.addText(formattedText, text)
 }
 
