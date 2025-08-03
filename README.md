@@ -276,6 +276,5 @@ To -
 ## How to check grpc
 
 ```bash
-brew install grpcurl
 grpcurl -plaintext localhost:50051 list
 ```
