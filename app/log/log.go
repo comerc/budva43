@@ -79,7 +79,9 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		args = append(args, slog.Group("source", groupArgs...))
 	} else {
 		stack = GetCallStack(3, false)
-		args = append(args, "source", stack[0].String())
+		if len(stack) > 0 {
+			args = append(args, "source", stack[0].String())
+		}
 	}
 	l.Log(context.Background(), level, message, args...)
 }
