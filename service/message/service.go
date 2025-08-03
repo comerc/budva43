@@ -83,9 +83,11 @@ func (s *Service) GetInputMessageContent(message *client.Message, formattedText 
 	case *client.MessageText:
 		messageText := messageContent.(*client.MessageText)
 		return &client.InputMessageText{
-			Text:               formattedText,
-			LinkPreviewOptions: messageText.LinkPreviewOptions,
-			ClearDraft:         true,
+			Text: formattedText,
+			LinkPreviewOptions: &client.LinkPreviewOptions{
+				IsDisabled: messageText.LinkPreview == nil,
+			},
+			ClearDraft: true,
 		}
 	case *client.MessageAnimation:
 		messageAnimation := messageContent.(*client.MessageAnimation)
