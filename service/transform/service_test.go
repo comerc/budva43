@@ -2196,3 +2196,226 @@ func Test_applyMarkdownReplacements(t *testing.T) {
 		})
 	}
 }
+
+func Test_addPrevMessageId(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		formattedText    *client.FormattedText
+		src              *client.Message
+		dstChatId        int64
+		prevMessageId    int64
+		engineConfig     *domain.EngineConfig
+		expectedText     string
+		expectedEntities []*client.TextEntity
+		setup            func(t *testing.T) *Service
+	}{
+		{
+			name: "success_with_default_prev",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 0,
+			},
+			dstChatId:     -10123,
+			prevMessageId: 456,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10121: {
+						Prev: "",
+					},
+				},
+			},
+			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10123,
+					MessageId: 456,
+					ForAlbum:  false,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/456",
+				}, nil)
+
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[Prev](https://t.me/test/456)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[Prev](https://t.me/test/456)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_custom_prev",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 0,
+			},
+			dstChatId:     -10123,
+			prevMessageId: 456,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10121: {
+						Prev: "Предыдущее",
+					},
+				},
+			},
+			expectedText:     "test message\n\n[Предыдущее](https://t.me/test/456)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10123,
+					MessageId: 456,
+					ForAlbum:  false,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/456",
+				}, nil)
+
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[Предыдущее](https://t.me/test/456)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[Предыдущее](https://t.me/test/456)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_media_album",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 789,
+			},
+			dstChatId:     -10123,
+			prevMessageId: 456,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10121: {
+						Prev: "Prev",
+					},
+				},
+			},
+			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10123,
+					MessageId: 456,
+					ForAlbum:  true,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/456",
+				}, nil)
+
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[Prev](https://t.me/test/456)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[Prev](https://t.me/test/456)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "source_not_found",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 0,
+			},
+			dstChatId:     -10123,
+			prevMessageId: 456,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{},
+			},
+			expectedText:     "test message",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				return New(nil, nil, nil)
+			},
+		},
+		{
+			name: "get_message_link_error",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 0,
+			},
+			dstChatId:     -10123,
+			prevMessageId: 456,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10121: {
+						Prev: "Prev",
+					},
+				},
+			},
+			expectedText:     "test message",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10123,
+					MessageId: 456,
+					ForAlbum:  false,
+				}).Return(nil, assert.AnError)
+
+				return New(telegramRepo, nil, nil)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			transformService := test.setup(t)
+			transformService.addPrevMessageId(test.formattedText, test.src, test.dstChatId, test.prevMessageId, test.engineConfig)
+
+			assert.Equal(t, test.expectedText, test.formattedText.Text)
+			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
+		})
+	}
+}
