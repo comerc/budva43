@@ -30,7 +30,7 @@ sources:
   #     title: "*Source*" # for SendCopy (with markdown)
   #     for: [321]
   #   prev:
-  #     title: "Prev Version ↖"
+  #     title: "↖Prev Version"
   #     for: [321, 888]
   #   auto-answer: true
   #   delete-system-messages: true

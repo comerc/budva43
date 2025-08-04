@@ -418,6 +418,7 @@ const (
 	// Константы из engine.e2e.yml // TODO: получать через grpc?
 	E2E_SIGN = "**Sign**"
 	E2E_LINK = "**Link**"
+	// E2E_PREV = "**Prev**" // TODO: использовать кастомную константу
 )
 
 func (s *scenario) addCheckWithExpectedSign() error {
