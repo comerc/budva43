@@ -362,7 +362,7 @@ func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
 	}
 	prev := source.Prev
 	if prev == "" {
-		prev = "Prev"
+		prev = domain.PREV_LINK
 	}
 
 	var messageLink *client.MessageLink

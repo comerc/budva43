@@ -19,4 +19,4 @@ Feature: 09.sources_link_title
       | SRC PRV CHL 1 | 1002792282007 |
       | SRC PUB GRP 1 | 1002736661856 |
 # | SRC PRV GRP 1 | 4832061506    |
-# 400 Message links are available only for messages in supergroups and channel chats
+# ^ 400 Message links are available only for messages in supergroups and channel chats

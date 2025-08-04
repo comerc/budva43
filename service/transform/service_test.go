@@ -2319,7 +2319,7 @@ func Test_addPrevMessageId(t *testing.T) {
 			engineConfig: &domain.EngineConfig{
 				Sources: map[int64]*domain.Source{
 					-10121: {
-						Prev: "Prev",
+						Prev: domain.PREV_LINK,
 					},
 				},
 			},
@@ -2387,7 +2387,7 @@ func Test_addPrevMessageId(t *testing.T) {
 			engineConfig: &domain.EngineConfig{
 				Sources: map[int64]*domain.Source{
 					-10121: {
-						Prev: "Prev",
+						Prev: domain.PREV_LINK,
 					},
 				},
 			},

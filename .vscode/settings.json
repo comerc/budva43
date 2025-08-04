@@ -11,6 +11,7 @@
 	"go.testFlags": [
 		"-count=1",
 		// "-short",
+		"-timeout=30m",
 	],
 	"go.enableCodeLens": {
 		"runtest": true,

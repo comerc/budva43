@@ -12,16 +12,18 @@ Feature: 12.1.copy_once_t
     And сообщение в чате "DST PUB CHL 1" (1002667730628)
     And сообщение в чате "DST PRV CHL 1" (1002473038431)
     And сообщение в чате "DST PUB GRP 1" (1002866470933)
-    And сообщение в чате "DST PRV GRP 1" (4897079215)
+    # And сообщение в чате "DST PRV GRP 1" (4897079215)
+    # ^ 400 Message links are available only for messages in supergroups and channel chats
     Given сброс проверок
     And сообщение с текстом "some OTHER text"
-    And будет текст "some text"
+    And будет ссылка на предыдущее сообщение в целевом чате
     When пользователь редактирует сообщение
     Then ожидание 10 сек.
     And сообщение в чате "DST PUB CHL 1" (1002667730628)
     And сообщение в чате "DST PRV CHL 1" (1002473038431)
     And сообщение в чате "DST PUB GRP 1" (1002866470933)
-    And сообщение в чате "DST PRV GRP 1" (4897079215)
+    # And сообщение в чате "DST PRV GRP 1" (4897079215)
+    # ^ 400 Message links are available only for messages in supergroups and channel chats
 
     Examples:
       | src_chat_name | src_chat_id   |

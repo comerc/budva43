@@ -88,19 +88,39 @@ func (s *scenario) addCheckWithExpectedForward(mode string) error {
 	return nil
 }
 
-func extractExpectedLink(text string) string {
-	pattern := `>>>\[(.*)\]\((.*)\)<<<`
+func extractExpectedLink(title, text string) string {
+	pattern := fmt.Sprintf(`\[%s\]\((.*)\)`, title)
 	re := regexp.MustCompile(pattern)
 	matches := re.FindStringSubmatch(text)
-	if len(matches) != 3 {
+	if len(matches) != 2 {
 		return ""
 	}
-	return matches[2]
+	return matches[1]
 }
 
-func (s *scenario) addCheckWithExpectedLinkToMessage(ctx context.Context) error {
+func getPrevMessageId(ctx context.Context, chatId int64) (int64, error) {
+	var err error
+
+	var resp *pb.MessagesResponse
+	resp, err = client.GetChatHistory(ctx, &pb.GetChatHistoryRequest{
+		ChatId: chatId,
+		Limit:  2,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("failed to get chat history: %w", err)
+	}
+	if len(resp.Messages) < 2 {
+		return 0, fmt.Errorf("not enough messages: want 2, got %d", len(resp.Messages))
+	}
+
+	message := resp.Messages[1]
+
+	return message.Id, nil
+}
+
+func (s *scenario) addCheckWithExpectedLinkToPrevMessage(ctx context.Context) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
-		link := extractExpectedLink(message.Text)
+		link := extractExpectedLink(domain.PREV_LINK, message.Text)
 		if link == "" {
 			return fmt.Errorf("link is empty")
 		}
@@ -113,6 +133,14 @@ func (s *scenario) addCheckWithExpectedLinkToMessage(ctx context.Context) error 
 		if resp.Message.ChatId != message.ChatId {
 			return fmt.Errorf("message chat id mismatch: want %d, got %d",
 				message.ChatId, resp.Message.ChatId)
+		}
+		prevMessageId, err := getPrevMessageId(ctx, resp.Message.ChatId)
+		if err != nil {
+			return fmt.Errorf("failed to get prev message id: %w", err)
+		}
+		if resp.Message.Id != prevMessageId {
+			return fmt.Errorf("message id mismatch: want %d, got %d",
+				prevMessageId, resp.Message.Id)
 		}
 		return nil
 	})
@@ -381,8 +409,7 @@ func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 		return fmt.Errorf("failed to get message link: %w", err)
 	}
 
-	text := fmt.Sprintf(">>>%s<<<", resp.Link)
-	s.state.sourceText = util.EscapeMarkdown(text)
+	s.state.sourceText = fmt.Sprintf("[%s](%s)", domain.PREV_LINK, resp.Link)
 
 	return nil
 }
@@ -404,7 +431,7 @@ func (s *scenario) addCheckWithExpectedLink() error {
 }
 
 func (s *scenario) addCheckWithExpectedNoExternalLink() error {
-	pattern := fmt.Sprintf(`>>>%s<<<`, domain.DELETED_LINK)
+	pattern := fmt.Sprintf("~~%s~~", domain.PREV_LINK)
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
@@ -434,7 +461,7 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Given(`^будет ссылка$`, scenario.addCheckWithExpectedLink)
 	ctx.Given(`^будет удалена ссылка на сообщение в исходном чате$`, scenario.addCheckWithExpectedNoExternalLink)
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
-	ctx.Given(`^будет замена ссылки на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToMessage)
+	ctx.Given(`^будет ссылка на предыдущее сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToPrevMessage)
 	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
 	ctx.When(`^пользователь редактирует сообщение$`, scenario.editMessage)
