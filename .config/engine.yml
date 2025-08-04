@@ -22,7 +22,6 @@ sources:
   #   link:
   #     title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
   #     for: [321]
-  #   prev: "🔗Prev Version"
   # 123:
   #   sign:
   #     title: "*Source*" # for SendCopy (with markdown)
@@ -30,6 +29,9 @@ sources:
   #   link:
   #     title: "*Source*" # for SendCopy (with markdown)
   #     for: [321]
+  #   prev:
+  #     title: "Prev Version ↖"
+  #     for: [321, 888]
   #   auto-answer: true
   #   delete-system-messages: true
   # data for service.transform - 101xx

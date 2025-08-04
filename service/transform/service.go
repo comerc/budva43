@@ -289,18 +289,28 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 		)
 	}()
 
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	if source.Sign == nil || !slices.Contains(source.Sign.For, dstChatId) {
-		err = log.NewError("source.Sign without dstChatId")
-		return
-	}
+	signTitle := domain.SIGN_TITLE
 
-	text := source.Sign.Title
-	s.addText(formattedText, text)
+	func() {
+		var err error
+		defer func() {
+			s.log.ErrorOrDebug(err, "")
+		}()
+		source := engineConfig.Sources[src.ChatId]
+		if source == nil {
+			err = log.NewError("source not found")
+			return
+		}
+		if source.Sign == nil || !slices.Contains(source.Sign.For, dstChatId) {
+			err = log.NewError("source.Sign without dstChatId")
+			return
+		}
+		if source.Sign.Title != "" {
+			signTitle = source.Sign.Title
+		}
+	}()
+
+	s.addText(formattedText, signTitle)
 }
 
 // addSourceLink добавляет ссылку на источник
@@ -316,15 +326,26 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 		)
 	}()
 
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	if source.Link == nil || !slices.Contains(source.Link.For, dstChatId) {
-		err = log.NewError("source.Link without dstChatId")
-		return
-	}
+	linkTitle := domain.LINK_TITLE
+
+	func() {
+		var err error
+		defer func() {
+			s.log.ErrorOrDebug(err, "")
+		}()
+		source := engineConfig.Sources[src.ChatId]
+		if source == nil {
+			err = log.NewError("source not found")
+			return
+		}
+		if source.Link == nil || !slices.Contains(source.Link.For, dstChatId) {
+			err = log.NewError("source.Link without dstChatId")
+			return
+		}
+		if source.Link.Title != "" {
+			linkTitle = source.Link.Title
+		}
+	}()
 
 	var messageLink *client.MessageLink
 	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
@@ -337,7 +358,7 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 		return
 	}
 
-	text := fmt.Sprintf("[%s](%s)", source.Link.Title, messageLink.Link)
+	text := fmt.Sprintf("[%s](%s)", linkTitle, messageLink.Link)
 	s.addText(formattedText, text)
 }
 
@@ -355,15 +376,26 @@ func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
 		)
 	}()
 
-	source := engineConfig.Sources[src.ChatId]
-	if source == nil {
-		err = log.NewError("source not found")
-		return
-	}
-	prev := source.Prev
-	if prev == "" {
-		prev = domain.PREV_LINK
-	}
+	prevTitle := domain.PREV_TITLE
+
+	func() {
+		var err error
+		defer func() {
+			s.log.ErrorOrDebug(err, "")
+		}()
+		source := engineConfig.Sources[src.ChatId]
+		if source == nil {
+			err = log.NewError("source not found")
+			return
+		}
+		if source.Prev == nil || !slices.Contains(source.Prev.For, dstChatId) {
+			err = log.NewError("source.Prev without dstChatId")
+			return
+		}
+		if source.Prev.Title != "" {
+			prevTitle = source.Prev.Title
+		}
+	}()
 
 	var messageLink *client.MessageLink
 	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
@@ -376,7 +408,7 @@ func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
 		return
 	}
 
-	text := fmt.Sprintf("[%s](%s)", prev, messageLink.Link)
+	text := fmt.Sprintf("[%s](%s)", prevTitle, messageLink.Link)
 	s.addText(formattedText, text)
 }
 

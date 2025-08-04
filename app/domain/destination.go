@@ -22,9 +22,6 @@ type ReplaceMyselfLinks struct {
 // DELETED_LINK константа для замены внешней ссылки
 const DELETED_LINK = "DELETED_LINK"
 
-// PREV_LINK константа для замены ссылки на предыдущее сообщение
-const PREV_LINK = "Prev"
-
 // ReplaceFragment представляет настройки для замены фрагмента текста
 type ReplaceFragment struct {
 	// From исходный текст

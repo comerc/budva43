@@ -120,7 +120,7 @@ func getPrevMessageId(ctx context.Context, chatId int64) (int64, error) {
 
 func (s *scenario) addCheckWithExpectedLinkToPrevMessage(ctx context.Context) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
-		link := extractExpectedLink(domain.PREV_LINK, message.Text)
+		link := extractExpectedLink(domain.PREV_TITLE, message.Text)
 		if link == "" {
 			return fmt.Errorf("link is empty")
 		}
@@ -409,7 +409,7 @@ func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 		return fmt.Errorf("failed to get message link: %w", err)
 	}
 
-	s.state.sourceText = fmt.Sprintf("[%s](%s)", domain.PREV_LINK, resp.Link)
+	s.state.sourceText = fmt.Sprintf("[%s](%s)", domain.PREV_TITLE, resp.Link)
 
 	return nil
 }
@@ -431,7 +431,7 @@ func (s *scenario) addCheckWithExpectedLink() error {
 }
 
 func (s *scenario) addCheckWithExpectedNoExternalLink() error {
-	pattern := fmt.Sprintf("~~%s~~", domain.PREV_LINK)
+	pattern := fmt.Sprintf("~~%s~~", domain.PREV_TITLE)
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
@@ -492,25 +492,25 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		"01.send_copy",                // OK
-		"02.forward",                  // OK
-		"03.1.replace_myself_links",   // OK
-		"03.2.delete_external_links",  // OK
-		"04.1.1.filters_mode_exclude", // OK
-		"04.1.2.filters_mode_exclude", // OK
-		"04.2.1.filters_mode_include", // OK
-		"04.2.2.filters_mode_include", // OK
-		"05.media_album_send_copy",    // OK
-		"06.media_album_forward",      // OK
-		"07.1.include_submatch",       // OK
-		"07.2.include_submatch",       // OK
-		"08.replace_fragments",        // OK
-		"09.sources_link_title",       // OK
-		"10.sources_sign",             // OK
-		"12.1.copy_once_t",            // OK
-		"12.2.copy_once_f",            // OK
-		"13.1.indelible_t",            // OK
-		"13.2.indelible_f",            // OK
+		// "01.send_copy",                // OK
+		// "02.forward",                  // OK
+		// "03.1.replace_myself_links",   // OK
+		// "03.2.delete_external_links",  // OK
+		// "04.1.1.filters_mode_exclude", // OK
+		// "04.1.2.filters_mode_exclude", // OK
+		// "04.2.1.filters_mode_include", // OK
+		// "04.2.2.filters_mode_include", // OK
+		// "05.media_album_send_copy",    // OK
+		// "06.media_album_forward",      // OK
+		// "07.1.include_submatch",       // OK
+		// "07.2.include_submatch",       // OK
+		// "08.replace_fragments",        // OK
+		// "09.sources_link_title",       // OK
+		// "10.sources_sign",             // OK
+		"12.1.copy_once_t", // OK
+		// "12.2.copy_once_f",            // OK
+		// "13.1.indelible_t",            // OK
+		// "13.2.indelible_f",            // OK
 		// "11.auto_answers", // TODO: R&D
 	}
 

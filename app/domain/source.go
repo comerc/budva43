@@ -12,8 +12,8 @@ type Source struct {
 	AutoAnswer bool
 	// DeleteSystemMessages настройки удаления системных сообщений
 	DeleteSystemMessages bool
-	// Prev текст для ссылки на предыдущую версию сообщения
-	Prev string
+	// Prev настройки ссылки на предыдущую версию сообщения
+	Prev *Prev
 }
 
 // Sign представляет настройки подписи для сообщений
@@ -21,7 +21,7 @@ type Sign struct {
 	// Title текст подписи (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется подпись
-	For []ChatId // TODO: убрать
+	For []ChatId
 }
 
 // Link представляет настройки ссылки на источник сообщений
@@ -29,5 +29,22 @@ type Link struct {
 	// Title текст ссылки (с поддержкой разметки)
 	Title string
 	// For список идентификаторов чатов, для которых применяется ссылка
-	For []ChatId // TODO: убрать
+	For []ChatId
 }
+
+// Prev представляет настройки ссылки на предыдущую версию сообщения
+type Prev struct {
+	// Title текст ссылки (с поддержкой разметки)
+	Title string
+	// For список идентификаторов чатов, для которых применяется ссылка
+	For []ChatId
+}
+
+// SIGN_TITLE название подписи
+const SIGN_TITLE = "Sign"
+
+// LINK_TITLE название ссылки на источник сообщений
+const LINK_TITLE = "Link"
+
+// PREV_TITLE название ссылки на предыдущее сообщение
+const PREV_TITLE = "Prev"
