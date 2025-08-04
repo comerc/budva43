@@ -99,10 +99,12 @@ func New(
 // Run выполняет обрабатку обновления о новом сообщении
 func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 	src := update.Message
-	defer h.log.ErrorOrDebug(nil, "",
-		"chatId", src.ChatId,
-		"messageId", src.Id,
-	)
+	defer func() {
+		h.log.ErrorOrDebug(nil, "",
+			"chatId", src.ChatId,
+			"messageId", src.Id,
+		)
+	}()
 
 	engineConfig := config.Engine // копируем, см. WATCH-CONFIG.md
 
@@ -186,10 +188,12 @@ func (h *Handler) Run(ctx context.Context, update *client.UpdateNewMessage) {
 // deleteSystemMessage удаляет системное сообщение
 func (h *Handler) deleteSystemMessage(src *client.Message, engineConfig *domain.EngineConfig) {
 	var err error
-	defer h.log.ErrorOrDebug(&err, "",
-		"chatId", src.ChatId,
-		"messageId", src.Id,
-	)
+	defer func() {
+		h.log.ErrorOrDebug(err, "",
+			"chatId", src.ChatId,
+			"messageId", src.Id,
+		)
+	}()
 
 	source, ok := engineConfig.Sources[src.ChatId]
 	if !ok {
@@ -216,13 +220,15 @@ func (h *Handler) processMessage(messages []*client.Message,
 		result      []int64
 	)
 	src := messages[0]
-	defer h.log.ErrorOrDebug(&err, "",
-		"chatId", src.ChatId,
-		"messageId", src.Id,
-		"mediaAlbumId", src.MediaAlbumId,
-		"filtersMode", &filtersMode,
-		"result", &result,
-	)
+	defer func() {
+		h.log.ErrorOrDebug(err, "",
+			"chatId", src.ChatId,
+			"messageId", src.Id,
+			"mediaAlbumId", src.MediaAlbumId,
+			"filtersMode", filtersMode,
+			"result", result,
+		)
+	}()
 
 	formattedText := h.messageService.GetFormattedText(src)
 	if formattedText == nil {

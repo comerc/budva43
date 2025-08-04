@@ -12,7 +12,6 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// TODO: linter: `defer log.ErrorOrDebug(&err, "")` without anonymous function
 // TODO: linter: `var err error` must be used
 // TODO: linter: `log.NewError("text")` via `errors.New("text")` via `fmt.Errorf("text")`
 // TODO: linter: `log.WrapError(err)` только для внешних ошибок
@@ -30,19 +29,19 @@ func newLogger(loggerName string) *Logger {
 	}
 }
 
-func (l *Logger) ErrorOrDebug(errPtr *error, message string, args ...any) {
-	l.logWithError(slog.LevelDebug, errPtr, message, args...)
+func (l *Logger) ErrorOrDebug(err error, message string, args ...any) {
+	l.logWithError(slog.LevelDebug, err, message, args...)
 }
 
-func (l *Logger) ErrorOrInfo(errPtr *error, message string, args ...any) {
-	l.logWithError(slog.LevelInfo, errPtr, message, args...)
+func (l *Logger) ErrorOrInfo(err error, message string, args ...any) {
+	l.logWithError(slog.LevelInfo, err, message, args...)
 }
 
-func (l *Logger) ErrorOrWarn(errPtr *error, message string, args ...any) {
-	l.logWithError(slog.LevelWarn, errPtr, message, args...)
+func (l *Logger) ErrorOrWarn(err error, message string, args ...any) {
+	l.logWithError(slog.LevelWarn, err, message, args...)
 }
 
-func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, args ...any) { //nolint:error_log_or_return
+func (l *Logger) logWithError(level slog.Level, err error, message string, args ...any) { //nolint:error_log_or_return
 	count := 0
 	for _, arg := range args {
 		if attr, ok := arg.(slog.Attr); ok {
@@ -56,9 +55,12 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 		args = append([]any{}, "warn", "args must be even")
 	}
 	var stack []*CallInfo
-	if errPtr != nil && *errPtr != nil {
-		var err error
-		err = *errPtr
+	if err == nil {
+		stack = GetCallStack(3, false)
+		if len(stack) > 0 {
+			args = append(args, "source", stack[0].String())
+		}
+	} else {
 		level = slog.LevelError
 		message = err.Error()
 		var customError *CustomError
@@ -77,11 +79,6 @@ func (l *Logger) logWithError(level slog.Level, errPtr *error, message string, a
 			groupArgs = append(groupArgs, fmt.Sprintf("%d", i), item.String())
 		}
 		args = append(args, slog.Group("source", groupArgs...))
-	} else {
-		stack = GetCallStack(3, false)
-		if len(stack) > 0 {
-			args = append(args, "source", stack[0].String())
-		}
 	}
 	l.Log(context.Background(), level, message, args...)
 }

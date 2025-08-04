@@ -52,7 +52,9 @@ func (a *App) Run(runFunc RunFunc) error { //nolint:error_log_or_return
 	var err error
 	// Исключение: логируем ошибку на этом уровне, но передаём выше
 	// т.к. os.Exit(1) прерывает выполнение программы без обработки defer
-	defer a.log.ErrorOrDebug(&err, "Приложение завершило работу")
+	defer func() {
+		a.log.ErrorOrDebug(err, "Приложение завершило работу")
+	}()
 
 	a.log.ErrorOrDebug(nil, "Запуск приложения")
 
@@ -91,6 +93,6 @@ func (a *App) setupSignalHandler(shutdown func()) {
 // gracefulShutdown выполняет корректное завершение компонента и добавляет ошибки в набор
 func (a *App) gracefulShutdown(closer io.Closer) {
 	if err := closer.Close(); err != nil {
-		a.log.ErrorOrDebug(&err, "")
+		a.log.ErrorOrDebug(err, "")
 	}
 }

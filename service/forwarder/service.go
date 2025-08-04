@@ -83,14 +83,16 @@ func (s *Service) ForwardMessages(
 	isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"filtersMode", filtersMode,
-		"srcChatId", srcChatId,
-		"dstChatId", dstChatId,
-		"isSendCopy", isSendCopy,
-		"forwardRuleId", forwardRuleId,
-		"len(messages)", len(messages),
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"filtersMode", filtersMode,
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+			"isSendCopy", isSendCopy,
+			"forwardRuleId", forwardRuleId,
+			"len(messages)", len(messages),
+		)
+	}()
 
 	s.rateLimiterService.WaitForForward(s.ctx, dstChatId)
 
@@ -154,7 +156,9 @@ func (s *Service) ForwardMessages(
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения
 func (s *Service) getOriginMessage(message *client.Message) *client.Message {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer func() {
+		s.log.ErrorOrDebug(err, "")
+	}()
 
 	if message.ForwardInfo == nil {
 		err = log.NewError("message.ForwardInfo is nil")
@@ -195,11 +199,13 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId, 
 	for i, message := range messages {
 		func() {
 			var err error
-			defer s.log.ErrorOrDebug(&err, "",
-				"i", i,
-				"chatId", message.ChatId,
-				"messageId", message.Id,
-			)
+			defer func() {
+				s.log.ErrorOrDebug(err, "",
+					"i", i,
+					"chatId", message.ChatId,
+					"messageId", message.Id,
+				)
+			}()
 
 			originMessage := s.getOriginMessage(message)
 			if originMessage != nil {
@@ -230,7 +236,9 @@ func (s *Service) prepareMessageContents(messages []*client.Message, dstChatId, 
 // getReplyToMessageId получает ID сообщения для ответа
 func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int64 {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer func() {
+		s.log.ErrorOrDebug(err, "")
+	}()
 
 	var replyToMessageId int64
 	replyTo, ok := src.ReplyTo.(*client.MessageReplyToMessage)

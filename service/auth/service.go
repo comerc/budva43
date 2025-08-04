@@ -80,7 +80,9 @@ func (s *Service) GetInputChan() chan<- string {
 // GetStatus возвращает статус авторизации
 func (s *Service) GetStatus() string {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer func() {
+		s.log.ErrorOrDebug(err, "")
+	}()
 
 	var versionOption client.OptionValue
 	versionOption, err = s.telegramRepo.GetOption(&client.GetOptionRequest{

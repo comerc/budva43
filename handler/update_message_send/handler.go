@@ -44,11 +44,13 @@ func (h *Handler) Run(update *client.UpdateMessageSendSucceeded) {
 	tmpMessageId := update.OldMessageId
 
 	fn := func() {
-		defer h.log.ErrorOrDebug(nil, "",
-			"chatId", message.ChatId,
-			"messageId", message.Id,
-			"tmpMessageId", tmpMessageId,
-		)
+		defer func() {
+			h.log.ErrorOrDebug(nil, "",
+				"chatId", message.ChatId,
+				"messageId", message.Id,
+				"tmpMessageId", tmpMessageId,
+			)
+		}()
 
 		h.storageService.SetNewMessageId(message.ChatId, tmpMessageId, message.Id)
 		h.storageService.SetTmpMessageId(message.ChatId, message.Id, tmpMessageId)

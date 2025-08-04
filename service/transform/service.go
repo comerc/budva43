@@ -69,12 +69,14 @@ func New(
 func (s *Service) Transform(formattedText *client.FormattedText, withSources bool,
 	src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig,
 ) {
-	defer s.log.ErrorOrDebug(nil, "",
-		"withSources", withSources,
-		"srcChatId", src.ChatId,
-		"srcId", src.Id,
-		"dstChatId", dstChatId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(nil, "",
+			"withSources", withSources,
+			"srcChatId", src.ChatId,
+			"srcId", src.Id,
+			"dstChatId", dstChatId,
+		)
+	}()
 
 	s.addAutoAnswer(formattedText, src, engineConfig)
 	s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId, engineConfig)
@@ -95,10 +97,12 @@ func (s *Service) addAutoAnswer(formattedText *client.FormattedText,
 	src *client.Message, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"srcChatId", src.ChatId,
-		"srcId", src.Id,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", src.ChatId,
+			"srcId", src.Id,
+		)
+	}()
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -136,10 +140,12 @@ func (s *Service) replaceMyselfLinks(formattedText *client.FormattedText,
 	srcChatId, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"srcChatId", srcChatId,
-		"dstChatId", dstChatId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+		)
+	}()
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -242,9 +248,11 @@ func (s *Service) replaceFragments(formattedText *client.FormattedText,
 	dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"dstChatId", dstChatId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"dstChatId", dstChatId,
+		)
+	}()
 
 	destination := engineConfig.Destinations[dstChatId]
 	if destination == nil {
@@ -273,11 +281,13 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"srcChatId", src.ChatId,
-		"srcId", src.Id,
-		"dstChatId", dstChatId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", src.ChatId,
+			"srcId", src.Id,
+			"dstChatId", dstChatId,
+		)
+	}()
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -298,11 +308,13 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 	src *client.Message, dstChatId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"srcChatId", src.ChatId,
-		"srcId", src.Id,
-		"dstChatId", dstChatId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", src.ChatId,
+			"srcId", src.Id,
+			"dstChatId", dstChatId,
+		)
+	}()
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -334,12 +346,14 @@ func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
 	src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"srcChatId", src.ChatId,
-		"srcId", src.Id,
-		"dstChatId", dstChatId,
-		"prevMessageId", prevMessageId,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", src.ChatId,
+			"srcId", src.Id,
+			"dstChatId", dstChatId,
+			"prevMessageId", prevMessageId,
+		)
+	}()
 
 	source := engineConfig.Sources[src.ChatId]
 	if source == nil {
@@ -369,9 +383,11 @@ func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
 // addText добавляет текст в formattedText
 func (s *Service) addText(formattedText *client.FormattedText, text string) {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"text", text,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"text", text,
+		)
+	}()
 
 	var parsedText *client.FormattedText
 	parsedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{
@@ -457,9 +473,11 @@ func (s *Service) applyReplacements(formattedText *client.FormattedText, replace
 // getMessageByLink получает сообщение по ссылке
 func (s *Service) getMessageByLink(url string) *client.Message {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"url", url,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"url", url,
+		)
+	}()
 
 	var messageLinkInfo *client.MessageLinkInfo
 	messageLinkInfo, err = s.telegramRepo.GetMessageLinkInfo(&client.GetMessageLinkInfoRequest{
@@ -508,10 +526,12 @@ func (s *Service) getMyselfLink(src *client.Message, dstChatId int64) (string, e
 // collectMarkdownReplacements собирает замены для markdown текста
 func (s *Service) collectMarkdownReplacements(oldStart int32, newText string) []*replacement {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "",
-		"oldStart", oldStart,
-		"newText", newText,
-	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"oldStart", oldStart,
+			"newText", newText,
+		)
+	}()
 
 	var formattedText *client.FormattedText
 	formattedText, err = s.telegramRepo.ParseTextEntities(&client.ParseTextEntitiesRequest{

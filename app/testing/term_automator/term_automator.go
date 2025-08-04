@@ -68,7 +68,9 @@ func NewTermAutomator() (*TermAutomator, error) {
 // Run запускает обработку вывода
 func (a *TermAutomator) Run() {
 	var err error
-	defer a.log.ErrorOrDebug(&err, "")
+	defer func() {
+		a.log.ErrorOrDebug(err, "")
+	}()
 
 	scanner := bufio.NewScanner(a.stdoutReader)
 	for scanner.Scan() {

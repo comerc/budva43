@@ -139,7 +139,9 @@ func (t *Transport) createServer() {
 
 func (t *Transport) runServer() {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "", "addr", t.server.Addr)
+	defer func() {
+		t.log.ErrorOrDebug(err, "", "addr", t.server.Addr)
+	}()
 
 	err = t.server.ListenAndServe()
 
@@ -171,7 +173,9 @@ func (t *Transport) handleFavicon(w http.ResponseWriter, r *http.Request) {
 // handleRoot обрабатывает запросы к корневому маршруту
 func (t *Transport) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	w.Header().Set("Content-Type", "text/plain")
 	_, err = w.Write([]byte("Budva43 API Server"))

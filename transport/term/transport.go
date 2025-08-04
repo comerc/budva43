@@ -163,7 +163,9 @@ func (t *Transport) registerCommands() {
 // processCommand обрабатывает введенную команду
 func (t *Transport) processCommand(input string) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -205,7 +207,9 @@ func (t *Transport) handleExit(args []string) {
 // processAuth обрабатывает состояние авторизации
 func (t *Transport) processAuth(state client.AuthorizationState) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	if state == nil {
 		err = log.NewError("state is nil")

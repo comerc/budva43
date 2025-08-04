@@ -29,7 +29,9 @@ func (s *SomeObject) SomeMethod() {
 
 func (s *SomeObject) NestedMethod() {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "", "arg2", "val2")
+	defer func() {
+		s.log.ErrorOrDebug(err, "", "arg2", "val2")
+	}()
 
 	err = log.NewError("error message", "arg0", "val0")
 	err = log.WrapError(err, "arg1", "val1")
@@ -91,7 +93,7 @@ func TestUnwrappedError(t *testing.T) {
 	err = &SomeError{
 		error: errors.New("unwrapped error"),
 	}
-	logger.ErrorOrDebug(&err, "")
+	logger.ErrorOrDebug(err, "")
 
 	records := spylogHandler.GetRecords()
 	require.Equal(t, len(records), 1)
@@ -122,7 +124,7 @@ func TestWrappedError(t *testing.T) {
 		error: errors.New("wrapped error"),
 	}
 	err = log.WrapError(err) // !! обёртка
-	logger.ErrorOrDebug(&err, "")
+	logger.ErrorOrDebug(err, "")
 
 	records := spylogHandler.GetRecords()
 	require.Equal(t, len(records), 1)
@@ -157,7 +159,7 @@ func TestWithPtr(t *testing.T) {
 			p *int
 		)
 		err := log.NewError("")
-		defer logger.ErrorOrDebug(&err, "",
+		defer logger.ErrorOrDebug(err, "",
 			"a", &a, "m", &m, "s", &s, "i", &i, "f", &f, "b", &b, "d", &d, "t", &t, "p", &p)
 		a = []string{"1", "2", "3"}
 		m = map[string]string{"a": "1", "b": "2"}
@@ -207,7 +209,7 @@ func TestLoggerName(t *testing.T) {
 		run := func() {
 			expectedMessage := t.Name()
 			err := errors.New(expectedMessage)
-			logger.ErrorOrInfo(&err, "")
+			logger.ErrorOrInfo(err, "")
 
 			records := spylogHandler.GetRecords()
 			require.Equal(t, 1, len(records))

@@ -10,7 +10,9 @@ import (
 // handleAuthState обработчик для получения текущего состояния авторизации
 func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -47,7 +49,9 @@ func (t *Transport) handleAuthState(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPhone обработчик для отправки номера телефона
 func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -76,7 +80,9 @@ func (t *Transport) handleSubmitPhone(w http.ResponseWriter, r *http.Request) {
 // handleSubmitCode обработчик для отправки кода подтверждения
 func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -105,7 +111,9 @@ func (t *Transport) handleSubmitCode(w http.ResponseWriter, r *http.Request) {
 // handleSubmitPassword обработчик для отправки пароля
 func (t *Transport) handleSubmitPassword(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer t.log.ErrorOrDebug(&err, "")
+	defer func() {
+		t.log.ErrorOrDebug(err, "")
+	}()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

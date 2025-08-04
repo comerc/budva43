@@ -105,11 +105,13 @@ func (h *Handler) Run(update *client.UpdateMessageEdited) {
 	var fn func()
 	fn = func() {
 		var err error
-		defer h.log.ErrorOrDebug(&err, "",
-			"retryCount", &retryCount,
-			"chatId", chatId,
-			"messageId", messageId,
-		)
+		defer func() {
+			h.log.ErrorOrDebug(err, "",
+				"retryCount", retryCount,
+				"chatId", chatId,
+				"messageId", messageId,
+			)
+		}()
 
 		data := h.collectData(chatId, messageId)
 		if data.needRepeat {
@@ -168,12 +170,14 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		mediaAlbumId int64
 		result       []string
 	)
-	defer h.log.ErrorOrDebug(&err, "",
-		"chatId", chatId,
-		"messageId", messageId,
-		"mediaAlbumId", &mediaAlbumId,
-		"result", &result,
-	)
+	defer func() {
+		h.log.ErrorOrDebug(err, "",
+			"chatId", chatId,
+			"messageId", messageId,
+			"mediaAlbumId", mediaAlbumId,
+			"result", result,
+		)
+	}()
 
 	toChatMessageIds := data.copiedMessageIds
 
@@ -196,12 +200,14 @@ func (h *Handler) editMessages(chatId, messageId int64, data *data, engineConfig
 		func() {
 			var err error
 			forwardRuleId := ""
-			defer h.log.ErrorOrDebug(&err, "",
-				"chatId", chatId,
-				"messageId", messageId,
-				"toChatMessageId", toChatMessageId,
-				"forwardRuleId", &forwardRuleId,
-			)
+			defer func() {
+				h.log.ErrorOrDebug(err, "",
+					"chatId", chatId,
+					"messageId", messageId,
+					"toChatMessageId", toChatMessageId,
+					"forwardRuleId", forwardRuleId,
+				)
+			}()
 
 			a := strings.Split(toChatMessageId, ":")
 			forwardRuleId = a[0]

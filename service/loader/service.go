@@ -47,7 +47,9 @@ func (s *Service) Run() {
 // handleConfigReload обрабатывает изменения конфигурации
 func (s *Service) handleConfigReload() {
 	var err error
-	defer s.log.ErrorOrDebug(&err, "")
+	defer func() {
+		s.log.ErrorOrDebug(err, "")
+	}()
 
 	err = engine_config.Reload(newFuncInitDestinations(s))
 
@@ -72,7 +74,9 @@ type initDestinations = func([]domain.ChatId)
 
 // 		repeat := func() bool {
 // 			var err error
-// 			defer s.log.ErrorOrDebug(&err, "", "level", level)
+// 			defer func() {
+// 				s.log.ErrorOrDebug(err, "", "level", level)
+// 			}()
 
 // 			_, err = s.telegramRepo.LoadChats(&client.LoadChatsRequest{
 // 				Limit: 200,
@@ -128,7 +132,7 @@ func newFuncInitDestinations(s *Service) initDestinations {
 				Limit: 200,
 			})
 			if err != nil {
-				s.log.ErrorOrDebug(&err, "")
+				s.log.ErrorOrDebug(err, "")
 				return
 			}
 		}
@@ -146,7 +150,7 @@ func newFuncInitDestinations(s *Service) initDestinations {
 		}
 		if len(notFound) > 0 {
 			err := log.NewError("not found", "destinations", notFound)
-			s.log.ErrorOrDebug(&err, "")
+			s.log.ErrorOrDebug(err, "")
 		}
 	}
 }
