@@ -34,6 +34,7 @@ func Test(t *testing.T) {
 		withSources      bool
 		src              *client.Message
 		dstChatId        int64
+		prevMessageId    int64
 		expectedText     string
 		expectedEntities []*client.TextEntity // TODO: пока заглушка, надо подставлять реальные значения
 		setup            func(t *testing.T) *Service
@@ -51,6 +52,7 @@ func Test(t *testing.T) {
 				MediaAlbumId: 0,
 			},
 			dstChatId:        -10123,
+			prevMessageId:    0,
 			expectedText:     "test message\n\n*Test Source*\n\n[🔗*Source Link*](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -102,6 +104,7 @@ func Test(t *testing.T) {
 				MediaAlbumId: 0,
 			},
 			dstChatId:        -10123,
+			prevMessageId:    0,
 			expectedText:     "test message\n\nTest Source\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|\n\n[🔗Source Link\\_\\*\\{\\}\\[\\]\\(\\)\\#\\+\\-\\.\\!\\~\\`\\>\\=\\|](https://t.me/test/123)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
@@ -153,10 +156,52 @@ func Test(t *testing.T) {
 				MediaAlbumId: 0,
 			},
 			dstChatId:        0, // не используется
+			prevMessageId:    0,
 			expectedText:     "test message",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
 				return New(nil, nil, nil)
+			},
+		},
+		{
+			name: "with_prev_message_id",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			withSources: false,
+			src: &client.Message{
+				ChatId:       -10121,
+				Id:           123,
+				MediaAlbumId: 0,
+			},
+			dstChatId:        -10123,
+			prevMessageId:    456,
+			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+
+				// Mock для addPrevMessageId
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10123,
+					MessageId: 456,
+					ForAlbum:  false,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/456",
+				}, nil)
+
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[Prev](https://t.me/test/456)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[Prev](https://t.me/test/456)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+
+				return New(telegramRepo, nil, nil)
 			},
 		},
 	}
@@ -166,7 +211,7 @@ func Test(t *testing.T) {
 			t.Parallel()
 
 			transformService := test.setup(t)
-			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId, 0, config.Engine)
+			transformService.Transform(test.formattedText, test.withSources, test.src, test.dstChatId, test.prevMessageId, config.Engine)
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
@@ -1724,6 +1769,7 @@ func Test_addText(t *testing.T) {
 		name             string
 		formattedText    *client.FormattedText
 		text             string
+		returnEntities   []*client.TextEntity
 		expectedError    error
 		expectedText     string
 		expectedEntities []*client.TextEntity
@@ -1732,6 +1778,7 @@ func Test_addText(t *testing.T) {
 			name:             "empty",
 			formattedText:    &client.FormattedText{},
 			text:             "test",
+			returnEntities:   nil,
 			expectedError:    nil,
 			expectedText:     "test",
 			expectedEntities: nil,
@@ -1740,6 +1787,7 @@ func Test_addText(t *testing.T) {
 			name:             "with error",
 			formattedText:    &client.FormattedText{},
 			text:             "new text",
+			returnEntities:   nil,
 			expectedError:    assert.AnError,
 			expectedText:     "",
 			expectedEntities: nil,
@@ -1751,6 +1799,7 @@ func Test_addText(t *testing.T) {
 				Entities: []*client.TextEntity{},
 			},
 			text:             "new text",
+			returnEntities:   nil,
 			expectedError:    nil,
 			expectedText:     "existing\n\nnew text",
 			expectedEntities: []*client.TextEntity{},
@@ -1761,7 +1810,14 @@ func Test_addText(t *testing.T) {
 				Text:     "existing",
 				Entities: []*client.TextEntity{},
 			},
-			text:          "*bold*",
+			text: "*bold*",
+			returnEntities: []*client.TextEntity{
+				{
+					Type:   &client.TextEntityTypeBold{},
+					Offset: 1,
+					Length: 4,
+				},
+			},
 			expectedError: nil,
 			expectedText:  "existing\n\n*bold*",
 			expectedEntities: []*client.TextEntity{
@@ -1779,16 +1835,6 @@ func Test_addText(t *testing.T) {
 			t.Parallel()
 
 			telegramRepo := mocks.NewTelegramRepo(t)
-			var returnEntities []*client.TextEntity
-			if test.name == "add_text_with_entities" {
-				returnEntities = []*client.TextEntity{
-					{
-						Type:   &client.TextEntityTypeBold{},
-						Offset: 1,
-						Length: 4,
-					},
-				}
-			}
 
 			telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
 				Text: test.text,
@@ -1797,7 +1843,7 @@ func Test_addText(t *testing.T) {
 				},
 			}).Return(&client.FormattedText{
 				Text:     test.text,
-				Entities: returnEntities,
+				Entities: test.returnEntities,
 			}, test.expectedError)
 
 			var transformService *Service
