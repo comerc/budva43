@@ -91,6 +91,11 @@ func runEngine(
 		transformService,
 		rateLimiterService,
 	)
+	err = forwarderService.StartContext(ctx)
+	if err != nil {
+		return err
+	}
+	defer gracefulShutdown(forwarderService)
 	authService := authService.New(
 		telegramRepo,
 		loaderService,

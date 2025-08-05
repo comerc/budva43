@@ -20,6 +20,7 @@ type telegramRepo interface {
 	GetMessage(*client.GetMessageRequest) (*client.Message, error)
 	SendMessage(*client.SendMessageRequest) (*client.Message, error)
 	SendMessageAlbum(*client.SendMessageAlbumRequest) (*client.Messages, error)
+	EditMessageText(*client.EditMessageTextRequest) (*client.Message, error)
 }
 
 //go:generate mockery --name=storageService --exported
@@ -40,6 +41,7 @@ type messageService interface {
 //go:generate mockery --name=transformService --exported
 type transformService interface {
 	Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig)
+	AddNextLink(formattedText *client.FormattedText, srcChatId, dstChatId, newMessageId int64, engineConfig *domain.EngineConfig)
 }
 
 //go:generate mockery --name=rateLimiterService --exported
@@ -150,7 +152,24 @@ func (s *Service) ForwardMessages(
 				s.storageService.SetAnswerMessageId(dstChatId, tmpMessageId, src.ChatId, src.Id)
 			}
 		}
+		if prevMessageId != 0 {
+			tmpMessageId := result.Messages[0].Id
+			go s.runNextLinkWorkflow(srcChatId, dstChatId, prevMessageId, tmpMessageId, engineConfig)
+		}
 	}
+}
+
+// StartContext запускает процесс пересылки сообщений
+func (s *Service) StartContext(ctx context.Context) error {
+
+	s.ctx = ctx
+
+	return nil
+}
+
+// Close останавливает сервис
+func (s *Service) Close() error {
+	return nil
 }
 
 // getOriginMessage получает оригинальное сообщение для пересланного сообщения
@@ -283,6 +302,71 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 	replyToMessageId = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
 
 	return replyToMessageId
+}
+
+// runNextLinkWorkflow добавляет ссылку на следующую версию сообщения
+func (s *Service) runNextLinkWorkflow(srcChatId, dstChatId, prevMessageId, tmpMessageId int64, engineConfig *domain.EngineConfig) {
+	var (
+		err          error
+		newMessageId int64
+		repeatCount  int
+	)
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+			"prevMessageId", prevMessageId,
+			"tmpMessageId", tmpMessageId,
+			"newMessageId", newMessageId,
+			"repeatCount", repeatCount,
+		)
+	}()
+
+	// TODO: или вынести в отдельный сервис?
+
+	// TODO: перенести в temporal
+	for {
+		select {
+		case <-s.ctx.Done():
+			err = s.ctx.Err()
+			return
+		case <-time.After(1 * time.Second):
+		}
+		newMessageId = s.storageService.GetNewMessageId(dstChatId, tmpMessageId)
+		if newMessageId != 0 {
+			break
+		}
+		repeatCount++
+		if repeatCount > 10 {
+			err = log.NewError("max retry count exceeded")
+			return
+		}
+	}
+
+	message, err := s.telegramRepo.GetMessage(&client.GetMessageRequest{
+		ChatId:    dstChatId,
+		MessageId: prevMessageId,
+	})
+	if err != nil {
+		return
+	}
+	formattedText := s.messageService.GetFormattedText(message)
+	if formattedText == nil {
+		err = log.NewError("formattedText is nil")
+		return
+	}
+
+	s.transformService.AddNextLink(formattedText, srcChatId, dstChatId, newMessageId, engineConfig)
+
+	content := s.messageService.GetInputMessageContent(message, formattedText)
+	_, err = s.telegramRepo.EditMessageText(&client.EditMessageTextRequest{
+		ChatId:              dstChatId,
+		MessageId:           prevMessageId,
+		InputMessageContent: content,
+	})
+	if err != nil {
+		return
+	}
 }
 
 // sendMessages отправляет сообщения в чат

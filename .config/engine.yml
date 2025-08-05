@@ -30,7 +30,10 @@ sources:
   #     title: "*Source*" # for SendCopy (with markdown)
   #     for: [321]
   #   prev:
-  #     title: "↖Prev Version"
+  #     title: "*Prev*" # for SendCopy (with markdown)
+  #     for: [321, 888]
+  #   next:
+  #     title: "*Next*" # for SendCopy (with markdown)
   #     for: [321, 888]
   #   auto-answer: true
   #   delete-system-messages: true
@@ -82,6 +85,18 @@ sources:
     auto-answer: false # чтобы addAutoAnswer не выдавал ошибку
   10118: # for other source test in replaceMyselfLinks - message not from source chat
     dummy: true
+  10124: # for Next test with default title
+    next:
+      title: ""
+      for: [10127]
+  10125: # for Next test with custom title
+    next:
+      title: "Следующее"
+      for: [10127]
+  10126: # for Next test - next for different destination
+    next:
+      title: "Next"
+      for: [10128] # не содержит 10127
 destinations:
   # 321:
   #   replace-myself-links:
@@ -135,6 +150,10 @@ destinations:
       run: false # чтобы replaceMyselfLinks не выдавал ошибку
     replace-fragments: [] # пустой массив, чтобы replaceFragments не выдавал ошибку
   10119: # for other destination test in replaceMyselfLinks - tmp message id zero
+    dummy: true
+  10127: # for Next test - destination
+    dummy: true
+  10128: # for Next test - different destination (not for 10127)
     dummy: true
 forward-rules:
   "Id1":

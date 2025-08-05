@@ -22,9 +22,9 @@ func (_m *ForwarderService) EXPECT() *ForwarderService_Expecter {
 	return &ForwarderService_Expecter{mock: &_m.Mock}
 }
 
-// ForwardMessages provides a mock function with given fields: messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig
-func (_m *ForwarderService) ForwardMessages(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig) {
-	_m.Called(messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig)
+// ForwardMessages provides a mock function with given fields: messages, filtersMode, srcChatId, dstChatId, prevMessageId, isSendCopy, forwardRuleId, engineConfig
+func (_m *ForwarderService) ForwardMessages(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, prevMessageId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig) {
+	_m.Called(messages, filtersMode, srcChatId, dstChatId, prevMessageId, isSendCopy, forwardRuleId, engineConfig)
 }
 
 // ForwarderService_ForwardMessages_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ForwardMessages'
@@ -37,16 +37,17 @@ type ForwarderService_ForwardMessages_Call struct {
 //   - filtersMode string
 //   - srcChatId int64
 //   - dstChatId int64
+//   - prevMessageId int64
 //   - isSendCopy bool
 //   - forwardRuleId string
 //   - engineConfig *domain.EngineConfig
-func (_e *ForwarderService_Expecter) ForwardMessages(messages interface{}, filtersMode interface{}, srcChatId interface{}, dstChatId interface{}, isSendCopy interface{}, forwardRuleId interface{}, engineConfig interface{}) *ForwarderService_ForwardMessages_Call {
-	return &ForwarderService_ForwardMessages_Call{Call: _e.mock.On("ForwardMessages", messages, filtersMode, srcChatId, dstChatId, isSendCopy, forwardRuleId, engineConfig)}
+func (_e *ForwarderService_Expecter) ForwardMessages(messages interface{}, filtersMode interface{}, srcChatId interface{}, dstChatId interface{}, prevMessageId interface{}, isSendCopy interface{}, forwardRuleId interface{}, engineConfig interface{}) *ForwarderService_ForwardMessages_Call {
+	return &ForwarderService_ForwardMessages_Call{Call: _e.mock.On("ForwardMessages", messages, filtersMode, srcChatId, dstChatId, prevMessageId, isSendCopy, forwardRuleId, engineConfig)}
 }
 
-func (_c *ForwarderService_ForwardMessages_Call) Run(run func(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
+func (_c *ForwarderService_ForwardMessages_Call) Run(run func(messages []*client.Message, filtersMode string, srcChatId int64, dstChatId int64, prevMessageId int64, isSendCopy bool, forwardRuleId string, engineConfig *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]*client.Message), args[1].(string), args[2].(int64), args[3].(int64), args[4].(bool), args[5].(string), args[6].(*domain.EngineConfig))
+		run(args[0].([]*client.Message), args[1].(string), args[2].(int64), args[3].(int64), args[4].(int64), args[5].(bool), args[6].(string), args[7].(*domain.EngineConfig))
 	})
 	return _c
 }
@@ -56,7 +57,7 @@ func (_c *ForwarderService_ForwardMessages_Call) Return() *ForwarderService_Forw
 	return _c
 }
 
-func (_c *ForwarderService_ForwardMessages_Call) RunAndReturn(run func([]*client.Message, string, int64, int64, bool, string, *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
+func (_c *ForwarderService_ForwardMessages_Call) RunAndReturn(run func([]*client.Message, string, int64, int64, int64, bool, string, *domain.EngineConfig)) *ForwarderService_ForwardMessages_Call {
 	_c.Run(run)
 	return _c
 }

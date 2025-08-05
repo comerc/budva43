@@ -22,6 +22,43 @@ func (_m *TransformService) EXPECT() *TransformService_Expecter {
 	return &TransformService_Expecter{mock: &_m.Mock}
 }
 
+// AddNextLink provides a mock function with given fields: formattedText, srcChatId, dstChatId, newMessageId, engineConfig
+func (_m *TransformService) AddNextLink(formattedText *client.FormattedText, srcChatId int64, dstChatId int64, newMessageId int64, engineConfig *domain.EngineConfig) {
+	_m.Called(formattedText, srcChatId, dstChatId, newMessageId, engineConfig)
+}
+
+// TransformService_AddNextLink_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddNextLink'
+type TransformService_AddNextLink_Call struct {
+	*mock.Call
+}
+
+// AddNextLink is a helper method to define mock.On call
+//   - formattedText *client.FormattedText
+//   - srcChatId int64
+//   - dstChatId int64
+//   - newMessageId int64
+//   - engineConfig *domain.EngineConfig
+func (_e *TransformService_Expecter) AddNextLink(formattedText interface{}, srcChatId interface{}, dstChatId interface{}, newMessageId interface{}, engineConfig interface{}) *TransformService_AddNextLink_Call {
+	return &TransformService_AddNextLink_Call{Call: _e.mock.On("AddNextLink", formattedText, srcChatId, dstChatId, newMessageId, engineConfig)}
+}
+
+func (_c *TransformService_AddNextLink_Call) Run(run func(formattedText *client.FormattedText, srcChatId int64, dstChatId int64, newMessageId int64, engineConfig *domain.EngineConfig)) *TransformService_AddNextLink_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.FormattedText), args[1].(int64), args[2].(int64), args[3].(int64), args[4].(*domain.EngineConfig))
+	})
+	return _c
+}
+
+func (_c *TransformService_AddNextLink_Call) Return() *TransformService_AddNextLink_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *TransformService_AddNextLink_Call) RunAndReturn(run func(*client.FormattedText, int64, int64, int64, *domain.EngineConfig)) *TransformService_AddNextLink_Call {
+	_c.Run(run)
+	return _c
+}
+
 // Transform provides a mock function with given fields: formattedText, withSources, src, dstChatId, prevMessageId, engineConfig
 func (_m *TransformService) Transform(formattedText *client.FormattedText, withSources bool, src *client.Message, dstChatId int64, prevMessageId int64, engineConfig *domain.EngineConfig) {
 	_m.Called(formattedText, withSources, src, dstChatId, prevMessageId, engineConfig)

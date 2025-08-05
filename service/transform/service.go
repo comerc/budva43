@@ -88,8 +88,53 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 		s.addSourceLink(formattedText, src, dstChatId, engineConfig)
 	}
 	if prevMessageId != 0 {
-		s.addPrevMessageId(formattedText, src, dstChatId, prevMessageId, engineConfig)
+		s.addPrevLink(formattedText, src, dstChatId, prevMessageId, engineConfig)
 	}
+}
+
+// AddNextLink добавляет ссылку на следующую версию сообщения
+func (s *Service) AddNextLink(formattedText *client.FormattedText,
+	srcChatId, dstChatId, newMessageId int64, engineConfig *domain.EngineConfig,
+) {
+	var err error
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+			"newMessageId", newMessageId,
+		)
+	}()
+
+	nextTitle := domain.NEXT_TITLE
+
+	func() {
+		var err error
+		defer func() {
+			s.log.ErrorOrDebug(err, "")
+		}()
+		source := engineConfig.Sources[srcChatId]
+		if source == nil {
+			err = log.NewError("source not found")
+			return
+		}
+		if source.Next == nil || !slices.Contains(source.Next.For, dstChatId) {
+			err = log.NewError("source.Next without dstChatId")
+			return
+		}
+		if source.Next.Title != "" {
+			nextTitle = source.Next.Title
+		}
+	}()
+
+	messageLink, err := s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
+		ChatId:    dstChatId,
+		MessageId: newMessageId,
+	})
+	if err != nil {
+		return
+	}
+	text := fmt.Sprintf("[%s](%s)", nextTitle, messageLink.Link)
+	s.addText(formattedText, text)
 }
 
 // addAutoAnswer добавляет ответ на автоответ
@@ -362,8 +407,8 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 	s.addText(formattedText, text)
 }
 
-// addPrevMessageId добавляет id предыдущей версии сообщения
-func (s *Service) addPrevMessageId(formattedText *client.FormattedText,
+// addPrevLink добавляет ссылку на предыдущую версию сообщения
+func (s *Service) addPrevLink(formattedText *client.FormattedText,
 	src *client.Message, dstChatId, prevMessageId int64, engineConfig *domain.EngineConfig,
 ) {
 	var err error

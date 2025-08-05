@@ -82,6 +82,11 @@ func runFacade(
 	// 	transformService,
 	// 	rateLimiterService,
 	// )
+	// err = forwarderService.StartContext(ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer gracefulShutdown(forwarderService)
 
 	// - Инициализация сервиса авторизации
 	authService := authService.New(

@@ -177,7 +177,7 @@ func Test(t *testing.T) {
 			},
 			dstChatId:        -10123,
 			prevMessageId:    456,
-			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedText:     "test message\n\n[↖Prev](https://t.me/test/456)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -192,12 +192,12 @@ func Test(t *testing.T) {
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Prev](https://t.me/test/456)",
+					Text: "[↖Prev](https://t.me/test/456)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Prev](https://t.me/test/456)",
+					Text:     "[↖Prev](https://t.me/test/456)",
 					Entities: []*client.TextEntity{},
 				}, nil)
 
@@ -1556,7 +1556,7 @@ func Test_addSourceLink(t *testing.T) {
 				Id:     123,
 			},
 			dstChatId:        0, // не используется
-			expectedText:     "[Link](https://t.me/test/123)",
+			expectedText:     "[🔗Link](https://t.me/test/123)",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -1568,12 +1568,12 @@ func Test_addSourceLink(t *testing.T) {
 					Link: "https://t.me/test/123",
 				}, nil)
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Link](https://t.me/test/123)",
+					Text: "[🔗Link](https://t.me/test/123)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Link](https://t.me/test/123)",
+					Text:     "[🔗Link](https://t.me/test/123)",
 					Entities: nil,
 				}, nil)
 				return New(telegramRepo, nil, nil)
@@ -1589,7 +1589,7 @@ func Test_addSourceLink(t *testing.T) {
 				MediaAlbumId: 0,
 			},
 			dstChatId:        -10109,
-			expectedText:     "[Link](https://t.me/test/123)",
+			expectedText:     "[🔗Link](https://t.me/test/123)",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -1601,12 +1601,12 @@ func Test_addSourceLink(t *testing.T) {
 					Link: "https://t.me/test/123",
 				}, nil)
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Link](https://t.me/test/123)",
+					Text: "[🔗Link](https://t.me/test/123)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Link](https://t.me/test/123)",
+					Text:     "[🔗Link](https://t.me/test/123)",
 					Entities: nil,
 				}, nil)
 				return New(telegramRepo, nil, nil)
@@ -1622,7 +1622,7 @@ func Test_addSourceLink(t *testing.T) {
 				MediaAlbumId: 0,
 			},
 			dstChatId:        -10109,
-			expectedText:     "[Link](https://t.me/test/123)",
+			expectedText:     "[🔗Link](https://t.me/test/123)",
 			expectedEntities: nil,
 			setup: func(t *testing.T, src *client.Message) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -1634,12 +1634,12 @@ func Test_addSourceLink(t *testing.T) {
 					Link: "https://t.me/test/123",
 				}, nil)
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Link](https://t.me/test/123)",
+					Text: "[🔗Link](https://t.me/test/123)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Link](https://t.me/test/123)",
+					Text:     "[🔗Link](https://t.me/test/123)",
 					Entities: nil,
 				}, nil)
 				return New(telegramRepo, nil, nil)
@@ -2360,7 +2360,7 @@ func Test_addPrevMessageId(t *testing.T) {
 					},
 				},
 			},
-			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedText:     "test message\n\n[↖Prev](https://t.me/test/456)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -2374,12 +2374,12 @@ func Test_addPrevMessageId(t *testing.T) {
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Prev](https://t.me/test/456)",
+					Text: "[↖Prev](https://t.me/test/456)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Prev](https://t.me/test/456)",
+					Text:     "[↖Prev](https://t.me/test/456)",
 					Entities: []*client.TextEntity{},
 				}, nil)
 
@@ -2457,7 +2457,7 @@ func Test_addPrevMessageId(t *testing.T) {
 					},
 				},
 			},
-			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedText:     "test message\n\n[↖Prev](https://t.me/test/456)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -2471,12 +2471,12 @@ func Test_addPrevMessageId(t *testing.T) {
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Prev](https://t.me/test/456)",
+					Text: "[↖Prev](https://t.me/test/456)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Prev](https://t.me/test/456)",
+					Text:     "[↖Prev](https://t.me/test/456)",
 					Entities: []*client.TextEntity{},
 				}, nil)
 
@@ -2499,7 +2499,7 @@ func Test_addPrevMessageId(t *testing.T) {
 			engineConfig: &domain.EngineConfig{
 				Sources: map[int64]*domain.Source{},
 			},
-			expectedText:     "test message\n\n[Prev](https://t.me/test/456)",
+			expectedText:     "test message\n\n[↖Prev](https://t.me/test/456)",
 			expectedEntities: []*client.TextEntity{},
 			setup: func(t *testing.T) *Service {
 				telegramRepo := mocks.NewTelegramRepo(t)
@@ -2513,12 +2513,12 @@ func Test_addPrevMessageId(t *testing.T) {
 				}, nil)
 
 				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
-					Text: "[Prev](https://t.me/test/456)",
+					Text: "[↖Prev](https://t.me/test/456)",
 					ParseMode: &client.TextParseModeMarkdown{
 						Version: 2,
 					},
 				}).Return(&client.FormattedText{
-					Text:     "[Prev](https://t.me/test/456)",
+					Text:     "[↖Prev](https://t.me/test/456)",
 					Entities: []*client.TextEntity{},
 				}, nil)
 
@@ -2568,7 +2568,358 @@ func Test_addPrevMessageId(t *testing.T) {
 			t.Parallel()
 
 			transformService := test.setup(t)
-			transformService.addPrevMessageId(test.formattedText, test.src, test.dstChatId, test.prevMessageId, test.engineConfig)
+			transformService.addPrevLink(test.formattedText, test.src, test.dstChatId, test.prevMessageId, test.engineConfig)
+
+			assert.Equal(t, test.expectedText, test.formattedText.Text)
+			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
+		})
+	}
+}
+
+func TestAddNextLink(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		formattedText    *client.FormattedText
+		srcChatId        int64
+		dstChatId        int64
+		newMessageId     int64
+		engineConfig     *domain.EngineConfig
+		expectedText     string
+		expectedEntities []*client.TextEntity
+		setup            func(t *testing.T) *Service
+		expectedError    error
+	}{
+		{
+			name: "source_not_found",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10199, // не существует в config.yml
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{},
+			},
+			expectedText:     "test message\n\n[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+			expectedError: log.NewError("source not found"),
+		},
+		{
+			name: "source_next_is_nil",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10104, // for empty source test
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10104: {
+						Next: nil,
+					},
+				},
+			},
+			expectedText:     "test message\n\n[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+			expectedError: log.NewError("source.Next without dstChatId"),
+		},
+		{
+			name: "source_next_for_does_not_contain_dst_chat",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10126, // for Next test - next for different destination
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10126: {
+						Next: &domain.Next{
+							Title: "Next",
+							For:   []int64{-10128}, // не содержит dstChatId -10127
+						},
+					},
+				},
+			},
+			expectedText:     "test message\n\n[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+			expectedError: log.NewError("source.Next without dstChatId"),
+		},
+		{
+			name: "get_message_link_error",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10124, // for Next test with default title
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10124: {
+						Next: &domain.Next{
+							Title: domain.NEXT_TITLE,
+							For:   []int64{-10127},
+						},
+					},
+				},
+			},
+			expectedText:     "test message",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(nil, assert.AnError)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_default_title",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10124, // for Next test with default title
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10124: {
+						Next: &domain.Next{
+							Title: "", // использует domain.NEXT_TITLE
+							For:   []int64{-10127},
+						},
+					},
+				},
+			},
+			expectedText:     "test message\n\n[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_custom_title",
+			formattedText: &client.FormattedText{
+				Text:     "test message",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10125, // for Next test with custom title
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10125: {
+						Next: &domain.Next{
+							Title: "Следующее",
+							For:   []int64{-10127},
+						},
+					},
+				},
+			},
+			expectedText:     "test message\n\n[Следующее](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[Следующее](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[Следующее](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_existing_text",
+			formattedText: &client.FormattedText{
+				Text:     "existing text",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10124, // for Next test with default title
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10124: {
+						Next: &domain.Next{
+							Title: domain.NEXT_TITLE,
+							For:   []int64{-10127},
+						},
+					},
+				},
+			},
+			expectedText:     "existing text\n\n[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "success_with_empty_formatted_text",
+			formattedText: &client.FormattedText{
+				Text:     "",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId:    -10124, // for Next test with default title
+			dstChatId:    -10127,
+			newMessageId: 789,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10124: {
+						Next: &domain.Next{
+							Title: domain.NEXT_TITLE,
+							For:   []int64{-10127},
+						},
+					},
+				},
+			},
+			expectedText:     "[↘Next](https://t.me/test/789)",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().GetMessageLink(&client.GetMessageLinkRequest{
+					ChatId:    -10127,
+					MessageId: 789,
+				}).Return(&client.MessageLink{
+					Link: "https://t.me/test/789",
+				}, nil)
+				telegramRepo.EXPECT().ParseTextEntities(&client.ParseTextEntitiesRequest{
+					Text: "[↘Next](https://t.me/test/789)",
+					ParseMode: &client.TextParseModeMarkdown{
+						Version: 2,
+					},
+				}).Return(&client.FormattedText{
+					Text:     "[↘Next](https://t.me/test/789)",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			var transformService *Service
+			spylogHandler := spylog.GetHandler(t.Name(), func() {
+				transformService = test.setup(t)
+			})
+
+			transformService.AddNextLink(test.formattedText, test.srcChatId, test.dstChatId, test.newMessageId, test.engineConfig)
+
+			if test.expectedError != nil {
+				records := spylogHandler.GetRecords()
+				require.Equal(t, 1, len(records))
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
+			}
 
 			assert.Equal(t, test.expectedText, test.formattedText.Text)
 			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)

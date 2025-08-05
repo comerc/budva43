@@ -16,7 +16,6 @@ import (
 	grpc "google.golang.org/grpc"
 
 	config "github.com/comerc/budva43/app/config"
-	domain "github.com/comerc/budva43/app/domain"
 	util "github.com/comerc/budva43/app/util"
 	pb "github.com/comerc/budva43/transport/grpc/pb"
 )
@@ -32,7 +31,8 @@ type scenarioState struct {
 	sourceTextPrefix string
 	sourceText       string
 
-	checks []check
+	checks      []check
+	prevMessage *pb.Message
 }
 
 type check = func(message *pb.Message) error
@@ -98,7 +98,7 @@ func extractExpectedLink(title, text string) string {
 	return matches[1]
 }
 
-func getPrevMessageId(ctx context.Context, chatId int64) (int64, error) {
+func getPrevMessage(ctx context.Context, chatId int64) (*pb.Message, error) {
 	var err error
 
 	var resp *pb.MessagesResponse
@@ -107,20 +107,20 @@ func getPrevMessageId(ctx context.Context, chatId int64) (int64, error) {
 		Limit:  2,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("failed to get chat history: %w", err)
+		return nil, fmt.Errorf("failed to get chat history: %w", err)
 	}
 	if len(resp.Messages) < 2 {
-		return 0, fmt.Errorf("not enough messages: want 2, got %d", len(resp.Messages))
+		return nil, fmt.Errorf("not enough messages: want 2, got %d", len(resp.Messages))
 	}
 
 	message := resp.Messages[1]
 
-	return message.Id, nil
+	return message, nil
 }
 
 func (s *scenario) addCheckWithExpectedLinkToPrevMessage(ctx context.Context) error {
 	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
-		link := extractExpectedLink(domain.PREV_TITLE, message.Text)
+		link := extractExpectedLink(PREV_TITLE, message.Text)
 		if link == "" {
 			return fmt.Errorf("link is empty")
 		}
@@ -134,13 +134,73 @@ func (s *scenario) addCheckWithExpectedLinkToPrevMessage(ctx context.Context) er
 			return fmt.Errorf("message chat id mismatch: want %d, got %d",
 				message.ChatId, resp.Message.ChatId)
 		}
-		prevMessageId, err := getPrevMessageId(ctx, resp.Message.ChatId)
+		prevMessage, err := getPrevMessage(ctx, resp.Message.ChatId)
 		if err != nil {
-			return fmt.Errorf("failed to get prev message id: %w", err)
+			return fmt.Errorf("prev message is nil")
 		}
-		if resp.Message.Id != prevMessageId {
+		if resp.Message.Id != prevMessage.Id {
 			return fmt.Errorf("message id mismatch: want %d, got %d",
-				prevMessageId, resp.Message.Id)
+				prevMessage.Id, resp.Message.Id)
+		}
+		s.state.prevMessage = prevMessage
+		return nil
+	})
+	return nil
+}
+
+func (s *scenario) addCheckWithExpectedLinkToPrevVersionMessage(ctx context.Context) error {
+	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
+		link := extractExpectedLink(E2E_PREV, message.Text)
+		if link == "" {
+			return fmt.Errorf("link is empty")
+		}
+		resp, err := client.GetMessageLinkInfo(ctx, &pb.GetMessageLinkInfoRequest{
+			Link: link,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get message link: %w", err)
+		}
+		if resp.Message.ChatId != message.ChatId {
+			return fmt.Errorf("message chat id mismatch: want %d, got %d",
+				message.ChatId, resp.Message.ChatId)
+		}
+		prevMessage, err := getPrevMessage(ctx, resp.Message.ChatId)
+		if err != nil {
+			return fmt.Errorf("prev message is nil")
+		}
+		if resp.Message.Id != prevMessage.Id {
+			return fmt.Errorf("message id mismatch: want %d, got %d",
+				prevMessage.Id, resp.Message.Id)
+		}
+		s.state.prevMessage = prevMessage
+		return nil
+	})
+	return nil
+}
+
+func (s *scenario) addCheckWithExpectedLinkToNextVersionMessage(ctx context.Context) error {
+	s.state.checks = append(s.state.checks, func(message *pb.Message) error {
+		prevMessage := s.state.prevMessage
+		if prevMessage == nil {
+			return fmt.Errorf("prev message is nil")
+		}
+		link := extractExpectedLink(E2E_NEXT, prevMessage.Text)
+		if link == "" {
+			return fmt.Errorf("link is empty")
+		}
+		resp, err := client.GetMessageLinkInfo(ctx, &pb.GetMessageLinkInfoRequest{
+			Link: link,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get message link: %w", err)
+		}
+		if resp.Message.ChatId != message.ChatId {
+			return fmt.Errorf("message chat id mismatch: want %d, got %d",
+				message.ChatId, resp.Message.ChatId)
+		}
+		if resp.Message.Id != message.Id {
+			return fmt.Errorf("message id mismatch: want %d, got %d",
+				message.Id, resp.Message.Id)
 		}
 		return nil
 	})
@@ -383,6 +443,8 @@ func (s *scenario) checkNoMessage(ctx context.Context, name string, chatId int64
 	return nil
 }
 
+const PREV_TITLE = "PrevMessage"
+
 func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 	var err error
 
@@ -409,30 +471,31 @@ func (s *scenario) setExpectedLinkToLastMessage(ctx context.Context) error {
 		return fmt.Errorf("failed to get message link: %w", err)
 	}
 
-	s.state.sourceText = fmt.Sprintf("[%s](%s)", domain.PREV_TITLE, resp.Link)
+	s.state.sourceText = fmt.Sprintf("[%s](%s)", PREV_TITLE, resp.Link)
 
 	return nil
 }
 
+// Константы из engine.e2e.yml
 const (
-	// Константы из engine.e2e.yml // TODO: получать через grpc?
-	E2E_SIGN = "**Sign**"
-	E2E_LINK = "**Link**"
-	// E2E_PREV = "**Prev**" // TODO: использовать кастомную константу
+	E2E_SIGN = `\*\*Sign\*\*`
+	E2E_LINK = `🔗\*\*Link\*\*`
+	E2E_PREV = `↖\*\*Prev\*\*`
+	E2E_NEXT = `↘\*\*Next\*\*`
 )
 
 func (s *scenario) addCheckWithExpectedSign() error {
-	pattern := fmt.Sprintf(`(?s)^.*\n\n%s.*$`, strings.ReplaceAll(E2E_SIGN, "*", `\*`))
+	pattern := fmt.Sprintf(`(?s)^.*\n\n%s.*$`, E2E_SIGN)
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
 func (s *scenario) addCheckWithExpectedLink() error {
-	pattern := fmt.Sprintf(`(?s)^.*\n\n\[🔗%s\]\(https://t.me/.*\)$`, strings.ReplaceAll(E2E_LINK, "*", `\*`))
+	pattern := fmt.Sprintf(`(?s)^.*\n\n\[%s\]\(https://t.me/.*\)$`, E2E_LINK)
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
 func (s *scenario) addCheckWithExpectedNoExternalLink() error {
-	pattern := fmt.Sprintf("~~%s~~", domain.PREV_TITLE)
+	pattern := fmt.Sprintf("~~%s~~", PREV_TITLE)
 	return s.addCheckWithExpectedRegex(pattern)
 }
 
@@ -463,6 +526,8 @@ func registerSteps(ctx *godog.ScenarioContext) {
 	ctx.Given(`^будет удалена ссылка на сообщение в исходном чате$`, scenario.addCheckWithExpectedNoExternalLink)
 	ctx.Given(`^сообщение со ссылкой на последнее сообщение$`, scenario.setExpectedLinkToLastMessage)
 	ctx.Given(`^будет ссылка на предыдущее сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToPrevMessage)
+	ctx.Given(`^будет ссылка на предыдущую версию сообщения в целевом чате$`, scenario.addCheckWithExpectedLinkToPrevVersionMessage)
+	ctx.Given(`^будет предыдущее сообщение со ссылкой на сообщение в целевом чате$`, scenario.addCheckWithExpectedLinkToNextVersionMessage)
 	ctx.Given(`^сообщение с текстом "([^"]*)"$`, scenario.setExpectedText)
 	ctx.When(`^пользователь отправляет сообщение$`, scenario.sendMessage)
 	ctx.When(`^пользователь редактирует сообщение$`, scenario.editMessage)
@@ -493,25 +558,25 @@ func Test(t *testing.T) {
 	}
 
 	names := []string{
-		// "01.send_copy",                // OK
-		// "02.forward",                  // OK
-		// "03.1.replace_myself_links",   // OK
-		// "03.2.delete_external_links",  // OK
-		// "04.1.1.filters_mode_exclude", // OK
-		// "04.1.2.filters_mode_exclude", // OK
-		// "04.2.1.filters_mode_include", // OK
-		// "04.2.2.filters_mode_include", // OK
-		// "05.media_album_send_copy",    // OK
-		// "06.media_album_forward",      // OK
-		// "07.1.include_submatch",       // OK
-		// "07.2.include_submatch",       // OK
-		// "08.replace_fragments",        // OK
-		// "09.sources_link_title",       // OK
-		// "10.sources_sign",             // OK
-		"12.1.copy_once_t", // OK
-		// "12.2.copy_once_f",            // OK
-		// "13.1.indelible_t",            // OK
-		// "13.2.indelible_f",            // OK
+		"01.send_copy",                // OK
+		"02.forward",                  // OK
+		"03.1.replace_myself_links",   // OK
+		"03.2.delete_external_links",  // OK
+		"04.1.1.filters_mode_exclude", // OK
+		"04.1.2.filters_mode_exclude", // OK
+		"04.2.1.filters_mode_include", // OK
+		"04.2.2.filters_mode_include", // OK
+		"05.media_album_send_copy",    // OK
+		"06.media_album_forward",      // OK
+		"07.1.include_submatch",       // OK
+		"07.2.include_submatch",       // OK
+		"08.replace_fragments",        // OK
+		"09.sources_link_title",       // OK
+		"10.sources_sign",             // OK
+		"12.1.copy_once_t",            // OK
+		"12.2.copy_once_f",            // OK
+		"13.1.indelible_t",            // OK
+		"13.2.indelible_f",            // OK
 		// "11.auto_answers", // TODO: R&D
 	}
 
