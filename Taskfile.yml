@@ -160,6 +160,14 @@ tasks:
       - protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. transport/grpc/pb/telegram.proto
     # silent: true
 
+  grpc-list:
+    desc: "List GRPC services"
+    summary: |
+      List GRPC services.
+    cmds:
+      - grpcurl -plaintext localhost:50051 list
+    # silent: true
+
   kill-port:
     desc: "Kill specific port"
     summary: |

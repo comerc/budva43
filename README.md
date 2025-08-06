@@ -273,8 +273,3 @@ To -
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
 
-## How to check grpc
-
-```bash
-grpcurl -plaintext localhost:50051 list
-```
