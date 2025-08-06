@@ -305,7 +305,10 @@ func (s *Service) getReplyToMessageId(src *client.Message, dstChatId int64) int6
 }
 
 // runNextLinkWorkflow добавляет ссылку на следующую версию сообщения
-func (s *Service) runNextLinkWorkflow(srcChatId, dstChatId, prevMessageId, tmpMessageId int64, engineConfig *domain.EngineConfig) {
+func (s *Service) runNextLinkWorkflow(
+	srcChatId, dstChatId, prevMessageId, tmpMessageId int64,
+	engineConfig *domain.EngineConfig,
+) {
 	var (
 		err          error
 		newMessageId int64
