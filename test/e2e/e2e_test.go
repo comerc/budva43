@@ -577,6 +577,7 @@ func Test(t *testing.T) {
 		"12.2.copy_once_f",            // OK
 		"13.1.indelible_t",            // OK
 		"13.2.indelible_f",            // OK
+		"14.translate",                // OK
 		// "11.auto_answers", // TODO: R&D
 	}
 
