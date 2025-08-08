@@ -273,3 +273,22 @@ To -
   - [x] Forward.CopyOnce (edit sync)
   - [x] Forward.Indelible (delete sync)
 
+
+## Task Autocompletion
+
+To enable command autocompletion in Task, add to your `~/.zshrc`:
+
+```bash
+# Task completion
+eval "$(task --completion zsh)"
+```
+
+Then reload your shell:
+```bash
+source ~/.zshrc
+```
+
+Or restart your terminal.
+
+Now when you type `task` and press Tab, you'll get a list of available tasks.
+
