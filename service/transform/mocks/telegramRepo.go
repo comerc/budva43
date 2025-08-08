@@ -310,6 +310,64 @@ func (_c *TelegramRepo_ParseTextEntities_Call) RunAndReturn(run func(*client.Par
 	return _c
 }
 
+// TranslateText provides a mock function with given fields: req
+func (_m *TelegramRepo) TranslateText(req *client.TranslateTextRequest) (*client.FormattedText, error) {
+	ret := _m.Called(req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TranslateText")
+	}
+
+	var r0 *client.FormattedText
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*client.TranslateTextRequest) (*client.FormattedText, error)); ok {
+		return rf(req)
+	}
+	if rf, ok := ret.Get(0).(func(*client.TranslateTextRequest) *client.FormattedText); ok {
+		r0 = rf(req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*client.FormattedText)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*client.TranslateTextRequest) error); ok {
+		r1 = rf(req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TelegramRepo_TranslateText_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TranslateText'
+type TelegramRepo_TranslateText_Call struct {
+	*mock.Call
+}
+
+// TranslateText is a helper method to define mock.On call
+//   - req *client.TranslateTextRequest
+func (_e *TelegramRepo_Expecter) TranslateText(req interface{}) *TelegramRepo_TranslateText_Call {
+	return &TelegramRepo_TranslateText_Call{Call: _e.mock.On("TranslateText", req)}
+}
+
+func (_c *TelegramRepo_TranslateText_Call) Run(run func(req *client.TranslateTextRequest)) *TelegramRepo_TranslateText_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*client.TranslateTextRequest))
+	})
+	return _c
+}
+
+func (_c *TelegramRepo_TranslateText_Call) Return(_a0 *client.FormattedText, _a1 error) *TelegramRepo_TranslateText_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *TelegramRepo_TranslateText_Call) RunAndReturn(run func(*client.TranslateTextRequest) (*client.FormattedText, error)) *TelegramRepo_TranslateText_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewTelegramRepo creates a new instance of TelegramRepo. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewTelegramRepo(t interface {

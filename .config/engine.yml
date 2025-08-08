@@ -23,6 +23,9 @@ sources:
   #     title: '\_\*\{\}\[\]\(\)\#\+\-\.\!\~\`\>\=\|' # for SendCopy (with escaped markdown)
   #     for: [321]
   # 123:
+  #   translate:
+  #     lang: "ru"
+  #     for: [321, 888]
   #   sign:
   #     title: "*Source*" # for SendCopy (with markdown)
   #     for: [888]
@@ -97,6 +100,16 @@ sources:
     next:
       title: "Next"
       for: [10128] # не содержит 10127
+  10130: # for translate test - source with translate for dstChatId
+    translate:
+      lang: "ru"
+      for: [10131]
+  10132: # for translate test - source with translate for different dstChatId
+    translate:
+      lang: "en"
+      for: [10133] # не содержит 10131
+  10134: # for translate test - source without translate
+    dummy: true
 destinations:
   # 321:
   #   replace-myself-links:
@@ -154,6 +167,10 @@ destinations:
   10127: # for Next test - destination
     dummy: true
   10128: # for Next test - different destination (not for 10127)
+    dummy: true
+  10131: # for translate test - destination
+    dummy: true
+  10133: # for translate test - different destination (not for 10131)
     dummy: true
 forward-rules:
   "Id1":

@@ -38,6 +38,7 @@ type clientAdapter interface {
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
 	GetOption(*client.GetOptionRequest) (client.OptionValue, error)
 	GetMe() (*client.User, error)
+	TranslateText(req *client.TranslateTextRequest) (*client.FormattedText, error)
 }
 
 // GetMessage выводит информацию о сообщении
@@ -221,4 +222,13 @@ func (r *Repo) GetMe() (*client.User, error) {
 		return nil, log.WrapError(err) // внешняя ошибка
 	}
 	return user, nil
+}
+
+// TranslateText переводит текст
+func (r *Repo) TranslateText(req *client.TranslateTextRequest) (*client.FormattedText, error) {
+	formattedText, err := r.getClient().TranslateText(req)
+	if err != nil {
+		return nil, log.WrapError(err) // внешняя ошибка
+	}
+	return formattedText, nil
 }

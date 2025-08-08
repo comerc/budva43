@@ -21,6 +21,7 @@ type telegramRepo interface {
 	GetMessageLink(*client.GetMessageLinkRequest) (*client.MessageLink, error)
 	GetCallbackQueryAnswer(*client.GetCallbackQueryAnswerRequest) (*client.CallbackQueryAnswer, error)
 	ParseTextEntities(*client.ParseTextEntitiesRequest) (*client.FormattedText, error)
+	TranslateText(req *client.TranslateTextRequest) (*client.FormattedText, error)
 }
 
 //go:generate mockery --name=storageService --exported
@@ -78,6 +79,7 @@ func (s *Service) Transform(formattedText *client.FormattedText, withSources boo
 		)
 	}()
 
+	s.translate(formattedText, src.ChatId, dstChatId, engineConfig)
 	s.addAutoAnswer(formattedText, src, engineConfig)
 	s.replaceMyselfLinks(formattedText, src.ChatId, dstChatId, engineConfig)
 	s.replaceFragments(formattedText, dstChatId, engineConfig)
@@ -135,6 +137,40 @@ func (s *Service) AddNextLink(formattedText *client.FormattedText,
 	}
 	text := fmt.Sprintf("[%s](%s)", nextTitle, messageLink.Link)
 	s.addText(formattedText, text)
+}
+
+// translate переводит текст сообщения
+func (s *Service) translate(formattedText *client.FormattedText,
+	srcChatId, dstChatId int64, engineConfig *domain.EngineConfig,
+) {
+	var err error
+	defer func() {
+		s.log.ErrorOrDebug(err, "",
+			"srcChatId", srcChatId,
+			"dstChatId", dstChatId,
+		)
+	}()
+
+	source := engineConfig.Sources[srcChatId]
+	if source == nil {
+		err = log.NewError("source not found")
+		return
+	}
+	if source.Translate == nil || !slices.Contains(source.Translate.For, dstChatId) {
+		err = log.NewError("source.Translate without dstChatId")
+		return
+	}
+
+	var translatedFormattedText *client.FormattedText
+	translatedFormattedText, err = s.telegramRepo.TranslateText(&client.TranslateTextRequest{
+		Text:           formattedText,
+		ToLanguageCode: source.Translate.Lang,
+	})
+	if err != nil {
+		return
+	}
+	formattedText.Text = translatedFormattedText.Text
+	formattedText.Entities = translatedFormattedText.Entities
 }
 
 // addAutoAnswer добавляет ответ на автоответ

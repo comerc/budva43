@@ -108,6 +108,15 @@ func validate(engineConfig *domain.EngineConfig) error {
 		// 		"path", "config.Engine.Sources",
 		// 		"value", srcChatId)
 		// }
+		if src.Translate != nil {
+			for _, targetChatId := range src.Translate.For {
+				if targetChatId < 0 {
+					return log.NewError("идентификатор не может быть отрицательным",
+						"path", fmt.Sprintf("config.Engine.Sources[%d].Translate.For", srcChatId),
+						"value", targetChatId)
+				}
+			}
+		}
 		if src.Sign != nil {
 			for _, targetChatId := range src.Sign.For {
 				if targetChatId < 0 {
@@ -231,6 +240,13 @@ func transform(engineConfig *domain.EngineConfig) {
 	}
 
 	for _, src := range engineConfig.Sources {
+		if src.Translate != nil {
+			a := []domain.ChatId{}
+			for _, targetChatId := range src.Translate.For {
+				a = append(a, -targetChatId)
+			}
+			src.Translate.For = a
+		}
 		if src.Sign != nil {
 			a := []domain.ChatId{}
 			for _, targetChatId := range src.Sign.For {

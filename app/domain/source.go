@@ -4,6 +4,8 @@ package domain
 type Source struct {
 	// Id идентификатор чата-источника - обогощаем при загрузке
 	ChatId ChatId
+	// Translate настройки перевода сообщений
+	Translate *Translate
 	// Sign настройки подписи для сообщений из этого источника
 	Sign *Sign
 	// Link настройки ссылки на источник
@@ -16,6 +18,14 @@ type Source struct {
 	Prev *Prev
 	// Next настройки ссылки на следующую версию сообщения
 	Next *Next
+}
+
+// Translate представляет настройки перевода сообщений
+type Translate struct {
+	// Lang язык перевода
+	Lang string
+	// For список идентификаторов чатов, для которых применяется перевод
+	For []ChatId
 }
 
 // Sign представляет настройки подписи для сообщений

@@ -219,6 +219,284 @@ func Test(t *testing.T) {
 	}
 }
 
+func Test_translate(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		formattedText    *client.FormattedText
+		srcChatId        int64
+		dstChatId        int64
+		engineConfig     *domain.EngineConfig
+		expectedText     string
+		expectedEntities []*client.TextEntity
+		setup            func(t *testing.T) *Service
+		expectedError    error
+	}{
+		{
+			name: "source_not_found",
+			formattedText: &client.FormattedText{
+				Text:     "hello world",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10199, // не существует в config.yml
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{},
+			},
+			expectedText:     "hello world",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				return New(nil, nil, nil)
+			},
+			expectedError: log.NewError("source not found"),
+		},
+		{
+			name: "source_translate_is_nil",
+			formattedText: &client.FormattedText{
+				Text:     "hello world",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10134, // source без translate
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10134: {
+						Translate: nil,
+					},
+				},
+			},
+			expectedText:     "hello world",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				return New(nil, nil, nil)
+			},
+			expectedError: log.NewError("source.Translate without dstChatId"),
+		},
+		{
+			name: "source_translate_for_does_not_contain_dst_chat",
+			formattedText: &client.FormattedText{
+				Text:     "hello world",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10132, // translate для другого dstChatId
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10132: {
+						Translate: &domain.Translate{
+							Lang: "en",
+							For:  []int64{-10133}, // не содержит dstChatId -10131
+						},
+					},
+				},
+			},
+			expectedText:     "hello world",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				return New(nil, nil, nil)
+			},
+			expectedError: log.NewError("source.Translate without dstChatId"),
+		},
+		{
+			name: "translate_text_error",
+			formattedText: &client.FormattedText{
+				Text:     "hello world",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10130,
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10130: {
+						Translate: &domain.Translate{
+							Lang: "ru",
+							For:  []int64{-10131},
+						},
+					},
+				},
+			},
+			expectedText:     "hello world",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().TranslateText(&client.TranslateTextRequest{
+					Text: &client.FormattedText{
+						Text:     "hello world",
+						Entities: []*client.TextEntity{},
+					},
+					ToLanguageCode: "ru",
+				}).Return(nil, errors.New("translate error"))
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "successful_translation",
+			formattedText: &client.FormattedText{
+				Text:     "hello world",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10130,
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10130: {
+						Translate: &domain.Translate{
+							Lang: "ru",
+							For:  []int64{-10131},
+						},
+					},
+				},
+			},
+			expectedText: "привет мир",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 0,
+					Length: 6,
+					Type:   &client.TextEntityTypeBold{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().TranslateText(&client.TranslateTextRequest{
+					Text: &client.FormattedText{
+						Text:     "hello world",
+						Entities: []*client.TextEntity{},
+					},
+					ToLanguageCode: "ru",
+				}).Return(&client.FormattedText{
+					Text: "привет мир",
+					Entities: []*client.TextEntity{
+						{
+							Offset: 0,
+							Length: 6,
+							Type:   &client.TextEntityTypeBold{},
+						},
+					},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "translation_with_existing_entities",
+			formattedText: &client.FormattedText{
+				Text: "hello *world*",
+				Entities: []*client.TextEntity{
+					{
+						Offset: 6,
+						Length: 7,
+						Type:   &client.TextEntityTypeBold{},
+					},
+				},
+			},
+			srcChatId: -10130,
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10130: {
+						Translate: &domain.Translate{
+							Lang: "ru",
+							For:  []int64{-10131},
+						},
+					},
+				},
+			},
+			expectedText: "привет *мир*",
+			expectedEntities: []*client.TextEntity{
+				{
+					Offset: 7,
+					Length: 5,
+					Type:   &client.TextEntityTypeItalic{},
+				},
+			},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().TranslateText(&client.TranslateTextRequest{
+					Text: &client.FormattedText{
+						Text: "hello *world*",
+						Entities: []*client.TextEntity{
+							{
+								Offset: 6,
+								Length: 7,
+								Type:   &client.TextEntityTypeBold{},
+							},
+						},
+					},
+					ToLanguageCode: "ru",
+				}).Return(&client.FormattedText{
+					Text: "привет *мир*",
+					Entities: []*client.TextEntity{
+						{
+							Offset: 7,
+							Length: 5,
+							Type:   &client.TextEntityTypeItalic{},
+						},
+					},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+		{
+			name: "empty_text_translation",
+			formattedText: &client.FormattedText{
+				Text:     "",
+				Entities: []*client.TextEntity{},
+			},
+			srcChatId: -10130,
+			dstChatId: -10131,
+			engineConfig: &domain.EngineConfig{
+				Sources: map[int64]*domain.Source{
+					-10130: {
+						Translate: &domain.Translate{
+							Lang: "ru",
+							For:  []int64{-10131},
+						},
+					},
+				},
+			},
+			expectedText:     "",
+			expectedEntities: []*client.TextEntity{},
+			setup: func(t *testing.T) *Service {
+				telegramRepo := mocks.NewTelegramRepo(t)
+				telegramRepo.EXPECT().TranslateText(&client.TranslateTextRequest{
+					Text: &client.FormattedText{
+						Text:     "",
+						Entities: []*client.TextEntity{},
+					},
+					ToLanguageCode: "ru",
+				}).Return(&client.FormattedText{
+					Text:     "",
+					Entities: []*client.TextEntity{},
+				}, nil)
+				return New(telegramRepo, nil, nil)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			var transformService *Service
+			spylogHandler := spylog.GetHandler(t.Name(), func() {
+				transformService = test.setup(t)
+			})
+
+			transformService.translate(test.formattedText, test.srcChatId, test.dstChatId, test.engineConfig)
+
+			if test.expectedError != nil {
+				records := spylogHandler.GetRecords()
+				require.Equal(t, 1, len(records))
+				record := records[0]
+				assert.Equal(t, test.expectedError.Error(), record.Message)
+			}
+
+			assert.Equal(t, test.expectedText, test.formattedText.Text)
+			assert.Equal(t, test.expectedEntities, test.formattedText.Entities)
+		})
+	}
+}
+
 func Test_replaceMyselfLinks(t *testing.T) {
 	t.Parallel()
 
