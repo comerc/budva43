@@ -138,6 +138,10 @@ $ docker-compose build
 - [ ] jba/templatecheck
 - [x] [OCP-VS-YAGNI](doc/OCP-VS-YAGNI.md)
 - [ ] github.com/urfave/cli
+- [ ] [CatBoost](https://github.com/catboost/catboost)
+- [ ] [XGBoost](https://github.com/dmlc/xgboost)
+- [ ] [LightGBM](https://github.com/microsoft/LightGBM)
+- [ ] https://github.com/uber-go/nilaway
 
 ## .env
 
