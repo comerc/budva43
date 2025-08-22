@@ -107,7 +107,7 @@ func (s *Service) AddNextLink(formattedText *client.FormattedText,
 		)
 	}()
 
-	nextTitle := domain.NEXT_TITLE
+	nextTitle := ""
 
 	func() {
 		var err error
@@ -123,10 +123,16 @@ func (s *Service) AddNextLink(formattedText *client.FormattedText,
 			err = log.NewError("source.Next without dstChatId")
 			return
 		}
-		if source.Next.Title != "" {
+		if source.Next.Title == "" {
+			nextTitle = domain.NEXT_TITLE
+		} else {
 			nextTitle = source.Next.Title
 		}
 	}()
+
+	if nextTitle == "" {
+		return
+	}
 
 	messageLink, err := s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
 		ChatId:    dstChatId,
@@ -370,7 +376,7 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 		)
 	}()
 
-	signTitle := domain.SIGN_TITLE
+	signTitle := ""
 
 	func() {
 		var err error
@@ -386,10 +392,16 @@ func (s *Service) addSourceSign(formattedText *client.FormattedText,
 			err = log.NewError("source.Sign without dstChatId")
 			return
 		}
-		if source.Sign.Title != "" {
+		if source.Sign.Title == "" {
+			signTitle = domain.SIGN_TITLE
+		} else {
 			signTitle = source.Sign.Title
 		}
 	}()
+
+	if signTitle == "" {
+		return
+	}
 
 	s.addText(formattedText, signTitle)
 }
@@ -407,7 +419,7 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 		)
 	}()
 
-	linkTitle := domain.LINK_TITLE
+	linkTitle := ""
 
 	func() {
 		var err error
@@ -423,10 +435,16 @@ func (s *Service) addSourceLink(formattedText *client.FormattedText,
 			err = log.NewError("source.Link without dstChatId")
 			return
 		}
-		if source.Link.Title != "" {
+		if source.Link.Title == "" {
+			linkTitle = domain.LINK_TITLE
+		} else {
 			linkTitle = source.Link.Title
 		}
 	}()
+
+	if linkTitle == "" {
+		return
+	}
 
 	var messageLink *client.MessageLink
 	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
@@ -457,7 +475,7 @@ func (s *Service) addPrevLink(formattedText *client.FormattedText,
 		)
 	}()
 
-	prevTitle := domain.PREV_TITLE
+	prevTitle := ""
 
 	func() {
 		var err error
@@ -473,10 +491,16 @@ func (s *Service) addPrevLink(formattedText *client.FormattedText,
 			err = log.NewError("source.Prev without dstChatId")
 			return
 		}
-		if source.Prev.Title != "" {
+		if source.Prev.Title == "" {
+			prevTitle = domain.PREV_TITLE
+		} else {
 			prevTitle = source.Prev.Title
 		}
 	}()
+
+	if prevTitle == "" {
+		return
+	}
 
 	var messageLink *client.MessageLink
 	messageLink, err = s.telegramRepo.GetMessageLink(&client.GetMessageLinkRequest{
