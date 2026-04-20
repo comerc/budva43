@@ -1,5 +1,7 @@
 # budva43
 
+> 2026-04-20: Project reworked and [moved to a new repo](https://github.com/pure-golang/budva).
+
 [![Go Version](https://img.shields.io/github/go-mod/go-version/comerc/budva43)](https://go.dev/doc/install)
 [![Go Report Card](https://goreportcard.com/badge/github.com/comerc/budva43)](https://goreportcard.com/report/github.com/comerc/budva43)
 [![codecov](https://codecov.io/gh/comerc/budva43/graph/badge.svg?token=JGTZM00AXV)](https://codecov.io/gh/comerc/budva43)
@@ -35,113 +37,114 @@ Direct install TDLib on host machine for best dev experience or use DevContainer
 
 Install by [instruction](https://github.com/zelenin/go-tdlib/blob/master/README.md) with this options:
 
-- Install built TDLib to /usr/local instead of placing the files to td/tdlib.
-- Choose which compiler you want to use to build TDLib: clang (recommended)
+-   Install built TDLib to /usr/local instead of placing the files to td/tdlib.
+-   Choose which compiler you want to use to build TDLib: clang (recommended)
 
 ### With DevContainer
 
 only first time:
+
 ```bash
 $ docker-compose build
 ```
+
 ...then "Reopen in Container"
 
 ## Applied Technologies
 
-- [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
-- [x] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
-- [x] [mockery](https://github.com/vektra/mockery)
-- [ ] [easyjson](https://github.com/mailru/easyjson)
-- [x] Docker Compose
-- [x] [docker multi-stage build](https://docs.docker.com/build/building/multi-stage/)
-- [x] zsh + [ohmyzsh](https://ohmyz.sh/)
-- [x] golangci-lint + [revive](https://revive.run/)
-- [x] Makefile
-- [x] [editorconfig](https://editorconfig.org/)
-- [x] [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
-- [ ] [goreleaser](https://goreleaser.com/)
-- [x] [todo-highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
-- [x] [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
-- [ ] Redis
-- [x] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
-- [x] SOLID
-- [x] DRY
-- [x] KISS
-- [x] YAGNI
-- [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
-- [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
-- [x] Notations Start & Run
-- [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
-- [x] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
-- [ ] CQRS
-- [x] [samber/lo](https://github.com/samber/lo)
-- [ ] [uptrace/bun](https://github.com/uptrace/bun)
-- [x] [gqlgen](https://gqlgen.com/)
-- [ ] Grafana + Prometheus
-- [ ] ClickHouse
-- [ ] [fiber](https://gofiber.io/)
-- [x] [zelenin/go-tdlib](https://github.com/zelenin/go-tdlib)
-- [ ] [Code Style](https://github.com/quickwit-oss/quickwit/blob/206ebf791af78f11c562835a449df449b3a17e81/CODE_STYLE.md
-)
-- [ ] samber/mo
-- [ ] samber/do
-- [ ] samber/oops
-- [ ] samber/slog-*
-- [x] testing: Time & Concurrency https://danp.net/posts/synctest-experiment/
-- [ ] spf13/cobra
-- [x] go.mod replace
-- [x] [comerc/spylog](https://github.com/comerc/spylog)
-- [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
-- [x] voidint/g
-- [x] go mod vendor
-- [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
-- [ ] temporal
-- [ ] anycable
-- [x] [gocritic](https://habr.com/ru/articles/414739/)
-- [ ] [OpenTelemetry](https://pkg.go.dev/go.opentelemetry.io/otel#section-readme)
-- [ ] [gostackparse](https://github.com/DataDog/gostackparse)
-- [x] grafana-loki
-- [x] [pplog](https://github.com/michurin/human-readable-json-logging)
-- [ ] pprof
-- [x] time.AfterFunc() & context.AfterFunc()
-- [x] init() - dependency chain: config -> log -> spylog
-- [x] closures (currying and partial application)
-- [x] tail recursion
-- [x] errors.Is & errors.As
-- [x] generics
-- [x] PUB/SUB
-- [x] table (call-)tests
-- [x] integration tests
-- [x] separate config for e2e tests
-- [x] dynamic config engine.yml
-- [x] structured logs and errors
-- [x] termAutomator
-- [x] codecov.io
-- [x] snapshot tests
-- [ ] [LocalAI](https://github.com/mudler/LocalAI)
-- [ ] [go-prompt](https://github.com/c-bata/go-prompt)
-- [ ] Gemma for NLP?
-- [ ] uber-go/automaxprocs
-- [ ] uber-go/goleak
-- [ ] magefile/mage
-- [ ] oklog/ulid
-- [x] [Go to Implementation](https://github.com/comerc/golang-go-to-impl)
-- [x] [jq](https://jqlang.org/)
-- [x] [task](https://taskfile.dev/)
-- [x] [unused-interface-methods](https://github.com/unused-interface-methods/unused-interface-methods)
-- [x] BDD
-- [x] [godog](github.com/cucumber/godog)
-- [x] grpc
-- [ ] fuzz-test?
-- [x] [error-log-or-return](https://github.com/error-log-or-return/error-log-or-return)
-- [x] [go-table-test-navigator](https://github.com/comerc/go-table-test-navigator)
-- [ ] jba/templatecheck
-- [x] [OCP-VS-YAGNI](doc/OCP-VS-YAGNI.md)
-- [ ] github.com/urfave/cli
-- [ ] [CatBoost](https://github.com/catboost/catboost)
-- [ ] [XGBoost](https://github.com/dmlc/xgboost)
-- [ ] [LightGBM](https://github.com/microsoft/LightGBM)
-- [ ] https://github.com/uber-go/nilaway
+-   [x] [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
+-   [x] [testcontainers](https://testcontainers.com/guides/getting-started-with-testcontainers-for-go/)
+-   [x] [mockery](https://github.com/vektra/mockery)
+-   [ ] [easyjson](https://github.com/mailru/easyjson)
+-   [x] Docker Compose
+-   [x] [docker multi-stage build](https://docs.docker.com/build/building/multi-stage/)
+-   [x] zsh + [ohmyzsh](https://ohmyz.sh/)
+-   [x] golangci-lint + [revive](https://revive.run/)
+-   [x] Makefile
+-   [x] [editorconfig](https://editorconfig.org/)
+-   [x] [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+-   [ ] [goreleaser](https://goreleaser.com/)
+-   [x] [todo-highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
+-   [x] [git-graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)
+-   [ ] Redis
+-   [x] [go-clean-architecture](https://github.com/comerc/go-clean-architecture)
+-   [x] SOLID
+-   [x] DRY
+-   [x] KISS
+-   [x] YAGNI
+-   [x] [Dependency Injection](https://habr.com/ru/companies/vivid_money/articles/531822/)
+-   [x] [design-patterns](https://refactoring.guru/ru/design-patterns/go)
+-   [x] Notations Start & Run
+-   [x] [Graceful Shutdown](https://habr.com/ru/articles/771626/)
+-   [x] [Front Controller (microservice)](https://en.wikipedia.org/wiki/Front_controller)
+-   [ ] CQRS
+-   [x] [samber/lo](https://github.com/samber/lo)
+-   [ ] [uptrace/bun](https://github.com/uptrace/bun)
+-   [x] [gqlgen](https://gqlgen.com/)
+-   [ ] Grafana + Prometheus
+-   [ ] ClickHouse
+-   [ ] [fiber](https://gofiber.io/)
+-   [x] [zelenin/go-tdlib](https://github.com/zelenin/go-tdlib)
+-   [ ] [Code Style](https://github.com/quickwit-oss/quickwit/blob/206ebf791af78f11c562835a449df449b3a17e81/CODE_STYLE.md)
+-   [ ] samber/mo
+-   [ ] samber/do
+-   [ ] samber/oops
+-   [ ] samber/slog-\*
+-   [x] testing: Time & Concurrency https://danp.net/posts/synctest-experiment/
+-   [ ] spf13/cobra
+-   [x] go.mod replace
+-   [x] [comerc/spylog](https://github.com/comerc/spylog)
+-   [x] go test -race WARNING LC_DYSYMTAB https://github.com/golang/go/issues/61229
+-   [x] voidint/g
+-   [x] go mod vendor
+-   [x] [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
+-   [ ] temporal
+-   [ ] anycable
+-   [x] [gocritic](https://habr.com/ru/articles/414739/)
+-   [ ] [OpenTelemetry](https://pkg.go.dev/go.opentelemetry.io/otel#section-readme)
+-   [ ] [gostackparse](https://github.com/DataDog/gostackparse)
+-   [x] grafana-loki
+-   [x] [pplog](https://github.com/michurin/human-readable-json-logging)
+-   [ ] pprof
+-   [x] time.AfterFunc() & context.AfterFunc()
+-   [x] init() - dependency chain: config -> log -> spylog
+-   [x] closures (currying and partial application)
+-   [x] tail recursion
+-   [x] errors.Is & errors.As
+-   [x] generics
+-   [x] PUB/SUB
+-   [x] table (call-)tests
+-   [x] integration tests
+-   [x] separate config for e2e tests
+-   [x] dynamic config engine.yml
+-   [x] structured logs and errors
+-   [x] termAutomator
+-   [x] codecov.io
+-   [x] snapshot tests
+-   [ ] [LocalAI](https://github.com/mudler/LocalAI)
+-   [ ] [go-prompt](https://github.com/c-bata/go-prompt)
+-   [ ] Gemma for NLP?
+-   [ ] uber-go/automaxprocs
+-   [ ] uber-go/goleak
+-   [ ] magefile/mage
+-   [ ] oklog/ulid
+-   [x] [Go to Implementation](https://github.com/comerc/golang-go-to-impl)
+-   [x] [jq](https://jqlang.org/)
+-   [x] [task](https://taskfile.dev/)
+-   [x] [unused-interface-methods](https://github.com/unused-interface-methods/unused-interface-methods)
+-   [x] BDD
+-   [x] [godog](github.com/cucumber/godog)
+-   [x] grpc
+-   [ ] fuzz-test?
+-   [x] [error-log-or-return](https://github.com/error-log-or-return/error-log-or-return)
+-   [x] [go-table-test-navigator](https://github.com/comerc/go-table-test-navigator)
+-   [ ] jba/templatecheck
+-   [x] [OCP-VS-YAGNI](doc/OCP-VS-YAGNI.md)
+-   [ ] github.com/urfave/cli
+-   [ ] [CatBoost](https://github.com/catboost/catboost)
+-   [ ] [XGBoost](https://github.com/dmlc/xgboost)
+-   [ ] [LightGBM](https://github.com/microsoft/LightGBM)
+-   [ ] https://github.com/uber-go/nilaway
 
 ## .env
 
@@ -232,9 +235,9 @@ http://localhost:7007?limit=10
 
 ## Inspired by
 
-- [marperia/fwdbot](https://github.com/marperia/fwdbot)
-- [wcsiu/telegram-client-demo](https://github.com/wcsiu/telegram-client-demo) + [article](https://wcsiu.github.io/2020/12/26/create-a-telegram-client-in-go-with-docker.html)
-- [Создание и развертывание ретранслятора Telegram каналов, используя Python и Heroku](https://vc.ru/dev/158757-sozdanie-i-razvertyvanie-retranslyatora-telegram-kanalov-ispolzuya-python-i-heroku)
+-   [marperia/fwdbot](https://github.com/marperia/fwdbot)
+-   [wcsiu/telegram-client-demo](https://github.com/wcsiu/telegram-client-demo) + [article](https://wcsiu.github.io/2020/12/26/create-a-telegram-client-in-go-with-docker.html)
+-   [Создание и развертывание ретранслятора Telegram каналов, используя Python и Heroku](https://vc.ru/dev/158757-sozdanie-i-razvertyvanie-retranslyatora-telegram-kanalov-ispolzuya-python-i-heroku)
 
 ## Filters Mode for Forward...
 
@@ -260,23 +263,22 @@ To -
 
 ## Test-plan for Config...
 
-- Text
-  - [x] Forward.SendCopy (or forward)
-  - [x] and edit sync for double copy
-  - [x] Forward.CopyOnce (edit sync)
-  - [x] Forward.Indelible (delete sync)
-  - [x] Filters Mode (see above)
-  - [x] Forward.IncludeSubmatch
-  - [x] ReplaceMyselfLinks + DeleteExternal
-  - [x] ReplaceFragments (and not equal len)
-  - [x] Sources.Link + Title
-  - [x] Sources.Sign
-  - [ ] AutoAnswers
-- MediaAlbum
-  - [x] Forward.SendCopy (or forward)
-  - [x] Forward.CopyOnce (edit sync)
-  - [x] Forward.Indelible (delete sync)
-
+-   Text
+    -   [x] Forward.SendCopy (or forward)
+    -   [x] and edit sync for double copy
+    -   [x] Forward.CopyOnce (edit sync)
+    -   [x] Forward.Indelible (delete sync)
+    -   [x] Filters Mode (see above)
+    -   [x] Forward.IncludeSubmatch
+    -   [x] ReplaceMyselfLinks + DeleteExternal
+    -   [x] ReplaceFragments (and not equal len)
+    -   [x] Sources.Link + Title
+    -   [x] Sources.Sign
+    -   [ ] AutoAnswers
+-   MediaAlbum
+    -   [x] Forward.SendCopy (or forward)
+    -   [x] Forward.CopyOnce (edit sync)
+    -   [x] Forward.Indelible (delete sync)
 
 ## Task Autocompletion
 
@@ -288,6 +290,7 @@ eval "$(task --completion zsh)"
 ```
 
 Then reload your shell:
+
 ```bash
 source ~/.zshrc
 ```
@@ -295,4 +298,3 @@ source ~/.zshrc
 Or restart your terminal.
 
 Now when you type `task` and press Tab, you'll get a list of available tasks.
-
